@@ -62,9 +62,21 @@ Five tabs. That's the whole app.
 |---|---|
 | **Hub** (home) | Key facts strip, the circle-of-dots area picker, what's due next |
 | **People** | Three views on one list: Guests · Bridal party · Suppliers |
-| **Plan** | Tasks and deadlines, with suggested starter tasks |
+| **Plan** | The timeline of the run-up — everything dated, plus a task list by area |
 | **Money** | Budget, invoices, payments due |
 | **The Day** | Run sheet, tables and seating, transport |
+
+Two rules that decide where anything new goes:
+
+> **Areas hold the planning. The Day holds the choreography.** Booking the cars
+> and paying the deposit is the Transport area. Who's in car two at 1:15pm is The
+> Day. Every "thing on the day" — flowers, cake, food, music, attire — is an area,
+> and some also cast a shadow onto the day itself.
+
+> **Plan is the timeline of the run-up. The Day is the timeline of the day.** Two
+> timelines at different scales, deliberately kept as separate tabs. They're
+> continuous though, so say it: the last entry on the run-up timeline is the
+> wedding day itself, and tapping it opens The Day.
 
 Plus four things that are **not** tabs:
 
@@ -72,8 +84,11 @@ Plus four things that are **not** tabs:
    attire, food, photography, transport, venue, stationery. These are *not*
    separate pages with bespoke designs. There is **one templated area page**, and
    tapping a dot on the Hub opens it filtered to that area. It gathers everything
-   tagged with that area: the tasks, the supplier, the cost, the notes, and the
-   inspiration saved against it. Design this template once and show it filled
+   tagged with that area: its key facts, the tasks, the supplier, the cost, the
+   notes and the inspiration saved against it. Six blocks, the same six every
+   time — the key-facts block stays a generic notes-and-details block, because the
+   moment flowers gets different fields from cake, the single template collapses
+   into fourteen bespoke pages. Design this template once and show it filled
    with two different areas (Flowers and Transport) so I can see it flex. Couples
    can add
    their own areas, so the template must work for a name I haven't thought of.
@@ -120,52 +135,58 @@ not a polished front and a sketchy back.
 
 **Getting in**
 1. Sign in / sign up
-2. First-run setup — name the couple, set the date, pick which areas apply
+2. First-run setup — name the couple, set the date, choose which areas apply
 
 **Hub**
 3. Hub, wedding well underway
 4. Hub, brand new and empty
-5. An area page (Flowers — a booked supplier, tasks, cost, links)
+5. An area page (Flowers — booked supplier, tasks, cost, notes, saved images)
 6. The same area page template (Transport — barely started)
+7. Adding a dot to the orb, and removing one
 
 **People**
-7. Guest list — households, RSVP status per event, search and filter
-8. A single household, expanded — the people in it, addresses, dietaries
-9. Add / edit a guest
-10. Bridal party — who's who and what their job is on the day
-11. Supplier list — category, booking status, cost
-12. A single supplier — quote, deposit, contract, contact details, notes
-13. Invitations — who's been sent one, who hasn't, RSVP chase list
+8. Guest list — households, RSVP status per event, search and filter
+9. A single household, expanded — the people in it, address, dietaries
+10. Add / edit a guest
+11. Bridal party — a filtered view of the guest list, with each person's job
+12. Supplier list — category, booking status, cost
+13. A single supplier — quote, deposit, contract, contact details, notes
+14. The venue
+15. Invitations — who's been sent one, who hasn't, RSVP chase list
 
 **Plan**
-14. Task list — grouped by area or by deadline, my choice of view
-15. Suggested tasks — the app proposing a starter plan from the wedding date
-16. A single task
+16. Agenda — every dated thing on one timeline: tasks due, appointments,
+    payments due, and the wedding day itself as the final entry
+17. The same agenda, filtered down to appointments only
+18. Task list — grouped by area, for working through rather than by date
+19. Suggested tasks — the app proposing a starter plan from the wedding date
+20. A single task
+21. A single appointment — time, place, which supplier, notes
 
 **Money**
-17. Budget overview — planned vs committed vs paid, broken down by area
-18. Payments due — what's owed and when
-19. An invoice / payment record
+22. Budget overview — planned vs committed vs paid, broken down by area
+23. Payments due
+24. An invoice / payment record
 
 **The Day**
-20. Run sheet — the hour-by-hour order of the day
-21. Seating — a floor plan where tables get added, moved and filled with guests
-22. Seating on a phone (this one is hard; I want to see your answer)
-23. Transport — cars, pickups, who's in which vehicle
+25. Run sheet — the hour-by-hour order of the day
+26. Seating — a floor plan where tables get added, moved and filled with guests
+27. Seating on a phone (this one is hard; I want to see your answer)
+28. Transport on the day — cars, pickups, who travels with whom
 
 **Inspo**
-24. Inspo gallery — everything saved, as a visual grid, browsable by folder
-25. Inspo filtered to one folder (Dresses) — the real reason anyone opens this
-26. Saving something — paste a link and get a preview card, or upload an image
-27. A single saved item, opened large — its note, its folder, back to the source
-28. Inspo, empty — and how you invite the first save
+29. Inspo gallery — everything saved, as a visual grid, browsable by folder
+30. Inspo filtered to one folder (Dresses) — the real reason anyone opens this
+31. Saving something — paste a link and get a preview card, or upload an image
+32. A single saved item, opened large — its note, its folder, back to the source
+33. Inspo, empty — and how you invite the first save
 
 **Everywhere**
-29. Brainstorm chat, open
-30. Quick capture — note, link and image in one control
-31. The capture inbox, with notes and unsorted images together
-32. Settings, including the area toggles and which areas show on the Hub
-33. Empty states, loading states, and one error state
+34. Brainstorm chat, open
+35. Quick capture — note, link and image in one control
+36. The capture inbox, with notes and unsorted images together
+37. Settings — areas on and off, which areas show as a dot, who has a login
+38. Empty states, loading states, and one error state
 
 ### Data rules the designs must respect
 
@@ -189,6 +210,13 @@ that contradict them can't be built.
   picture into Attire is exactly what makes it turn up on the Attire area page.
   Couples can add an area for anything, so the folder list is open-ended, but
   there is only ever one set of names in the app.
+- **Three different dated things share one timeline.** A task is ticked off, an
+  appointment is attended, a payment is paid — they're separate records, because
+  squeezing an appointment into a task loses its time, its place and who you're
+  meeting. But they all answer "what's coming up", so the agenda shows them
+  together and filters them apart. Don't give them three screens.
+- **Bridal party is a filtered view of the guest list**, not a separate list.
+  They're guests who also have a job on the day.
 - **A guest is either an adult or a child** — a simple flag, no age brackets.
 - **Meal choices are free text**, not a pick-list of set-menu options.
 - **There's no RSVP deadline field**, so don't design anything that shows who's
@@ -233,4 +261,4 @@ so please stay within what that can express and avoid effects that'll be a fight
 to implement.
 
 Start with the design system and the Hub. Show me those before going further, so
-I can react before you've built out thirty-three screens on the wrong foundation.
+I can react before you've built out thirty-eight screens on the wrong foundation.

@@ -1,7 +1,11 @@
 # Design brief — for Claude Design
 
-Paste this in, along with a link to the repo. It covers the look, what each
-screen has to do, and what the database can actually provide.
+Paste this in, along with a link to the repo.
+
+**This asks for two screens, not the whole app.** Sign in and contacts — enough
+to add a real guest and see them saved. The rest of the app comes in later
+rounds, once this one is built and working. There's a note at the end on what's
+coming, so nothing gets designed into a corner.
 
 **Repo:** `fjbenson/wedding-app`
 **The look, running:** https://wedding-app-tau-dusky.vercel.app/design
@@ -64,7 +68,7 @@ wanted. The reusable parts will be pulled out of the finished screens afterwards
 
 ---
 
-## The five screens
+## The two screens
 
 ### 1. Sign in
 
@@ -77,21 +81,7 @@ and the owner picks.
 This is the first thing anyone sees, so it carries the most first-impression
 weight of any screen here.
 
-### 2. Dashboard — the hub
-
-**The signature screen, and the most open.** The concept from the owner's notes:
-a central circle with dots around it, each dot an area of the wedding — venue,
-flowers, cake, music, photos, guests.
-
-Things it could show: how many days to go, what's due next, how RSVPs are
-tracking, what needs attention.
-
-Everything about this is up for grabs — whether the dots are navigation or
-status, what sits in the middle, what happens when you tap one. The rough
-version currently in the repo is a placeholder, not a proposal. Feel free to
-ignore it entirely.
-
-### 3. Contacts
+### 2. Contacts
 
 Everyone involved. Four kinds, which may or may not deserve separating:
 **guests**, **suppliers**, **bridal party**, **venue**.
@@ -112,66 +102,63 @@ link to a contract.
 Expect a few hundred people at most. Needs to work well on a phone — this is
 the screen most likely to be used standing in a venue.
 
-### 4. Timeline
+## Coming in later rounds — context only, don't design these yet
 
-The to-do list, over months. Each item has a title, a longer description, a
-category, a due date, an optional reminder date, and a status
-(**to do → in progress → done**, or **skipped**).
+Listed so nothing above gets designed into a corner. These are the next slices,
+each designed when its turn comes.
 
-Items can be assigned to one of the people with a login.
+**The dashboard — a circle-with-dots hub.** The signature screen and the most
+open question in the whole app: a central circle with dots around it, each dot
+an area of the wedding. Worth knowing it's coming, because contacts will
+eventually be reached from it.
 
-Worth a view on: is this a list, a calendar, or something more like a road
-stretching towards the day? Wedding planning runs over a year or more, so
-whatever it is has to make "nothing due for three months, then everything at
-once" readable.
+**Timeline.** A to-do list running over a year or more, with due dates and
+statuses.
 
-### 5. RSVP
+**RSVP.** The structural thing to know: an RSVP is one person's answer to one
+*event*. A wedding has several — the ceremony, the evening reception — and
+people are invited to different ones, so the same guest can be attending the
+evening but not the day. That's how weddings actually work, so contacts
+shouldn't assume one answer per guest.
 
-**The structure that matters:** an RSVP is one person's answer to one *event*.
-A wedding has several events — the ceremony, the evening reception — and people
-are invited to different ones. So the same guest can be attending the evening
-but not the day.
+Later still, and further off: a chatbot, guest logins, guest-to-guest
+messaging, seating plans, a gift registry, photo uploads.
 
-Each RSVP has a status (**awaiting reply / attending / can't make it**), a meal
-choice, and dietary notes.
+## About the database
 
-The screen needs to show the overall picture — how many replied, how many
-haven't — and let the couple record replies as they come in by phone, text or
-in person. Most replies will be relayed verbally, not submitted by the guest.
+The database exists and is **completely empty** — no data, no users. Adding a
+field to it right now costs minutes.
 
-Showing "one person, several events, different answers" without it becoming a
-grid of checkboxes is the hard part.
+So treat it as flexible, not as a constraint. **If a design needs something,
+ask for it.** Adding a column is cheap and it will be added.
 
----
+What exists today, for reference:
 
-## What the database can't do yet
+- **People:** first and last name, email, phone, free-text notes, child/adult
+  flag, and which of the four kinds they are
+- **Households:** a name and a postal address
+- **Suppliers:** company name, category, status, quoted cost, deposit paid,
+  contract link
 
-Worth knowing so the designs don't promise things that can't be built. Each is
-an added field rather than a rebuild, so if a design genuinely needs one, say so
-and it can be added.
+Things that would need adding, none of them difficult, if a design wants them:
+an RSVP deadline, a set list of meal choices, a budget, age bands for children.
 
-- **No RSVP deadline.** Nothing can show who's overdue to reply.
-- **Meal choices are free text.** There's no set menu to pick from, so no
-  "42 chose the chicken" without adding one.
-- **No budget.** Only a cost per supplier — no overall budget or spend total.
-- **Milestones assign only to people with a login**, not to any contact.
-- **Children are a yes/no flag.** No age bands for catering.
+The one thing that is **not** flexible is the *shape* — everything belongs to a
+wedding, households are separate from the people in them, and RSVPs are per
+person per event. Those are facts about how weddings work rather than choices,
+and designs should fit them.
 
 ## Constraints
 
-- **Phones are not an afterthought.** The owner checks this on a phone. Every
-  screen needs a phone design, not just a desktop one squeezed down.
+- **Phones are not an afterthought.** The owner checks this on a phone. Both
+  screens need a phone design, not just a desktop one squeezed down.
 - **No dark mode.** Deliberate — the direction is cream paper.
-- **Not in this version:** chatbot, guest logins, guest-to-guest messaging,
-  seating plans, gift registry, photo uploads, inspiration boards. All planned
-  eventually, so don't design them in, but don't design something they couldn't
-  later slot into.
 
 ## What comes back
 
-Screen designs, at phone and desktop width, for the five screens above. Links
-or screenshots both work.
+Designs for the two screens above, at phone and desktop width. Links or
+screenshots both work.
 
-Those get handed to Claude Code, which builds them for real against the existing
-Supabase database. Components get pulled out of the finished designs at that
-point — not before.
+Those get handed to Claude Code, which builds them for real against the
+existing Supabase database — real sign in, real saved data, deployed. Once
+that's working, the next slice gets designed.

@@ -11,15 +11,11 @@ The owner's planning notes, task list and strategy framework are here:
 
 Sub-pages: BLAST — Strategy, Process Flow, Tasks, Decisions log, Architecture.
 
-The project runs on the **BLAST** framework:
-
-| | Stage | Means |
-|---|---|---|
-| **B** | Blueprint your outcome | Vision and scope, before any tool |
-| **L** | Link your integrations | Pick the APIs, hosts and database |
-| **A** | Architect the plan | AI maps the system, owner approves |
-| **S** | Style the experience | UI, brand, user flow |
-| **T** | Trigger the execution | Build, ship, automate |
+**BLAST has been dropped** (20 Sep 2026). The way of working is now in
+`docs/PROCESS.md`. Notion still describes BLAST — ignore it. The short version:
+build in **vertical slices**, one usable journey at a time, and decide the
+expensive-to-reverse things early while leaving fields, colours and components
+to follow the screens that need them.
 
 **Read Notion at the start of a session, but trust this repo over it.** Notion is
 hand-maintained and lags behind — as of Sept 2026 it still listed the ERD and the
@@ -29,8 +25,13 @@ to date rather than working from it as-is.
 ## Current state
 
 Planning pass is **done**. There is a data model, a database schema, a running
-Next.js scaffold and a **built design system**. There are still **no real MVP
-screens** — the placeholder home page and `/design` are all there is.
+Next.js scaffold and a design system. There are still **no real MVP screens** —
+the placeholder home page and `/design` are all there is.
+
+**The visual direction has moved on.** A Claude Design pass on 20 Sep produced a
+look the owner prefers to the one in `/design`, plus a solved version of the
+circle-with-dots hub. See "Design system" below — don't assume `/design` is the
+final look.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
 builds from `main` on every push, and branches get their own preview URLs. The
@@ -40,11 +41,6 @@ calls the anon key the *publishable* key — same thing).
 
 This exists so design can be looked at rather than described: push a change, get
 a link the owner can open on their phone.
-
-In BLAST terms: **B, L and A are done** (scope locked, stack chosen, ERD and
-schema written and reviewed by the owner). **S is done** — "warm and romantic"
-is built out as a real design system; see below. **T is part done** — hosting is
-live, the screens are not.
 
 ## Architecture (decided, don't relitigate)
 
@@ -105,6 +101,34 @@ ink, sage and gold accents. Nothing pure white, nothing pure black.
 
 No dark mode, deliberately — the direction is cream paper.
 
+### The Claude Design pass (20 Sep 2026)
+
+A mockup round in Claude Design produced a direction the owner prefers, and it
+should win over what's in `/design` when the screens get built.
+
+What's worth keeping from it:
+
+- **A solved hub.** A breathing orb showing "% ready" and days to go, with area
+  dots around it at their own completion levels — and those same dots collapse
+  into a **sticky rail at the top on scroll**, becoming navigation. Tapping one
+  filters a detail card below. Better than the sketch in `/design`.
+- **Softer, more confident visuals** — gradient washes, frosted-glass panels,
+  Cormorant Garamond kept, paired with Jost rather than DM Sans.
+- **Reassuring copy as a design principle** — "nothing is overdue, you're ahead
+  of schedule". Wedding planning is stressful; the app shouldn't add to it.
+
+What to ignore from it:
+
+- It designed **the whole app**, including seating plans, an inspiration board
+  and a **chatbot as the primary interface** — all deliberately out of MVP
+  scope. It also omitted the sign-in screen.
+- Its guest list gives each guest **one RSVP status**. The schema is right and
+  the mockup is wrong: RSVPs are per person *per event*.
+- **Households don't appear** in it at all.
+
+Treat the mockup as inspiration, never as a spec — see `docs/PROCESS.md`,
+"diverge in the mockup, converge in the code".
+
 ## Conventions
 
 - **All database queries live in `src/lib/db/`.** Nothing else imports the
@@ -139,12 +163,30 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 ## Next steps
 
-1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
-2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
-3. ~~Build the design system~~ — done, `docs/DESIGN.md` and `/design`
-4. Build screens: sign in, dashboard (circle-with-dots hub), contacts, timeline,
-   RSVP
-5. Replace the hand-written types with `npm run db:types`
+Working in slices now — one usable journey at a time, each one shipped before
+the next is designed. See `docs/PROCESS.md`.
+
+**Done:** ERD reviewed and confirmed · Supabase + Vercel live · a design system
+built · a Claude Design mockup round.
+
+**Slice 1 — sign in + contacts.** The brief is `docs/DESIGN_BRIEF.md`. Designs
+were still being iterated when the session ended. Build it so a real guest can
+be added and saved, then ship it.
+
+**Then, in order:** RSVP · timeline · the hub.
+
+**Not yet scheduled:** replace the hand-written types with `npm run db:types`
+(the Supabase project exists now, so this is unblocked).
+
+### Open decisions
+
+- **Whether the design system in `/design` survives.** The Claude Design
+  direction is preferred. Re-pointing `tailwind.config.ts` at it is a small job;
+  the components are disposable and were guessed before any screen existed.
+- **Sign in: magic link or password?** Undecided.
+- **Whether a separate test database is wanted** before screens start writing
+  data. Right now preview deployments and the live site share one Supabase
+  database, so a branch preview writes real rows.
 
 ### Design decisions still open
 

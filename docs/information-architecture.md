@@ -139,6 +139,56 @@ clutter the orb.
 
 ---
 
+## How many pages is that really?
+
+The 38 screens in `docs/design-brief.md` are *designs to produce*, not *pages to
+build*. Many are one page in a different state — the Hub full and empty, the area
+template with two different areas, seating on desktop and on a phone.
+
+| Kind | Count | Which |
+|---|---|---|
+| **Pages** — own URL | **15** | 1, 2, 3, 5, 8, 9, 13, 15, 16, 22, 25, 26, 29, 36, 37 |
+| **Tabs** — a view inside a page | 5 | 11, 12, 18, 23, 28 |
+| **Modals & overlays** — open over a page | 10 | 7, 10, 19, 20, 21, 24, 31, 32, 34, 35 |
+| **States** — same view, different content | 8 | 4, 6, 14, 17, 27, 30, 33, 38 |
+
+The fifteen:
+
+```
+/sign-in            1
+/setup              2
+/                   3   Hub
+/area/[name]        5   one template, every area
+/people             8   guests · bridal party · suppliers as tabs
+/people/[household] 9
+/people/[supplier]  13
+/invitations        15
+/plan               16  agenda · task list as tabs
+/money              22  budget · payments due as tabs
+/day/run-sheet      25
+/day/seating        26
+/inspo              29
+/inbox              36
+/settings           37
+```
+
+The area page is one route serving all nine areas. People is one page with three
+tabs. Plan is one page with two views. The Day is two pages plus a transport tab.
+
+**MVP is 7 of them:** sign in, setup, hub, people, household detail, supplier
+detail, plan. Plus two modals — add/edit a guest, and a task — and one tab,
+suppliers.
+
+Two caveats so the number doesn't mislead:
+
+- **Some are judgment calls.** Whether a task opens as a full page or slides up as
+  a sheet is a design decision, not a fact. It moves items between the modal and
+  page rows without changing the work much.
+- **Pages aren't equal.** `/day/seating` is one page and is harder than the other
+  fourteen put together — drag-and-drop tables, guests assigned to seats, and it
+  has to survive a phone. `/sign-in` is an afternoon. Counting pages tells you the
+  shape of the app, not the hours.
+
 ## What this needs that the schema doesn't have yet
 
 All additive — new tables hanging off `weddings`, exactly as `docs/ERD.md`

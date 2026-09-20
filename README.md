@@ -46,6 +46,9 @@ worker later, that gets added as a third piece — the two above don't change.
 ```
 src/
   app/          screens and routes
+    design/     the design system catalogue — every component on one page
+  components/
+    ui/         the building blocks: Button, Card, Field, Badge, ...
   lib/
     db/         every database query lives here — nothing else queries directly
     supabase/   client setup for browser, server and middleware
@@ -54,10 +57,22 @@ supabase/
   migrations/   the database schema
 docs/
   ERD.md        the data model, explained
+  DESIGN.md     the design system, explained
 ```
 
 The `lib/db` rule matters: keeping queries in one folder is what would let a
 separate backend service be split out later without touching the screens.
+
+## How it looks
+
+Warm and romantic — cream paper, dusty rose, deep plum ink. Every colour, font
+and component is on one page at **`/design`**
+([live](https://wedding-app-tau-dusky.vercel.app/design)), and explained in
+[`docs/DESIGN.md`](docs/DESIGN.md).
+
+Colours are named rather than written as hex codes (`bg-canvas`, `text-ink`,
+`bg-rose-500`). They're all defined in `tailwind.config.ts` — change the look
+there, not in the screens.
 
 ## Data model
 

@@ -28,8 +28,9 @@ to date rather than working from it as-is.
 
 ## Current state
 
-Planning pass is **done**. There is a data model, a database schema and a running
-Next.js scaffold. There are **no real screens yet** — just a placeholder page.
+Planning pass is **done**. There is a data model, a database schema, a running
+Next.js scaffold and a **built design system**. There are still **no real MVP
+screens** — the placeholder home page and `/design` are all there is.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
 builds from `main` on every push, and branches get their own preview URLs. The
@@ -41,9 +42,9 @@ This exists so design can be looked at rather than described: push a change, get
 a link the owner can open on their phone.
 
 In BLAST terms: **B, L and A are done** (scope locked, stack chosen, ERD and
-schema written and reviewed by the owner). **S is in progress** — the owner has
-picked a "warm and romantic" direction; the design system itself is not built.
-**T is part done** — hosting is live, the screens are not.
+schema written and reviewed by the owner). **S is done** — "warm and romantic"
+is built out as a real design system; see below. **T is part done** — hosting is
+live, the screens are not.
 
 ## Architecture (decided, don't relitigate)
 
@@ -79,6 +80,30 @@ Decisions worth preserving:
   horrible to retrofit.
 - **Suppliers extend contacts** via `supplier_details` rather than padding every
   guest row with empty columns.
+
+## Design system
+
+Explained in `docs/DESIGN.md`. Tokens in `tailwind.config.ts`, components in
+`src/components/ui/`.
+
+Direction is **warm and romantic**: cream canvas, dusty rose primary, deep plum
+ink, sage and gold accents. Nothing pure white, nothing pure black.
+
+- **`/design` is the catalogue** — every colour, font and component on one page,
+  live at https://wedding-app-tau-dusky.vercel.app/design. It renders the real
+  components, so it's the fastest way to check a change didn't break the look.
+- **Colours are named, never hex.** `bg-canvas`, `text-ink`, `bg-rose-500`. The
+  only hex codes in the app are in `tailwind.config.ts`.
+- **Status badges own the wording.** `RsvpBadge`, `MilestoneBadge` and friends
+  map the database's enum values to words and colours in one place, so a
+  declined guest looks the same on every screen.
+- **`Field` takes a function**, not a control: `{(props) => <Input {...props} />}`.
+  That's how the label, hint and error get wired to the input for screen
+  readers, and how `error` turns the control red on its own.
+- Fonts are Cormorant Garamond (display) and DM Sans (body), loaded in
+  `src/app/layout.tsx`. `h1`–`h3` get the serif automatically.
+
+No dark mode, deliberately — the direction is cream paper.
 
 ## Conventions
 
@@ -116,7 +141,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
-3. Build the design system from the chosen "warm and romantic" direction
+3. ~~Build the design system~~ — done, `docs/DESIGN.md` and `/design`
 4. Build screens: sign in, dashboard (circle-with-dots hub), contacts, timeline,
    RSVP
 5. Replace the hand-written types with `npm run db:types`

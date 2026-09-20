@@ -1,3 +1,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* Cream paper, plum ink. Set once here so no screen has to remember. */
+    @apply bg-canvas text-ink antialiased;
+  }
+
+  /* Headings use the serif by default — screens don't need to opt in. */
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-plum-800;
+  }
+
+  /* A single, consistent focus ring. Keyboard users get it; mouse users don't. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-rose-400 ring-offset-2 ring-offset-canvas;
+  }
+
+  /* Respect people who've asked their device to tone down movement. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

@@ -66,27 +66,41 @@ Five tabs. That's the whole app.
 | **Money** | Budget, invoices, payments due |
 | **The Day** | Run sheet, tables and seating, transport |
 
-Plus three things that are **not** tabs:
+Plus four things that are **not** tabs:
 
 1. **Area pages.** The wedding is divided into areas — flowers, cake, music,
    attire, food, photography, transport, venue, stationery. These are *not*
    separate pages with bespoke designs. There is **one templated area page**, and
    tapping a dot on the Hub opens it filtered to that area. It gathers everything
-   tagged with that area: the tasks, the supplier, the cost, the notes, the
-   inspiration links. Design this template once and show it filled with two
-   different areas (Flowers and Transport) so I can see it flex. Couples can add
+   tagged with that area: the tasks, the supplier, the cost, the notes, and the
+   inspiration saved against it. Design this template once and show it filled
+   with two different areas (Flowers and Transport) so I can see it flex. Couples
+   can add
    their own areas, so the template must work for a name I haven't thought of.
 
 2. **Brainstorm.** Reachable from every screen, not a destination. Two halves: a
    chat assistant that can actually do things ("add Priya to the bridal party",
-   "what's left on flowers?"), and a quick-note dump for capturing an idea in
-   four seconds without filing it. Notes land in an inbox and get sorted into
-   areas or turned into tasks later. Design the entry point, the open state, and
-   the note inbox.
+   "what's left on flowers?"), and a quick capture for getting an idea down in
+   four seconds without filing it. Capture covers a typed note, a pasted link and
+   an image — they're the same gesture and should be the same control. Everything
+   captured lands in one inbox and gets sorted into areas or turned into tasks
+   later. Design the entry point, the open state, and the inbox.
 
-3. **Settings**, in the account menu. Its most interesting job: switching whole
+3. **Inspo.** A visual grid of everything saved — images uploaded, links pasted,
+   the dress someone spotted. Its **folders are the areas**, so a picture saved to
+   Attire turns up on the Attire area page as well; the gallery is simply where
+   you see all of it at once and browse for a feeling rather than look something
+   up. Reachable from the Hub and from the capture control — not a sixth tab.
+   Anything that doesn't belong to an area sits in Unsorted until it's filed, the
+   same way notes do. This is the one screen where the images should be allowed to
+   fill the frame and the interface should almost disappear.
+
+4. **Settings**, in the account menu. Its most interesting job: switching whole
    areas off. A couple who aren't organising transport should be able to turn
    Transport off and have it vanish from the Hub, the task filters and the budget.
+   Separately, some areas only ever get used for filing inspiration and shouldn't
+   clutter the Hub, so being *in use* and *showing as a dot* need to be two
+   different switches.
 
 ### The Hub, specifically
 
@@ -139,12 +153,19 @@ not a polished front and a sketchy back.
 22. Seating on a phone (this one is hard; I want to see your answer)
 23. Transport — cars, pickups, who's in which vehicle
 
+**Inspo**
+24. Inspo gallery — everything saved, as a visual grid, browsable by folder
+25. Inspo filtered to one folder (Dresses) — the real reason anyone opens this
+26. Saving something — paste a link and get a preview card, or upload an image
+27. A single saved item, opened large — its note, its folder, back to the source
+28. Inspo, empty — and how you invite the first save
+
 **Everywhere**
-24. Brainstorm chat, open
-25. Quick note capture
-26. Note inbox
-27. Settings, including the area toggles
-28. Empty states, loading states, and one error state
+29. Brainstorm chat, open
+30. Quick capture — note, link and image in one control
+31. The capture inbox, with notes and unsorted images together
+32. Settings, including the area toggles and which areas show on the Hub
+33. Empty states, loading states, and one error state
 
 ### Data rules the designs must respect
 
@@ -161,8 +182,13 @@ that contradict them can't be built.
   by type, with suppliers carrying extra fields (company, category, booking
   status, quoted cost, deposit paid, contract). Same components should serve both
   where it makes sense.
-- **Areas are a tag, not a page** — see above. A task, a supplier, a cost and a
-  note can all carry the same area tag, which is what makes the area page work.
+- **Areas are a tag, not a page** — see above. A task, a supplier, a cost, a note
+  and a saved image can all carry the same area tag, which is what makes the area
+  page work.
+- **Inspo folders *are* those areas** — not a second filing system. Saving a dress
+  picture into Attire is exactly what makes it turn up on the Attire area page.
+  Couples can add an area for anything, so the folder list is open-ended, but
+  there is only ever one set of names in the app.
 - **A guest is either an adult or a child** — a simple flag, no age brackets.
 - **Meal choices are free text**, not a pick-list of set-menu options.
 - **There's no RSVP deadline field**, so don't design anything that shows who's
@@ -186,6 +212,9 @@ Lorem ipsum hides problems. Use this throughout:
   quoted but not confirmed, band still being researched, caterer chasing a final
   headcount
 - Names of varying lengths, including some that will break a tidy layout
+- Saved inspiration in uneven shapes: a tall portrait dress photo, a wide table
+  setting, a screenshot with text in it, a link to a florist's page with no decent
+  preview image, and a handful sitting in Unsorted
 
 ### What I need out of this
 
@@ -204,4 +233,4 @@ so please stay within what that can express and avoid effects that'll be a fight
 to implement.
 
 Start with the design system and the Hub. Show me those before going further, so
-I can react before you've built out twenty-eight screens on the wrong foundation.
+I can react before you've built out thirty-three screens on the wrong foundation.

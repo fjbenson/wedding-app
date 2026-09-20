@@ -4,6 +4,28 @@ A wedding planning app, built to eventually serve other couples, not just one.
 The owner is new to development — explain things plainly, avoid jargon where a
 normal word will do, and keep answers short unless asked to go deeper.
 
+## Project notes live in Notion
+
+The owner's planning notes, task list and strategy framework are here:
+**https://app.notion.com/p/WEDDING-APP-3e13db5a9d15818891a3e37ab0800186**
+
+Sub-pages: BLAST — Strategy, Process Flow, Tasks, Decisions log, Architecture.
+
+The project runs on the **BLAST** framework:
+
+| | Stage | Means |
+|---|---|---|
+| **B** | Blueprint your outcome | Vision and scope, before any tool |
+| **L** | Link your integrations | Pick the APIs, hosts and database |
+| **A** | Architect the plan | AI maps the system, owner approves |
+| **S** | Style the experience | UI, brand, user flow |
+| **T** | Trigger the execution | Build, ship, automate |
+
+**Read Notion at the start of a session, but trust this repo over it.** Notion is
+hand-maintained and lags behind — as of Sept 2026 it still listed the ERD and the
+hosting choices as open, when both were long settled here. Offer to bring it up
+to date rather than working from it as-is.
+
 ## Current state
 
 Planning pass is **done**. There is a data model, a database schema and a running
@@ -11,6 +33,11 @@ Next.js scaffold. There are **no real screens yet** — just a placeholder page.
 
 Nothing is deployed. No Vercel project, no Supabase project. The code is only on
 GitHub.
+
+In BLAST terms: **B, L and A are done** (scope locked, stack chosen, ERD and
+schema written and reviewed by the owner). **S is in progress** — the owner has
+picked a "warm and romantic" direction; the design system itself is not built.
+**T has not started.**
 
 ## Architecture (decided, don't relitigate)
 

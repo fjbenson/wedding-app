@@ -66,7 +66,8 @@ a *third* piece. Don't restructure the other two.
 
 ## Data model
 
-Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`.
+Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
+plus `0002_create_wedding.sql`.
 
 Decisions worth preserving:
 
@@ -79,6 +80,12 @@ Decisions worth preserving:
   horrible to retrofit.
 - **Suppliers extend contacts** via `supplier_details` rather than padding every
   guest row with empty columns.
+- **Creating a wedding goes through `create_wedding()`**, not an insert. The
+  policies chase their own tail on the first one — only a member can read a
+  wedding, only a host can add members — so both inserts live in one
+  `security definer` function. It reads `auth.uid()` itself, so it can't be
+  used to create a wedding owned by someone else. Anything else that has to
+  write its own way in will need the same treatment.
 
 ## Conventions
 

@@ -6,9 +6,9 @@ import { createWeddingAction } from "./actions";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, detail } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,7 +35,7 @@ export default async function HomePage({
         {wedding ? (
           <Hub name={wedding.name} weddingDate={wedding.wedding_date} />
         ) : (
-          <NewWedding error={error} />
+          <NewWedding error={error} detail={detail} />
         )}
       </div>
     </main>
@@ -43,7 +43,7 @@ export default async function HomePage({
 }
 
 /** Shown once, before there's a wedding for the hub to be about. */
-function NewWedding({ error }: { error?: string }) {
+function NewWedding({ error, detail }: { error?: string; detail?: string }) {
   return (
     <div className="mx-auto w-full max-w-sm text-center">
       <h1 className="text-3xl text-ink">Let&apos;s start with the day itself</h1>
@@ -57,6 +57,11 @@ function NewWedding({ error }: { error?: string }) {
           className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
         >
           {error}
+          {detail && (
+            <span className="mt-2 block break-words font-mono text-xs text-muted">
+              {detail}
+            </span>
+          )}
         </p>
       )}
 

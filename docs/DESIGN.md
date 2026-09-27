@@ -65,7 +65,9 @@ Starting point, from the *Clear glass* prototype:
   saturation made the glass turn orange on warm photos, so buttons no longer
   matched what was behind them (owner feedback, 27 Sept 2026). The glass
   should soften the photo, not recolour it.
-- Icons switch between ink and white with the background, like text.
+- Icons on glass pick ink or white per button, from the brightness of what is
+  behind it, and must reach at least 3:1 contrast (aim for 4.5:1). White
+  icons on light champagne glass came out around 2:1 — too faint.
 
 ## Still open
 

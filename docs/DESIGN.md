@@ -61,8 +61,10 @@ Starting point, from the *Clear glass* prototype:
 - Fill: a gradient from 34% to 4% white.
 - Edges: a bright 1–1.5px highlight on top, a faint dark edge underneath, a
   soft drop shadow.
-- Behind: a light blur (about 6px) with raised brightness and saturation, so
-  the photo shows through like a glass bead.
+- Behind: a light blur (about 8px) and **no colour boost**. Raising
+  saturation made the glass turn orange on warm photos, so buttons no longer
+  matched what was behind them (owner feedback, 27 Sept 2026). The glass
+  should soften the photo, not recolour it.
 - Icons switch between ink and white with the background, like text.
 
 ## Still open

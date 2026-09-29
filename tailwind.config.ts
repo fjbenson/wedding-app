@@ -1,36 +1,39 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Warm and romantic: cream paper, dusty rose, deep plum ink.
+ * An ivory wedding magazine. See docs/DESIGN.md for the reasoning.
  *
- * One rule — nothing pure white, nothing pure black. That is what keeps it
- * from feeling like a banking app.
+ * Ivory is the paper, champagne is the detail, ink is the rare accent —
+ * roughly 90 / 8 / 2 by area.
+ *
+ * Replaces Tailwind's colours rather than extending them, so an off-palette
+ * `bg-rose-500` fails to exist instead of quietly working.
  */
 export default {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
-    extend: {
-      colors: {
-        canvas: "#FDF6F0", // the page
-        card: "#FFFCFA", // panels sitting on it
-        ink: "#42272E", // headings and body text
-        muted: "#8A7168", // captions, borders, the quiet things
-        rose: {
-          50: "#FBEFEA",
-          100: "#F4D9CF",
-          200: "#E9B6A5",
-          300: "#DD9279",
-          400: "#D4816A",
-          500: "#CB705A", // primary — buttons, links, the thing to press
-          600: "#B15C48",
-          700: "#8E4838",
-        },
-        sage: "#6E8862",
-        gold: "#C89740",
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      white: "#FFFFFF", // cards; highlights on glass
+      ivory: "#FBF9F5", // the page, everywhere
+      cream: "#F4EFE7", // secondary panels, pressed states
+      linen: "#E6E0D6", // hairline dividers between rows
+      champagne: {
+        100: "#F1E7D4", // "done" fills
+        400: "#B8914F", // fine lines only — never text (~2.9:1 on ivory)
+        600: "#8E6A2C", // champagne text: small-caps labels, list numbers
       },
+      ink: "#1E1B18", // headlines, body, the rare solid fill
+      stone: "#6B655E", // secondary text: dates, counts
+    },
+    extend: {
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
+      },
+      letterSpacing: {
+        label: "0.24em", // the widely spaced small capitals
       },
     },
   },

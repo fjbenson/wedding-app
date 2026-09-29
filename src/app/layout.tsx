@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Fraunces, Geist } from "next/font/google";
 import "./globals.css";
 
-const display = Cormorant_Garamond({
+// Fraunces Light for headlines and big numbers; Geist for everything else.
+const display = Fraunces({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "300",
+  style: ["normal", "italic"],
   variable: "--font-display",
 });
 
-const body = DM_Sans({
+const body = Geist({
   subsets: ["latin"],
   variable: "--font-body",
 });
@@ -23,7 +25,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body className="min-h-screen bg-canvas font-body text-ink antialiased">
+      <body className="min-h-screen bg-ivory font-body text-ink antialiased">
         {children}
       </body>
     </html>

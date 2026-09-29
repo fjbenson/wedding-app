@@ -14,7 +14,8 @@ import {
  * The dots around the hub — one per area of the wedding.
  *
  * `href` is null until that area has a screen. A dot with no screen still
- * shows, greyed, so the shape of the app is visible from day one.
+ * shows (it just doesn't open anything), so the shape of the app is visible
+ * from day one.
  */
 export interface Area {
   id: string;

@@ -29,7 +29,7 @@ to date rather than working from it as-is.
 ## Current state
 
 Planning pass is **done**. There is a data model, a database schema and a running
-Next.js scaffold. There are **no real screens yet** — just a placeholder page.
+Next.js scaffold. The **home screen** is built (cover, hub ring, "this month" story, menu bar); the other screens are not.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
 builds from `main` on every push, and branches get their own preview URLs. The
@@ -43,8 +43,10 @@ a link the owner can open on their phone.
 In BLAST terms: **B, L and A are done** (scope locked, stack chosen, ERD and
 schema written and reviewed by the owner). **S is in progress** — the owner has
 settled on an editorial, ivory-and-champagne look with a floating glass hub
-ring (`docs/DESIGN.md`); how glass is applied is still open, and the design
-system is not built. `tailwind.config.ts` still holds the older rose palette.
+ring (`docs/DESIGN.md`). The palette, fonts and glass working default are now
+in `tailwind.config.ts` and `src/app/globals.css` (`.glass`, `.label`); the
+existing sign-in, new-wedding and hub screens use them. Final glass use is
+still open.
 **T is part done** — hosting is live, the screens are not.
 
 ## Architecture (decided, don't relitigate)
@@ -125,8 +127,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
-3. Build the design system from `docs/DESIGN.md` (settle glass use first)
-4. Build screens: sign in, dashboard (circle-with-dots hub), contacts, timeline,
+3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
+4. Build screens: ~~sign in~~, ~~home screen~~ (done 29 Sep 2026), contacts, timeline,
    RSVP
 5. Replace the hand-written types with `npm run db:types`
 
@@ -142,8 +144,8 @@ All private to the owner; open with the Artifact tool's `read` action.
   https://claude.ai/artifact/XtPaK5WanEmYt9wDhEspyz
 
 Where it landed is in `docs/DESIGN.md`. The owner asked to stop refining the
-home screen for now; the agreed next step is putting the palette and fonts
-into `tailwind.config.ts`, then building screens.
+home screen for now. The palette and fonts are now in `tailwind.config.ts`;
+the next step is building screens.
 
 ### Design decisions still open
 

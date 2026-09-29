@@ -1,8 +1,9 @@
 # Design foundations
 
 The look the owner chose after nine rounds of exploration (Sept 2026). It
-replaces the earlier "cream, dusty rose, plum ink" palette, which still lives
-in `tailwind.config.ts` until the design system is rebuilt from this file.
+replaces the earlier "cream, dusty rose, plum ink" palette. The tokens below
+live in `tailwind.config.ts`; the glass recipe and the small-caps label are
+`.glass` and `.label` in `src/app/globals.css`.
 
 **In one line:** an ivory wedding magazine, with the ring floating on the cover
 in clear glass.

@@ -37,16 +37,16 @@ export default function SignInForm() {
   if (state === "sent") {
     return (
       <div className="text-center">
-        <MailCheck className="mx-auto h-8 w-8 text-sage" aria-hidden />
+        <MailCheck className="mx-auto h-8 w-8 text-champagne-600" aria-hidden />
         <h2 className="mt-4 text-2xl text-ink">Check your email</h2>
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-2 text-sm text-stone">
           We&apos;ve sent a link to <span className="text-ink">{email}</span>. Tap it
           and you&apos;re in.
         </p>
         <button
           type="button"
           onClick={() => setState("idle")}
-          className="mt-5 text-sm text-rose-500 underline underline-offset-4 hover:text-rose-700"
+          className="mt-5 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
         >
           Use a different email
         </button>
@@ -68,12 +68,12 @@ export default function SignInForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
-          className="mt-2 w-full rounded-xl border border-rose-100 bg-canvas px-4 py-3 text-ink placeholder:text-muted/60 focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-200"
+          className="mt-2 w-full rounded-xl border border-linen bg-ivory px-4 py-3 text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
         />
       </div>
 
       {state === "error" && (
-        <p role="alert" className="text-sm text-rose-700">
+        <p role="alert" className="text-sm text-ink">
           {message}
         </p>
       )}
@@ -81,7 +81,7 @@ export default function SignInForm() {
       <button
         type="submit"
         disabled={state === "sending"}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-500 px-4 py-3 text-card transition hover:bg-rose-600 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 disabled:opacity-60"
       >
         {state === "sending" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {state === "sending" ? "Sending…" : "Email me a link"}

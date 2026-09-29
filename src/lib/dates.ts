@@ -25,3 +25,26 @@ export function formatLongDate(date: string): string {
     timeZone: "UTC",
   });
 }
+
+/** "12.06.27" — the countdown's cover line. */
+export function formatDotDate(date: string): string {
+  const [year, month, day] = date.split("-");
+  return `${day}.${month}.${year.slice(2)}`;
+}
+
+/** "1 Nov" — dates beside list items. */
+export function formatDayMonth(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+/** True if the date falls in the current calendar month. */
+export function isThisMonth(date: string): boolean {
+  const [year, month] = date.split("-").map(Number);
+  const now = new Date();
+  return year === now.getUTCFullYear() && month === now.getUTCMonth() + 1;
+}

@@ -6,6 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 
 type State = "idle" | "sending" | "sent" | "error";
 
+/** Supabase's messages are written for developers; say it plainly. */
+function friendly(message: string): string {
+  if (/rate limit/i.test(message)) {
+    return "We've sent a lot of sign-in emails in the last hour. Please wait a little while and try again — and use the newest email when it arrives.";
+  }
+  return message;
+}
+
 /**
  * Magic-link sign in. Supabase emails a one-tap link; tapping it lands on
  * /auth/callback, which turns the code in the URL into a session.
@@ -27,7 +35,7 @@ export default function SignInForm() {
 
     if (error) {
       setState("error");
-      setMessage(error.message);
+      setMessage(friendly(error.message));
       return;
     }
 

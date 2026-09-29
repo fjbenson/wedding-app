@@ -93,6 +93,17 @@ Decisions worth preserving:
   used to create a wedding owned by someone else. Anything else that has to
   write its own way in will need the same treatment.
 
+## Sign-in (temporary)
+
+Email sign-in kept getting stuck (Supabase's built-in email sends only ~2 an
+hour), so since 29 Sep 2026 **visitors are signed in anonymously** by
+`src/lib/supabase/middleware.ts` — no sign-in screen. RLS still applies: an
+anonymous user is a real `auth.uid()`. The catch: a wedding lives in the one
+browser that made it. Needs "Allow anonymous sign-ins" on in Supabase.
+Sign-out is hidden for anonymous users (it would lose the wedding). To bring
+email sign-in back: set up custom SMTP (e.g. Resend), then link the anonymous
+user to an email with `updateUser({ email })` so the wedding carries over.
+
 ## Conventions
 
 - **All database queries live in `src/lib/db/`.** Nothing else imports the

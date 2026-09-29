@@ -26,7 +26,8 @@ export default async function HomePage({
       <main className="mx-auto min-h-screen max-w-md pb-28">
         <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
         <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
-        <SignedIn email={user?.email} />
+        {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
+        {user?.email && <SignedIn email={user.email} />}
         <MenuBar current="/" />
       </main>
     );
@@ -34,17 +35,19 @@ export default async function HomePage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-8">
-      <header className="flex items-center justify-between">
-        <p className="text-sm text-stone">{user?.email}</p>
-        <form action="/auth/sign-out" method="post">
-          <button
-            type="submit"
-            className="text-sm text-stone underline underline-offset-4 hover:text-ink"
-          >
-            Sign out
-          </button>
-        </form>
-      </header>
+      {user?.email && (
+        <header className="flex items-center justify-between">
+          <p className="text-sm text-stone">{user.email}</p>
+          <form action="/auth/sign-out" method="post">
+            <button
+              type="submit"
+              className="text-sm text-stone underline underline-offset-4 hover:text-ink"
+            >
+              Sign out
+            </button>
+          </form>
+        </header>
+      )}
 
       <div className="flex flex-1 flex-col justify-center py-10">
         <NewWedding error={error} detail={detail} />

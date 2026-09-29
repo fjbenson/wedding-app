@@ -69,10 +69,18 @@ Starting point, from the *Clear glass* prototype:
   behind it, and must reach at least 3:1 contrast (aim for 4.5:1). White
   icons on light champagne glass came out around 2:1 — too faint.
 
+### Working default (parked, 29 Sept 2026)
+
+The owner chose not to finalise the home screen yet. Build with this and
+refine later — it is all tokens, so changing it is cheap:
+
+- Glass on the **ring buttons** and a **floating menu bar** only.
+- Champagne tint, cloudiness 20, blur 18px, edge shine 35, shadow 47,
+  no colour boost (the owner's saved "version 2" in the Glass Lab).
+- Icons: auto ink/white, regular weight.
+
 ## Still open
 
-- **Where glass is used, and how much.** Being explored in the Glass Lab
-  (ring only? everything over the photo? menu bar? slide-up panels?), along
-  with clarity, blur, edge strength and tint.
+- **Final glass use.** The working default above stands until revisited.
 - Motion: how the ring and glass move.
 - Dark mode (an "evening" version was prototyped but not chosen).

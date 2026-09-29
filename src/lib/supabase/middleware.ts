@@ -48,12 +48,25 @@ export async function updateSession(request: NextRequest) {
   // The catch is that it lives in this browser only. Needs "Allow anonymous
   // sign-ins" switched on in Supabase; if it's off, this fails and the
   // visitor falls through to the email sign-in page as before.
-  // Skipped when an emailed sign-in link has landed here with its code.
+  // Runs on the sign-in page too, so an old bookmark to it still gets you in.
+  // Skipped on /auth routes and when an emailed link has landed with its code.
   const { pathname, searchParams } = request.nextUrl;
-  if (!user && !isPublic(pathname) && !searchParams.has("code")) {
+  let anonymousError = "";
+  if (!user && !pathname.startsWith("/auth") && !searchParams.has("code")) {
     const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) console.error("anonymous sign-in failed", error.message);
-    else user = data.user;
+    if (error) {
+      console.error("anonymous sign-in failed", error.message);
+      anonymousError = error.message;
+    } else {
+      user = data.user;
+    }
+  }
+
+  // If that failed, say why on the sign-in page instead of failing silently.
+  if (anonymousError && pathname === "/sign-in" && !searchParams.has("why")) {
+    const url = request.nextUrl.clone();
+    url.search = `?why=${encodeURIComponent(anonymousError)}`;
+    return NextResponse.redirect(url);
   }
 
   // If Supabase doesn't recognise the address a sign-in link asked to return
@@ -68,7 +81,7 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublic(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
-    url.search = "";
+    url.search = anonymousError ? `?why=${encodeURIComponent(anonymousError)}` : "";
     return NextResponse.redirect(url);
   }
 

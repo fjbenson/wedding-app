@@ -13,6 +13,15 @@ export async function listWeddings(): Promise<Wedding[]> {
   return data ?? [];
 }
 
+/**
+ * The wedding the app is about right now. One per couple for the MVP, so
+ * it's simply the newest one they can see.
+ */
+export async function getCurrentWedding(): Promise<Wedding | null> {
+  const weddings = await listWeddings();
+  return weddings[0] ?? null;
+}
+
 export async function getWedding(weddingId: string): Promise<Wedding | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

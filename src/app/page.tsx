@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { listWeddings } from "@/lib/db/weddings";
+import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import Cover from "@/components/cover";
 import ThisMonth from "@/components/this-month";
@@ -17,8 +17,7 @@ export default async function HomePage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const weddings = await listWeddings();
-  const wedding = weddings[0] ?? null;
+  const wedding = await getCurrentWedding();
 
   if (wedding) {
     const milestones = await listMilestones(wedding.id);

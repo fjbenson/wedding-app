@@ -25,7 +25,7 @@ export interface Area {
 }
 
 export const AREAS: Area[] = [
-  { id: "guests", label: "Guests", icon: Users, href: null },
+  { id: "guests", label: "Guests", icon: Users, href: "/guests" },
   { id: "timeline", label: "Timeline", icon: CalendarDays, href: null },
   { id: "venue", label: "Venue", icon: MapPin, href: null },
   { id: "flowers", label: "Flowers", icon: Flower2, href: null },

@@ -20,6 +20,21 @@ export async function listContacts(
   return data ?? [];
 }
 
+/** Everyone on the guest list: guests and the bridal party, not suppliers. */
+export async function listGuests(weddingId: string): Promise<Contact[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("wedding_id", weddingId)
+    .in("contact_type", ["guest", "bridal_party"])
+    .order("last_name", { ascending: true, nullsFirst: false })
+    .order("first_name", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getContact(contactId: string): Promise<Contact | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -78,4 +93,19 @@ export async function listHouseholds(weddingId: string): Promise<Household[]> {
 
   if (error) throw error;
   return data ?? [];
+}
+
+export async function createHousehold(input: {
+  weddingId: string;
+  name: string;
+}): Promise<Household> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("households")
+    .insert({ wedding_id: input.weddingId, name: input.name })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }

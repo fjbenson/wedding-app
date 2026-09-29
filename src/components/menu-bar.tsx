@@ -10,7 +10,7 @@ interface Tab {
 const TABS: Tab[] = [
   { label: "Home", icon: Home, href: "/" },
   { label: "Guests", icon: Users, href: "/guests" },
-  { label: "Timeline", icon: CalendarDays, href: null },
+  { label: "Timeline", icon: CalendarDays, href: "/timeline" },
   { label: "RSVPs", icon: Mail, href: null },
 ];
 

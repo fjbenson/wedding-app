@@ -20,6 +20,18 @@ export async function listMilestones(
   return data ?? [];
 }
 
+export async function getMilestone(milestoneId: string): Promise<Milestone | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("milestones")
+    .select("*")
+    .eq("id", milestoneId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function createMilestone(
   input: Omit<Milestone, "id" | "created_at" | "completed_at">,
 ): Promise<Milestone> {
@@ -56,6 +68,11 @@ export async function completeMilestone(milestoneId: string): Promise<Milestone>
     status: "done",
     completed_at: new Date().toISOString(),
   });
+}
+
+/** Puts a done milestone back on the list. */
+export async function reopenMilestone(milestoneId: string): Promise<Milestone> {
+  return updateMilestone(milestoneId, { status: "todo", completed_at: null });
 }
 
 export async function deleteMilestone(milestoneId: string): Promise<void> {

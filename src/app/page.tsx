@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { listWeddings } from "@/lib/db/weddings";
-import Hub from "@/components/hub";
+import { listMilestones } from "@/lib/db/milestones";
+import Cover from "@/components/cover";
+import ThisMonth from "@/components/this-month";
+import MenuBar from "@/components/menu-bar";
 import { createWeddingAction } from "./actions";
 
 export default async function HomePage({
@@ -17,6 +20,19 @@ export default async function HomePage({
   const weddings = await listWeddings();
   const wedding = weddings[0] ?? null;
 
+  if (wedding) {
+    const milestones = await listMilestones(wedding.id);
+
+    return (
+      <main className="mx-auto min-h-screen max-w-md pb-28">
+        <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
+        <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
+        <SignedIn email={user?.email} />
+        <MenuBar current="/" />
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-8">
       <header className="flex items-center justify-between">
@@ -32,13 +48,25 @@ export default async function HomePage({
       </header>
 
       <div className="flex flex-1 flex-col justify-center py-10">
-        {wedding ? (
-          <Hub name={wedding.name} weddingDate={wedding.wedding_date} />
-        ) : (
-          <NewWedding error={error} detail={detail} />
-        )}
+        <NewWedding error={error} detail={detail} />
       </div>
     </main>
+  );
+}
+
+/** Who's signed in, and the way out — quietly, at the foot of the page. */
+function SignedIn({ email }: { email?: string }) {
+  return (
+    <form
+      action="/auth/sign-out"
+      method="post"
+      className="mt-10 px-6 text-center text-xs text-stone"
+    >
+      {email} ·{" "}
+      <button type="submit" className="underline underline-offset-4 hover:text-ink">
+        Sign out
+      </button>
+    </form>
   );
 }
 

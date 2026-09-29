@@ -29,7 +29,7 @@ to date rather than working from it as-is.
 ## Current state
 
 Planning pass is **done**. There is a data model, a database schema and a running
-Next.js scaffold. There are **no real screens yet** — just a placeholder page.
+Next.js scaffold. The **home screen** is built (cover, hub ring, "this month" story, menu bar); the other screens are not.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
 builds from `main` on every push, and branches get their own preview URLs. The
@@ -128,7 +128,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
 3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
-4. Build screens: sign in, dashboard (circle-with-dots hub), contacts, timeline,
+4. Build screens: ~~sign in~~, ~~home screen~~ (done 29 Sep 2026), contacts, timeline,
    RSVP
 5. Replace the hand-written types with `npm run db:types`
 

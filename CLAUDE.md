@@ -41,6 +41,13 @@ Supabase project exists with `0001_init.sql` applied, and Vercel holds
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase now
 calls the anon key the *publishable* key — same thing).
 
+**Shipping changes: no pull requests.** At the owner's request (29 Sep
+2026), changes go straight to `main` with `git push origin HEAD:main`, which
+`.claude/settings.json` allows. Before every push, `npm run typecheck` and
+`npm run build` must pass. Vercel deploys `main` about a minute later, and a
+build that fails there leaves the last good version live. Tell the owner in
+plain words what changed once it's pushed.
+
 This exists so design can be looked at rather than described: push a change, get
 a link the owner can open on their phone.
 

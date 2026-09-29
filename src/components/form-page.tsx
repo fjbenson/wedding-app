@@ -3,11 +3,15 @@ import { ChevronLeft } from "lucide-react";
 
 /** The frame around the add and edit forms: a way back, a title, any error. */
 export default function FormPage({
+  backHref,
+  backLabel,
   title,
   error,
   detail,
   children,
 }: {
+  backHref: string;
+  backLabel: string;
   title: string;
   error?: string;
   detail?: string;
@@ -16,11 +20,11 @@ export default function FormPage({
   return (
     <main className="mx-auto min-h-screen max-w-md px-6 pb-16 pt-6">
       <Link
-        href="/guests"
+        href={backHref}
         className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-stone hover:text-ink"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Guest list
+        {backLabel}
       </Link>
 
       <h1 className="mt-4 text-[30px] leading-tight tracking-[-0.02em] text-ink">{title}</h1>

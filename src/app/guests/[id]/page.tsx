@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { getContact, listHouseholds } from "@/lib/db/contacts";
 import { deleteGuestAction, saveGuestAction } from "../actions";
-import FormPage from "../form-page";
-import GuestForm, { RemoveGuestButton } from "../guest-form";
+import FormPage from "@/components/form-page";
+import { RemoveButton } from "@/components/form-bits";
+import GuestForm from "../guest-form";
 
 export const metadata = { title: "Guest — Wedding App" };
 
@@ -27,14 +28,18 @@ export default async function EditGuestPage({
   const name = [guest.first_name, guest.last_name].filter(Boolean).join(" ");
 
   return (
-    <FormPage title={name} error={error} detail={detail}>
+    <FormPage backHref="/guests" backLabel="Guest list" title={name} error={error} detail={detail}>
       <GuestForm
         action={saveGuestAction.bind(null, guest.id)}
         households={households}
         guest={guest}
       />
       <div className="mt-6 border-t border-linen pt-4">
-        <RemoveGuestButton action={deleteGuestAction.bind(null, guest.id)} name={name} />
+        <RemoveButton
+          action={deleteGuestAction.bind(null, guest.id)}
+          label="Remove from the guest list"
+          question={`Remove ${name} from the guest list?`}
+        />
       </div>
     </FormPage>
   );

@@ -48,3 +48,18 @@ export function isThisMonth(date: string): boolean {
   const now = new Date();
   return year === now.getUTCFullYear() && month === now.getUTCMonth() + 1;
 }
+
+/** Today as "2026-09-29", in UTC to match how dates are stored. */
+export function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** "November 2026" */
+export function formatMonthYear(date: string): string {
+  const [year, month] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}

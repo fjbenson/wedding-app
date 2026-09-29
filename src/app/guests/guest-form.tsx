@@ -1,41 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useFormStatus } from "react-dom";
+import { Field, INPUT, SubmitButton } from "@/components/form-bits";
 import type { Contact, Household } from "@/types/db";
-
-const INPUT =
-  "mt-2 w-full rounded-xl border border-linen bg-white px-4 py-3 text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block text-sm text-ink">
-      {label} {hint && <span className="text-stone">({hint})</span>}
-      {children}
-    </label>
-  );
-}
-
-function SubmitButton({ label }: { label: string }) {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 disabled:opacity-60"
-    >
-      {pending ? "Saving…" : label}
-    </button>
-  );
-}
 
 /** Add or edit one guest. `guest` is missing when adding. */
 export default function GuestForm({
@@ -132,31 +99,6 @@ export default function GuestForm({
       </Field>
 
       <SubmitButton label={guest ? "Save changes" : "Add to the list"} />
-    </form>
-  );
-}
-
-/** Asks before removing, since there's no undo. */
-export function RemoveGuestButton({
-  action,
-  name,
-}: {
-  action: () => void | Promise<void>;
-  name: string;
-}) {
-  return (
-    <form
-      action={action}
-      onSubmit={(event) => {
-        if (!confirm(`Remove ${name} from the guest list?`)) event.preventDefault();
-      }}
-    >
-      <button
-        type="submit"
-        className="w-full py-3 text-sm text-stone underline underline-offset-4 hover:text-ink"
-      >
-        Remove from the guest list
-      </button>
     </form>
   );
 }

@@ -26,7 +26,7 @@ export interface Area {
 
 export const AREAS: Area[] = [
   { id: "guests", label: "Guests", icon: Users, href: "/guests" },
-  { id: "timeline", label: "Timeline", icon: CalendarDays, href: null },
+  { id: "timeline", label: "Timeline", icon: CalendarDays, href: "/timeline" },
   { id: "venue", label: "Venue", icon: MapPin, href: null },
   { id: "flowers", label: "Flowers", icon: Flower2, href: null },
   { id: "cake", label: "Cake", icon: Cake, href: null },
@@ -34,3 +34,9 @@ export const AREAS: Area[] = [
   { id: "music", label: "Music", icon: Music, href: null },
   { id: "attire", label: "Attire", icon: Shirt, href: null },
 ];
+
+/** "venue" → "Venue". Falls back to whatever was stored. */
+export function areaLabel(id: string | null): string | null {
+  if (!id) return null;
+  return AREAS.find((area) => area.id === id)?.label ?? id;
+}

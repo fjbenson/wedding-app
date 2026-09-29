@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AREAS } from "@/lib/areas";
 import { formatDayMonth, isThisMonth } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
@@ -60,9 +61,12 @@ export default function ThisMonth({
           ))}
         </ol>
       ) : (
-        <p className="mt-4 border-t border-linen pt-3 text-sm text-stone">
-          Your to-do list will show here once the timeline is built.
-        </p>
+        <Link
+          href="/timeline/new"
+          className="mt-4 block border-t border-linen pt-3 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
+        >
+          {milestones.length === 0 ? "Add your first to-do" : "Add a to-do"}
+        </Link>
       )}
     </section>
   );

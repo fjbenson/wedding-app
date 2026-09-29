@@ -130,6 +130,21 @@ additive — new tables hanging off `weddings`. None require changing the above.
    RSVP
 5. Replace the hand-written types with `npm run db:types`
 
+### Design work so far (links)
+
+All private to the owner; open with the Artifact tool's `read` action.
+
+- **Design canvas** — every home-screen round, 1 to 10:
+  https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
+- **Glass Lab** — glass settings; the owner's saves are in its `glass`
+  collection: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq
+- **Taste Lab** — this-or-that picks (`results`, `saved` collections):
+  https://claude.ai/artifact/XtPaK5WanEmYt9wDhEspyz
+
+Where it landed is in `docs/DESIGN.md`. The owner asked to stop refining the
+home screen for now; the agreed next step is putting the palette and fonts
+into `tailwind.config.ts`, then building screens.
+
 ### Design decisions still open
 
 Raised with the owner and deliberately deferred to the screen that needs them —

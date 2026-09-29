@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, ChevronRight, Plus } from "lucide-react";
 import MenuBar from "@/components/menu-bar";
+import StarterPlanCard from "@/components/starter-plan-card";
 import { areaLabel } from "@/lib/areas";
 import { formatDayMonth, formatLongDate, formatMonthYear, todayISO } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
@@ -50,7 +51,7 @@ export default function TimelineView({
       </h1>
       <p className="mt-2 text-sm text-stone">
         {milestones.length === 0
-          ? "Add the first thing that needs doing — it'll show on your home screen too."
+          ? "Whatever you add here shows on your home screen too."
           : [
               plural(open.length, "to-do"),
               done.length > 0 && `${done.length} done`,
@@ -60,13 +61,19 @@ export default function TimelineView({
               .join(" · ")}
       </p>
 
-      <Link
-        href="/timeline/new"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Add a to-do
-      </Link>
+      {milestones.length === 0 ? (
+        <div className="mt-8">
+          <StarterPlanCard returnTo="/timeline" hasDate={weddingDate !== null} />
+        </div>
+      ) : (
+        <Link
+          href="/timeline/new"
+          className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90"
+        >
+          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          Add a to-do
+        </Link>
+      )}
 
       <div className="mt-10 space-y-8">
         {groups.map((group, index) => (

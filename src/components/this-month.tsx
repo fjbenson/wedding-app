@@ -1,4 +1,5 @@
 import Link from "next/link";
+import StarterPlanCard from "@/components/starter-plan-card";
 import { AREAS } from "@/lib/areas";
 import { formatDayMonth, isThisMonth } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
@@ -61,12 +62,18 @@ export default function ThisMonth({
           ))}
         </ol>
       ) : (
-        <Link
-          href="/timeline/new"
-          className="mt-4 block border-t border-linen pt-3 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
-        >
-          {milestones.length === 0 ? "Add your first to-do" : "Add a to-do"}
-        </Link>
+        milestones.length === 0 ? (
+          <div className="mt-6">
+            <StarterPlanCard returnTo="/" hasDate={hasDate} />
+          </div>
+        ) : (
+          <Link
+            href="/timeline/new"
+            className="mt-4 block border-t border-linen pt-3 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
+          >
+            Add a to-do
+          </Link>
+        )
       )}
     </section>
   );

@@ -5,12 +5,16 @@ import { redirect } from "next/navigation";
 import {
   completeMilestone,
   createMilestone,
+  createMilestones,
+  listMilestones,
   deleteMilestone,
   reopenMilestone,
   updateMilestone,
 } from "@/lib/db/milestones";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
+import { starterPlan } from "@/lib/starter-plan";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -92,4 +96,42 @@ export async function deleteMilestoneAction(milestoneId: string) {
 
   refresh();
   redirect("/timeline");
+}
+
+/**
+ * Fills an empty timeline with the usual wedding to-dos. Does nothing if
+ * there's already anything on it, so a double tap can't add them twice.
+ */
+export async function addStarterPlanAction(returnTo: "/" | "/timeline") {
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+
+  let detail = "";
+  try {
+    const existing = await listMilestones(wedding.id);
+    if (existing.length === 0) {
+      await createMilestones(
+        starterPlan(wedding.wedding_date, todayISO()).map((item) => ({
+          wedding_id: wedding.id,
+          ...item,
+          description: null,
+          status: "todo" as const,
+          remind_at: null,
+          assigned_to: null,
+        })),
+      );
+    }
+  } catch (error) {
+    console.error("adding starter plan failed", error);
+    detail = describe(error);
+  }
+
+  if (detail) {
+    redirect(
+      `/timeline/new?error=${encodeURIComponent("The starter list didn't save.")}&detail=${encodeURIComponent(detail)}`,
+    );
+  }
+
+  refresh();
+  redirect(returnTo);
 }

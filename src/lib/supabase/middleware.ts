@@ -42,7 +42,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  // If Supabase doesn't recognise the address a sign-in link asked to return
+  // to, it sends people to its "Site URL" instead — the home page, with the
+  // code attached. Pass that code on to the callback rather than losing it.
+  if (!user && pathname === "/" && searchParams.has("code")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
 
   if (!user && !isPublic(pathname)) {
     const url = request.nextUrl.clone();

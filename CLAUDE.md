@@ -42,7 +42,9 @@ a link the owner can open on their phone.
 
 In BLAST terms: **B, L and A are done** (scope locked, stack chosen, ERD and
 schema written and reviewed by the owner). **S is in progress** — the owner has
-picked a "warm and romantic" direction; the design system itself is not built.
+settled on an editorial, ivory-and-champagne look with a floating glass hub
+ring (`docs/DESIGN.md`); how glass is applied is still open, and the design
+system is not built. `tailwind.config.ts` still holds the older rose palette.
 **T is part done** — hosting is live, the screens are not.
 
 ## Architecture (decided, don't relitigate)
@@ -123,10 +125,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
-3. Build the design system from the chosen "warm and romantic" direction
+3. Build the design system from `docs/DESIGN.md` (settle glass use first)
 4. Build screens: sign in, dashboard (circle-with-dots hub), contacts, timeline,
    RSVP
 5. Replace the hand-written types with `npm run db:types`
+
+### Design work so far (links)
+
+All private to the owner; open with the Artifact tool's `read` action.
+
+- **Design canvas** — every home-screen round, 1 to 10:
+  https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
+- **Glass Lab** — glass settings; the owner's saves are in its `glass`
+  collection: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq
+- **Taste Lab** — this-or-that picks (`results`, `saved` collections):
+  https://claude.ai/artifact/XtPaK5WanEmYt9wDhEspyz
+
+Where it landed is in `docs/DESIGN.md`. The owner asked to stop refining the
+home screen for now; the agreed next step is putting the palette and fonts
+into `tailwind.config.ts`, then building screens.
 
 ### Design decisions still open
 

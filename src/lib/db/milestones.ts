@@ -46,6 +46,15 @@ export async function createMilestone(
   return data;
 }
 
+/** Adds several to-dos in one go (the starter list). */
+export async function createMilestones(
+  inputs: Omit<Milestone, "id" | "created_at" | "completed_at">[],
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("milestones").insert(inputs);
+  if (error) throw error;
+}
+
 export async function updateMilestone(
   milestoneId: string,
   patch: Partial<Omit<Milestone, "id" | "wedding_id" | "created_at">>,

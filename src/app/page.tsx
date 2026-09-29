@@ -23,11 +23,14 @@ export default async function HomePage({
     const milestones = await listMilestones(wedding.id);
 
     return (
-      <main className="mx-auto min-h-screen max-w-md pb-28">
+      <main className="min-h-screen pb-28">
+        {/* The cover runs edge to edge; everything under it sits in a column. */}
         <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
-        <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
-        {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
-        {user?.email && <SignedIn email={user.email} />}
+        <div className="mx-auto max-w-md md:max-w-xl">
+          <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
+          {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
+          {user?.email && <SignedIn email={user.email} />}
+        </div>
         <MenuBar current="/" />
       </main>
     );

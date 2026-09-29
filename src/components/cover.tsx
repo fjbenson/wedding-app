@@ -17,24 +17,20 @@ export default function Cover({
   weddingDate: string | null;
 }) {
   return (
-    <section className="relative aspect-[300/390] w-full overflow-hidden">
-      {/* The sample photo */}
+    <section className="relative aspect-[300/390] w-full overflow-hidden md:aspect-auto md:h-[620px]">
+      {/* The sample photo. It fades out into the page through a mask rather
+          than an ivory overlay, and its lower edge is kept light and warm, so
+          the fade doesn't pass through a muddy grey. */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(165deg,#E9C9A0_0%,#C89D72_40%,#8E6E52_75%,#5E4838_100%)]"
+        className="absolute inset-0 bg-[linear-gradient(165deg,#E9C9A0_0%,#C89D72_38%,#A07E5E_62%,#C7A987_84%,#EFE4D2_100%)] [mask-image:linear-gradient(to_bottom,#000_68%,rgb(0_0_0/0.75)_79%,rgb(0_0_0/0.35)_90%,transparent)]"
       >
-        <div className="absolute -left-[10%] top-[8%] aspect-square w-[66%] rounded-full bg-[#F6E6CC] opacity-75 blur-[30px]" />
-        <div className="absolute right-[10%] top-[29%] h-[52%] w-[16%] rounded-t-full bg-[#4E3C2E] opacity-70 blur-[6px]" />
-        <div className="absolute right-[27%] top-[32%] h-[48%] w-[15%] rounded-t-full bg-[#F4EBDD] opacity-80 blur-[6px]" />
+        <div className="absolute -left-[10%] top-[8%] aspect-square w-[66%] rounded-full bg-[#F6E6CC] opacity-75 blur-[30px] md:w-[40%]" />
+        <div className="absolute right-[10%] top-[29%] h-[46%] w-[16%] rounded-t-full bg-[#4E3C2E] opacity-60 blur-[6px] md:w-[9%]" />
+        <div className="absolute right-[27%] top-[32%] h-[44%] w-[15%] rounded-t-full bg-[#F4EBDD] opacity-80 blur-[6px] md:right-[20%] md:w-[8%]" />
       </div>
 
-      {/* Fade into the ivory page */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-[20%] bg-gradient-to-b from-ivory/0 to-ivory"
-      />
-
-      <header className="absolute inset-x-5 top-5 flex items-start justify-between">
+      <header className="absolute inset-x-0 top-0 mx-auto flex max-w-5xl items-start justify-between px-5 pt-5">
         <div>
           <h1 className="font-display text-[26px] italic leading-tight text-white [text-shadow:0_2px_16px_rgb(30_20_10/0.45)]">
             {name}
@@ -60,7 +56,7 @@ export default function Cover({
         </div>
       </header>
 
-      <div className="absolute left-1/2 top-[51%] w-[76%] -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute left-1/2 top-[51%] w-[76%] -translate-x-1/2 -translate-y-1/2 md:top-[47%] md:w-[440px]">
         <Hub weddingDate={weddingDate} />
       </div>
     </section>

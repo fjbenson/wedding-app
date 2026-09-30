@@ -1,7 +1,7 @@
 "use client";
 
 import { Field, INPUT, SubmitButton } from "@/components/form-bits";
-import { SUPPLIER_CATEGORIES } from "@/lib/areas";
+import type { AreaOption } from "@/lib/areas";
 import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
 import type { Supplier } from "@/lib/db/suppliers";
 
@@ -25,9 +25,15 @@ function MoneyInput({ name, value }: { name: string; value: number | null | unde
 export default function SupplierForm({
   action,
   supplier,
+  categories,
+  defaultCategory,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   supplier?: Supplier;
+  /** The wedding's areas plus "Other" (src/lib/areas.ts, supplierCategories). */
+  categories: AreaOption[];
+  /** Adding from an area's page: start with that area picked. */
+  defaultCategory?: string;
 }) {
   const d = supplier?.supplier_details;
   // When the business had no named person, its name was stored as theirs.
@@ -48,10 +54,14 @@ export default function SupplierForm({
       </Field>
 
       <Field label="What they do">
-        <select name="category" defaultValue={d?.category ?? ""} className={INPUT}>
+        <select name="category" defaultValue={d?.category ?? defaultCategory ?? ""} className={INPUT}>
           <option value="">Choose…</option>
-          {SUPPLIER_CATEGORIES.map((c) => (
-            <option key={c.id} value={c.id}>
+          {/* Keep a category that's since been switched off, so saving doesn't drop it. */}
+          {d?.category && !categories.some((c) => c.key === d.category) && (
+            <option value={d.category}>{d.category}</option>
+          )}
+          {categories.map((c) => (
+            <option key={c.key} value={c.key}>
               {c.label}
             </option>
           ))}

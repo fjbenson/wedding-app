@@ -117,6 +117,8 @@ export interface AreaRow {
   enabled: boolean;
   show_on_hub: boolean;
   sort_order: number;
+  /** Free-text key facts shown on the area's page (0005_area_details.sql). */
+  details?: string | null;
   created_at: string;
 }
 

@@ -43,3 +43,51 @@ export async function createAreas(
   );
   if (error) throw error;
 }
+
+export async function getArea(weddingId: string, key: string): Promise<AreaRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("areas")
+    .select("*")
+    .eq("wedding_id", weddingId)
+    .eq("key", key)
+    .maybeSingle();
+
+  if (error) {
+    if (missingTable(error)) return null;
+    throw error;
+  }
+  return data;
+}
+
+/** Changes an area's key facts, name, or whether it's planned / on the hub. */
+export async function updateArea(
+  areaId: string,
+  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub">>,
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("areas").update(fields).eq("id", areaId);
+  if (error) throw error;
+}
+
+/** Adds an area of the couple's own at the end of the ring. */
+export async function addArea(weddingId: string, key: string, label: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: last } = await supabase
+    .from("areas")
+    .select("sort_order")
+    .eq("wedding_id", weddingId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = await supabase.from("areas").insert({
+    wedding_id: weddingId,
+    key,
+    label,
+    enabled: true,
+    show_on_hub: true,
+    sort_order: (last?.sort_order ?? 0) + 1,
+  });
+  if (error) throw error;
+}

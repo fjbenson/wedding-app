@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getContact, listHouseholds } from "@/lib/db/contacts";
 import { getSupplier } from "@/lib/db/suppliers";
+import { listAreas } from "@/lib/db/areas";
+import { areaOptions, supplierCategories } from "@/lib/areas";
 import { deleteGuestAction, saveGuestAction } from "../actions";
 import { deleteSupplierAction, saveSupplierAction } from "../supplier-actions";
 import FormPage from "@/components/form-page";
@@ -34,10 +36,11 @@ export default async function EditPersonPage({
     const supplier = await getSupplier(id);
     if (!supplier) notFound();
     const title = supplier.supplier_details?.company_name ?? name;
+    const categories = supplierCategories(areaOptions(await listAreas(person.wedding_id)));
 
     return (
       <FormPage backHref="/people?tab=suppliers" backLabel="Suppliers" title={title} error={error} detail={detail}>
-        <SupplierForm action={saveSupplierAction.bind(null, supplier.id)} supplier={supplier} />
+        <SupplierForm action={saveSupplierAction.bind(null, supplier.id)} supplier={supplier} categories={categories} />
         <div className="mt-6 border-t border-linen pt-4">
           <RemoveButton
             action={deleteSupplierAction.bind(null, supplier.id)}

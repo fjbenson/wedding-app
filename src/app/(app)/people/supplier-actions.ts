@@ -65,6 +65,7 @@ export async function saveSupplierAction(supplierId: string | null, formData: Fo
   }
 
   revalidatePath("/people");
+  revalidatePath("/area/[key]", "page");
   redirect(LIST);
 }
 
@@ -84,5 +85,6 @@ export async function deleteSupplierAction(supplierId: string) {
   }
 
   revalidatePath("/people");
+  revalidatePath("/area/[key]", "page");
   redirect(LIST);
 }

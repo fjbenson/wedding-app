@@ -218,7 +218,7 @@ function ByArea({ milestones, areas, today }: { milestones: Milestone[]; areas: 
 }
 
 /** One to-do: tick it off, or tap through to edit. `area` is left off where the group already says it. */
-function MilestoneRow({
+export function MilestoneRow({
   milestone: m,
   overdue,
   area,

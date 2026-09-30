@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
-import { SUPPLIER_CATEGORIES, supplierCategoryLabel } from "@/lib/areas";
+import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
@@ -14,7 +14,7 @@ function name(s: Supplier) {
  * where you're up to and what they've quoted. Cancelled ones sink to the end
  * and don't count towards the totals.
  */
-export default function SupplierList({ suppliers }: { suppliers: Supplier[] }) {
+export default function SupplierList({ suppliers, areas }: { suppliers: Supplier[]; areas: AreaOption[] }) {
   const live = suppliers.filter((s) => s.supplier_details?.status !== "cancelled");
   const booked = live.filter((s) => s.supplier_details?.status === "booked").length;
   const quoted = live.reduce((sum, s) => sum + (s.supplier_details?.quoted_cost ?? 0), 0);
@@ -23,7 +23,7 @@ export default function SupplierList({ suppliers }: { suppliers: Supplier[] }) {
   // In the categories' own order, with anything unrecognised after.
   const order = (s: Supplier) => {
     if (s.supplier_details?.status === "cancelled") return 1000;
-    const i = SUPPLIER_CATEGORIES.findIndex((c) => c.id === s.supplier_details?.category);
+    const i = areas.findIndex((a) => a.key === s.supplier_details?.category);
     return i === -1 ? 999 : i;
   };
   const sorted = [...suppliers].sort((a, b) => order(a) - order(b));
@@ -62,7 +62,7 @@ export default function SupplierList({ suppliers }: { suppliers: Supplier[] }) {
                       {name(s)}
                     </span>
                     <span className="mt-0.5 block text-xs text-stone">
-                      {[supplierCategoryLabel(d?.category ?? null), d && supplierStatusLabel(d.status)]
+                      {[areaName(d?.category ?? null, areas), d && supplierStatusLabel(d.status)]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>

@@ -28,10 +28,16 @@ export function areaOptions(rows: { key: string; label: string; enabled: boolean
 }
 
 /**
- * Keys to-dos were tagged with before areas were rows. "Guests" and
- * "Timeline" were tabs, not areas, but old to-dos may still carry them.
+ * Names for keys that aren't areas: "Guests" and "Timeline" are tabs, but
+ * to-dos tagged before areas were rows may carry them; "other" is a
+ * supplier that fits no area.
  */
-const OLDER_KEYS: Record<string, string> = { guests: "Guests", timeline: "Timeline" };
+const OLDER_KEYS: Record<string, string> = { guests: "Guests", timeline: "Timeline", other: "Other" };
+
+/** What a supplier can be filed under: the wedding's areas, plus "Other". */
+export function supplierCategories(areas: AreaOption[]): AreaOption[] {
+  return [...areas, { key: "other", label: "Other" }];
+}
 
 /** The name for an area key, even one the wedding has since switched off. */
 export function areaName(key: string | null, areas: AreaOption[]): string | null {
@@ -74,28 +80,4 @@ export function areaKey(label: string): string {
     .replace(/&/g, " ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-/**
- * What a supplier does. These are the plan's starter areas
- * (docs/information-architecture.md, "Areas are rows"), so when areas become
- * database rows a supplier's category lines up with its area by `id`.
- */
-export const SUPPLIER_CATEGORIES: { id: string; label: string }[] = [
-  { id: "venue", label: "Venue" },
-  { id: "photography", label: "Photography" },
-  { id: "food", label: "Food & drink" },
-  { id: "flowers", label: "Flowers" },
-  { id: "cake", label: "Cake" },
-  { id: "music", label: "Music" },
-  { id: "attire", label: "Attire" },
-  { id: "hair-makeup", label: "Hair & makeup" },
-  { id: "stationery", label: "Stationery" },
-  { id: "transport", label: "Transport" },
-  { id: "other", label: "Other" },
-];
-
-export function supplierCategoryLabel(id: string | null): string | null {
-  if (!id) return null;
-  return SUPPLIER_CATEGORIES.find((c) => c.id === id)?.label ?? id;
 }

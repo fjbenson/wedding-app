@@ -25,6 +25,7 @@ function text(formData: FormData, key: string): string | null {
 function refresh() {
   revalidatePath("/plan");
   revalidatePath("/");
+  revalidatePath("/area/[key]", "page");
 }
 
 /** Adds a to-do (milestoneId null) or saves changes to one. */

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
@@ -78,8 +79,7 @@ export default function Hub({
         <Countdown weddingDate={weddingDate} />
       </div>
 
-      {/* Each area's own page (the plan's screen 5) comes in the next release,
-          so for now the dots show the shape of the wedding but don't open. */}
+      {/* Each dot opens its area's page (screen 5). */}
       {areas.map((area, index) => {
         const Icon = areaIcon(area.key);
         return (
@@ -88,13 +88,14 @@ export default function Hub({
             style={nodePosition(index, total)}
             className="absolute -translate-x-1/2 -translate-y-1/2"
           >
-            <span
-              title={`${area.label} — its page is coming soon`}
-              aria-label={`${area.label}, coming soon`}
-              className="glass flex h-11 w-11 items-center justify-center rounded-full text-white"
+            <Link
+              href={`/area/${encodeURIComponent(area.key)}`}
+              title={area.label}
+              aria-label={area.label}
+              className="glass flex h-11 w-11 items-center justify-center rounded-full text-white transition active:scale-95"
             >
               <Icon className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
-            </span>
+            </Link>
           </div>
         );
       })}
@@ -103,13 +104,14 @@ export default function Hub({
         style={nodePosition(areas.length, total)}
         className="absolute -translate-x-1/2 -translate-y-1/2"
       >
-        <span
-          title="Add an area — coming soon"
-          aria-label="Add an area, coming soon"
-          className="glass flex h-11 w-11 items-center justify-center rounded-full border-dashed text-white"
+        <Link
+          href="/area/new"
+          title="Add an area"
+          aria-label="Add an area"
+          className="glass flex h-11 w-11 items-center justify-center rounded-full border-dashed text-white transition active:scale-95"
         >
           <Plus className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
-        </span>
+        </Link>
       </div>
     </div>
   );

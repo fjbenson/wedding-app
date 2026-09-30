@@ -49,8 +49,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
 - **Hub** (`/`): cover, hub ring, "coming up" story. The ring's dots are the
-  wedding's own **areas** (`areas` table, `0003_areas.sql`); dots don't open
-  anything until area pages (screen 5, "Next").
+  wedding's own **areas** (`areas` table, `0003_areas.sql`). Each dot opens
+  its **area page** (`/area/[key]`, screens 5–6): key facts
+  (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
+  tagged with that area, and "take off the hub" / "not planning this". The
+  ring's + opens `/area/new` (screen 7): add your own, or bring one back.
+  Notes and Inspo blocks wait for Quick capture and Inspo. Suppliers file
+  under the wedding's areas too (plus "Other").
 - **People** (`/people`): the guest list by household — add, edit, remove,
   with a **role on the day** (bridesmaid, usher…; `0004_guest_roles.sql`;
   a role makes them `bridal_party`). "Everyone" is a row per guest that opens
@@ -129,7 +134,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql`, `0003_areas.sql` and `0004_guest_roles.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0005_area_details.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
@@ -205,8 +210,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
 3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
 4. ~~Build first screens: sign in, hub, guest list, timeline, RSVP~~ — done 30 Sep 2026;
    realigned to the five-tab plan the same day
-5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Next per the plan:
-   the "Next" column of docs/information-architecture.md
+5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
+   the plan's "Next" column: ~~area pages (5–7)~~; still to do: bridal party
+   (11), invitations (15), agenda and appointments (16, 17, 21), budget and
+   payments (22–24), quick capture and inbox (35, 36), settings (37)
 6. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)

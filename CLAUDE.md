@@ -190,9 +190,9 @@ its `layout.tsx` draws the sidebar/menu bar once and keeps it while moving
 between screens, and its `loading.tsx` shows a placeholder the instant a
 screen is tapped. The middleware and home page check the session with
 `getClaims()` (checked on Vercel, no trip to Supabase) instead of `getUser()`,
-and `getCurrentWedding()` is cached per request. Still open: Vercel's servers
-should run in the same region as the Supabase project (`regions` in
-`vercel.json`) — ask the owner which region Supabase is in.
+and `getCurrentWedding()` is cached per request. Vercel's servers run in Dublin
+(`dub1`, set in `vercel.json`) to sit next to Supabase, which is in Ireland
+(`eu-west-1`). If either moves, move the other.
 
 ### Design decisions still open
 

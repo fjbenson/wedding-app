@@ -73,3 +73,13 @@ export async function listMembers(weddingId: string): Promise<WeddingMember[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+/** The couple's names and the date, changed from Settings. */
+export async function updateWedding(
+  weddingId: string,
+  fields: Pick<Wedding, "name" | "wedding_date">,
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("weddings").update(fields).eq("id", weddingId);
+  if (error) throw error;
+}

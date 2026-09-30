@@ -102,6 +102,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   sidebar) to be filed under an area, turned into a to-do, or removed;
   filed ones show in the area page's Notes block. Images aren't in yet:
   they need Supabase Storage (a bucket plus storage policies).
+- **Settings** (`/settings`, screen 37; a gear on the hub cover, and the
+  foot of the desktop sidebar): the couple's names and date; every area
+  with the plan's two switches (Planning / On the hub — turning planning
+  off also hides the dot), rename, and up/down order; and who has a login,
+  with a plain warning that the wedding lives in this browser until proper
+  sign-in.
 - **The Day**: in the menus as "Soon".
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
@@ -239,7 +245,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
    the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
    appointments (16, 17, 21)~~; ~~bridal party (11)~~, ~~invitations (15)~~, ~~quick capture and inbox
-   (35, 36)~~ (images still to come); still to do: settings (37). Suggested starter
+   (35, 36)~~ (images still to come), ~~settings (37)~~. **The plan's "Next"
+   column is done** (30 Sep 2026) apart from capture images; next come the
+   "Later" screens (The Day, Inspo, Brainstorm chat) — or the design pass. Suggested starter
    tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`
 

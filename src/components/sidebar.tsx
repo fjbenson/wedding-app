@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Inbox, PenLine } from "lucide-react";
+import { Inbox, PenLine, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { daysUntil } from "@/lib/dates";
@@ -83,6 +83,17 @@ export default function Sidebar({
           {inboxCount > 0 && <span className="text-xs text-champagne-600">{inboxCount}</span>}
         </Link>
       </div>
+
+      <Link
+        href="/settings"
+        aria-current={pathname === "/settings" ? "page" : undefined}
+        className={`mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+          pathname === "/settings" ? "bg-white text-ink" : "text-stone hover:bg-white/60 hover:text-ink"
+        }`}
+      >
+        <Settings className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        Settings
+      </Link>
     </aside>
   );
 }

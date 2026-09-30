@@ -91,3 +91,12 @@ export async function addArea(weddingId: string, key: string, label: string): Pr
   });
   if (error) throw error;
 }
+
+/** Puts the areas in this order — the order of the ring and every list. */
+export async function setAreaOrder(areaIds: string[]): Promise<void> {
+  const supabase = await createClient();
+  for (const [index, id] of areaIds.entries()) {
+    const { error } = await supabase.from("areas").update({ sort_order: index }).eq("id", id);
+    if (error) throw error;
+  }
+}

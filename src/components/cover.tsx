@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Inbox, PenLine } from "lucide-react";
+import { Inbox, PenLine, Settings } from "lucide-react";
 import Hub, { type HubArea } from "@/components/hub";
 
 /**
@@ -45,6 +45,9 @@ export default function Cover({
           </Link>
           <Link href="/inbox" aria-label="Inbox" className="flex h-11 w-11 items-center justify-center">
             <Inbox className="h-[18px] w-[18px] drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]" strokeWidth={1.8} aria-hidden />
+          </Link>
+          <Link href="/settings" aria-label="Settings" className="flex h-11 w-11 items-center justify-center">
+            <Settings className="h-[18px] w-[18px] drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]" strokeWidth={1.8} aria-hidden />
           </Link>
         </div>
       </header>

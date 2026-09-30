@@ -2,19 +2,22 @@
  * The usual wedding to-dos, each dated a set number of days before the day.
  * Offered once, on an empty timeline, so a couple doesn't start from a blank
  * page. Everything added is an ordinary to-do they can change or remove.
+ *
+ * `area` is a starter-area key (src/lib/areas.ts). Guest-list jobs have none:
+ * the guest list is the People tab, not an area.
  */
 const STARTER_PLAN: { title: string; daysBefore: number; area: string | null }[] = [
   { title: "Set the budget", daysBefore: 450, area: null },
   { title: "Book the venue", daysBefore: 420, area: "venue" },
-  { title: "Draw up the guest list", daysBefore: 390, area: "guests" },
+  { title: "Draw up the guest list", daysBefore: 390, area: null },
   { title: "Book the photographer", daysBefore: 360, area: "photography" },
-  { title: "Send save-the-dates", daysBefore: 270, area: "guests" },
+  { title: "Send save-the-dates", daysBefore: 270, area: "stationery" },
   { title: "Choose the outfits", daysBefore: 240, area: "attire" },
   { title: "Book the florist", daysBefore: 240, area: "flowers" },
   { title: "Book the band or DJ", daysBefore: 210, area: "music" },
   { title: "Order the cake", daysBefore: 150, area: "cake" },
-  { title: "Send the invitations", daysBefore: 90, area: "guests" },
-  { title: "Chase the last RSVPs", daysBefore: 42, area: "guests" },
+  { title: "Send the invitations", daysBefore: 90, area: "stationery" },
+  { title: "Chase the last RSVPs", daysBefore: 42, area: null },
   { title: "Give the venue final numbers", daysBefore: 21, area: "venue" },
   { title: "Plan the order of the day", daysBefore: 14, area: null },
   { title: "Final outfit fitting", daysBefore: 14, area: "attire" },

@@ -2,7 +2,6 @@ import {
   Brush,
   Cake,
   Camera,
-  CalendarDays,
   Car,
   Flower2,
   Mail,
@@ -10,39 +9,39 @@ import {
   Music,
   Shirt,
   Sparkles,
-  Users,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
 
-/**
- * The area picker on a to-do (Plan). This was the hub's original hard-coded
- * set of dots; the hub now draws each wedding's own `areas` rows instead.
- * Screen 18 (tasks grouped by area) should move to those rows too, and drop
- * the Guests and Timeline entries, which are tabs rather than areas.
- */
-export interface Area {
-  id: string;
+/** An area as the rest of the app needs it: its stable key and its name. */
+export interface AreaOption {
+  key: string;
   label: string;
-  icon: LucideIcon;
-  href: string | null;
 }
 
-export const AREAS: Area[] = [
-  { id: "guests", label: "Guests", icon: Users, href: "/people" },
-  { id: "timeline", label: "Timeline", icon: CalendarDays, href: "/plan" },
-  { id: "venue", label: "Venue", icon: MapPin, href: null },
-  { id: "flowers", label: "Flowers", icon: Flower2, href: null },
-  { id: "cake", label: "Cake", icon: Cake, href: null },
-  { id: "photography", label: "Photos", icon: Camera, href: null },
-  { id: "music", label: "Music", icon: Music, href: null },
-  { id: "attire", label: "Attire", icon: Shirt, href: null },
-];
+/**
+ * A wedding's areas to offer and group by: its own switched-on `areas` rows,
+ * or the starter set if the database has no areas table yet (listAreas → null).
+ */
+export function areaOptions(rows: { key: string; label: string; enabled: boolean }[] | null): AreaOption[] {
+  return rows ? rows.filter((r) => r.enabled) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
+}
 
-/** "venue" → "Venue". Falls back to whatever was stored. */
-export function areaLabel(id: string | null): string | null {
-  if (!id) return null;
-  return AREAS.find((area) => area.id === id)?.label ?? id;
+/**
+ * Keys to-dos were tagged with before areas were rows. "Guests" and
+ * "Timeline" were tabs, not areas, but old to-dos may still carry them.
+ */
+const OLDER_KEYS: Record<string, string> = { guests: "Guests", timeline: "Timeline" };
+
+/** The name for an area key, even one the wedding has since switched off. */
+export function areaName(key: string | null, areas: AreaOption[]): string | null {
+  if (!key) return null;
+  return (
+    areas.find((a) => a.key === key)?.label ??
+    STARTER_AREAS.find((a) => a.key === key)?.label ??
+    OLDER_KEYS[key] ??
+    key
+  );
 }
 
 /**

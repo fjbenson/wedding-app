@@ -1,17 +1,31 @@
 "use client";
 
 import { Field, INPUT, SubmitButton } from "@/components/form-bits";
-import { AREAS } from "@/lib/areas";
+import { areaName, type AreaOption } from "@/lib/areas";
 import type { Milestone } from "@/types/db";
 
 /** Add or edit one to-do. `milestone` is missing when adding. */
 export default function MilestoneForm({
   action,
   milestone,
+  areas,
+  defaultArea,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   milestone?: Milestone;
+  /** The wedding's own areas (src/lib/areas.ts, areaOptions). */
+  areas: AreaOption[];
+  /** Adding from an area's group in "By area": start with that area picked. */
+  defaultArea?: string;
 }) {
+  // A to-do tagged with an area that's since been switched off (or an older
+  // "Guests" tag) keeps it as an option, so saving doesn't quietly drop it.
+  const current = milestone?.category;
+  const options =
+    current && !areas.some((a) => a.key === current)
+      ? [...areas, { key: current, label: areaName(current, areas) ?? current }]
+      : areas;
+
   return (
     <form action={action} className="space-y-5">
       <Field label="What needs doing?">
@@ -34,10 +48,10 @@ export default function MilestoneForm({
       </Field>
 
       <Field label="Area" hint="optional">
-        <select name="category" defaultValue={milestone?.category ?? ""} className={INPUT}>
+        <select name="category" defaultValue={current ?? defaultArea ?? ""} className={INPUT}>
           <option value="">No particular area</option>
-          {AREAS.map((area) => (
-            <option key={area.id} value={area.id}>
+          {options.map((area) => (
+            <option key={area.key} value={area.key}>
               {area.label}
             </option>
           ))}
@@ -54,7 +68,7 @@ export default function MilestoneForm({
         />
       </Field>
 
-      <SubmitButton label={milestone ? "Save changes" : "Add to the timeline"} />
+      <SubmitButton label={milestone ? "Save changes" : "Add to the plan"} />
     </form>
   );
 }

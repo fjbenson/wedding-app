@@ -67,12 +67,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that
   household picked and comes back after.
-- **Plan** (`/plan`): to-dos by month, tick off, add, edit, remove.
+- **Plan** (`/plan`): to-dos **By date** (by month) or **By area**
+  (`?view=area`, screen 18) — every area of the wedding in its own order,
+  empty ones with an "Add a to-do" that pre-picks the area. Tick off, add,
+  edit, remove. The to-do form offers the wedding's own areas.
 - **Money** and **The Day**: in the menus as "Soon".
 
-Still MVP per the plan and not built: task list grouped by area (18). Areas are rows now, but `milestones.category` and
-`supplier_details.category` still hold an area's `key` as text rather than the
-plan's `area_id`; the to-do form still offers the old hard-coded `AREAS`. Old `/guests`, `/timeline`, `/rsvps` links redirect
+**Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
+but `milestones.category` and `supplier_details.category` still hold an
+area's `key` as text rather than the plan's `area_id`. Older to-dos may carry
+`guests` or `timeline` as their area (from before areas were rows);
+`areaName()` in `src/lib/areas.ts` still names them, and "By area" shows them
+in their own group rather than losing them. Old `/guests`, `/timeline`, `/rsvps` links redirect
 (`next.config.ts`). Shared form pieces live in `src/components/form-bits.tsx`
 and `form-page.tsx`.
 
@@ -199,7 +205,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
 4. ~~Build first screens: sign in, hub, guest list, timeline, RSVP~~ — done 30 Sep 2026;
    realigned to the five-tab plan the same day
-5. Finish the plan's MVP screens (see "Still MVP" above)
+5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Next per the plan:
+   the "Next" column of docs/information-architecture.md
 6. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)

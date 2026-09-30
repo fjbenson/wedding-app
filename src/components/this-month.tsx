@@ -68,7 +68,7 @@ export default function ThisMonth({
           </div>
         ) : (
           <Link
-            href="/timeline/new"
+            href="/plan/new"
             className="mt-4 block border-t border-linen pt-3 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
           >
             Add a to-do

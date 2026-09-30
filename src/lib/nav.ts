@@ -1,18 +1,20 @@
-import { CalendarDays, Home, Mail, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, CircleDot, Clock, PoundSterling, Users, type LucideIcon } from "lucide-react";
 
 /**
- * The app's main screens. The phone's bottom menu bar and the desktop
- * sidebar both draw from this list, so they can't drift apart.
+ * The five tabs from docs/information-architecture.md. The phone's bottom
+ * menu bar and the desktop sidebar both draw from this list, so they can't
+ * drift apart.
  */
 export interface NavItem {
   label: string;
   icon: LucideIcon;
-  href: string | null; // null until that screen exists
+  href: string | null; // null until that tab is built
 }
 
 export const NAV: NavItem[] = [
-  { label: "Home", icon: Home, href: "/" },
-  { label: "Guests", icon: Users, href: "/guests" },
-  { label: "Timeline", icon: CalendarDays, href: "/timeline" },
-  { label: "RSVPs", icon: Mail, href: "/rsvps" },
+  { label: "Hub", icon: CircleDot, href: "/" },
+  { label: "People", icon: Users, href: "/people" },
+  { label: "Plan", icon: CalendarDays, href: "/plan" },
+  { label: "Money", icon: PoundSterling, href: null },
+  { label: "The Day", icon: Clock, href: null },
 ];

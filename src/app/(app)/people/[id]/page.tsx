@@ -28,7 +28,7 @@ export default async function EditGuestPage({
   const name = [guest.first_name, guest.last_name].filter(Boolean).join(" ");
 
   return (
-    <FormPage backHref="/guests" backLabel="Guest list" title={name} error={error} detail={detail}>
+    <FormPage backHref="/people" backLabel="People" title={name} error={error} detail={detail}>
       <GuestForm
         action={saveGuestAction.bind(null, guest.id)}
         households={households}

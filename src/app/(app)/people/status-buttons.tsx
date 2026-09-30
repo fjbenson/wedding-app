@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition } from "react";
 import type { RsvpStatus } from "@/types/db";
-import { setStatusAction } from "./actions";
+import { setStatusAction } from "./rsvp-actions";
 
 const CHOICES: { status: RsvpStatus; label: string; aria: string; on: string }[] = [
   { status: "attending", label: "Yes", aria: "coming", on: "border-ink bg-ink text-ivory" },

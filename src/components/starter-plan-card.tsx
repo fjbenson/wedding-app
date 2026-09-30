@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addStarterPlanAction } from "@/app/(app)/timeline/actions";
+import { addStarterPlanAction } from "@/app/(app)/plan/actions";
 
 /**
  * Shown where the plan would be, before there's anything in it: offers the
@@ -9,7 +9,7 @@ export default function StarterPlanCard({
   returnTo,
   hasDate,
 }: {
-  returnTo: "/" | "/timeline";
+  returnTo: "/" | "/plan";
   hasDate: boolean;
 }) {
   return (
@@ -32,7 +32,7 @@ export default function StarterPlanCard({
         </button>
       </form>
       <Link
-        href="/timeline/new"
+        href="/plan/new"
         className="mt-3 block text-center text-sm text-stone underline underline-offset-4 hover:text-ink"
       >
         Or add your own to-do

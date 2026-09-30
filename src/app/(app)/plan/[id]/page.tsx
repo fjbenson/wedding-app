@@ -26,8 +26,8 @@ export default async function EditMilestonePage({
 
   return (
     <FormPage
-      backHref="/timeline"
-      backLabel="Timeline"
+      backHref="/plan"
+      backLabel="Plan"
       title={milestone.title}
       error={error}
       detail={detail}

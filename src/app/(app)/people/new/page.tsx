@@ -19,7 +19,7 @@ export default async function NewGuestPage({
   const households = await listHouseholds(wedding.id);
 
   return (
-    <FormPage backHref="/guests" backLabel="Guest list" title="Add a guest" error={error} detail={detail}>
+    <FormPage backHref="/people" backLabel="People" title="Add a guest" error={error} detail={detail}>
       <GuestForm action={saveGuestAction.bind(null, null)} households={households} />
     </FormPage>
   );

@@ -44,7 +44,7 @@ export default function TimelineView({
 
   return (
     <main className="page pb-28 lg:pb-16">
-      <p className="label">Timeline</p>
+      <p className="label">Plan</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {milestones.length === 0 ? "Nothing planned yet." : "The plan"}
       </h1>
@@ -62,11 +62,11 @@ export default function TimelineView({
 
       {milestones.length === 0 ? (
         <div className="mt-8">
-          <StarterPlanCard returnTo="/timeline" hasDate={weddingDate !== null} />
+          <StarterPlanCard returnTo="/plan" hasDate={weddingDate !== null} />
         </div>
       ) : (
         <Link
-          href="/timeline/new"
+          href="/plan/new"
           className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90"
         >
           <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
@@ -138,7 +138,7 @@ function MilestoneRow({ milestone: m, overdue }: { milestone: Milestone; overdue
         </button>
       </form>
 
-      <Link href={`/timeline/${m.id}`} className="flex flex-1 items-center gap-3 py-3 hover:bg-cream/60">
+      <Link href={`/plan/${m.id}`} className="flex flex-1 items-center gap-3 py-3 hover:bg-cream/60">
         <span className="flex-1">
           <span className={`block text-[15px] ${done ? "text-stone line-through" : "text-ink"}`}>
             {m.title}

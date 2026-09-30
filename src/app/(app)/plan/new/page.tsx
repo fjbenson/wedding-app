@@ -13,8 +13,8 @@ export default async function NewMilestonePage({
 
   return (
     <FormPage
-      backHref="/timeline"
-      backLabel="Timeline"
+      backHref="/plan"
+      backLabel="Plan"
       title="Add a to-do"
       error={error}
       detail={detail}

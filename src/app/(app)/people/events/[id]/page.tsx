@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { RemoveButton } from "@/components/form-bits";
 import { getEvent } from "@/lib/db/rsvps";
-import { deleteEventAction, saveEventAction } from "../../actions";
+import { deleteEventAction, saveEventAction } from "../../rsvp-actions";
 import EventForm from "../../event-form";
 
 export const metadata = { title: "Event — Wedding App" };
@@ -26,8 +26,8 @@ export default async function EditEventPage({
 
   return (
     <FormPage
-      backHref={`/rsvps?event=${event.id}`}
-      backLabel="RSVPs"
+      backHref={`/people?event=${event.id}`}
+      backLabel="People"
       title={event.name}
       error={error}
       detail={detail}

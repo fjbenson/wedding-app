@@ -26,16 +26,39 @@ hand-maintained and lags behind — as of Sept 2026 it still listed the ERD and 
 hosting choices as open, when both were long settled here. Offer to bring it up
 to date rather than working from it as-is.
 
+## The plan: read this first
+
+**`docs/information-architecture.md`** is the agreed map of the app (20 Sep
+2026): five tabs — **Hub · People · Plan · Money · The Day** — plus the
+not-tab pages (area page, Brainstorm, Inspo, Settings), and **38 screens**
+marked MVP / Next / Later. `docs/design-brief.md` is the same thing written as
+a brief for designers. **Build to these.** Before adding a screen, find it in
+the list; if something doesn't fit, raise it with the owner rather than
+inventing a new tab.
+
+These two files were written on a side branch and only reached `main` on
+30 Sep 2026 — until then build sessions couldn't see them, which is how a
+separate RSVP tab got built against the plan (since folded into People).
+
 ## Current state
 
 Planning pass is **done**. There is a data model, a database schema and a running
-Next.js scaffold. The **home screen** (cover, hub ring, "this month" story, menu bar) and the
-**guest list** (`/guests`: list by household, add, edit, remove) and the
-**timeline** (`/timeline`: to-dos by month, tick off, add, edit, remove) and
-**RSVPs** (`/rsvps`: events as tabs, invite by household or all at once,
-yes/no/? per person, meal and dietary notes) are built — the whole MVP. RSVPs
-are recorded by the couple; guests answering via their own link is "guest
-access", still deliberately not built. Shared form pieces live in `src/components/form-bits.tsx`
+Next.js scaffold. Built so far, against the plan's tabs:
+
+- **Hub** (`/`): cover, hub ring, "coming up" story.
+- **People** (`/people`): the guest list by household — add, edit, remove —
+  with **RSVPs folded in**: "Everyone" or one event at a time (`?event=`),
+  invite by household or all, yes/no/? per person, meal and dietary notes.
+  RSVPs are recorded by the couple; guests answering via their own link is
+  "guest access", still deliberately not built.
+- **Plan** (`/plan`): to-dos by month, tick off, add, edit, remove.
+- **Money** and **The Day**: in the menus as "Soon".
+
+Still MVP per the plan and not built: first-run setup (screen 2), household
+detail (9), suppliers (12, 13), task list grouped by area (18). The orb's
+dots are still the old hard-coded list in `src/lib/areas.ts`, not the plan's
+areas-as-rows. Old `/guests`, `/timeline`, `/rsvps` links redirect
+(`next.config.ts`). Shared form pieces live in `src/components/form-bits.tsx`
 and `form-page.tsx`.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
@@ -153,8 +176,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
 3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
-4. ~~Build screens: sign in, home screen, guest list, timeline, RSVP~~ — done 30 Sep 2026
-5. Replace the hand-written types with `npm run db:types`
+4. ~~Build first screens: sign in, hub, guest list, timeline, RSVP~~ — done 30 Sep 2026;
+   realigned to the five-tab plan the same day
+5. Finish the plan's MVP screens (see "Still MVP" above)
+6. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)
 
@@ -180,7 +205,7 @@ frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
 is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
 **Phone and desktop are designed separately (30 Sep 2026).** Below 1024px:
-floating glass menu bar at the bottom. From 1024px (`lg`): `AppShell` puts a
+floating glass menu bar at the bottom (main tabs only, hidden on forms). From 1024px (`lg`): `AppShell` puts a
 sidebar on the left instead, and the home screen puts the cover as a rounded
 panel with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
 The cover is now a champagne-to-ivory gradient (no sample photo) and the ring's

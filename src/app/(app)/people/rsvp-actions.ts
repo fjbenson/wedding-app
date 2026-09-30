@@ -39,15 +39,15 @@ export async function addStarterEventsAction() {
       { name: "The evening", location: null },
     ]);
   } catch (error) {
-    failed("/rsvps", "That didn't add them.", error);
+    failed("/people", "That didn't add them.", error);
   }
 
-  revalidatePath("/rsvps");
+  revalidatePath("/people");
 }
 
 /** Adds an event (eventId null) or saves changes to one. */
 export async function saveEventAction(eventId: string | null, formData: FormData) {
-  const back = eventId ? `/rsvps/events/${eventId}` : "/rsvps/events/new";
+  const back = eventId ? `/people/events/${eventId}` : "/people/events/new";
 
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
@@ -64,19 +64,19 @@ export async function saveEventAction(eventId: string | null, formData: FormData
     failed(back, "That didn't save.", error);
   }
 
-  revalidatePath("/rsvps");
-  redirect(savedId ? `/rsvps?event=${savedId}` : "/rsvps");
+  revalidatePath("/people");
+  redirect(savedId ? `/people?event=${savedId}` : "/people");
 }
 
 export async function deleteEventAction(eventId: string) {
   try {
     await deleteEvent(eventId);
   } catch (error) {
-    failed(`/rsvps/events/${eventId}`, "That didn't remove it.", error);
+    failed(`/people/events/${eventId}`, "That didn't remove it.", error);
   }
 
-  revalidatePath("/rsvps");
-  redirect("/rsvps");
+  revalidatePath("/people");
+  redirect("/people");
 }
 
 /** Invites the given guests (a household, or everyone not yet asked). */
@@ -89,10 +89,10 @@ export async function inviteAction(eventId: string, guestIds: string[]) {
     const guests = (await listGuests(wedding.id)).filter((g) => wanted.has(g.id));
     await inviteGuestsToEvent(wedding.id, eventId, guests);
   } catch (error) {
-    failed("/rsvps", "That didn't invite them.", error);
+    failed("/people", "That didn't invite them.", error);
   }
 
-  revalidatePath("/rsvps");
+  revalidatePath("/people");
 }
 
 /** The quick yes / no / not yet tap beside a name. */
@@ -104,14 +104,14 @@ export async function setStatusAction(rsvpId: string, status: RsvpStatus) {
     // The button flips back to what's really saved when the page refreshes.
     console.error("saving answer failed", error);
   }
-  revalidatePath("/rsvps");
+  revalidatePath("/people");
 }
 
 /** The full answer: yes/no plus meal and dietary needs. */
 export async function saveRsvpAction(rsvpId: string, formData: FormData) {
   const status = String(formData.get("status")) as RsvpStatus;
   const rsvp = await getRsvp(rsvpId);
-  if (!rsvp) redirect("/rsvps");
+  if (!rsvp) redirect("/people");
 
   try {
     await updateRsvp(rsvpId, {
@@ -120,20 +120,20 @@ export async function saveRsvpAction(rsvpId: string, formData: FormData) {
       dietary_notes: text(formData, "dietary_notes"),
     });
   } catch (error) {
-    failed(`/rsvps/${rsvpId}`, "That didn't save.", error);
+    failed(`/people/rsvp/${rsvpId}`, "That didn't save.", error);
   }
 
-  revalidatePath("/rsvps");
-  redirect(`/rsvps?event=${rsvp.event_id}`);
+  revalidatePath("/people");
+  redirect(`/people?event=${rsvp.event_id}`);
 }
 
 export async function uninviteAction(rsvpId: string, eventId: string) {
   try {
     await deleteRsvp(rsvpId);
   } catch (error) {
-    failed(`/rsvps/${rsvpId}`, "That didn't take them off.", error);
+    failed(`/people/rsvp/${rsvpId}`, "That didn't take them off.", error);
   }
 
-  revalidatePath("/rsvps");
-  redirect(`/rsvps?event=${eventId}`);
+  revalidatePath("/people");
+  redirect(`/people?event=${eventId}`);
 }

@@ -23,13 +23,13 @@ function text(formData: FormData, key: string): string | null {
 
 /** Everywhere a milestone shows up. */
 function refresh() {
-  revalidatePath("/timeline");
+  revalidatePath("/plan");
   revalidatePath("/");
 }
 
 /** Adds a to-do (milestoneId null) or saves changes to one. */
 export async function saveMilestoneAction(milestoneId: string | null, formData: FormData) {
-  const back = milestoneId ? `/timeline/${milestoneId}` : "/timeline/new";
+  const back = milestoneId ? `/plan/${milestoneId}` : "/plan/new";
 
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
@@ -69,7 +69,7 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
   }
 
   refresh();
-  redirect("/timeline");
+  redirect("/plan");
 }
 
 /** The tick box: done ↔ not done. Stays on the page. */
@@ -90,19 +90,19 @@ export async function deleteMilestoneAction(milestoneId: string) {
 
   if (detail) {
     redirect(
-      `/timeline/${milestoneId}?error=${encodeURIComponent("That didn't remove it.")}&detail=${encodeURIComponent(detail)}`,
+      `/plan/${milestoneId}?error=${encodeURIComponent("That didn't remove it.")}&detail=${encodeURIComponent(detail)}`,
     );
   }
 
   refresh();
-  redirect("/timeline");
+  redirect("/plan");
 }
 
 /**
  * Fills an empty timeline with the usual wedding to-dos. Does nothing if
  * there's already anything on it, so a double tap can't add them twice.
  */
-export async function addStarterPlanAction(returnTo: "/" | "/timeline") {
+export async function addStarterPlanAction(returnTo: "/" | "/plan") {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
@@ -128,7 +128,7 @@ export async function addStarterPlanAction(returnTo: "/" | "/timeline") {
 
   if (detail) {
     redirect(
-      `/timeline/new?error=${encodeURIComponent("The starter list didn't save.")}&detail=${encodeURIComponent(detail)}`,
+      `/plan/new?error=${encodeURIComponent("The starter list didn't save.")}&detail=${encodeURIComponent(detail)}`,
     );
   }
 

@@ -2,11 +2,15 @@ import { redirect } from "next/navigation";
 import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
-import RsvpView from "./rsvp-view";
+import PeopleView from "./people-view";
 
-export const metadata = { title: "RSVPs — Wedding App" };
+export const metadata = { title: "People — Wedding App" };
 
-export default async function RsvpsPage({
+/**
+ * The guest list, with RSVPs folded in (docs/information-architecture.md,
+ * screen 8): "Everyone" by default, or one event at a time via ?event=.
+ */
+export default async function PeoplePage({
   searchParams,
 }: {
   searchParams: Promise<{ event?: string; error?: string; detail?: string }>;
@@ -15,22 +19,20 @@ export default async function RsvpsPage({
   if (!wedding) redirect("/");
 
   const { event: eventId, error, detail } = await searchParams;
-  const [events, guests, households, rsvps] = await Promise.all([
-    listEvents(wedding.id),
+  const [guests, households, events, rsvps] = await Promise.all([
     listGuests(wedding.id),
     listHouseholds(wedding.id),
+    listEvents(wedding.id),
     listRsvps(wedding.id),
   ]);
 
-  const event = events.find((e) => e.id === eventId) ?? events[0] ?? null;
-
   return (
-    <RsvpView
-      events={events}
-      event={event}
+    <PeopleView
       guests={guests}
       households={households}
-      rsvps={event ? rsvps.filter((r) => r.event_id === event.id) : []}
+      events={events}
+      event={events.find((e) => e.id === eventId) ?? null}
+      rsvps={rsvps}
       error={error}
       detail={detail}
     />

@@ -3,8 +3,8 @@ import FormPage from "@/components/form-page";
 import { RemoveButton } from "@/components/form-bits";
 import { getContact } from "@/lib/db/contacts";
 import { getEvent, getRsvp } from "@/lib/db/rsvps";
-import { saveRsvpAction, uninviteAction } from "../actions";
-import RsvpForm from "../rsvp-form";
+import { saveRsvpAction, uninviteAction } from "../../rsvp-actions";
+import RsvpForm from "../../rsvp-form";
 
 export const metadata = { title: "RSVP — Wedding App" };
 
@@ -30,8 +30,8 @@ export default async function RsvpPage({
 
   return (
     <FormPage
-      backHref={`/rsvps?event=${event.id}`}
-      backLabel={`RSVPs · ${event.name}`}
+      backHref={`/people?event=${event.id}`}
+      backLabel={`People · ${event.name}`}
       title={name}
       error={error}
       detail={detail}

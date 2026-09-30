@@ -18,7 +18,7 @@ function text(formData: FormData, key: string): string | null {
  * with a name — a new household is created first so the guest can join it.
  */
 export async function saveGuestAction(guestId: string | null, formData: FormData) {
-  const back = guestId ? `/guests/${guestId}` : "/guests/new";
+  const back = guestId ? `/people/${guestId}` : "/people/new";
 
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
@@ -62,8 +62,8 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
     );
   }
 
-  revalidatePath("/guests");
-  redirect("/guests");
+  revalidatePath("/people");
+  redirect("/people");
 }
 
 export async function deleteGuestAction(guestId: string) {
@@ -77,10 +77,10 @@ export async function deleteGuestAction(guestId: string) {
 
   if (detail) {
     redirect(
-      `/guests/${guestId}?error=${encodeURIComponent("That didn't remove them.")}&detail=${encodeURIComponent(detail)}`,
+      `/people/${guestId}?error=${encodeURIComponent("That didn't remove them.")}&detail=${encodeURIComponent(detail)}`,
     );
   }
 
-  revalidatePath("/guests");
-  redirect("/guests");
+  revalidatePath("/people");
+  redirect("/people");
 }

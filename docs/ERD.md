@@ -198,6 +198,25 @@ the guest's RSVP link.
 
 ---
 
+### Areas (added 30 Sep 2026, `0003_areas.sql`)
+
+**`areas`** — the parts of a wedding: venue, flowers, cake, music… and anything
+a couple adds ("Honeymoon"). Each wedding keeps its own list, chosen at
+first-run setup; they're the dots on the hub.
+
+| Column | Type | Notes |
+|---|---|---|
+| `wedding_id` | uuid FK → weddings | |
+| `key` | text | Stable name, unique per wedding — `venue`, `hair-makeup`, `honeymoon` |
+| `label` | text | What's shown — "Hair & makeup" |
+| `enabled` | bool | Planning this at all. Unticked starter areas are kept, switched off |
+| `show_on_hub` | bool | Gets a dot. Separate so a filing-only area doesn't clutter the orb |
+| `sort_order` | int | |
+
+To-dos and suppliers point at an area by its `key` in their `category` column
+for now. docs/information-architecture.md has them moving to an `area_id`
+foreign key later.
+
 ## How security works
 
 Every table carries a `wedding_id`, and Postgres enforces a rule on each one:

@@ -1,21 +1,25 @@
 import {
+  Brush,
   Cake,
   Camera,
   CalendarDays,
+  Car,
   Flower2,
+  Mail,
   MapPin,
   Music,
   Shirt,
+  Sparkles,
   Users,
+  UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
 
 /**
- * The dots around the hub — one per area of the wedding.
- *
- * `href` is null until that area has a screen. A dot with no screen still
- * shows (it just doesn't open anything), so the shape of the app is visible
- * from day one.
+ * The area picker on a to-do (Plan). This was the hub's original hard-coded
+ * set of dots; the hub now draws each wedding's own `areas` rows instead.
+ * Screen 18 (tasks grouped by area) should move to those rows too, and drop
+ * the Guests and Timeline entries, which are tabs rather than areas.
  */
 export interface Area {
   id: string;
@@ -39,6 +43,38 @@ export const AREAS: Area[] = [
 export function areaLabel(id: string | null): string | null {
   if (!id) return null;
   return AREAS.find((area) => area.id === id)?.label ?? id;
+}
+
+/**
+ * The starter areas offered at first-run setup (docs/information-architecture.md:
+ * "A starter set ships … and couples add or delete"). Once chosen they're rows
+ * in the `areas` table; this list only supplies the defaults and each key's
+ * icon. An area a couple adds themselves gets a plain sparkle.
+ */
+export const STARTER_AREAS: { key: string; label: string; icon: LucideIcon }[] = [
+  { key: "venue", label: "Venue", icon: MapPin },
+  { key: "photography", label: "Photos", icon: Camera },
+  { key: "food", label: "Food & drink", icon: UtensilsCrossed },
+  { key: "flowers", label: "Flowers", icon: Flower2 },
+  { key: "cake", label: "Cake", icon: Cake },
+  { key: "music", label: "Music", icon: Music },
+  { key: "attire", label: "Attire", icon: Shirt },
+  { key: "hair-makeup", label: "Hair & makeup", icon: Brush },
+  { key: "stationery", label: "Stationery", icon: Mail },
+  { key: "transport", label: "Transport", icon: Car },
+];
+
+export function areaIcon(key: string): LucideIcon {
+  return STARTER_AREAS.find((a) => a.key === key)?.icon ?? Sparkles;
+}
+
+/** "Fireworks!" → "fireworks", "Hair & makeup" → "hair-makeup". */
+export function areaKey(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 /**

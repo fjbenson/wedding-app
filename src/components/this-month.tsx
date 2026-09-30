@@ -1,6 +1,5 @@
 import Link from "next/link";
 import StarterPlanCard from "@/components/starter-plan-card";
-import { AREAS } from "@/lib/areas";
 import { formatDayMonth, isThisMonth } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
 
@@ -14,9 +13,11 @@ const LIST_LENGTH = 3;
 export default function ThisMonth({
   milestones,
   hasDate,
+  areaCount,
 }: {
   milestones: Milestone[];
   hasDate: boolean;
+  areaCount: number;
 }) {
   const open = milestones.filter((m) => m.status === "todo" || m.status === "in_progress");
   const lastDone = milestones
@@ -39,7 +40,7 @@ export default function ThisMonth({
       <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
         <p className="label">{label}</p>
         <p className="text-xs font-medium uppercase tracking-label text-stone">
-          {AREAS.length} areas
+          {areaCount} areas
         </p>
       </div>
 

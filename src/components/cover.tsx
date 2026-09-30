@@ -1,5 +1,5 @@
 import { Bell, Camera } from "lucide-react";
-import Hub from "@/components/hub";
+import Hub, { type HubArea } from "@/components/hub";
 
 /**
  * The top of the home screen, like a magazine cover: a champagne-to-ivory
@@ -11,9 +11,11 @@ import Hub from "@/components/hub";
 export default function Cover({
   name,
   weddingDate,
+  areas,
 }: {
   name: string;
   weddingDate: string | null;
+  areas: HubArea[];
 }) {
   return (
     <section className="relative aspect-[300/390] w-full overflow-hidden md:aspect-auto md:h-[620px] lg:h-full lg:min-h-[560px] lg:rounded-[32px]">
@@ -53,7 +55,7 @@ export default function Cover({
       </header>
 
       <div className="absolute left-1/2 top-[51%] w-[min(76%,340px)] -translate-x-1/2 -translate-y-1/2 md:top-[47%] md:w-[440px] lg:top-1/2 lg:w-[min(70%,460px)]">
-        <Hub weddingDate={weddingDate} />
+        <Hub weddingDate={weddingDate} areas={areas} />
       </div>
     </section>
   );

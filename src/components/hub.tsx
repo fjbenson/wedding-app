@@ -1,6 +1,10 @@
-import Link from "next/link";
 import { Plus } from "lucide-react";
-import { AREAS } from "@/lib/areas";
+import { areaIcon } from "@/lib/areas";
+
+export interface HubArea {
+  key: string;
+  label: string;
+}
 import { daysUntil, formatDotDate } from "@/lib/dates";
 
 /** How far the nodes sit from the middle, as a share of the box's width. */
@@ -54,8 +58,14 @@ function Countdown({ weddingDate }: { weddingDate: string | null }) {
  * No disc behind it — the ring floats straight on the cover. Its line has a
  * light edge and a dark edge so one always shows.
  */
-export default function Hub({ weddingDate }: { weddingDate: string | null }) {
-  const total = AREAS.length + 1; // + the "add an area" node
+export default function Hub({
+  weddingDate,
+  areas,
+}: {
+  weddingDate: string | null;
+  areas: HubArea[];
+}) {
+  const total = areas.length + 1; // + the "add an area" node
 
   return (
     <div className="relative aspect-square w-full">
@@ -68,39 +78,29 @@ export default function Hub({ weddingDate }: { weddingDate: string | null }) {
         <Countdown weddingDate={weddingDate} />
       </div>
 
-      {AREAS.map((area, index) => {
-        const Icon = area.icon;
-        const node = (
-          <span
-            className={`glass flex h-11 w-11 items-center justify-center rounded-full text-white transition ${
-              area.href ? "active:scale-95" : ""
-            }`}
-          >
-            <Icon className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
-          </span>
-        );
-
+      {/* Each area's own page (the plan's screen 5) comes in the next release,
+          so for now the dots show the shape of the wedding but don't open. */}
+      {areas.map((area, index) => {
+        const Icon = areaIcon(area.key);
         return (
           <div
-            key={area.id}
+            key={area.key}
             style={nodePosition(index, total)}
             className="absolute -translate-x-1/2 -translate-y-1/2"
           >
-            {area.href ? (
-              <Link href={area.href} aria-label={area.label}>
-                {node}
-              </Link>
-            ) : (
-              <span title={`${area.label} — coming soon`} aria-label={`${area.label}, coming soon`}>
-                {node}
-              </span>
-            )}
+            <span
+              title={`${area.label} — its page is coming soon`}
+              aria-label={`${area.label}, coming soon`}
+              className="glass flex h-11 w-11 items-center justify-center rounded-full text-white"
+            >
+              <Icon className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
+            </span>
           </div>
         );
       })}
 
       <div
-        style={nodePosition(AREAS.length, total)}
+        style={nodePosition(areas.length, total)}
         className="absolute -translate-x-1/2 -translate-y-1/2"
       >
         <span

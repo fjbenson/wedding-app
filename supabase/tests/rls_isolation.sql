@@ -5,6 +5,7 @@
 -- (see docs/ERD.md — "How security works").
 --
 --   psql -f supabase/migrations/0001_init.sql
+--   psql -f supabase/migrations/0003_areas.sql   (optional; tested if present)
 --   psql -f supabase/tests/rls_isolation.sql
 --
 -- Expected: every assertion below passes silently. Any raised exception is a
@@ -40,6 +41,17 @@ insert into wedding_members (wedding_id, user_id, role) values
 insert into contacts (wedding_id, first_name, last_name) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'Alice', 'GuestOfA'),
   ('bbbbbbbb-0000-0000-0000-000000000002', 'Bob',   'GuestOfB');
+
+-- Areas (0003_areas.sql), if that migration has been applied.
+do $$
+begin
+  if to_regclass('public.areas') is not null then
+    insert into areas (wedding_id, key, label) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'venue', 'Venue'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'venue', 'Venue');
+  end if;
+end;
+$$;
 
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
@@ -77,6 +89,34 @@ begin
   delete from contacts where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002';
   if found then
     raise exception 'LEAK: couple A deleted wedding B''s contacts';
+  end if;
+
+  if to_regclass('public.areas') is not null then
+    execute 'select count(*) from areas' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % areas, expected 1', visible_contacts;
+    end if;
+
+    begin
+      execute $q$insert into areas (wedding_id, key, label)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'fireworks', 'Fireworks')$q$;
+      raise exception 'LEAK: couple A added an area to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    execute $q$update areas set label = 'Hacked'
+             where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A updated wedding B''s areas';
+    end if;
+
+    execute $q$delete from areas where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s areas';
+    end if;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

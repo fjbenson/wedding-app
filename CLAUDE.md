@@ -45,7 +45,12 @@ separate RSVP tab got built against the plan (since folded into People).
 Planning pass is **done**. There is a data model, a database schema and a running
 Next.js scaffold. Built so far, against the plan's tabs:
 
-- **Hub** (`/`): cover, hub ring, "coming up" story.
+- **Setup** (`/setup`, screen 2): the couple's names and the date, then which
+  areas apply. The home page sends anyone without a wedding, or without
+  areas, here.
+- **Hub** (`/`): cover, hub ring, "coming up" story. The ring's dots are the
+  wedding's own **areas** (`areas` table, `0003_areas.sql`); dots don't open
+  anything until area pages (screen 5, "Next").
 - **People** (`/people`): the guest list by household — add, edit, remove —
   with **RSVPs folded in**: "Everyone" or one event at a time (`?event=`),
   invite by household or all, yes/no/? per person, meal and dietary notes.
@@ -58,10 +63,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Plan** (`/plan`): to-dos by month, tick off, add, edit, remove.
 - **Money** and **The Day**: in the menus as "Soon".
 
-Still MVP per the plan and not built: first-run setup (screen 2), household
-detail (9), task list grouped by area (18). The orb's
-dots are still the old hard-coded list in `src/lib/areas.ts`, not the plan's
-areas-as-rows. Old `/guests`, `/timeline`, `/rsvps` links redirect
+Still MVP per the plan and not built: household detail (9), task list
+grouped by area (18). Areas are rows now, but `milestones.category` and
+`supplier_details.category` still hold an area's `key` as text rather than the
+plan's `area_id`; the to-do form still offers the old hard-coded `AREAS`. Old `/guests`, `/timeline`, `/rsvps` links redirect
 (`next.config.ts`). Shared form pieces live in `src/components/form-bits.tsx`
 and `form-page.tsx`.
 
@@ -112,7 +117,10 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql`.
+plus `0002_create_wedding.sql` and `0003_areas.sql`. **New migrations are run
+by hand** in the Supabase SQL editor — the owner has to paste them in. Until
+0003 is run, `listAreas()` returns `null` and the app falls back to the
+starter areas rather than breaking.
 
 Decisions worth preserving:
 
@@ -163,9 +171,11 @@ npm run build         # next build
 ```
 
 `supabase/tests/rls_isolation.sql` proves one couple can't read or write
-another's data. Run it against a scratch Postgres with the migration applied
-(stub `auth.users` and `auth.uid()` first — Supabase provides those). **Re-run it
-whenever RLS policies change.**
+another's data. Run it against a scratch Postgres with the migrations applied
+(stub `auth.users` — with `raw_user_meta_data jsonb` — and `auth.uid()` first,
+plus `pgcrypto`; Supabase provides those). Postgres 16 is installed in the
+cloud container; `initdb` must run as the `postgres` user, in a folder it owns
+(e.g. `/var/lib/postgresql`). **Re-run it whenever RLS policies change.**
 
 ## Scope
 

@@ -106,6 +106,18 @@ export interface Rsvp {
   created_at: string;
 }
 
+/** An area of the wedding — a dot on the hub (0003_areas.sql). */
+export interface AreaRow {
+  id: string;
+  wedding_id: string;
+  key: string;
+  label: string;
+  enabled: boolean;
+  show_on_hub: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Milestone {
   id: string;
   wedding_id: string;

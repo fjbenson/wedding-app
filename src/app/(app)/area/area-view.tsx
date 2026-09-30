@@ -5,6 +5,8 @@ import { areaIcon } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { todayISO } from "@/lib/dates";
 import type { Money } from "@/lib/budget";
+import type { InspoWithPicture } from "@/lib/db/inspo";
+import { InspoTile } from "../inspo/inspo-view";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
 import NoteText from "@/components/note-text";
@@ -23,7 +25,7 @@ function supplierName(s: Supplier) {
  * the same template for every area, including ones a couple invents. It
  * gathers what's already tagged with the area elsewhere — to-dos from Plan,
  * suppliers from People — plus a plain key-facts block and the cost so far.
- * Notes are quick captures filed here; saved inspiration joins with Inspo.
+ * Notes are quick captures filed here; saved ideas are its Inspo folder.
  */
 export default function AreaView({
   area,
@@ -31,6 +33,7 @@ export default function AreaView({
   suppliers,
   money,
   notes,
+  inspo,
   error,
   detail,
 }: {
@@ -41,6 +44,8 @@ export default function AreaView({
   money: Money;
   /** Captures filed under this area (screens 35–36). */
   notes: Note[];
+  /** The latest ideas saved to this area's Inspo folder. */
+  inspo: InspoWithPicture[];
   error?: string;
   detail?: string;
 }) {
@@ -221,6 +226,36 @@ export default function AreaView({
           </ul>
         ) : (
           <p className="py-3 text-sm text-stone">Ideas and links you capture and file here show up here.</p>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <div className={section}>
+          <h2 className="text-xl text-ink">Saved ideas</h2>
+          <Link
+            href={`/inspo/new?folder=${encodeURIComponent(area.key)}&from=${encodeURIComponent(`/area/${area.key}`)}`}
+            className={addLink}
+          >
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Save an idea
+          </Link>
+        </div>
+        {inspo.length > 0 ? (
+          <>
+            <div className="mt-4 columns-2 gap-3 sm:columns-3">
+              {inspo.map((item) => (
+                <InspoTile key={item.id} item={item} />
+              ))}
+            </div>
+            <Link
+              href={`/inspo?folder=${encodeURIComponent(area.key)}`}
+              className="text-sm text-stone underline underline-offset-4 hover:text-ink"
+            >
+              See all in Inspo
+            </Link>
+          </>
+        ) : (
+          <p className="py-3 text-sm text-stone">Pictures and links you save to {area.label} show up here.</p>
         )}
       </section>
 

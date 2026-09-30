@@ -224,3 +224,16 @@ export interface TransportPassenger {
   contact_id: string;
   wedding_id: string;
 }
+
+/** A saved idea — an uploaded picture and/or a pasted link (0010_inspo.sql). Unsorted while `area_key` is null. */
+export interface InspoItem {
+  id: string;
+  wedding_id: string;
+  area_key: string | null;
+  image_path: string | null;
+  image_url: string | null;
+  url: string | null;
+  title: string | null;
+  note: string | null;
+  created_at: string;
+}

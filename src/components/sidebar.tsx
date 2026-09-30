@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Inbox, PenLine, Settings } from "lucide-react";
+import { Images, Inbox, PenLine, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { daysUntil } from "@/lib/dates";
@@ -81,6 +81,16 @@ export default function Sidebar({
           <Inbox className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
           <span className="flex-1">Inbox</span>
           {inboxCount > 0 && <span className="text-xs text-champagne-600">{inboxCount}</span>}
+        </Link>
+        <Link
+          href="/inspo"
+          aria-current={pathname.startsWith("/inspo") ? "page" : undefined}
+          className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+            pathname.startsWith("/inspo") ? "bg-white text-ink" : "text-stone hover:bg-white/60 hover:text-ink"
+          }`}
+        >
+          <Images className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+          Inspo
         </Link>
       </div>
 

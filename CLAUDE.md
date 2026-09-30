@@ -108,6 +108,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   off also hides the dot), rename, and up/down order; and who has a login,
   with a plain warning that the wedding lives in this browser until proper
   sign-in.
+- **Inspo** (`/inspo`, screens 29–33; `0010_inspo.sql`): the picture grid,
+  folders = areas (`?folder=<key>` / `?folder=unsorted`), save a photo or a
+  link (`/inspo/new`), one idea large (`/inspo/[id]`). Photos upload
+  **straight from the phone** to the private `inspo` storage bucket
+  (`src/lib/db/inspo-upload.ts`, the one browser-side query — shrunk to
+  2000px first) under `<wedding id>/…`; storage policies mirror the table's.
+  Shown via hour-long signed links. Pasted links get the page's own preview
+  picture and title (`src/lib/link-preview.ts`: public web addresses only,
+  4s, 600 KB). Area pages show their folder; the inbox shows unsorted
+  pictures; reached from the Hub card, the sidebar and the capture page.
 - **The Day** (`/day`, screens 25, 27, 28; `0009_the_day.sql`): **Run
   sheet** (hour by hour, with a Print button — menus hide when printing),
   **Seating** (`?tab=seating`: tables with seat counts, sit guests from an
@@ -174,7 +184,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0009_the_day.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0010_inspo.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
@@ -257,7 +267,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
    the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
    appointments (16, 17, 21)~~; ~~bridal party (11)~~, ~~invitations (15)~~, ~~quick capture and inbox
-   (35, 36)~~ (images still to come), ~~settings (37)~~. **The plan's "Next"
+   (35, 36)~~ ~~settings (37)~~, ~~Inspo (29–33)~~ (pictures go through
+   Inspo, which the inbox shows). **The plan's "Next"
    column is done** (30 Sep 2026) apart from capture images; next come the
    "Later" screens (The Day, Inspo, Brainstorm chat) — or the design pass. Suggested starter
    tasks (19) exist as the starter list.

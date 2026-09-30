@@ -4,7 +4,9 @@ import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatDayMonth } from "@/lib/dates";
+import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Note } from "@/types/db";
+import { InspoTile } from "../inspo/inspo-view";
 import { deleteNoteAction, fileNoteAction, noteToTodoAction } from "../capture/actions";
 
 export const metadata = { title: "Inbox — Wedding App" };
@@ -48,12 +50,15 @@ function InboxItem({ note, areas }: { note: Note; areas: AreaOption[] }) {
 /** The capture inbox (screen 36): everything not yet filed, then what was filed lately. */
 export default function InboxView({
   notes,
+  pictures,
   areas,
   error,
   detail,
 }: {
   /** null until 0008_notes.sql has been run. */
   notes: Note[] | null;
+  /** Unsorted Inspo — the plan's inbox holds "notes and unsorted images together". */
+  pictures: InspoWithPicture[];
   areas: AreaOption[];
   error?: string;
   detail?: string;
@@ -69,7 +74,7 @@ export default function InboxView({
       </Link>
       <p className="label mt-4">Inbox</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
-        {unfiled.length === 0 ? "All sorted." : `${unfiled.length} to sort`}
+        {unfiled.length + pictures.length === 0 ? "All sorted." : `${unfiled.length + pictures.length} to sort`}
       </h1>
       <p className="mt-2 text-sm text-stone">
         Ideas and links you&apos;ve captured. File each under an area, or turn it into a to-do.
@@ -102,6 +107,22 @@ export default function InboxView({
             <InboxItem key={n.id} note={n} areas={areas} />
           ))}
         </ul>
+      )}
+
+      {pictures.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
+            <h2 className="text-xl text-ink">Unsorted pictures</h2>
+            <Link href="/inspo?folder=unsorted" className="text-sm text-stone underline underline-offset-4 hover:text-ink">
+              Sort them in Inspo
+            </Link>
+          </div>
+          <div className="mt-4 columns-3 gap-3 sm:columns-4">
+            {pictures.slice(0, 8).map((item) => (
+              <InspoTile key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
       )}
 
       {filed.length > 0 && (

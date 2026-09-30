@@ -58,9 +58,14 @@ export default async function CapturePage({
         <SubmitButton label="Save" />
       </form>
 
-      <Link href="/inbox" className="mt-6 block text-center text-sm text-stone underline underline-offset-4 hover:text-ink">
-        See the inbox
-      </Link>
+      <div className="mt-6 flex justify-center gap-6 text-sm">
+        <Link href={`/inspo/new?from=${encodeURIComponent(back)}`} className="text-stone underline underline-offset-4 hover:text-ink">
+          Save a picture instead
+        </Link>
+        <Link href="/inbox" className="text-stone underline underline-offset-4 hover:text-ink">
+          See the inbox
+        </Link>
+      </div>
     </FormPage>
   );
 }

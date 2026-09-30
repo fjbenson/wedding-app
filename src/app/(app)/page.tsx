@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ChevronRight, Images } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -41,6 +43,18 @@ export default async function HomePage() {
           hasDate={wedding.wedding_date !== null}
           areaCount={onHub.length}
         />
+        {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
+        <Link
+          href="/inspo"
+          className="mx-6 mt-8 flex items-center gap-3 rounded-2xl border border-linen bg-white px-5 py-4 hover:border-champagne-400 lg:mx-0"
+        >
+          <Images className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.5} aria-hidden />
+          <span className="flex-1">
+            <span className="block text-[15px] text-ink">Inspo</span>
+            <span className="block text-sm text-stone">Dresses, flowers, ideas you&apos;ve saved</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
+        </Link>
         {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
         {email && <SignedIn email={email} />}
       </div>

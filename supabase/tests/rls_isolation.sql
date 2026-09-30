@@ -7,6 +7,8 @@
 --   psql -f supabase/migrations/0001_init.sql
 --   psql -f supabase/migrations/0003_areas.sql   (and later ones; each table is
 --                                                  tested if present)
+--   (for 0010_inspo.sql, stub the storage schema too: storage.buckets,
+--    storage.objects with RLS on, and storage.foldername())
 --   psql -f supabase/tests/rls_isolation.sql
 --
 -- Expected: every assertion below passes silently. Any raised exception is a
@@ -46,6 +48,14 @@ insert into contacts (wedding_id, first_name, last_name) values
 -- Areas (0003_areas.sql), if that migration has been applied.
 do $$
 begin
+  if to_regclass('public.inspo_items') is not null then
+    insert into inspo_items (wedding_id, url) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'https://example.com/a'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'https://example.com/b');
+    insert into storage.objects (bucket_id, name) values
+      ('inspo', 'aaaaaaaa-0000-0000-0000-000000000001/dress.jpg'),
+      ('inspo', 'bbbbbbbb-0000-0000-0000-000000000002/dress.jpg');
+  end if;
   if to_regclass('public.run_sheet_items') is not null then
     insert into run_sheet_items (wedding_id, at_time, title) values
       ('aaaaaaaa-0000-0000-0000-000000000001', '14:00', 'Ceremony'),
@@ -289,6 +299,33 @@ begin
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A deleted wedding B''s transport';
     end if;
+  end if;
+
+  if to_regclass('public.inspo_items') is not null then
+    execute 'select count(*) from inspo_items' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % inspo items, expected 1', visible_contacts;
+    end if;
+    -- The pictures in storage follow the same rules, by the folder they're in.
+    execute $q$select count(*) from storage.objects where bucket_id = 'inspo'$q$ into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % inspo files, expected 1', visible_contacts;
+    end if;
+    begin
+      execute $q$insert into storage.objects (bucket_id, name)
+               values ('inspo', 'bbbbbbbb-0000-0000-0000-000000000002/sneaky.jpg')$q$;
+      raise exception 'LEAK: couple A uploaded into wedding B''s folder';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    execute $q$delete from storage.objects where name like 'bbbbbbbb%'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s pictures';
+    end if;
+    -- And they can use their own folder.
+    execute $q$insert into storage.objects (bucket_id, name)
+             values ('inspo', 'aaaaaaaa-0000-0000-0000-000000000001/veil.jpg')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

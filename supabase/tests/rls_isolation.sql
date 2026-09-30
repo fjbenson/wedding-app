@@ -46,6 +46,11 @@ insert into contacts (wedding_id, first_name, last_name) values
 -- Areas (0003_areas.sql), if that migration has been applied.
 do $$
 begin
+  if to_regclass('public.appointments') is not null then
+    insert into appointments (wedding_id, title, on_date) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'Dress fitting', '2027-01-10'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'Cake tasting', '2027-01-11');
+  end if;
   if to_regclass('public.payments') is not null then
     insert into payments (wedding_id, description, amount) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Rings', 900),
@@ -150,6 +155,34 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A deleted wedding B''s payments';
+    end if;
+  end if;
+
+  if to_regclass('public.appointments') is not null then
+    execute 'select count(*) from appointments' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % appointments, expected 1', visible_contacts;
+    end if;
+
+    begin
+      execute $q$insert into appointments (wedding_id, title, on_date)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky', '2027-01-01')$q$;
+      raise exception 'LEAK: couple A added an appointment to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    execute $q$update appointments set title = 'Hacked'
+             where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A updated wedding B''s appointments';
+    end if;
+
+    execute $q$delete from appointments where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s appointments';
     end if;
   end if;
 

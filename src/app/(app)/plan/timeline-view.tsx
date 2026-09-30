@@ -1,55 +1,53 @@
 import Link from "next/link";
-import { Check, ChevronRight, Plus } from "lucide-react";
+import { CalendarClock, Plus } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
 import ViewTabs from "@/components/view-tabs";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { formatDayMonth, formatLongDate, formatMonthYear, todayISO } from "@/lib/dates";
-import type { Milestone } from "@/types/db";
-import { toggleMilestoneAction } from "./actions";
+import { todayISO } from "@/lib/dates";
+import type { Appointment, Milestone, Payment } from "@/types/db";
+import Agenda, { type AgendaFilter } from "./agenda";
+import { MilestoneRow, isOpen } from "./milestone-row";
 
 function plural(count: number, one: string, many = `${one}s`) {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";
 
 /**
- * The Plan tab: the wedding's to-dos, two ways (docs/information-architecture.md).
+ * The Plan tab (docs/information-architecture.md): two views of the run-up.
  *
- * - By date: grouped by month like a contents page. Undated ones come after
- *   the dated; done ones collect at the bottom.
- * - By area (screen 18): grouped under each of the wedding's areas, for
- *   working through one part of the wedding at a time.
+ * - Agenda (screens 16, 17): every dated thing on one timeline — to-dos,
+ *   appointments, payments due — with the wedding day as the final entry,
+ *   filterable to one kind. Lives in agenda.tsx.
+ * - By area (screen 18): to-dos grouped under each of the wedding's areas.
  */
 export default function TimelineView({
   milestones,
+  appointments,
+  payments,
+  suppliers,
   weddingDate,
   areas,
   view,
+  show,
 }: {
   milestones: Milestone[];
+  /** null until 0007_appointments.sql has been run. */
+  appointments: Appointment[] | null;
+  payments: Payment[];
+  suppliers: { id: string; name: string }[];
   weddingDate: string | null;
   areas: AreaOption[];
-  view: "date" | "area";
+  view: "agenda" | "area";
+  show: AgendaFilter;
 }) {
   const today = todayISO();
   const open = milestones.filter(isOpen);
-  const done = milestones
-    .filter((m) => !isOpen(m))
-    .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""));
+  const done = milestones.length - open.length;
   const overdue = open.filter((m) => m.due_date && m.due_date < today).length;
-
-  // listMilestones already sorts by date with undated last.
-  const groups: { key: string; title: string; items: Milestone[] }[] = [];
-  for (const m of open) {
-    const key = m.due_date ? m.due_date.slice(0, 7) : "undated";
-    let group = groups.find((g) => g.key === key);
-    if (!group) {
-      group = { key, title: m.due_date ? formatMonthYear(m.due_date) : "Whenever", items: [] };
-      groups.push(group);
-    }
-    group.items.push(m);
-  }
+  const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
+  const due = payments.filter((p) => !p.paid_on).length;
+  const nothing = milestones.length === 0 && upcoming === 0 && due === 0;
 
   return (
     <main className="page pb-28 lg:pb-16">
@@ -57,19 +55,21 @@ export default function TimelineView({
       <ViewTabs
         label="Show the plan"
         tabs={[
-          { label: "By date", href: "/plan", active: view === "date" },
+          { label: "Agenda", href: "/plan", active: view === "agenda" },
           { label: "By area", href: "/plan?view=area", active: view === "area" },
         ]}
       />
       <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
-        {milestones.length === 0 ? "Nothing planned yet." : "The plan"}
+        {nothing ? "Nothing planned yet." : "The plan"}
       </h1>
       <p className="mt-2 text-sm text-stone">
-        {milestones.length === 0
+        {nothing
           ? "Whatever you add here shows on your home screen too."
           : [
               plural(open.length, "to-do"),
-              done.length > 0 && `${done.length} done`,
+              done > 0 && `${done} done`,
+              upcoming > 0 && plural(upcoming, "appointment"),
+              due > 0 && plural(due, "payment") + " due",
               overdue > 0 && `${overdue} overdue`,
             ]
               .filter(Boolean)
@@ -81,62 +81,37 @@ export default function TimelineView({
           <StarterPlanCard returnTo="/plan" hasDate={weddingDate !== null} />
         </div>
       ) : (
-        <Link
-          href="/plan/new"
-          className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
-        >
-          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Add a to-do
-        </Link>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <Link
+            href="/plan/new"
+            className="flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 sm:px-6"
+          >
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Add a to-do
+          </Link>
+          <Link
+            href="/plan/appointments/new"
+            className="flex items-center justify-center gap-2 rounded-xl border border-champagne-400 px-4 py-3 text-ink transition hover:bg-champagne-100 sm:px-6"
+          >
+            <CalendarClock className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Add an appointment
+          </Link>
+        </div>
       )}
 
       {view === "area" ? (
         <ByArea milestones={milestones} areas={areas} today={today} />
       ) : (
-      <div className="mt-10 space-y-8">
-        {groups.map((group, index) => (
-          <section key={group.key}>
-            <div className="flex items-baseline gap-3 border-b border-champagne-400 pb-2">
-              <span className="font-display text-sm text-champagne-600">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h2 className="flex-1 text-xl text-ink">{group.title}</h2>
-            </div>
-            <ul>
-              {group.items.map((m) => (
-                <MilestoneRow
-                  key={m.id}
-                  milestone={m}
-                  overdue={!!m.due_date && m.due_date < today}
-                  area={areaName(m.category, areas)}
-                />
-              ))}
-            </ul>
-          </section>
-        ))}
-
-        {weddingDate && open.length > 0 && (
-          <p className="text-center font-display text-lg italic text-champagne-600">
-            {formatLongDate(weddingDate)} — the wedding
-          </p>
-        )}
-
-        {done.length > 0 && (
-          <section>
-            <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
-              <h2 className="text-xl text-ink">Done</h2>
-              <span className="text-xs uppercase tracking-[0.14em] text-stone">
-                {done.length}
-              </span>
-            </div>
-            <ul>
-              {done.map((m) => (
-                <MilestoneRow key={m.id} milestone={m} overdue={false} area={areaName(m.category, areas)} />
-              ))}
-            </ul>
-          </section>
-        )}
-      </div>
+        <Agenda
+          milestones={milestones}
+          appointments={appointments}
+          payments={payments}
+          suppliers={suppliers}
+          areas={areas}
+          weddingDate={weddingDate}
+          show={show}
+          today={today}
+        />
       )}
     </main>
   );
@@ -214,52 +189,5 @@ function ByArea({ milestones, areas, today }: { milestones: Milestone[]; areas: 
         </section>
       )}
     </div>
-  );
-}
-
-/** One to-do: tick it off, or tap through to edit. `area` is left off where the group already says it. */
-export function MilestoneRow({
-  milestone: m,
-  overdue,
-  area,
-}: {
-  milestone: Milestone;
-  overdue: boolean;
-  area?: string | null;
-}) {
-  const done = !isOpen(m);
-  const details = [m.due_date && formatDayMonth(m.due_date), area].filter(Boolean);
-
-  return (
-    <li className="flex items-center gap-3 border-b border-linen last:border-b-0">
-      <form action={toggleMilestoneAction.bind(null, m.id, !done)}>
-        <button
-          type="submit"
-          aria-label={done ? `Mark "${m.title}" as not done` : `Mark "${m.title}" as done`}
-          className={`flex h-6 w-6 items-center justify-center rounded-full border transition ${
-            done
-              ? "border-ink bg-ink text-ivory"
-              : "border-champagne-400 bg-white hover:bg-champagne-100"
-          }`}
-        >
-          {done && <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden />}
-        </button>
-      </form>
-
-      <Link href={`/plan/${m.id}`} className="flex flex-1 items-center gap-3 py-3 hover:bg-cream/60">
-        <span className="flex-1">
-          <span className={`block text-[15px] ${done ? "text-stone line-through" : "text-ink"}`}>
-            {m.title}
-          </span>
-          {(details.length > 0 || overdue) && (
-            <span className="mt-0.5 block text-xs text-stone">
-              {overdue && <span className="font-medium text-champagne-600">Overdue · </span>}
-              {details.join(" · ")}
-            </span>
-          )}
-        </span>
-        <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
-      </Link>
-    </li>
   );
 }

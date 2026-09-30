@@ -8,7 +8,7 @@ import type { Money } from "@/lib/budget";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { AreaRow, Milestone } from "@/types/db";
-import { MilestoneRow } from "../plan/timeline-view";
+import { MilestoneRow } from "../plan/milestone-row";
 import { saveAreaDetailsAction, setAreaAction } from "./actions";
 
 const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";

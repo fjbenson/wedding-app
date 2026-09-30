@@ -2,8 +2,8 @@ import { areaOptions } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
 import { listSuppliers } from "@/lib/db/suppliers";
 
-/** What the payment form offers: the wedding's suppliers and areas. */
-export async function paymentOptions(weddingId: string) {
+/** What the payment and appointment forms offer: the wedding's suppliers and areas. */
+export async function formOptions(weddingId: string) {
   const [areaRows, suppliers] = await Promise.all([listAreas(weddingId), listSuppliers(weddingId)]);
   return {
     areas: areaOptions(areaRows),

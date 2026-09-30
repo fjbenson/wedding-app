@@ -63,3 +63,22 @@ export function formatMonthYear(date: string): string {
     timeZone: "UTC",
   });
 }
+
+/** "14:30:00" → "2:30pm", "09:00" → "9am". */
+export function formatTime(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  const suffix = h >= 12 ? "pm" : "am";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return m ? `${hour}:${String(m).padStart(2, "0")}${suffix}` : `${hour}${suffix}`;
+}
+
+/** "Sat 3 Oct" */
+export function formatWeekdayDayMonth(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+}

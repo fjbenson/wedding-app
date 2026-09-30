@@ -153,3 +153,18 @@ export interface Payment {
   notes: string | null;
   created_at: string;
 }
+
+/** A fitting, a tasting, a venue visit (0007_appointments.sql). */
+export interface Appointment {
+  id: string;
+  wedding_id: string;
+  title: string;
+  on_date: string;
+  /** "14:30:00", or null for a whole-day thing. Local time, no time zone. */
+  at_time: string | null;
+  location: string | null;
+  contact_id: string | null;
+  area_key: string | null;
+  notes: string | null;
+  created_at: string;
+}

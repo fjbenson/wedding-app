@@ -72,7 +72,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that
   household picked and comes back after.
-- **Plan** (`/plan`): to-dos **By date** (by month) or **By area**
+- **Plan** (`/plan`): the **Agenda** (screens 16–17, `agenda.tsx`) — to-dos,
+  **appointments** (`0007_appointments.sql`, screen 21, `/plan/appointments/…`)
+  and payments due on one month-by-month timeline, the wedding day as the
+  final entry, filters `?show=todos|appointments|payments`, and a "Done and
+  been" section — or **By area**
   (`?view=area`, screen 18) — every area of the wedding in its own order,
   empty ones with an "Add a to-do" that pre-picks the area. Tick off, add,
   edit, remove. The to-do form offers the wedding's own areas.
@@ -141,7 +145,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0006_money.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0007_appointments.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
@@ -218,9 +222,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
 4. ~~Build first screens: sign in, hub, guest list, timeline, RSVP~~ — done 30 Sep 2026;
    realigned to the five-tab plan the same day
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
-   the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~; still to do:
-   bridal party (11), invitations (15), agenda and appointments (16, 17, 21),
-   quick capture and inbox (35, 36), settings (37)
+   the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
+   appointments (16, 17, 21)~~; still to do: bridal party (11), invitations
+   (15), quick capture and inbox (35, 36), settings (37). Suggested starter
+   tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)

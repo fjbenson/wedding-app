@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Invitation, Rsvp, RsvpStatus, WeddingEvent } from "@/types/db";
+import type { Contact, Invitation, Rsvp, RsvpStatus, WeddingEvent } from "@/types/db";
 
 export async function listEvents(weddingId: string): Promise<WeddingEvent[]> {
   const supabase = await createClient();
@@ -7,10 +7,49 @@ export async function listEvents(weddingId: string): Promise<WeddingEvent[]> {
     .from("events")
     .select("*")
     .eq("wedding_id", weddingId)
-    .order("starts_at", { ascending: true, nullsFirst: false });
+    .order("starts_at", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getEvent(eventId: string): Promise<WeddingEvent | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+type EventFields = Pick<WeddingEvent, "name" | "location">;
+
+/** Adds one or more events — "The day", "The evening". */
+export async function createEvents(
+  weddingId: string,
+  events: EventFields[],
+): Promise<WeddingEvent[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .insert(events.map((event) => ({ wedding_id: weddingId, ...event })))
+    .select();
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateEvent(eventId: string, fields: EventFields): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("events").update(fields).eq("id", eventId);
+  if (error) throw error;
+}
+
+/** Removes an event and every RSVP for it. */
+export async function deleteEvent(eventId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("events").delete().eq("id", eventId);
+  if (error) throw error;
 }
 
 /** RSVPs for a wedding, optionally narrowed to one event. */
@@ -26,6 +65,85 @@ export async function listRsvps(
   const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getRsvp(rsvpId: string): Promise<Rsvp | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("rsvps").select("*").eq("id", rsvpId).maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Changes an answer and/or its details, leaving anything not passed alone —
+ * so a quick yes/no tap doesn't wipe a meal choice. `responded_at` follows
+ * the answer: set when there is one, cleared when it goes back to pending.
+ */
+export async function updateRsvp(
+  rsvpId: string,
+  fields: Partial<Pick<Rsvp, "status" | "meal_choice" | "dietary_notes">>,
+): Promise<void> {
+  const supabase = await createClient();
+  const update: Partial<Rsvp> = { ...fields };
+  if (fields.status) {
+    update.responded_at = fields.status === "pending" ? null : new Date().toISOString();
+  }
+
+  const { error } = await supabase.from("rsvps").update(update).eq("id", rsvpId);
+  if (error) throw error;
+}
+
+/** Takes someone off an event's list. */
+export async function deleteRsvp(rsvpId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("rsvps").delete().eq("id", rsvpId);
+  if (error) throw error;
+}
+
+/**
+ * Invites guests to an event: a pending RSVP each, tied to their household's
+ * invitation (made if it doesn't exist yet). Guests not in a household get
+ * an RSVP with no invitation. Anyone already invited is left alone.
+ */
+export async function inviteGuestsToEvent(
+  weddingId: string,
+  eventId: string,
+  guests: Pick<Contact, "id" | "household_id">[],
+): Promise<void> {
+  if (guests.length === 0) return;
+  const supabase = await createClient();
+
+  const householdIds = [...new Set(guests.map((g) => g.household_id).filter((id): id is string => !!id))];
+  const invitationFor = new Map<string, string>();
+
+  if (householdIds.length > 0) {
+    const { data: invitations, error } = await supabase
+      .from("invitations")
+      .upsert(
+        householdIds.map((household_id) => ({ wedding_id: weddingId, household_id })),
+        { onConflict: "wedding_id,household_id" },
+      )
+      .select("id, household_id");
+
+    if (error) throw error;
+    for (const invitation of invitations ?? []) {
+      invitationFor.set(invitation.household_id, invitation.id);
+    }
+  }
+
+  const { error } = await supabase.from("rsvps").upsert(
+    guests.map((guest) => ({
+      wedding_id: weddingId,
+      invitation_id: guest.household_id ? (invitationFor.get(guest.household_id) ?? null) : null,
+      contact_id: guest.id,
+      event_id: eventId,
+      status: "pending" as const,
+    })),
+    { onConflict: "contact_id,event_id", ignoreDuplicates: true },
+  );
+
+  if (error) throw error;
 }
 
 export async function setRsvpStatus(

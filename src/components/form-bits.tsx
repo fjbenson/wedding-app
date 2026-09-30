@@ -63,3 +63,29 @@ export function RemoveButton({
     </form>
   );
 }
+
+/** A smaller button for doing something in place, like inviting a household. */
+export function InlineSubmit({
+  label,
+  pendingLabel,
+  primary = false,
+}: {
+  label: string;
+  pendingLabel: string;
+  primary?: boolean;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={
+        primary
+          ? "w-full rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 disabled:opacity-60"
+          : "rounded-full border border-champagne-400 px-3 py-1.5 text-sm text-ink transition hover:bg-champagne-100 disabled:opacity-60"
+      }
+    >
+      {pending ? pendingLabel : label}
+    </button>
+  );
+}

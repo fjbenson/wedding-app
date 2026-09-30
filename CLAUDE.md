@@ -31,8 +31,11 @@ to date rather than working from it as-is.
 Planning pass is **done**. There is a data model, a database schema and a running
 Next.js scaffold. The **home screen** (cover, hub ring, "this month" story, menu bar) and the
 **guest list** (`/guests`: list by household, add, edit, remove) and the
-**timeline** (`/timeline`: to-dos by month, tick off, add, edit, remove) are
-built; RSVP is not. Shared form pieces live in `src/components/form-bits.tsx`
+**timeline** (`/timeline`: to-dos by month, tick off, add, edit, remove) and
+**RSVPs** (`/rsvps`: events as tabs, invite by household or all at once,
+yes/no/? per person, meal and dietary notes) are built — the whole MVP. RSVPs
+are recorded by the couple; guests answering via their own link is "guest
+access", still deliberately not built. Shared form pieces live in `src/components/form-bits.tsx`
 and `form-page.tsx`.
 
 **It is deployed.** Live at https://wedding-app-tau-dusky.vercel.app — Vercel
@@ -150,8 +153,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 1. ~~Owner reviews `docs/ERD.md`~~ — done 20 Sep 2026, model confirmed
 2. ~~Create the Supabase project, run the migration, connect Vercel~~ — done
 3. ~~Put the design tokens from `docs/DESIGN.md` into Tailwind~~ — done 29 Sep 2026
-4. Build screens: ~~sign in~~, ~~home screen~~, ~~guest list~~, ~~timeline~~ (29 Sep 2026),
-   RSVP
+4. ~~Build screens: sign in, home screen, guest list, timeline, RSVP~~ — done 30 Sep 2026
 5. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)

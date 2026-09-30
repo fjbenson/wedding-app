@@ -63,11 +63,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
   categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
   up when areas become rows. `/people/[id]` opens a guest or a supplier.
+  **Household detail** (`/people/household/[id]`, screen 9): address, a
+  dietary summary, and each person's role, answers and meal; household names
+  in the list link there. "Add someone" opens the guest form with that
+  household picked and comes back after.
 - **Plan** (`/plan`): to-dos by month, tick off, add, edit, remove.
 - **Money** and **The Day**: in the menus as "Soon".
 
-Still MVP per the plan and not built: household detail (9), task list
-grouped by area (18). Areas are rows now, but `milestones.category` and
+Still MVP per the plan and not built: task list grouped by area (18). Areas are rows now, but `milestones.category` and
 `supplier_details.category` still hold an area's `key` as text rather than the
 plan's `area_id`; the to-do form still offers the old hard-coded `AREAS`. Old `/guests`, `/timeline`, `/rsvps` links redirect
 (`next.config.ts`). Shared form pieces live in `src/components/form-bits.tsx`

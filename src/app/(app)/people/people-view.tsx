@@ -3,7 +3,7 @@ import { ChevronRight, Plus } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import { addStarterEventsAction, inviteAction } from "./rsvp-actions";
-import { GuestCards, GuestTable, type GuestGroup } from "./guest-table";
+import { GuestCards, GuestTable, HouseholdName, type GuestGroup } from "./guest-table";
 import StatusButtons from "./status-buttons";
 
 function plural(count: number, one: string, many = `${one}s`) {
@@ -122,7 +122,9 @@ export default function PeopleView({
                   <span className="font-display text-sm text-champagne-600">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h2 className="min-w-0 flex-1 text-xl text-ink">{group.name}</h2>
+                  <h2 className="min-w-0 flex-1 text-xl text-ink">
+                    <HouseholdName group={group} className="text-ink" />
+                  </h2>
                   {toInvite.length > 0 && (
                     <form action={inviteAction.bind(null, event.id, toInvite.map((g) => g.id))}>
                       <InlineSubmit label="Invite" pendingLabel="Inviting…" />

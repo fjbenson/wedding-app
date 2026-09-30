@@ -76,7 +76,9 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
   }
 
   revalidatePath("/people");
-  redirect("/people");
+  // Only ever back to a household page — never anywhere a form field says.
+  const returnTo = text(formData, "return_to");
+  redirect(returnTo && /^\/people\/household\/[0-9a-f-]{36}$/i.test(returnTo) ? returnTo : "/people");
 }
 
 export async function deleteGuestAction(guestId: string) {

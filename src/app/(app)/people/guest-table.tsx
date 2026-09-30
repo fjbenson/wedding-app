@@ -14,6 +14,16 @@ export interface GuestGroup {
   guests: Contact[];
 }
 
+/** A household's name, linking to its page — except the "not in a household" group. */
+export function HouseholdName({ group, className }: { group: GuestGroup; className: string }) {
+  if (group.id === "none") return <span className={className}>{group.name}</span>;
+  return (
+    <Link href={`/people/household/${group.id}`} className={`${className} hover:underline hover:decoration-champagne-400 hover:underline-offset-4`}>
+      {group.name}
+    </Link>
+  );
+}
+
 function fullName(guest: Contact) {
   return [guest.first_name, guest.last_name].filter(Boolean).join(" ");
 }
@@ -37,7 +47,7 @@ const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeo
 };
 
 /** An answer as a small pill. `short` drops the word, for tight phone rows. */
-function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: string; short?: boolean }) {
+export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: string; short?: boolean }) {
   if (!rsvp) {
     return <span className="text-xs text-stone/60">{short ? `${event} —` : "Not invited"}</span>;
   }
@@ -54,7 +64,7 @@ function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: string; s
   );
 }
 
-function RoleLabel({ guest }: { guest: Contact }) {
+export function RoleLabel({ guest }: { guest: Contact }) {
   const bits = [guest.role_on_the_day, guest.is_child && "Child"].filter(Boolean);
   if (bits.length === 0) return null;
   return (
@@ -80,7 +90,9 @@ export function GuestCards({
         <section key={group.id}>
           <div className="flex items-center gap-3 border-b border-champagne-400 pb-2">
             <span className="font-display text-sm text-champagne-600">{String(index + 1).padStart(2, "0")}</span>
-            <h2 className="min-w-0 flex-1 text-xl text-ink">{group.name}</h2>
+            <h2 className="min-w-0 flex-1 text-xl text-ink">
+              <HouseholdName group={group} className="text-ink" />
+            </h2>
             <span className="text-xs uppercase tracking-[0.14em] text-stone">
               {group.guests.length} {group.guests.length === 1 ? "guest" : "guests"}
             </span>
@@ -186,7 +198,7 @@ export function GuestTable({
           <tr>
             <th colSpan={events.length + 5} scope="colgroup" className="pb-2 pt-8 text-left font-normal">
               <span className="font-display text-sm text-champagne-600">{String(index + 1).padStart(2, "0")}</span>{" "}
-              <span className="font-display text-xl text-ink">{group.name}</span>
+              <HouseholdName group={group} className="font-display text-xl text-ink" />
             </th>
           </tr>
           {group.guests.map((guest) => {

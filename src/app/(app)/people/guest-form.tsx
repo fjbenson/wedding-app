@@ -10,10 +10,13 @@ export default function GuestForm({
   action,
   households,
   guest,
+  defaultHousehold,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   households: Household[];
   guest?: Contact;
+  /** Adding from a household's page: start in that household, and go back there. */
+  defaultHousehold?: string;
 }) {
   // A new guest usually starts a new household; an existing one keeps theirs.
   // A role that isn't one of the suggestions shows as "Something else".
@@ -22,11 +25,14 @@ export default function GuestForm({
   const [role, setRole] = useState(customRole ? "other" : saved);
 
   const [household, setHousehold] = useState(
-    guest ? (guest.household_id ?? "none") : "new",
+    guest ? (guest.household_id ?? "none") : (defaultHousehold ?? "new"),
   );
 
   return (
     <form action={action} className="space-y-5">
+      {defaultHousehold && (
+        <input type="hidden" name="return_to" value={`/people/household/${defaultHousehold}`} />
+      )}
       <div className="grid grid-cols-2 gap-3">
         <Field label="First name">
           <input name="first_name" required defaultValue={guest?.first_name} className={INPUT} />

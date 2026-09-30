@@ -109,3 +109,37 @@ export async function createHousehold(input: {
   if (error) throw error;
   return data;
 }
+
+export async function getHousehold(householdId: string): Promise<Household | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("households")
+    .select("*")
+    .eq("id", householdId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+type HouseholdFields = Pick<
+  Household,
+  "name" | "address_line1" | "address_line2" | "city" | "postcode" | "country"
+>;
+
+export async function updateHousehold(householdId: string, fields: HouseholdFields): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("households").update(fields).eq("id", householdId);
+  if (error) throw error;
+}
+
+/**
+ * Removes a household. Its people stay on the guest list, just not in a
+ * household (contacts.household_id is `on delete set null`); its invitation
+ * goes, and their RSVPs keep their answers.
+ */
+export async function deleteHousehold(householdId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("households").delete().eq("id", householdId);
+  if (error) throw error;
+}

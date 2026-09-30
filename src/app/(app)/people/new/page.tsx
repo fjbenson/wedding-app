@@ -10,9 +10,9 @@ export const metadata = { title: "Add a guest — Wedding App" };
 export default async function NewGuestPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; household?: string }>;
 }) {
-  const { error, detail } = await searchParams;
+  const { error, detail, household } = await searchParams;
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
@@ -20,7 +20,11 @@ export default async function NewGuestPage({
 
   return (
     <FormPage backHref="/people" backLabel="People" title="Add a guest" error={error} detail={detail}>
-      <GuestForm action={saveGuestAction.bind(null, null)} households={households} />
+      <GuestForm
+        action={saveGuestAction.bind(null, null)}
+        households={households}
+        defaultHousehold={households.some((h) => h.id === household) ? household : undefined}
+      />
     </FormPage>
   );
 }

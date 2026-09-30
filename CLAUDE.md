@@ -71,6 +71,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   A **Bridal party** tab (`?tab=party`, screen 11): guests with a role,
   grouped by role in the usual order, with call/email buttons, and "give
   someone a role" in place (`assignRoleAction`).
+  **Invitations** (`/invitations`, screen 15, linked from the guest list):
+  households to send to (flagging missing addresses; mark sent, or all),
+  sent ones with how many have answered, and "still to hear from" — pending
+  answers where the invitation has gone out — with text/call/email buttons,
+  the text and email pre-written. Uses the existing `invitations.sent_at`.
   **Household detail** (`/people/household/[id]`, screen 9): address, a
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that
@@ -226,8 +231,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
    realigned to the five-tab plan the same day
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
    the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
-   appointments (16, 17, 21)~~; ~~bridal party (11)~~; still to do: invitations
-   (15), quick capture and inbox (35, 36), settings (37). Suggested starter
+   appointments (16, 17, 21)~~; ~~bridal party (11)~~, ~~invitations (15)~~; still to do: quick capture and inbox (35, 36), settings (37). Suggested starter
    tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`
 

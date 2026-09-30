@@ -83,6 +83,16 @@ export default function PeopleView({
       {guests.length > 0 &&
         (events.length === 0 ? <StartRsvps /> : <EventTabs events={events} current={event} />)}
 
+      {events.length > 0 && guests.length > 0 && (
+        <Link
+          href="/invitations"
+          className="mt-3 inline-flex items-center gap-1 text-sm text-champagne-600 hover:text-ink"
+        >
+          Invitations and who to chase
+          <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        </Link>
+      )}
+
       {event && guests.length > 0 && (
         <>
           <p className="mt-6 text-sm text-stone">

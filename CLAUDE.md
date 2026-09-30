@@ -201,6 +201,10 @@ Sign-out is hidden for anonymous users (it would lose the wedding). To bring
 email sign-in back: set up custom SMTP (e.g. Resend), then link the anonymous
 user to an email with `updateUser({ email })` so the wedding carries over.
 
+**The owner's call (30 Sep 2026): proper sign-in is the very last thing
+built.** Don't propose it as a next step before everything else is done;
+Settings already warns that the wedding lives in one browser.
+
 ## Conventions
 
 - **All database queries live in `src/lib/db/`.** Nothing else imports the

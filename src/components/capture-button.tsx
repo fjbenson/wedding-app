@@ -17,7 +17,7 @@ export default function CaptureButton() {
     <Link
       href={`/capture?from=${encodeURIComponent(pathname)}`}
       aria-label="Capture something"
-      className="glass fixed bottom-[calc(max(12px,env(safe-area-inset-bottom))+60px)] right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink md:bottom-[84px] lg:hidden"
+      className="glass fixed print:hidden bottom-[calc(max(12px,env(safe-area-inset-bottom))+60px)] right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink md:bottom-[84px] lg:hidden"
     >
       <PenLine className="h-5 w-5" strokeWidth={1.8} aria-hidden />
     </Link>

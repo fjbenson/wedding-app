@@ -16,7 +16,7 @@ export default function MenuBar() {
   return (
     <nav
       aria-label="Main"
-      className="glass fixed bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6 left-1/2 lg:hidden z-10 flex -translate-x-1/2 gap-0.5 rounded-full p-1"
+      className="glass fixed print:hidden bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6 left-1/2 lg:hidden z-10 flex -translate-x-1/2 gap-0.5 rounded-full p-1"
     >
       {NAV.map((tab) => {
         const Icon = tab.icon;

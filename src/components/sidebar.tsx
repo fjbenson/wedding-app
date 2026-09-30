@@ -20,7 +20,7 @@ export default function Sidebar({
   const days = weddingDate ? daysUntil(weddingDate) : null;
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-linen bg-cream/60 px-4 py-8 lg:flex">
+    <aside className="sticky top-0 hidden print:!hidden h-dvh w-60 shrink-0 flex-col border-r border-linen bg-cream/60 px-4 py-8 lg:flex">
       <div className="px-3">
         <p className="font-display text-2xl leading-tight text-ink">{name}</p>
         <p className="mt-1 text-sm text-stone">

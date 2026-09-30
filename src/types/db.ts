@@ -178,3 +178,49 @@ export interface Note {
   url: string | null;
   created_at: string;
 }
+
+/** One line of the run sheet — the order of the day (0009_the_day.sql). */
+export interface RunSheetItem {
+  id: string;
+  wedding_id: string;
+  at_time: string;
+  title: string;
+  location: string | null;
+  who: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface SeatingTable {
+  id: string;
+  wedding_id: string;
+  name: string;
+  capacity: number;
+  sort_order: number;
+  created_at: string;
+}
+
+/** Which table a guest sits at. A guest sits at one table at most. */
+export interface Seat {
+  contact_id: string;
+  wedding_id: string;
+  table_id: string;
+}
+
+/** One run of a car or coach on the day. */
+export interface TransportRun {
+  id: string;
+  wedding_id: string;
+  at_time: string;
+  vehicle: string;
+  from_place: string | null;
+  to_place: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface TransportPassenger {
+  run_id: string;
+  contact_id: string;
+  wedding_id: string;
+}

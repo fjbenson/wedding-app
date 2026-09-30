@@ -46,6 +46,17 @@ insert into contacts (wedding_id, first_name, last_name) values
 -- Areas (0003_areas.sql), if that migration has been applied.
 do $$
 begin
+  if to_regclass('public.run_sheet_items') is not null then
+    insert into run_sheet_items (wedding_id, at_time, title) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', '14:00', 'Ceremony'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', '15:00', 'Ceremony');
+    insert into seating_tables (id, wedding_id, name) values
+      ('aaaaaaaa-1111-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Top table'),
+      ('bbbbbbbb-1111-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Top table');
+    insert into transport_runs (wedding_id, at_time, vehicle) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', '13:15', 'Car 1'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', '13:30', 'Car 1');
+  end if;
   if to_regclass('public.notes') is not null then
     insert into notes (wedding_id, body) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Peonies?'),
@@ -216,6 +227,67 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A deleted wedding B''s notes';
+    end if;
+  end if;
+
+  if to_regclass('public.run_sheet_items') is not null then
+    execute 'select count(*) from run_sheet_items' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % run sheet items, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from seating_tables' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % tables, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from transport_runs' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % transport runs, expected 1', visible_contacts;
+    end if;
+
+    -- Seating one of couple B's guests at couple B's table must be refused.
+    begin
+      execute $q$insert into seats (contact_id, wedding_id, table_id)
+               select id, wedding_id, 'bbbbbbbb-1111-0000-0000-000000000002'
+               from contacts where first_name = 'Bob'$q$;
+      -- Couple A can't even see Bob, so nothing is inserted: that's also safe.
+      get diagnostics visible_contacts = row_count;
+      if visible_contacts <> 0 then
+        raise exception 'LEAK: couple A seated a guest in wedding B';
+      end if;
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    -- Even knowing Bob's id, a seat in wedding A can't point at wedding B's guest.
+    begin
+      execute $q$insert into seats (contact_id, wedding_id, table_id)
+               values ((select id from contacts where wedding_id = 'aaaaaaaa-0000-0000-0000-000000000001' limit 1)::uuid,
+                       'aaaaaaaa-0000-0000-0000-000000000001',
+                       'bbbbbbbb-1111-0000-0000-000000000002')$q$;
+      raise exception 'LEAK: couple A seated a guest at wedding B''s table';
+    exception
+      when foreign_key_violation then null;  -- expected
+    end;
+
+    begin
+      execute $q$insert into run_sheet_items (wedding_id, at_time, title)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', '09:00', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added to wedding B''s run sheet';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    execute $q$update seating_tables set name = 'Hacked'
+             where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A renamed wedding B''s tables';
+    end if;
+
+    execute $q$delete from transport_runs where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s transport';
     end if;
   end if;
 

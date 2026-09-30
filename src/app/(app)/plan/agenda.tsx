@@ -202,9 +202,10 @@ export default function Agenda({
         {dated.map((g, i) => section(g.key, i, g.title, g.entries))}
 
         {weddingDate && show === "all" && upcoming.length > 0 && (
-          <p className="text-center font-display text-lg italic text-champagne-600">
-            {formatLongDate(weddingDate)} — the wedding
-          </p>
+          // The run-up ends where The Day begins: one tap across (the plan's link between the two).
+          <Link href="/day" className="block text-center font-display text-lg italic text-champagne-600 hover:text-ink">
+            {formatLongDate(weddingDate)} — the wedding →
+          </Link>
         )}
 
         {undated && section("undated", dated.length, "Whenever", undated.entries)}

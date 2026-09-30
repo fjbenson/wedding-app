@@ -108,7 +108,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   off also hides the dot), rename, and up/down order; and who has a login,
   with a plain warning that the wedding lives in this browser until proper
   sign-in.
-- **The Day**: in the menus as "Soon".
+- **The Day** (`/day`, screens 25, 27, 28; `0009_the_day.sql`): **Run
+  sheet** (hour by hour, with a Print button — menus hide when printing),
+  **Seating** (`?tab=seating`: tables with seat counts, sit guests from an
+  unseated list, "over" flagged; guests who declined everything are left
+  out) and **Transport** (`?tab=transport`: each car/coach run and who's in
+  it). Seats and passengers can only point at guests, tables and runs of
+  the same wedding (composite foreign keys on `(id, wedding_id)`). The
+  agenda's wedding-day line links here. Still to come: the drag-about
+  seating floor plan (screen 26).
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
@@ -166,7 +174,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0008_notes.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0009_the_day.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role

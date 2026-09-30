@@ -1,11 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
-import { listGuests } from "@/lib/db/contacts";
+import Cover from "@/components/cover";
 import ThisMonth from "@/components/this-month";
 import MenuBar from "@/components/menu-bar";
-import HomeHeader from "@/components/home-header";
-import SectionLinks from "@/components/section-links";
 import { createWeddingAction } from "./actions";
 
 export default async function HomePage({
@@ -22,23 +20,17 @@ export default async function HomePage({
   const wedding = await getCurrentWedding();
 
   if (wedding) {
-    const [milestones, guests] = await Promise.all([
-      listMilestones(wedding.id),
-      listGuests(wedding.id),
-    ]);
+    const milestones = await listMilestones(wedding.id);
 
-    // Deliberately plain for now: get every screen working, then design them
-    // all together. The earlier cover-and-ring version is in git history
-    // (components/cover.tsx, components/hub.tsx) and in docs/DESIGN.md.
     return (
-      <main className="page pb-28">
-        <HomeHeader name={wedding.name} weddingDate={wedding.wedding_date} />
-        <SectionLinks guestCount={guests.length} milestones={milestones} />
-        <div className="mt-10">
+      <main className="min-h-dvh pb-28">
+        {/* The cover runs edge to edge; everything under it sits in a column. */}
+        <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
+        <div className="mx-auto max-w-lg md:max-w-2xl">
           <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
+          {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
+          {user?.email && <SignedIn email={user.email} />}
         </div>
-        {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
-        {user?.email && <SignedIn email={user.email} />}
         <MenuBar current="/" />
       </main>
     );
@@ -73,7 +65,7 @@ function SignedIn({ email }: { email?: string }) {
     <form
       action="/auth/sign-out"
       method="post"
-      className="mt-10 text-center text-xs text-stone"
+      className="mt-10 px-6 text-center text-xs text-stone"
     >
       {email} ·{" "}
       <button type="submit" className="underline underline-offset-4 hover:text-ink">

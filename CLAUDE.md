@@ -170,13 +170,12 @@ home screen for now. The palette and fonts are now in `tailwind.config.ts`;
 the next step is building screens.
 
 **Function first, design later (30 Sep 2026).** The owner chose to get every
-screen working plainly, then do one design pass across the whole app. The
-cover photo and glass hub ring were taken off the home screen (still in git
-history: `src/components/cover.tsx`, `hub.tsx`). It is now a plain header,
-three section buttons and the "coming up" list. Keep new screens plain too.
-Every screen sits in the `.page` frame (`globals.css`): phone-first, one
-centred column, safe areas respected, no text under 12px. It is checked at
-320px, 393px (iPhone 15) and desktop widths.
+screen working, then do one design pass across the whole app. "Stripping back"
+means *styling detail*, not structure: the home screen keeps its cover, glass
+hub ring, "coming up" list and menu bar. Keep new screens simple in style.
+Every screen is phone-first and responsive: other screens sit in the `.page`
+frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
+is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
 ### Design decisions still open
 

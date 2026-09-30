@@ -99,3 +99,29 @@ export async function deleteGuestAction(guestId: string) {
   revalidatePath("/people");
   redirect("/people");
 }
+
+/**
+ * Gives a guest a role from the Bridal party tab without opening their form.
+ * A role makes them bridal_party, as saveGuestAction does.
+ */
+export async function assignRoleAction(formData: FormData) {
+  const guestId = text(formData, "guest");
+  const picked = text(formData, "role");
+  const role = picked === "other" ? text(formData, "custom_role") : picked;
+  if (!guestId || !role) {
+    redirect(`/people?tab=party&error=${encodeURIComponent("Please pick someone and their role.")}`);
+  }
+
+  let detail = "";
+  try {
+    await updateContact(guestId, { role_on_the_day: role, contact_type: "bridal_party" });
+  } catch (error) {
+    console.error("assigning role failed", error);
+    detail = describe(error);
+  }
+  if (detail) {
+    redirect(`/people?tab=party&error=${encodeURIComponent("That didn't save.")}&detail=${encodeURIComponent(detail)}`);
+  }
+
+  revalidatePath("/people");
+}

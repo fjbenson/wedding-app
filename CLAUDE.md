@@ -68,6 +68,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
   categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
   up when areas become rows. `/people/[id]` opens a guest or a supplier.
+  A **Bridal party** tab (`?tab=party`, screen 11): guests with a role,
+  grouped by role in the usual order, with call/email buttons, and "give
+  someone a role" in place (`assignRoleAction`).
   **Household detail** (`/people/household/[id]`, screen 9): address, a
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that
@@ -223,7 +226,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
    realigned to the five-tab plan the same day
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
    the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
-   appointments (16, 17, 21)~~; still to do: bridal party (11), invitations
+   appointments (16, 17, 21)~~; ~~bridal party (11)~~; still to do: invitations
    (15), quick capture and inbox (35, 36), settings (37). Suggested starter
    tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`

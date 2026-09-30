@@ -6,6 +6,7 @@ import { listAreas } from "@/lib/db/areas";
 import { areaOptions } from "@/lib/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import PeopleTabs from "./people-tabs";
+import PartyList from "./party-list";
 import PeopleView from "./people-view";
 import SupplierList from "./supplier-list";
 
@@ -33,13 +34,20 @@ export default async function PeoplePage({
     listSuppliers(wedding.id),
     listAreas(wedding.id),
   ]);
-  const current = tab === "suppliers" ? "suppliers" : "guests";
+  const current = tab === "suppliers" ? "suppliers" : tab === "party" ? "party" : "guests";
 
   return (
     <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <p className="label">People</p>
-      <PeopleTabs current={current} guestCount={guests.length} supplierCount={suppliers.length} />
-      {current === "suppliers" ? (
+      <PeopleTabs
+        current={current}
+        guestCount={guests.length}
+        partyCount={guests.filter((g) => g.role_on_the_day).length}
+        supplierCount={suppliers.length}
+      />
+      {current === "party" ? (
+        <PartyList guests={guests} households={households} events={events} rsvps={rsvps} error={error} detail={detail} />
+      ) : current === "suppliers" ? (
         <SupplierList suppliers={suppliers} areas={areaOptions(areaRows)} />
       ) : (
         <PeopleView

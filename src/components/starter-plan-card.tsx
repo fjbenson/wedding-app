@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addStarterPlanAction } from "@/app/timeline/actions";
+import { addStarterPlanAction } from "@/app/(app)/timeline/actions";
 
 /**
  * Shown where the plan would be, before there's anything in it: offers the

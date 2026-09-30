@@ -37,10 +37,13 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not remove: this refreshes the token and must run before any redirect logic.
-  let {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Do not remove: this refreshes the token and must run before any redirect
+  // logic. getClaims checks the session's signature here on the server
+  // instead of asking Supabase on every tap (it only asks when the session
+  // needs refreshing, or if the project still uses the older shared-secret
+  // keys), which is most of the wait when moving between screens.
+  const { data: auth } = await supabase.auth.getClaims();
+  let user: { id: string } | null = auth?.claims ? { id: auth.claims.sub } : null;
 
   // For now there's no sign-in step: a visitor without a session is quietly
   // given an anonymous one, which is still a real user as far as row-level

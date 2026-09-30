@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Wedding, WeddingMember } from "@/types/db";
 
@@ -16,11 +17,14 @@ export async function listWeddings(): Promise<Wedding[]> {
 /**
  * The wedding the app is about right now. One per couple for the MVP, so
  * it's simply the newest one they can see.
+ *
+ * Remembered for the rest of the request, so the shared frame and the page
+ * inside it can both ask without a second trip to the database.
  */
-export async function getCurrentWedding(): Promise<Wedding | null> {
+export const getCurrentWedding = cache(async (): Promise<Wedding | null> => {
   const weddings = await listWeddings();
   return weddings[0] ?? null;
-}
+});
 
 export async function getWedding(weddingId: string): Promise<Wedding | null> {
   const supabase = await createClient();

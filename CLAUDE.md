@@ -184,6 +184,16 @@ panel with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
 The cover is now a champagne-to-ivory gradient (no sample photo) and the ring's
 icons are white.
 
+**Speed (30 Sep 2026).** Taps felt ~1s slow. Signed-in screens now live in
+the `src/app/(app)/` route group (the brackets don't change any web address):
+its `layout.tsx` draws the sidebar/menu bar once and keeps it while moving
+between screens, and its `loading.tsx` shows a placeholder the instant a
+screen is tapped. The middleware and home page check the session with
+`getClaims()` (checked on Vercel, no trip to Supabase) instead of `getUser()`,
+and `getCurrentWedding()` is cached per request. Still open: Vercel's servers
+should run in the same region as the Supabase project (`regions` in
+`vercel.json`) — ask the owner which region Supabase is in.
+
 ### Design decisions still open
 
 Raised with the owner and deliberately deferred to the screen that needs them —

@@ -1,17 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { daysUntil } from "@/lib/dates";
 
 /** The left-hand column on desktop: whose wedding, and the way around. */
 export default function Sidebar({
-  current,
   name,
   weddingDate,
 }: {
-  current: string;
   name: string;
   weddingDate: string | null;
 }) {
+  const pathname = usePathname();
   const days = weddingDate ? daysUntil(weddingDate) : null;
 
   return (
@@ -26,7 +28,9 @@ export default function Sidebar({
       <nav aria-label="Main" className="mt-8 space-y-1">
         {NAV.map((item) => {
           const Icon = item.icon;
-          const active = item.href === current;
+          // Guests stays lit on a guest's own page, too.
+          const active =
+            item.href === "/" ? pathname === "/" : !!item.href && pathname.startsWith(item.href);
           const body = (
             <>
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />

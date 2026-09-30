@@ -50,12 +50,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   with **RSVPs folded in**: "Everyone" or one event at a time (`?event=`),
   invite by household or all, yes/no/? per person, meal and dietary notes.
   RSVPs are recorded by the couple; guests answering via their own link is
-  "guest access", still deliberately not built.
+  "guest access", still deliberately not built. A **Suppliers** tab
+  (`?tab=suppliers`, screens 12 and 13): business, category, status, quote,
+  deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
+  categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
+  up when areas become rows. `/people/[id]` opens a guest or a supplier.
 - **Plan** (`/plan`): to-dos by month, tick off, add, edit, remove.
 - **Money** and **The Day**: in the menus as "Soon".
 
 Still MVP per the plan and not built: first-run setup (screen 2), household
-detail (9), suppliers (12, 13), task list grouped by area (18). The orb's
+detail (9), task list grouped by area (18). The orb's
 dots are still the old hard-coded list in `src/lib/areas.ts`, not the plan's
 areas-as-rows. Old `/guests`, `/timeline`, `/rsvps` links redirect
 (`next.config.ts`). Shared form pieces live in `src/components/form-bits.tsx`

@@ -40,3 +40,27 @@ export function areaLabel(id: string | null): string | null {
   if (!id) return null;
   return AREAS.find((area) => area.id === id)?.label ?? id;
 }
+
+/**
+ * What a supplier does. These are the plan's starter areas
+ * (docs/information-architecture.md, "Areas are rows"), so when areas become
+ * database rows a supplier's category lines up with its area by `id`.
+ */
+export const SUPPLIER_CATEGORIES: { id: string; label: string }[] = [
+  { id: "venue", label: "Venue" },
+  { id: "photography", label: "Photography" },
+  { id: "food", label: "Food & drink" },
+  { id: "flowers", label: "Flowers" },
+  { id: "cake", label: "Cake" },
+  { id: "music", label: "Music" },
+  { id: "attire", label: "Attire" },
+  { id: "hair-makeup", label: "Hair & makeup" },
+  { id: "stationery", label: "Stationery" },
+  { id: "transport", label: "Transport" },
+  { id: "other", label: "Other" },
+];
+
+export function supplierCategoryLabel(id: string | null): string | null {
+  if (!id) return null;
+  return SUPPLIER_CATEGORIES.find((c) => c.id === id)?.label ?? id;
+}

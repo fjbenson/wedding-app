@@ -20,7 +20,7 @@ const ANSWER: Record<RsvpStatus, string> = {
 };
 
 /**
- * The guest list, grouped by household — the people who share an invitation.
+ * The Guests tab of People: the guest list, grouped by household — the people who share an invitation.
  * With "Everyone" picked it's the list itself; with an event picked, the same
  * list becomes that event's RSVPs: invite, and yes / no / ? per person.
  */
@@ -53,9 +53,8 @@ export default function PeopleView({
   const uninvited = event ? guests.filter((g) => !rsvpFor.has(g.id)) : [];
 
   return (
-    <main className="page pb-28 lg:pb-16">
-      <p className="label">People</p>
-      <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+    <>
+      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {guests.length === 0 ? "No one on the list yet." : "The guest list"}
       </h1>
       <p className="mt-2 text-sm text-stone">
@@ -157,7 +156,7 @@ export default function PeopleView({
           );
         })}
       </div>
-    </main>
+    </>
   );
 }
 

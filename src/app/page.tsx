@@ -3,7 +3,7 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import Cover from "@/components/cover";
 import ThisMonth from "@/components/this-month";
-import MenuBar from "@/components/menu-bar";
+import AppShell from "@/components/app-shell";
 import { createWeddingAction } from "./actions";
 
 export default async function HomePage({
@@ -23,16 +23,19 @@ export default async function HomePage({
     const milestones = await listMilestones(wedding.id);
 
     return (
-      <main className="min-h-dvh pb-28">
-        {/* The cover runs edge to edge; everything under it sits in a column. */}
-        <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
-        <div className="mx-auto max-w-lg md:max-w-2xl">
-          <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
-          {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
-          {user?.email && <SignedIn email={user.email} />}
-        </div>
-        <MenuBar current="/" />
-      </main>
+      <AppShell current="/" wedding={wedding}>
+        {/* Phone: the cover runs edge to edge, the list sits under it.
+            Desktop: the cover is a panel filling the screen's height, with the
+            list in a column beside it. */}
+        <main className="min-h-dvh pb-28 lg:grid lg:pb-8 lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
+          <div className="mx-auto max-w-lg md:max-w-2xl lg:mx-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
+            <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
+            {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
+            {user?.email && <SignedIn email={user.email} />}
+          </div>
+        </main>
+      </AppShell>
     );
   }
 

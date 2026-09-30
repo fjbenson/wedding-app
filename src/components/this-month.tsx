@@ -35,7 +35,7 @@ export default function ThisMonth({
   else headline = "Every wedding starts with a date.";
 
   return (
-    <section className="px-6">
+    <section className="px-6 lg:px-0">
       <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
         <p className="label">{label}</p>
         <p className="text-xs font-medium uppercase tracking-label text-stone">

@@ -177,6 +177,13 @@ Every screen is phone-first and responsive: other screens sit in the `.page`
 frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
 is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
+**Phone and desktop are designed separately (30 Sep 2026).** Below 1024px:
+floating glass menu bar at the bottom. From 1024px (`lg`): `AppShell` puts a
+sidebar on the left instead, and the home screen puts the cover as a rounded
+panel with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
+The cover is now a champagne-to-ivory gradient (no sample photo) and the ring's
+icons are white.
+
 ### Design decisions still open
 
 Raised with the owner and deliberately deferred to the screen that needs them —

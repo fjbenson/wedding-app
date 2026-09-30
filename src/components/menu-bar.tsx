@@ -1,27 +1,14 @@
 import Link from "next/link";
-import { CalendarDays, Home, Mail, Users, type LucideIcon } from "lucide-react";
+import { NAV } from "@/lib/nav";
 
-interface Tab {
-  label: string;
-  icon: LucideIcon;
-  href: string | null; // null until that screen exists
-}
-
-const TABS: Tab[] = [
-  { label: "Home", icon: Home, href: "/" },
-  { label: "Guests", icon: Users, href: "/guests" },
-  { label: "Timeline", icon: CalendarDays, href: "/timeline" },
-  { label: "RSVPs", icon: Mail, href: null },
-];
-
-/** The floating glass menu bar at the bottom of the screen. */
+/** The floating glass menu bar at the bottom of the screen. Phones and tablets only. */
 export default function MenuBar({ current }: { current: string }) {
   return (
     <nav
       aria-label="Main"
-      className="glass fixed bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-0.5 rounded-full p-1"
+      className="glass fixed bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6 left-1/2 lg:hidden z-10 flex -translate-x-1/2 gap-0.5 rounded-full p-1"
     >
-      {TABS.map((tab) => {
+      {NAV.map((tab) => {
         const Icon = tab.icon;
         const active = tab.href === current;
         const className = `flex h-11 w-14 items-center justify-center rounded-full text-ink ${

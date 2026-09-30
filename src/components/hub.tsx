@@ -15,8 +15,11 @@ function nodePosition(index: number, total: number) {
   };
 }
 
-/** White text on the photo needs a soft shadow to stay readable. */
+/** White text on the cover needs a soft shadow to stay readable. */
 const ON_PHOTO = "text-white [text-shadow:0_2px_16px_rgb(30_20_10/0.45)]";
+
+/** The same for the white icons on the glass buttons. */
+const ICON_SHADOW = "drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]";
 
 function Countdown({ weddingDate }: { weddingDate: string | null }) {
   if (!weddingDate) {
@@ -67,16 +70,13 @@ export default function Hub({ weddingDate }: { weddingDate: string | null }) {
 
       {AREAS.map((area, index) => {
         const Icon = area.icon;
-        // Icons are ink: on the sample golden cover, ink reads at ~7.6:1
-        // against the glass and white at ~2.2:1. Once couples add their own
-        // photo this should be chosen from the photo's brightness.
         const node = (
           <span
-            className={`glass flex h-11 w-11 items-center justify-center rounded-full text-ink transition ${
+            className={`glass flex h-11 w-11 items-center justify-center rounded-full text-white transition ${
               area.href ? "active:scale-95" : ""
             }`}
           >
-            <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+            <Icon className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
           </span>
         );
 
@@ -106,9 +106,9 @@ export default function Hub({ weddingDate }: { weddingDate: string | null }) {
         <span
           title="Add an area — coming soon"
           aria-label="Add an area, coming soon"
-          className="glass flex h-11 w-11 items-center justify-center rounded-full border-dashed text-ink"
+          className="glass flex h-11 w-11 items-center justify-center rounded-full border-dashed text-white"
         >
-          <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+          <Plus className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
         </span>
       </div>
     </div>

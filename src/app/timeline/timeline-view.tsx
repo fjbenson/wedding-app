@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Check, ChevronRight, Plus } from "lucide-react";
-import MenuBar from "@/components/menu-bar";
 import StarterPlanCard from "@/components/starter-plan-card";
 import { areaLabel } from "@/lib/areas";
 import { formatDayMonth, formatLongDate, formatMonthYear, todayISO } from "@/lib/dates";
@@ -44,7 +43,7 @@ export default function TimelineView({
   }
 
   return (
-    <main className="page pb-28">
+    <main className="page pb-28 lg:pb-16">
       <p className="label">Timeline</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {milestones.length === 0 ? "Nothing planned yet." : "The plan"}
@@ -115,7 +114,6 @@ export default function TimelineView({
         )}
       </div>
 
-      <MenuBar current="/timeline" />
     </main>
   );
 }

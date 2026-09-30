@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
-import MenuBar from "@/components/menu-bar";
 import type { Contact, Household } from "@/types/db";
 
 function plural(count: number, one: string, many = `${one}s`) {
@@ -24,7 +23,7 @@ export default function GuestList({
   const children = guests.filter((g) => g.is_child).length;
 
   return (
-    <main className="page pb-28">
+    <main className="page pb-28 lg:pb-16">
       <p className="label">Guests</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {guests.length === 0 ? "No one on the list yet." : "The guest list"}
@@ -70,7 +69,6 @@ export default function GuestList({
         ))}
       </div>
 
-      <MenuBar current="/guests" />
     </main>
   );
 }

@@ -2,12 +2,11 @@ import { Bell, Camera } from "lucide-react";
 import Hub from "@/components/hub";
 
 /**
- * The top of the home screen, like a magazine cover: a full-width photo with
- * the couple's name, and the hub ring floating on it.
+ * The top of the home screen, like a magazine cover: a champagne-to-ivory
+ * wash with the couple's name, and the hub ring floating on it.
  *
- * There's no photo upload yet, so this paints a warm sample "photo" (the
- * golden one from the Glass Lab) out of soft blurred shapes. When uploads
- * arrive, a real image replaces the shapes and nothing else changes.
+ * On a phone it runs edge to edge and fades into the page. On a desktop it
+ * becomes a rounded panel beside the "coming up" list.
  */
 export default function Cover({
   name,
@@ -17,27 +16,24 @@ export default function Cover({
   weddingDate: string | null;
 }) {
   return (
-    <section className="relative aspect-[300/390] w-full overflow-hidden md:aspect-auto md:h-[620px]">
-      {/* The sample photo. It fades out into the page through a mask rather
-          than an ivory overlay, and its lower edge is kept light and warm, so
-          the fade doesn't pass through a muddy grey. */}
+    <section className="relative aspect-[300/390] w-full overflow-hidden md:aspect-auto md:h-[620px] lg:h-full lg:min-h-[560px] lg:rounded-[32px]">
+      {/* Champagne deepening towards the ring (so white reads on it), with a
+          soft pearl sheen top left, then back to ivory at the foot. On a phone
+          it fades into the page through a mask; on a desktop it's a panel. */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(165deg,#E9C9A0_0%,#C89D72_38%,#A07E5E_62%,#C7A987_84%,#EFE4D2_100%)] [mask-image:linear-gradient(to_bottom,#000_68%,rgb(0_0_0/0.75)_79%,rgb(0_0_0/0.35)_90%,transparent)]"
+        className="absolute inset-0 bg-[linear-gradient(165deg,#EAD7B4_0%,#CFAE78_30%,#B8914F_58%,#C9A774_80%,#F3EBDD_100%)] [mask-image:linear-gradient(to_bottom,#000_70%,rgb(0_0_0/0.7)_82%,rgb(0_0_0/0.3)_92%,transparent)] lg:bg-[linear-gradient(165deg,#EAD7B4_0%,#CFAE78_32%,#B8914F_62%,#D6BC92_100%)] lg:[mask-image:none]"
       >
-        <div className="absolute -left-[10%] top-[8%] aspect-square w-[66%] rounded-full bg-[#F6E6CC] opacity-75 blur-[30px] md:w-[40%]" />
-        <div className="absolute right-[10%] top-[29%] h-[46%] w-[16%] rounded-t-full bg-[#4E3C2E] opacity-60 blur-[6px] md:w-[9%]" />
-        <div className="absolute right-[27%] top-[32%] h-[44%] w-[15%] rounded-t-full bg-[#F4EBDD] opacity-80 blur-[6px] md:right-[20%] md:w-[8%]" />
+        <div className="absolute -left-[12%] -top-[6%] aspect-square w-[70%] rounded-full bg-[#FBF6EC] opacity-60 blur-[40px] md:w-[40%]" />
+        <div className="absolute -right-[10%] top-[40%] aspect-square w-[45%] rounded-full bg-[#F1E7D4] opacity-30 blur-[40px] md:w-[28%]" />
       </div>
 
       <header className="absolute inset-x-0 top-0 mx-auto flex max-w-5xl items-start justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <div>
+        {/* On desktop the sidebar already shows the name. */}
+        <div className="lg:invisible">
           <h1 className="font-display text-[26px] italic leading-tight text-white [text-shadow:0_2px_16px_rgb(30_20_10/0.45)]">
             {name}
           </h1>
-          <p className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-white/75">
-            Sample photo
-          </p>
         </div>
 
         <div className="flex gap-1 text-white">
@@ -56,7 +52,7 @@ export default function Cover({
         </div>
       </header>
 
-      <div className="absolute left-1/2 top-[51%] w-[min(76%,340px)] -translate-x-1/2 -translate-y-1/2 md:top-[47%] md:w-[440px]">
+      <div className="absolute left-1/2 top-[51%] w-[min(76%,340px)] -translate-x-1/2 -translate-y-1/2 md:top-[47%] md:w-[440px] lg:top-1/2 lg:w-[min(70%,460px)]">
         <Hub weddingDate={weddingDate} />
       </div>
     </section>

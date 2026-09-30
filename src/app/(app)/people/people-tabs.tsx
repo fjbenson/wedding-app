@@ -20,7 +20,7 @@ export default function PeopleTabs({
   ] as const;
 
   return (
-    <nav aria-label="People" className="mt-4 grid grid-cols-2 rounded-2xl border border-linen bg-cream/60 p-1">
+    <nav aria-label="People" className="mt-4 grid grid-cols-2 rounded-2xl border border-linen bg-cream/60 p-1 lg:max-w-sm">
       {tabs.map((tab) => {
         const active = tab.id === current;
         return (

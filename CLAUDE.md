@@ -51,7 +51,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Hub** (`/`): cover, hub ring, "coming up" story. The ring's dots are the
   wedding's own **areas** (`areas` table, `0003_areas.sql`); dots don't open
   anything until area pages (screen 5, "Next").
-- **People** (`/people`): the guest list by household — add, edit, remove —
+- **People** (`/people`): the guest list by household — add, edit, remove,
+  with a **role on the day** (bridesmaid, usher…; `0004_guest_roles.sql`;
+  a role makes them `bridal_party`). "Everyone" is a row per guest that opens
+  to show details on phones, and a full table on desktop (`guest-table.tsx`) —
   with **RSVPs folded in**: "Everyone" or one event at a time (`?event=`),
   invite by household or all, yes/no/? per person, meal and dietary notes.
   RSVPs are recorded by the couple; guests answering via their own link is
@@ -117,10 +120,11 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` and `0003_areas.sql`. **New migrations are run
+plus `0002_create_wedding.sql`, `0003_areas.sql` and `0004_guest_roles.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
-starter areas rather than breaking.
+starter areas rather than breaking; until 0004 is run, a guest's role
+quietly isn't saved (`saveGuestAction` retries without it).
 
 Decisions worth preserving:
 

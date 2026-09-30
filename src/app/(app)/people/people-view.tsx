@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
-import type { Contact, Household, Rsvp, RsvpStatus, WeddingEvent } from "@/types/db";
+import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import { addStarterEventsAction, inviteAction } from "./rsvp-actions";
+import { GuestCards, GuestTable, type GuestGroup } from "./guest-table";
 import StatusButtons from "./status-buttons";
 
 function plural(count: number, one: string, many = `${one}s`) {
@@ -13,11 +14,6 @@ function fullName(guest: Contact) {
   return [guest.first_name, guest.last_name].filter(Boolean).join(" ");
 }
 
-const ANSWER: Record<RsvpStatus, string> = {
-  attending: "coming",
-  declined: "not coming",
-  pending: "not heard",
-};
 
 /**
  * The Guests tab of People: the guest list, grouped by household — the people who share an invitation.
@@ -41,7 +37,7 @@ export default function PeopleView({
   error?: string;
   detail?: string;
 }) {
-  const groups = households
+  const groups: GuestGroup[] = households
     .map((h) => ({ id: h.id, name: h.name, guests: guests.filter((g) => g.household_id === h.id) }))
     .filter((group) => group.guests.length > 0);
   const loose = guests.filter((g) => !g.household_id);
@@ -78,7 +74,7 @@ export default function PeopleView({
 
       <Link
         href="/people/new"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90"
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
       >
         <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         Add a guest
@@ -116,46 +112,38 @@ export default function PeopleView({
         </>
       )}
 
-      <div className="mt-10 space-y-8">
-        {groups.map((group, index) => {
-          const toInvite = event ? group.guests.filter((g) => !rsvpFor.has(g.id)) : [];
-          return (
-            <section key={group.id}>
-              <div className="flex items-center gap-3 border-b border-champagne-400 pb-2">
-                <span className="font-display text-sm text-champagne-600">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <h2 className="min-w-0 flex-1 text-xl text-ink">{group.name}</h2>
-                {event && toInvite.length > 0 ? (
-                  <form action={inviteAction.bind(null, event.id, toInvite.map((g) => g.id))}>
-                    <InlineSubmit label="Invite" pendingLabel="Inviting…" />
-                  </form>
-                ) : (
-                  !event && (
-                    <span className="text-xs uppercase tracking-[0.14em] text-stone">
-                      {plural(group.guests.length, "guest")}
-                    </span>
-                  )
-                )}
-              </div>
-              <ul>
-                {group.guests.map((guest) =>
-                  event ? (
+      {event ? (
+        <div className="mt-10 space-y-8">
+          {groups.map((group, index) => {
+            const toInvite = group.guests.filter((g) => !rsvpFor.has(g.id));
+            return (
+              <section key={group.id}>
+                <div className="flex items-center gap-3 border-b border-champagne-400 pb-2">
+                  <span className="font-display text-sm text-champagne-600">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h2 className="min-w-0 flex-1 text-xl text-ink">{group.name}</h2>
+                  {toInvite.length > 0 && (
+                    <form action={inviteAction.bind(null, event.id, toInvite.map((g) => g.id))}>
+                      <InlineSubmit label="Invite" pendingLabel="Inviting…" />
+                    </form>
+                  )}
+                </div>
+                <ul>
+                  {group.guests.map((guest) => (
                     <RsvpRow key={guest.id} guest={guest} rsvp={rsvpFor.get(guest.id)} />
-                  ) : (
-                    <GuestRow
-                      key={guest.id}
-                      guest={guest}
-                      events={events}
-                      rsvps={rsvps.filter((r) => r.contact_id === guest.id)}
-                    />
-                  ),
-                )}
-              </ul>
-            </section>
-          );
-        })}
-      </div>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      ) : (
+        <>
+          <GuestCards groups={groups} events={events} rsvps={rsvps} />
+          <GuestTable groups={groups} events={events} rsvps={rsvps} />
+        </>
+      )}
     </>
   );
 }
@@ -221,33 +209,6 @@ function EventTabs({ events, current }: { events: WeddingEvent[]; current: Weddi
         </p>
       )}
     </div>
-  );
-}
-
-/** A guest in the Everyone view: their details, and their answer per event. */
-function GuestRow({ guest, events, rsvps }: { guest: Contact; events: WeddingEvent[]; rsvps: Rsvp[] }) {
-  const tags = [
-    guest.contact_type === "bridal_party" && "Wedding party",
-    guest.is_child && "Child",
-  ].filter(Boolean);
-  const answers = events
-    .map((e) => {
-      const rsvp = rsvps.find((r) => r.event_id === e.id);
-      return rsvp && `${e.name}: ${ANSWER[rsvp.status]}`;
-    })
-    .filter(Boolean);
-  const lines = [...tags, ...answers];
-
-  return (
-    <li className="border-b border-linen last:border-b-0">
-      <Link href={`/people/${guest.id}`} className="flex items-center gap-3 py-3 hover:bg-cream/60">
-        <span className="min-w-0 flex-1">
-          <span className="block text-[15px] text-ink">{fullName(guest)}</span>
-          {lines.length > 0 && <span className="mt-0.5 block text-xs text-stone">{lines.join(" · ")}</span>}
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-      </Link>
-    </li>
   );
 }
 

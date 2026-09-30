@@ -43,7 +43,7 @@ export default function SupplierList({ suppliers }: { suppliers: Supplier[] }) {
 
       <Link
         href="/people/suppliers/new"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90"
+        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
       >
         <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         Add a supplier

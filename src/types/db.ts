@@ -60,6 +60,8 @@ export interface Contact {
   phone: string | null;
   notes: string | null;
   is_child: boolean;
+  /** Bridesmaid, best man, usher… (0004_guest_roles.sql). Null for a plain guest. */
+  role_on_the_day: string | null;
   created_at: string;
 }
 

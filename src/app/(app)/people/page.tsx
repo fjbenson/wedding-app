@@ -33,7 +33,7 @@ export default async function PeoplePage({
   const current = tab === "suppliers" ? "suppliers" : "guests";
 
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <p className="label">People</p>
       <PeopleTabs current={current} guestCount={guests.length} supplierCount={suppliers.length} />
       {current === "suppliers" ? (

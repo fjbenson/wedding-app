@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { GUEST_ROLES } from "@/lib/guest-roles";
 import type { Contact, Household } from "@/types/db";
 
 /** Add or edit one guest. `guest` is missing when adding. */
@@ -15,6 +16,11 @@ export default function GuestForm({
   guest?: Contact;
 }) {
   // A new guest usually starts a new household; an existing one keeps theirs.
+  // A role that isn't one of the suggestions shows as "Something else".
+  const saved = guest?.role_on_the_day ?? "";
+  const customRole = saved && !GUEST_ROLES.includes(saved) ? saved : "";
+  const [role, setRole] = useState(customRole ? "other" : saved);
+
   const [household, setHousehold] = useState(
     guest ? (guest.household_id ?? "none") : "new",
   );
@@ -53,6 +59,35 @@ export default function GuestForm({
         </Field>
       )}
 
+      <Field label="Role on the day" hint="optional">
+        <select
+          name="role"
+          value={role}
+          onChange={(event) => setRole(event.target.value)}
+          className={INPUT}
+        >
+          <option value="">Guest</option>
+          {GUEST_ROLES.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+          <option value="other">Something else…</option>
+        </select>
+      </Field>
+
+      {role === "other" && (
+        <Field label="What's their role?">
+          <input
+            name="custom_role"
+            required
+            defaultValue={customRole}
+            placeholder="e.g. Chief dog handler"
+            className={INPUT}
+          />
+        </Field>
+      )}
+
       <div className="space-y-3">
         <label className="flex items-center gap-3 text-sm text-ink">
           <input
@@ -62,15 +97,6 @@ export default function GuestForm({
             className="h-5 w-5 accent-ink"
           />
           This guest is a child
-        </label>
-        <label className="flex items-center gap-3 text-sm text-ink">
-          <input
-            type="checkbox"
-            name="bridal_party"
-            defaultChecked={guest?.contact_type === "bridal_party"}
-            className="h-5 w-5 accent-ink"
-          />
-          Part of the wedding party
         </label>
       </div>
 

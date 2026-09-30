@@ -38,9 +38,13 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
       householdId = (await createHousehold({ weddingId: wedding.id, name })).id;
     }
 
+    const picked = text(formData, "role");
+    const role = picked === "other" ? text(formData, "custom_role") : picked;
     const fields = {
       household_id: householdId,
-      contact_type: formData.get("bridal_party") ? ("bridal_party" as const) : ("guest" as const),
+      // Anyone with a job on the day counts as the bridal party (the plan's filter).
+      contact_type: role ? ("bridal_party" as const) : ("guest" as const),
+      role_on_the_day: role,
       first_name: firstName,
       last_name: lastName,
       email: text(formData, "email"),
@@ -49,8 +53,17 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
       is_child: Boolean(formData.get("is_child")),
     };
 
-    if (guestId) await updateContact(guestId, fields);
-    else await createContact({ wedding_id: wedding.id, ...fields });
+    try {
+      if (guestId) await updateContact(guestId, fields);
+      else await createContact({ wedding_id: wedding.id, ...fields });
+    } catch (error) {
+      // Until 0004_guest_roles.sql is run in Supabase the column isn't there;
+      // save everything else rather than fail.
+      if ((error as { code?: string }).code !== "PGRST204") throw error;
+      const { role_on_the_day: _unsaved, ...rest } = fields;
+      if (guestId) await updateContact(guestId, rest);
+      else await createContact({ wedding_id: wedding.id, ...rest } as Parameters<typeof createContact>[0]);
+    }
   } catch (error) {
     console.error("saving guest failed", error);
     detail = describe(error);

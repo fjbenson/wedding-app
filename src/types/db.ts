@@ -26,6 +26,8 @@ export interface Wedding {
   venue_contact_id: string | null;
   created_by: string;
   created_at: string;
+  /** The whole budget, if set (0006_money.sql). */
+  budget?: number | null;
 }
 
 export interface WeddingMember {
@@ -119,6 +121,8 @@ export interface AreaRow {
   sort_order: number;
   /** Free-text key facts shown on the area's page (0005_area_details.sql). */
   details?: string | null;
+  /** This area's share of the budget, if set (0006_money.sql). */
+  budget?: number | null;
   created_at: string;
 }
 
@@ -133,5 +137,19 @@ export interface Milestone {
   status: MilestoneStatus;
   assigned_to: string | null;
   completed_at: string | null;
+  created_at: string;
+}
+
+/** Money owed or paid (0006_money.sql). Unpaid while `paid_on` is null. */
+export interface Payment {
+  id: string;
+  wedding_id: string;
+  contact_id: string | null;
+  area_key: string | null;
+  description: string;
+  amount: number;
+  due_date: string | null;
+  paid_on: string | null;
+  notes: string | null;
   created_at: string;
 }

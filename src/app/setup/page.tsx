@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Check } from "lucide-react";
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { Field, SubmitButton } from "@/components/form-bits";
+import { INPUT } from "@/components/form-styles";
 import { STARTER_AREAS } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";

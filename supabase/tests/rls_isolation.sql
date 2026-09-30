@@ -5,7 +5,8 @@
 -- (see docs/ERD.md — "How security works").
 --
 --   psql -f supabase/migrations/0001_init.sql
---   psql -f supabase/migrations/0003_areas.sql   (optional; tested if present)
+--   psql -f supabase/migrations/0003_areas.sql   (and later ones; each table is
+--                                                  tested if present)
 --   psql -f supabase/tests/rls_isolation.sql
 --
 -- Expected: every assertion below passes silently. Any raised exception is a
@@ -45,6 +46,11 @@ insert into contacts (wedding_id, first_name, last_name) values
 -- Areas (0003_areas.sql), if that migration has been applied.
 do $$
 begin
+  if to_regclass('public.payments') is not null then
+    insert into payments (wedding_id, description, amount) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'Rings', 900),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'Rings', 1200);
+  end if;
   if to_regclass('public.areas') is not null then
     insert into areas (wedding_id, key, label) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'venue', 'Venue'),
@@ -116,6 +122,34 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A deleted wedding B''s areas';
+    end if;
+  end if;
+
+  if to_regclass('public.payments') is not null then
+    execute 'select count(*) from payments' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % payments, expected 1', visible_contacts;
+    end if;
+
+    begin
+      execute $q$insert into payments (wedding_id, description, amount)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky', 1)$q$;
+      raise exception 'LEAK: couple A added a payment to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    execute $q$update payments set amount = 0
+             where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A updated wedding B''s payments';
+    end if;
+
+    execute $q$delete from payments where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s payments';
     end if;
   end if;
 

@@ -4,6 +4,7 @@ import { InlineSubmit } from "@/components/form-bits";
 import { areaIcon } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { todayISO } from "@/lib/dates";
+import type { Money } from "@/lib/budget";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { AreaRow, Milestone } from "@/types/db";
@@ -27,12 +28,15 @@ export default function AreaView({
   area,
   milestones,
   suppliers,
+  money,
   error,
   detail,
 }: {
   area: AreaRow;
   milestones: Milestone[];
   suppliers: Supplier[];
+  /** Budget, committed and paid, counted as the Money tab counts them. */
+  money: Money;
   error?: string;
   detail?: string;
 }) {
@@ -43,13 +47,11 @@ export default function AreaView({
 
   const live = suppliers.filter((s) => s.supplier_details?.status !== "cancelled");
   const booked = live.find((s) => s.supplier_details?.status === "booked");
-  const quoted = live.reduce((sum, s) => sum + (s.supplier_details?.quoted_cost ?? 0), 0);
-  const paid = live.reduce((sum, s) => sum + (s.supplier_details?.deposit_paid ?? 0), 0);
 
   const summary = [
     open > 0 ? `${open} to do` : milestones.length > 0 ? "All done" : null,
     booked ? `${supplierName(booked)} booked` : live.length > 0 ? `${live.length} supplier${live.length === 1 ? "" : "s"}` : null,
-    quoted > 0 && `${formatMoney(quoted)} quoted`,
+    money.committed > 0 && `${formatMoney(money.committed)} committed`,
   ].filter(Boolean);
 
   const section = "flex items-baseline justify-between border-b border-champagne-400 pb-2";
@@ -106,24 +108,35 @@ export default function AreaView({
         </section>
 
         <section className="rounded-2xl border border-linen bg-white p-5">
-          <h2 className="label font-body">Cost</h2>
-          {quoted > 0 ? (
+          <div className="flex items-baseline justify-between">
+            <h2 className="label font-body">Cost</h2>
+            <Link href="/money/budget" className="text-sm text-stone underline underline-offset-4 hover:text-ink">
+              {money.budget === null ? "Set a budget" : "Change"}
+            </Link>
+          </div>
+          {money.committed > 0 || money.paid > 0 || money.budget !== null ? (
             <dl className="mt-3 space-y-2">
+              {money.budget !== null && (
+                <div className="flex items-baseline justify-between">
+                  <dt className="text-sm text-stone">Budget</dt>
+                  <dd className="text-[15px] text-ink">{formatMoney(money.budget)}</dd>
+                </div>
+              )}
               <div className="flex items-baseline justify-between">
-                <dt className="text-sm text-stone">Quoted</dt>
-                <dd className="font-display text-2xl text-ink">{formatMoney(quoted)}</dd>
+                <dt className="text-sm text-stone">Committed</dt>
+                <dd className="font-display text-2xl text-ink">{formatMoney(money.committed)}</dd>
               </div>
               <div className="flex items-baseline justify-between">
                 <dt className="text-sm text-stone">Paid</dt>
-                <dd className="text-[15px] text-ink">{formatMoney(paid)}</dd>
+                <dd className="text-[15px] text-ink">{formatMoney(money.paid)}</dd>
               </div>
               <div className="flex items-baseline justify-between border-t border-linen pt-2">
-                <dt className="text-sm text-stone">Left to pay</dt>
-                <dd className="text-[15px] text-ink">{formatMoney(Math.max(quoted - paid, 0))}</dd>
+                <dt className="text-sm text-stone">Still to pay</dt>
+                <dd className="text-[15px] text-ink">{formatMoney(Math.max(money.committed - money.paid, 0))}</dd>
               </div>
             </dl>
           ) : (
-            <p className="mt-3 text-sm text-stone">No quotes yet. Add a supplier with a quote and it shows here.</p>
+            <p className="mt-3 text-sm text-stone">Nothing yet. Book a supplier with a quote, or set a budget.</p>
           )}
         </section>
       </div>

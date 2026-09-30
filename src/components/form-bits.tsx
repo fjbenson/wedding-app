@@ -4,8 +4,7 @@ import { useFormStatus } from "react-dom";
 
 /** Shared pieces for the add/edit forms. */
 
-export const INPUT =
-  "mt-2 w-full rounded-xl border border-linen bg-white px-4 py-3 text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
+export { INPUT } from "./form-styles";
 
 export function Field({
   label,

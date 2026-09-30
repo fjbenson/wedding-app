@@ -15,6 +15,6 @@ export const NAV: NavItem[] = [
   { label: "Hub", icon: CircleDot, href: "/" },
   { label: "People", icon: Users, href: "/people" },
   { label: "Plan", icon: CalendarDays, href: "/plan" },
-  { label: "Money", icon: PoundSterling, href: null },
+  { label: "Money", icon: PoundSterling, href: "/money" },
   { label: "The Day", icon: Clock, href: null },
 ];

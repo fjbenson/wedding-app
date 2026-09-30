@@ -76,7 +76,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`?view=area`, screen 18) — every area of the wedding in its own order,
   empty ones with an "Add a to-do" that pre-picks the area. Tick off, add,
   edit, remove. The to-do form offers the wedding's own areas.
-- **Money** and **The Day**: in the menus as "Soon".
+- **Money** (`/money`, screens 22–24; `0006_money.sql`): **Budget** — the
+  wedding's budget and each area's share against committed and paid, by
+  area — and **Payments** (`?tab=payments`): due and paid, tick to mark paid,
+  overdue flagged, booked suppliers' unscheduled balances offered as
+  payments. How committed/paid are counted lives only in `src/lib/budget.ts`
+  (area pages use it too): committed = booked suppliers' quotes + payments
+  not for a supplier; paid = supplier deposits + payments marked paid.
+- **The Day**: in the menus as "Soon".
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
@@ -134,7 +141,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0005_area_details.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0006_money.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
@@ -211,9 +218,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
 4. ~~Build first screens: sign in, hub, guest list, timeline, RSVP~~ — done 30 Sep 2026;
    realigned to the five-tab plan the same day
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
-   the plan's "Next" column: ~~area pages (5–7)~~; still to do: bridal party
-   (11), invitations (15), agenda and appointments (16, 17, 21), budget and
-   payments (22–24), quick capture and inbox (35, 36), settings (37)
+   the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~; still to do:
+   bridal party (11), invitations (15), agenda and appointments (16, 17, 21),
+   quick capture and inbox (35, 36), settings (37)
 6. Replace the hand-written types with `npm run db:types`
 
 ### Design work so far (links)

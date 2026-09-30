@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
-import { Field, INPUT, InlineSubmit, SubmitButton } from "@/components/form-bits";
+import { Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
+import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";

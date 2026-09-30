@@ -44,7 +44,7 @@ export default function TimelineView({
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-md px-6 pb-28 pt-10">
+    <main className="page pb-28">
       <p className="label">Timeline</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {milestones.length === 0 ? "Nothing planned yet." : "The plan"}
@@ -102,7 +102,7 @@ export default function TimelineView({
           <section>
             <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
               <h2 className="text-xl text-ink">Done</h2>
-              <span className="text-[10px] uppercase tracking-[0.14em] text-stone">
+              <span className="text-xs uppercase tracking-[0.14em] text-stone">
                 {done.length}
               </span>
             </div>

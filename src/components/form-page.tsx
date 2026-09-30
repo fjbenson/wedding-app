@@ -18,7 +18,7 @@ export default function FormPage({
   children: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto min-h-screen max-w-md px-6 pb-16 pt-6">
+    <main className="page pb-16">
       <Link
         href={backHref}
         className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-stone hover:text-ink"

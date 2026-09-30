@@ -24,7 +24,7 @@ export default function GuestList({
   const children = guests.filter((g) => g.is_child).length;
 
   return (
-    <main className="mx-auto min-h-screen max-w-md px-6 pb-28 pt-10">
+    <main className="page pb-28">
       <p className="label">Guests</p>
       <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {guests.length === 0 ? "No one on the list yet." : "The guest list"}
@@ -57,7 +57,7 @@ export default function GuestList({
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h2 className="flex-1 text-xl text-ink">{group.name}</h2>
-              <span className="text-[10px] uppercase tracking-[0.14em] text-stone">
+              <span className="text-xs uppercase tracking-[0.14em] text-stone">
                 {plural(group.guests.length, "guest")}
               </span>
             </div>

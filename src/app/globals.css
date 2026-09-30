@@ -11,9 +11,22 @@
 }
 
 @layer components {
+  /*
+   * The frame every screen sits in: one readable column, centred, that grows
+   * a little on wider screens. Fills the visible screen (dvh, not vh, so
+   * phone address bars don't push things off the bottom) and keeps clear of
+   * notches and the iPhone home bar.
+   */
+  .page {
+    @apply mx-auto min-h-dvh w-full max-w-lg md:max-w-2xl;
+    padding-top: max(2.5rem, env(safe-area-inset-top));
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
   /* "THIS MONTH", "ISSUE 01" — small, widely spaced capitals. */
   .label {
-    @apply text-[11px] font-medium uppercase tracking-label text-champagne-600;
+    @apply text-xs font-medium uppercase tracking-label text-champagne-600;
   }
 
   /*

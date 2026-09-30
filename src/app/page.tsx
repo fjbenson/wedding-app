@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
-import Cover from "@/components/cover";
+import { listGuests } from "@/lib/db/contacts";
 import ThisMonth from "@/components/this-month";
 import MenuBar from "@/components/menu-bar";
+import HomeHeader from "@/components/home-header";
+import SectionLinks from "@/components/section-links";
 import { createWeddingAction } from "./actions";
 
 export default async function HomePage({
@@ -20,24 +22,30 @@ export default async function HomePage({
   const wedding = await getCurrentWedding();
 
   if (wedding) {
-    const milestones = await listMilestones(wedding.id);
+    const [milestones, guests] = await Promise.all([
+      listMilestones(wedding.id),
+      listGuests(wedding.id),
+    ]);
 
+    // Deliberately plain for now: get every screen working, then design them
+    // all together. The earlier cover-and-ring version is in git history
+    // (components/cover.tsx, components/hub.tsx) and in docs/DESIGN.md.
     return (
-      <main className="min-h-screen pb-28">
-        {/* The cover runs edge to edge; everything under it sits in a column. */}
-        <Cover name={wedding.name} weddingDate={wedding.wedding_date} />
-        <div className="mx-auto max-w-md md:max-w-xl">
+      <main className="page pb-28">
+        <HomeHeader name={wedding.name} weddingDate={wedding.wedding_date} />
+        <SectionLinks guestCount={guests.length} milestones={milestones} />
+        <div className="mt-10">
           <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
-          {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
-          {user?.email && <SignedIn email={user.email} />}
         </div>
+        {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
+        {user?.email && <SignedIn email={user.email} />}
         <MenuBar current="/" />
       </main>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-8">
+    <main className="page flex flex-col">
       {user?.email && (
         <header className="flex items-center justify-between">
           <p className="text-sm text-stone">{user.email}</p>
@@ -65,7 +73,7 @@ function SignedIn({ email }: { email?: string }) {
     <form
       action="/auth/sign-out"
       method="post"
-      className="mt-10 px-6 text-center text-xs text-stone"
+      className="mt-10 text-center text-xs text-stone"
     >
       {email} ·{" "}
       <button type="submit" className="underline underline-offset-4 hover:text-ink">

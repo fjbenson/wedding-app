@@ -1,6 +1,5 @@
 import Link from "next/link";
 import StarterPlanCard from "@/components/starter-plan-card";
-import { AREAS } from "@/lib/areas";
 import { formatDayMonth, isThisMonth } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
 
@@ -35,15 +34,12 @@ export default function ThisMonth({
   else headline = "Every wedding starts with a date.";
 
   return (
-    <section className="px-6">
-      <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
+    <section>
+      <div className="border-b border-champagne-400 pb-2">
         <p className="label">{label}</p>
-        <p className="text-[10px] font-medium uppercase tracking-label text-stone">
-          {AREAS.length} areas
-        </p>
       </div>
 
-      <h2 className="mt-4 text-[28px] leading-[1.1] tracking-[-0.02em] text-ink">{headline}</h2>
+      <h2 className="mt-4 text-2xl leading-tight tracking-[-0.02em] text-ink">{headline}</h2>
 
       {upcoming.length > 0 ? (
         <ol className="mt-4">
@@ -54,7 +50,7 @@ export default function ThisMonth({
               </span>
               <span className="flex-1 font-display text-lg text-ink">{m.title}</span>
               {m.due_date && (
-                <span className="text-[10px] uppercase tracking-[0.14em] text-stone">
+                <span className="text-xs uppercase tracking-[0.14em] text-stone">
                   {formatDayMonth(m.due_date)}
                 </span>
               )}

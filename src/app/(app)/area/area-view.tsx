@@ -7,7 +7,8 @@ import { todayISO } from "@/lib/dates";
 import type { Money } from "@/lib/budget";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
-import type { AreaRow, Milestone } from "@/types/db";
+import NoteText from "@/components/note-text";
+import type { AreaRow, Milestone, Note } from "@/types/db";
 import { MilestoneRow } from "../plan/milestone-row";
 import { saveAreaDetailsAction, setAreaAction } from "./actions";
 
@@ -22,13 +23,14 @@ function supplierName(s: Supplier) {
  * the same template for every area, including ones a couple invents. It
  * gathers what's already tagged with the area elsewhere — to-dos from Plan,
  * suppliers from People — plus a plain key-facts block and the cost so far.
- * Notes and saved inspiration join when Quick capture and Inspo are built.
+ * Notes are quick captures filed here; saved inspiration joins with Inspo.
  */
 export default function AreaView({
   area,
   milestones,
   suppliers,
   money,
+  notes,
   error,
   detail,
 }: {
@@ -37,6 +39,8 @@ export default function AreaView({
   suppliers: Supplier[];
   /** Budget, committed and paid, counted as the Money tab counts them. */
   money: Money;
+  /** Captures filed under this area (screens 35–36). */
+  notes: Note[];
   error?: string;
   detail?: string;
 }) {
@@ -193,6 +197,30 @@ export default function AreaView({
           </ul>
         ) : (
           <p className="py-3 text-sm text-stone">No one yet.</p>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <div className={section}>
+          <h2 className="text-xl text-ink">Notes</h2>
+          <Link
+            href={`/capture?area=${encodeURIComponent(area.key)}&from=${encodeURIComponent(`/area/${area.key}`)}`}
+            className={addLink}
+          >
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Add a note
+          </Link>
+        </div>
+        {notes.length > 0 ? (
+          <ul>
+            {notes.map((n) => (
+              <li key={n.id} className="border-b border-linen py-3 last:border-b-0">
+                <NoteText note={n} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="py-3 text-sm text-stone">Ideas and links you capture and file here show up here.</p>
         )}
       </section>
 

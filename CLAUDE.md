@@ -95,6 +95,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   payments. How committed/paid are counted lives only in `src/lib/budget.ts`
   (area pages use it too): committed = booked suppliers' quotes + payments
   not for a supplier; paid = supplier deposits + payments marked paid.
+- **Quick capture and inbox** (screens 35–36, `0008_notes.sql`): jot a
+  thought and/or a link from anywhere — a glass pen button above the phone
+  menu bar, a button in the desktop sidebar, the pen on the hub cover — at
+  `/capture?from=…`. Unfiled captures wait in `/inbox` (count in the
+  sidebar) to be filed under an area, turned into a to-do, or removed;
+  filed ones show in the area page's Notes block. Images aren't in yet:
+  they need Supabase Storage (a bucket plus storage policies).
 - **The Day**: in the menus as "Soon".
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
@@ -153,7 +160,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0007_appointments.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0008_notes.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
@@ -231,7 +238,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    realigned to the five-tab plan the same day
 5. ~~Finish the plan's MVP screens~~ — done 30 Sep 2026. Now working through
    the plan's "Next" column: ~~area pages (5–7)~~, ~~Money (22–24)~~, ~~agenda and
-   appointments (16, 17, 21)~~; ~~bridal party (11)~~, ~~invitations (15)~~; still to do: quick capture and inbox (35, 36), settings (37). Suggested starter
+   appointments (16, 17, 21)~~; ~~bridal party (11)~~, ~~invitations (15)~~, ~~quick capture and inbox
+   (35, 36)~~ (images still to come); still to do: settings (37). Suggested starter
    tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`
 

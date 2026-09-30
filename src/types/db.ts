@@ -168,3 +168,13 @@ export interface Appointment {
   notes: string | null;
   created_at: string;
 }
+
+/** A quick capture — a thought or a link (0008_notes.sql). Unfiled while `area_key` is null. */
+export interface Note {
+  id: string;
+  wedding_id: string;
+  area_key: string | null;
+  body: string | null;
+  url: string | null;
+  created_at: string;
+}

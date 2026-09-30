@@ -1,4 +1,5 @@
-import { Bell, Camera } from "lucide-react";
+import Link from "next/link";
+import { Inbox, PenLine } from "lucide-react";
 import Hub, { type HubArea } from "@/components/hub";
 
 /**
@@ -39,18 +40,12 @@ export default function Cover({
         </div>
 
         <div className="flex gap-1 text-white">
-          <span
-            title="Change photo — coming soon"
-            className="flex h-10 w-10 items-center justify-center opacity-80"
-          >
-            <Camera className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-          </span>
-          <span
-            title="Notifications — coming soon"
-            className="flex h-10 w-10 items-center justify-center opacity-80"
-          >
-            <Bell className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-          </span>
+          <Link href="/capture?from=/" aria-label="Capture something" className="flex h-11 w-11 items-center justify-center">
+            <PenLine className="h-[18px] w-[18px] drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]" strokeWidth={1.8} aria-hidden />
+          </Link>
+          <Link href="/inbox" aria-label="Inbox" className="flex h-11 w-11 items-center justify-center">
+            <Inbox className="h-[18px] w-[18px] drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]" strokeWidth={1.8} aria-hidden />
+          </Link>
         </div>
       </header>
 

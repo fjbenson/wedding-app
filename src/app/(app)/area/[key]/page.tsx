@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getArea } from "@/lib/db/areas";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
+import { listNotes } from "@/lib/db/notes";
 import { moneyFor } from "@/lib/budget";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -25,10 +26,11 @@ export default async function AreaPage({
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
-  const [milestones, suppliers, payments] = await Promise.all([
+  const [milestones, suppliers, payments, notes] = await Promise.all([
     listMilestones(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
+    listNotes(wedding.id, { area: area.key }),
   ]);
 
   return (
@@ -37,6 +39,7 @@ export default async function AreaPage({
       milestones={milestones.filter((m) => m.category === area.key)}
       suppliers={suppliers.filter((s) => s.supplier_details?.category === area.key)}
       money={moneyFor(area.key, suppliers, payments ?? [], area.budget ?? null)}
+      notes={notes ?? []}
       error={error}
       detail={detail}
     />

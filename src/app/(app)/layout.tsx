@@ -1,4 +1,5 @@
 import AppShell from "@/components/app-shell";
+import { listNotes } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 
 /**
@@ -11,5 +12,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const wedding = await getCurrentWedding();
   if (!wedding) return children;
 
-  return <AppShell wedding={wedding}>{children}</AppShell>;
+  // Unfiled captures, for the count beside Inbox in the sidebar.
+  const unfiled = await listNotes(wedding.id, { area: null });
+
+  return (
+    <AppShell wedding={wedding} inboxCount={unfiled?.length ?? 0}>
+      {children}
+    </AppShell>
+  );
 }

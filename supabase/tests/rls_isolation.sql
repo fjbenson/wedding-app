@@ -46,6 +46,11 @@ insert into contacts (wedding_id, first_name, last_name) values
 -- Areas (0003_areas.sql), if that migration has been applied.
 do $$
 begin
+  if to_regclass('public.notes') is not null then
+    insert into notes (wedding_id, body) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'Peonies?'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'Secret plan');
+  end if;
   if to_regclass('public.appointments') is not null then
     insert into appointments (wedding_id, title, on_date) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Dress fitting', '2027-01-10'),
@@ -183,6 +188,34 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A deleted wedding B''s appointments';
+    end if;
+  end if;
+
+  if to_regclass('public.notes') is not null then
+    execute 'select count(*) from notes' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % notes, expected 1', visible_contacts;
+    end if;
+
+    begin
+      execute $q$insert into notes (wedding_id, body)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added a note to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    execute $q$update notes set body = 'Hacked'
+             where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A updated wedding B''s notes';
+    end if;
+
+    execute $q$delete from notes where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A deleted wedding B''s notes';
     end if;
   end if;
 

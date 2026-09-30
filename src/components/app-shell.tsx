@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import CaptureButton from "@/components/capture-button";
+import CapturedToast from "@/components/captured-toast";
 import MenuBar from "@/components/menu-bar";
 import Sidebar from "@/components/sidebar";
 
@@ -9,16 +12,22 @@ import Sidebar from "@/components/sidebar";
  */
 export default function AppShell({
   wedding,
+  inboxCount,
   children,
 }: {
   wedding: { name: string; wedding_date: string | null };
+  inboxCount: number;
   children: React.ReactNode;
 }) {
   return (
     <div className="lg:flex">
-      <Sidebar name={wedding.name} weddingDate={wedding.wedding_date} />
+      <Sidebar name={wedding.name} weddingDate={wedding.wedding_date} inboxCount={inboxCount} />
       <div className="min-w-0 flex-1">{children}</div>
       <MenuBar />
+      <CaptureButton />
+      <Suspense fallback={null}>
+        <CapturedToast />
+      </Suspense>
     </div>
   );
 }

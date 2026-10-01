@@ -198,7 +198,13 @@ export interface SeatingTable {
   capacity: number;
   sort_order: number;
   created_at: string;
+  /** Centre on the floor plan, as % of the room (0011_floor_plan.sql). Null until first dragged; missing before 0011 is run. */
+  pos_x?: number | null;
+  pos_y?: number | null;
+  shape?: TableShape;
 }
+
+export type TableShape = "round" | "long";
 
 /** Which table a guest sits at. A guest sits at one table at most. */
 export interface Seat {

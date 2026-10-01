@@ -125,8 +125,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   out) and **Transport** (`?tab=transport`: each car/coach run and who's in
   it). Seats and passengers can only point at guests, tables and runs of
   the same wedding (composite foreign keys on `(id, wedding_id)`). The
-  agenda's wedding-day line links here. Still to come: the drag-about
-  seating floor plan (screen 26).
+  agenda's wedding-day line links here. Seating opens on the **floor plan**
+  (screen 26, `floor-plan.tsx`, `0011_floor_plan.sql`): drag tables about a
+  room (positions are % of the room, so it scales; never-moved tables sit in
+  a grid), round or long, and seat people by tapping a name then a table.
+  On a phone the room scrolls sideways rather than shrinking. The old cards
+  are the **List** view (`?view=list`), where tables are renamed or removed.
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
@@ -184,7 +188,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0010_inspo.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0011_floor_plan.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role

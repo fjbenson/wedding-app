@@ -9,6 +9,7 @@ import {
   deleteTable,
   deleteTransportRun,
   getDay,
+  placeTable,
   removePassenger,
   saveRunSheetItem,
   saveTransportRun,
@@ -132,6 +133,65 @@ export async function unseatGuestAction(contactId: string) {
     failed(SEATING, "That didn't move them.", error);
   }
   refresh();
+}
+
+// Floor plan -----------------------------------------------------------------
+// Called straight from the floor plan, which updates on screen first and
+// only needs to hear back if the save failed. They return a message rather
+// than redirecting, so a drag doesn't reload the page.
+
+function floorPlanError(error: unknown): string {
+  console.error(error);
+  const code = (error as { code?: string }).code;
+  // 42703 / PGRST204: the columns don't exist yet.
+  return code === "42703" || code === "PGRST204"
+    ? "The floor plan needs one more database step: run supabase/migrations/0011_floor_plan.sql in Supabase."
+    : `That didn't save. ${describe(error)}`;
+}
+
+const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n * 10) / 10));
+
+export async function moveTableAction(id: string, x: number, y: number): Promise<string | null> {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  try {
+    await placeTable(id, { pos_x: clamp(x), pos_y: clamp(y) });
+  } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
+}
+
+export async function setTableShapeAction(id: string, shape: string): Promise<string | null> {
+  if (shape !== "round" && shape !== "long") return null;
+  try {
+    await placeTable(id, { shape });
+  } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
+}
+
+export async function seatOnPlanAction(contactId: string, tableId: string): Promise<string | null> {
+  const wid = await weddingId();
+  try {
+    await seatGuest(wid, contactId, tableId);
+  } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
+}
+
+export async function unseatOnPlanAction(contactId: string): Promise<string | null> {
+  try {
+    await unseatGuest(contactId);
+  } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
 }
 
 // Transport ------------------------------------------------------------------

@@ -13,6 +13,7 @@ import {
   unseatGuestAction,
   updateTableAction,
 } from "./actions";
+import FloorPlan from "./floor-plan";
 import PrintButton from "./print-button";
 
 export type DayTab = "run-sheet" | "seating" | "transport";
@@ -35,11 +36,13 @@ const pill =
 /**
  * The Day (screens 25–28): the choreography of the day itself, as opposed to
  * the planning of the run-up. It sits near-empty for months and matters
- * enormously for a fortnight. Seating is a list of tables here — the
- * drag-about floor plan (screen 26) is a later step.
+ * enormously for a fortnight. Seating opens on the floor plan (screen 26,
+ * `floor-plan.tsx`); the list of tables is the other view, and where tables
+ * are renamed or removed.
  */
 export default function DayView({
   tab,
+  seatingView,
   weddingDate,
   day,
   guests,
@@ -48,6 +51,7 @@ export default function DayView({
   detail,
 }: {
   tab: DayTab;
+  seatingView: "plan" | "list";
   weddingDate: string | null;
   /** null until 0009_the_day.sql has been run. */
   day: DayData | null;
@@ -86,7 +90,7 @@ export default function DayView({
       )}
 
       {tab === "seating" ? (
-        <Seating data={data} guests={guests} rsvps={rsvps} />
+        <Seating data={data} guests={guests} rsvps={rsvps} view={seatingView} />
       ) : tab === "transport" ? (
         <Transport data={data} guests={guests} />
       ) : (
@@ -144,7 +148,7 @@ function RunSheet({ items, weddingDate }: { items: RunSheetItem[]; weddingDate: 
   );
 }
 
-function Seating({ data, guests, rsvps }: { data: DayData; guests: Contact[]; rsvps: Rsvp[] }) {
+function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact[]; rsvps: Rsvp[]; view: "plan" | "list" }) {
   // Everyone except those who've said no to everything they were asked to.
   const coming = guests.filter((g) => {
     const theirs = rsvps.filter((r) => r.contact_id === g.id);
@@ -179,6 +183,36 @@ function Seating({ data, guests, rsvps }: { data: DayData; guests: Contact[]; rs
         <InlineSubmit label="Add table" pendingLabel="Adding…" />
       </form>
 
+      <ViewTabs
+        label="Seating view"
+        tabs={[
+          { label: "Floor plan", href: "/day?tab=seating", active: view === "plan" },
+          { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
+        ]}
+      />
+
+      {view === "plan" ? (
+        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} />
+      ) : (
+        <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} />
+      )}
+    </>
+  );
+}
+
+function SeatingList({
+  data,
+  coming,
+  unseated,
+  tableOf,
+}: {
+  data: DayData;
+  coming: Contact[];
+  unseated: Contact[];
+  tableOf: Map<string, string>;
+}) {
+  return (
+    <>
       {unseated.length > 0 && data.tables.length > 0 && (
         <p className="mt-6 text-sm text-stone">
           <span className="text-ink">Not seated yet ({unseated.length}):</span> {unseated.map(fullName).join(", ")}

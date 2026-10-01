@@ -71,6 +71,16 @@ export async function updateTable(id: string, fields: Pick<SeatingTable, "name" 
   if (error) throw error;
 }
 
+/** Moves a table on the floor plan, or turns it round or long. */
+export async function placeTable(
+  id: string,
+  fields: Partial<Pick<SeatingTable, "pos_x" | "pos_y" | "shape">>,
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("seating_tables").update(fields).eq("id", id);
+  if (error) throw error;
+}
+
 /** Removes a table; its guests become unseated. */
 export async function deleteTable(id: string): Promise<void> {
   const supabase = await createClient();

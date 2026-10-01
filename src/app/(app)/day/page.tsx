@@ -10,16 +10,17 @@ export const metadata = { title: "The Day — Wedding App" };
 export default async function DayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ tab?: string; view?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { tab, error, detail } = await searchParams;
+  const { tab, view, error, detail } = await searchParams;
   const [day, guests, rsvps] = await Promise.all([getDay(wedding.id), listGuests(wedding.id), listRsvps(wedding.id)]);
 
   return (
     <DayView
       tab={tab === "seating" || tab === "transport" ? (tab as DayTab) : "run-sheet"}
+      seatingView={view === "list" ? "list" : "plan"}
       weddingDate={wedding.wedding_date}
       day={day}
       guests={guests}

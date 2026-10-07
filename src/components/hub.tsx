@@ -61,10 +61,12 @@ export default function Hub({
   areas: HubArea[];
 }) {
   const total = areas.length + 1; // + the "add an area" node
-  // Past nine buttons the names collide on a phone, so they show from tablet
-  // width up; on the narrowest phones (under 360px) there's never room. The
-  // buttons keep their names for screen readers either way.
+  // Past nine buttons, the buttons shrink and their names tighten up on a
+  // phone so they still fit. On the narrowest phones (under 360px) there's
+  // no room for names at all; the buttons keep them for screen readers.
   const crowded = total > 9;
+  const button = crowded ? "h-10 w-10 md:h-[46px] md:w-[46px]" : "h-[46px] w-[46px]";
+  const icon = crowded ? "h-[17px] w-[17px] md:h-[19px] md:w-[19px]" : "h-[19px] w-[19px]";
 
   return (
     <div className="relative aspect-square w-full">
@@ -82,16 +84,16 @@ export default function Hub({
         const Icon = areaIcon(area.key);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} crowded={crowded}>
-            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-white text-ink shadow-[0_2px_8px_rgb(60_50_40/0.1)]">
-              <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+            <span className={`flex ${button} items-center justify-center rounded-full bg-white text-ink shadow-[0_2px_8px_rgb(60_50_40/0.1)]`}>
+              <Icon className={icon} strokeWidth={1.5} aria-hidden />
             </span>
           </Node>
         );
       })}
 
       <Node position={nodePosition(areas.length, total)} href="/area/new" label="Add" ariaLabel="Add an area" crowded={crowded}>
-        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/60 text-champagne-600">
-          <Plus className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+        <span className={`flex ${button} items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/60 text-champagne-600`}>
+          <Plus className={icon} strokeWidth={1.5} aria-hidden />
         </span>
       </Node>
     </div>
@@ -119,10 +121,14 @@ function Node({
       href={href}
       style={position}
       aria-label={ariaLabel}
-      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[23px] flex-col items-center gap-1.5 transition active:scale-95"
+      className={`absolute flex -translate-x-1/2 flex-col items-center transition active:scale-95 ${
+        crowded ? "w-[72px] -translate-y-5 gap-1 md:w-[84px] md:-translate-y-[23px] md:gap-1.5" : "w-[84px] -translate-y-[23px] gap-1.5"
+      }`}
     >
       {children}
-      <span aria-hidden className={`text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone ${crowded ? "hidden md:block" : "max-[359px]:hidden"}`}>
+      <span aria-hidden className={`text-center text-xs font-medium uppercase leading-tight text-stone max-[359px]:hidden ${
+          crowded ? "tracking-[0.04em] md:tracking-[0.12em]" : "tracking-[0.12em]"
+        }`}>
         {label}
       </span>
     </Link>

@@ -30,8 +30,9 @@ ring on a champagne cover described further down:
   champagne glows the page puts behind them so the glass shows.
 - What the owner rejected on the way: blue; stacking several "grounding"
   ideas at once (card + dark centre + ring line); solid white cards.
-- Area names wrap to two lines; past nine buttons they show only from
-  tablet width, and never under 360px.
+- Area names wrap to two lines and always show (the owner's call, with
+  10 areas): past nine buttons, phones get smaller buttons and tighter
+  letter spacing so they fit. Under 360px wide there's no room for names.
 
 ## Settled
 

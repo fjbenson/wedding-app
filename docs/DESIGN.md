@@ -30,9 +30,9 @@ ring on a champagne cover described further down:
   champagne glows the page puts behind them so the glass shows.
 - What the owner rejected on the way: blue; stacking several "grounding"
   ideas at once (card + dark centre + ring line); solid white cards.
-- Area names wrap to two lines and always show (the owner's call, with
-  10 areas): past nine buttons, phones get smaller buttons and tighter
-  letter spacing so they fit. Under 360px wide there's no room for names.
+- Area names show under the buttons from tablet width up. On phones it's
+  icons only: names were tried with 10 areas and looked too busy (owner's
+  call, 7 Oct 2026).
 
 ## Settled
 

@@ -135,7 +135,7 @@ function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWi
       </div>
 
       <div className="pointer-events-none absolute inset-x-6 bottom-2 flex items-end justify-between gap-3">
-        <h1 className="min-w-0 font-display text-[52px] font-light leading-[0.95] tracking-[-0.035em] text-ink md:text-6xl">
+        <h1 className="type-display min-w-0 text-[48px] leading-none md:text-6xl">
           {area.label}
         </h1>
         {ideaCount > 0 && (
@@ -184,11 +184,23 @@ function StageStrip({ done, current }: { done: boolean[]; current: number }) {
 }
 
 /** A section: a small heading with "+ Add", over one glass card. */
-function Section({ title, addHref, addLabel, children }: { title: string; addHref?: string; addLabel?: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  addHref,
+  addLabel,
+  children,
+}: {
+  id?: string;
+  title: string;
+  addHref?: string;
+  addLabel?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="mt-3">
+    <section id={id} className="mt-3 scroll-mt-6">
       <div className="mb-2 flex items-baseline justify-between px-1.5">
-        <h2 className="text-xs font-medium uppercase tracking-[0.28em] text-stone">{title}</h2>
+        <h2 className="section-label">{title}</h2>
         {addHref && (
           <Link href={addHref} className="label py-1 hover:text-ink">
             <span aria-hidden>+ </span>
@@ -211,7 +223,7 @@ function Folded({ label, children }: { label: string; children: React.ReactNode 
   return (
     <details className="group border-t border-linen">
       <summary className="flex cursor-pointer list-none items-center gap-3 py-3.5 [&::-webkit-details-marker]:hidden">
-        <span className="flex-1 text-[15px] text-stone">{label}</span>
+        <span className="type-meta flex-1">{label}</span>
         <ChevronRight className="h-4 w-4 text-stone transition group-open:rotate-90" strokeWidth={1.8} aria-hidden />
       </summary>
       <div className="pb-1">{children}</div>
@@ -223,7 +235,7 @@ function DateBox({ date }: { date: string }) {
   const [day, month] = formatDayMonth(date).split(" ");
   return (
     <span aria-hidden className="w-10 shrink-0 text-center">
-      <span className="block font-display text-2xl font-light leading-none text-ink">{day}</span>
+      <span className="type-figure block text-2xl leading-none">{day}</span>
       <span className="mt-1 block text-xs font-medium uppercase tracking-[0.12em] text-champagne-600">{month}</span>
     </span>
   );
@@ -240,7 +252,7 @@ function SupplierRow({ s }: { s: Supplier }) {
   return (
     <li className="border-b border-linen last:border-b-0">
       <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3.5">
-        <span className={`min-w-0 flex-1 truncate font-display text-lg ${status === "cancelled" ? "text-stone" : "text-ink"}`}>
+        <span className={`type-item min-w-0 flex-1 truncate ${status === "cancelled" ? "!text-stone" : ""}`}>
           {supplierName(s)}
         </span>
         <span
@@ -250,7 +262,7 @@ function SupplierRow({ s }: { s: Supplier }) {
         >
           {supplierStatusLabel(status)}
         </span>
-        <span className="w-[4.5rem] shrink-0 text-right font-display text-xl font-light text-ink">
+        <span className="type-figure w-[4.5rem] shrink-0 text-right text-xl">
           {d?.quoted_cost != null ? formatMoney(d.quoted_cost) : <span className="text-stone">—</span>}
         </span>
       </Link>
@@ -388,13 +400,15 @@ export default function AreaView({
           <div className={`${tile} z-10`}>
             {lead ? (
               <>
-                <span className="label">Booked</span>
-                <Link href={`/people/${lead.id}`} className="mt-2 font-display text-xl leading-tight text-ink hover:underline">
+                <span className="label">Supplier</span>
+                <Link href={`/people/${lead.id}`} className="type-item mt-2 hover:underline">
                   {supplierName(lead)}
                 </Link>
-                {lead.supplier_details?.company_name && (lead.first_name || lead.last_name) && (
-                  <span className="mt-1 text-[13px] text-stone">{[lead.first_name, lead.last_name].filter(Boolean).join(" ")}</span>
-                )}
+                <span className="type-meta mt-1.5">
+                  {["Booked", lead.supplier_details?.company_name && [lead.first_name, lead.last_name].filter(Boolean).join(" ")]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
                 <div className="mt-auto pt-3.5">
                   <ContactButtons name={supplierName(lead)} phone={lead.phone} email={lead.email} />
                 </div>
@@ -402,17 +416,17 @@ export default function AreaView({
             ) : area.diy ? (
               <>
                 <span className="label">Supplier</span>
-                <span className="mt-2 font-display text-xl leading-tight text-ink">Doing it ourselves</span>
-                <span className="mt-1 text-[13px] text-stone">No one to book</span>
+                <span className="type-item mt-2">Doing it ourselves</span>
+                <span className="type-meta mt-1.5">No one to book</span>
               </>
             ) : (
               <>
-                <span className="label">Choosing</span>
-                <span className="mt-2 font-display text-xl leading-tight text-ink">
-                  {live.length > 0 ? plural(live.length, "supplier") : "No one yet"}
-                </span>
-                <span className="mt-1 text-[13px] text-stone">
-                  {live.length === 0 ? "Add who you're asking" : quoteCount > 0 ? `${plural(quoteCount, "quote")} in` : "No quotes yet"}
+                <span className="label">Supplier</span>
+                <span className="type-item mt-2">Not chosen yet</span>
+                <span className="type-meta mt-1.5">
+                  {live.length === 0
+                    ? "No one asked"
+                    : [`${live.length} asked`, quoteCount > 0 && `${plural(quoteCount, "quote")} in`].filter(Boolean).join(" · ")}
                 </span>
               </>
             )}
@@ -422,7 +436,7 @@ export default function AreaView({
             {money.committed > 0 || money.paid > 0 ? (
               <>
                 <span className="label">To pay</span>
-                <span className="mt-2.5 font-display text-[34px] font-light leading-none tracking-[-0.03em] text-ink">
+                <span className="type-figure mt-2.5 text-[34px] leading-none">
                   {formatMoney(toPay)}
                 </span>
                 <span className="mt-4 block h-1 overflow-hidden rounded-full bg-linen">
@@ -436,7 +450,7 @@ export default function AreaView({
             ) : (
               <>
                 <span className="label">Budget</span>
-                <span className="mt-2.5 font-display text-[34px] font-light leading-none tracking-[-0.03em] text-ink">
+                <span className="type-figure mt-2.5 text-[34px] leading-none">
                   {money.budget !== null ? formatMoney(money.budget) : "—"}
                 </span>
                 <span className="mt-4 block h-1 rounded-full bg-linen" />
@@ -456,8 +470,8 @@ export default function AreaView({
             <DateBox date={nextAppointment.on_date} />
             <span className="min-w-0 flex-1">
               <span className="label block">Next appointment</span>
-              <span className="mt-1 block truncate font-display text-lg text-ink">{nextAppointment.title}</span>
-              <span className="block truncate text-[13px] text-stone">
+              <span className="type-item mt-1.5 block truncate">{nextAppointment.title}</span>
+              <span className="type-meta mt-1 block truncate">
                 {[formatWeekdayDayMonth(nextAppointment.on_date), appointmentLine(nextAppointment)].filter(Boolean).join(" · ")}
               </span>
             </span>
@@ -504,8 +518,8 @@ export default function AreaView({
                   <Link href={`/plan/appointments/${a.id}`} className="flex items-center gap-3.5 py-3.5">
                     <DateBox date={a.on_date} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-display text-lg text-ink">{a.title}</span>
-                      <span className="block truncate text-[13px] text-stone">
+                      <span className="type-item block truncate">{a.title}</span>
+                      <span className="type-meta mt-1 block truncate">
                         {appointmentLine(a) || formatWeekdayDayMonth(a.on_date)}
                       </span>
                     </span>
@@ -562,10 +576,10 @@ export default function AreaView({
                     <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
                   </span>
                   <Link href={`/people/${s.id}`} className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] text-ink">Deposit</span>
-                    <span className="block truncate text-xs text-stone">Paid · {supplierName(s)}</span>
+                    <span className="type-item block truncate">Deposit</span>
+                    <span className="type-meta mt-1 block truncate">Paid · {supplierName(s)}</span>
                   </Link>
-                  <span className="font-display text-lg font-light text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
+                  <span className="type-figure text-lg !text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
                 </li>
               ))}
               {schedule.map((p) => {
@@ -584,8 +598,8 @@ export default function AreaView({
                       </button>
                     </form>
                     <Link href={`/money/payments/${p.id}`} className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] text-ink">{p.description}</span>
-                      <span className={`block truncate text-xs ${overdue ? "font-medium text-ink" : "text-stone"}`}>
+                      <span className="type-item block truncate">{p.description}</span>
+                      <span className={`type-meta mt-1 block truncate ${overdue ? "!text-ink" : ""}`}>
                         {p.paid_on
                           ? `Paid ${formatDayMonth(p.paid_on)}`
                           : p.due_date
@@ -593,7 +607,7 @@ export default function AreaView({
                             : "No date yet"}
                       </span>
                     </Link>
-                    <span className={`font-display text-lg font-light ${p.paid_on ? "text-stone" : "text-ink"}`}>{formatMoney(p.amount)}</span>
+                    <span className={`type-figure text-lg ${p.paid_on ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
                   </li>
                 );
               })}
@@ -601,7 +615,7 @@ export default function AreaView({
                 <li key={`balance-${s.id}`} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
                   <span className="h-6 w-6 shrink-0 rounded-full border border-dashed border-champagne-400" aria-hidden />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] text-ink">Balance, not scheduled</span>
+                    <span className="type-item block truncate">Balance, not scheduled</span>
                     <Link
                       href={`/money/payments/new?supplier=${s.id}&amount=${balance}`}
                       className="block text-xs text-champagne-600 underline underline-offset-4 hover:text-ink"
@@ -609,7 +623,7 @@ export default function AreaView({
                       Add a due date
                     </Link>
                   </span>
-                  <span className="font-display text-lg font-light text-ink">{formatMoney(balance)}</span>
+                  <span className="type-figure text-lg">{formatMoney(balance)}</span>
                 </li>
               ))}
             </ul>
@@ -618,12 +632,12 @@ export default function AreaView({
           )}
         </Section>
 
-        <Section title="Notes" addHref={`/capture?area=${key}&from=${from}`}>
+        <Section id="notes" title="Notes" addHref={`/capture?area=${key}&from=${from}`}>
           <div className={notes.length > 0 ? "border-b border-linen" : ""}>
             <div className="flex items-baseline justify-between pt-3.5">
-              <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-champagne-600">Key facts</h3>
+              <h3 className="label">Key facts</h3>
               {!editingFacts && (
-                <Link href={`/area/${area.key}?edit=facts`} className="label py-1 hover:text-ink">
+                <Link href={`/area/${area.key}?edit=facts#notes`} scroll={false} className="label py-1 hover:text-ink">
                   {area.details ? "Edit" : "Write"}
                 </Link>
               )}
@@ -640,7 +654,7 @@ export default function AreaView({
                   className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
                 />
                 <div className="mt-2 flex items-center justify-end gap-4">
-                  <Link href={`/area/${area.key}`} className="text-sm text-stone hover:text-ink">
+                  <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
                     Cancel
                   </Link>
                   <InlineSubmit label="Save" pendingLabel="Saving…" />

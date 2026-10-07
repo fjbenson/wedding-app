@@ -38,6 +38,24 @@ ring on a champagne cover described further down:
   icons only: names were tried with 10 areas and looked too busy (owner's
   call, 7 Oct 2026).
 
+## Type system (7 Oct 2026)
+
+Taken from the home screen (canvas round 15, "Round 14 no. 3 with
+Editorial's type") and defined once, in `src/app/globals.css`. Every screen
+uses these classes rather than its own sizes — that's what stops screens
+drifting apart.
+
+| Class | Looks like | Use for |
+|---|---|---|
+| `.type-display` | Fraunces Light *italic*, tight | Names, page titles ("Frankie & Sam", "Flowers") — size set where used |
+| `.label` | 12px capitals, 0.3em spacing, champagne | "THE WEDDING OF", card labels, capital-letter links |
+| `.section-label` | The same, in stone | The heading above a card: "COMING UP", "SUPPLIERS" |
+| `.type-item` | Fraunces 19px | A row's title in any list |
+| `.type-meta` | 12px capitals, 0.2em spacing, stone | The line under a row: "DUE SAT 1 NOV" |
+| `.type-figure` | Fraunces Light, tight | Numbers that matter: countdown, money, day of the month |
+
+Body text and buttons are Geist. Nothing under 12px.
+
 ## Settled
 
 ### Colour

@@ -45,9 +45,40 @@ body::before {
     padding-right: max(1.25rem, env(safe-area-inset-right));
   }
 
-  /* "THIS MONTH", "ISSUE 01" — small, widely spaced capitals. */
+  /*
+   * The type system — taken from the home screen (round 15, "Round 14
+   * no. 3 with Editorial's type"), so every screen sets type the same way.
+   * Use these rather than one-off sizes; docs/DESIGN.md has the table.
+   */
+
+  /* Names and page titles: Fraunces Light italic, like "Frankie & Sam". */
+  .type-display {
+    @apply font-display font-light italic leading-[1.1] tracking-[-0.01em] text-ink;
+  }
+
+  /* "THE WEDDING OF", card labels, caps links — champagne small capitals. */
   .label {
     @apply text-xs font-medium uppercase tracking-label text-champagne-600;
+  }
+
+  /* "COMING UP", "SUPPLIERS" — the heading above a card, in stone. */
+  .section-label {
+    @apply text-xs font-medium uppercase tracking-label text-stone;
+  }
+
+  /* A row's title in a list: "Send save-the-dates". */
+  .type-item {
+    @apply font-display text-[19px] leading-tight text-ink;
+  }
+
+  /* Under a row's title: "DUE SAT 1 NOV". Tighter capitals, in stone. */
+  .type-meta {
+    @apply text-xs font-medium uppercase tracking-[0.2em] text-stone;
+  }
+
+  /* Numbers that matter: the countdown, money, a day of the month. */
+  .type-figure {
+    @apply font-display font-light tracking-[-0.03em] text-ink;
   }
 
   /*

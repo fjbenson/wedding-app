@@ -37,12 +37,10 @@ export function MilestoneRow({
 
       <Link href={`/plan/${m.id}`} className="flex flex-1 items-center gap-3 py-3 hover:bg-cream/60">
         <span className="flex-1">
-          <span className={`block text-[15px] ${done ? "text-stone line-through" : "text-ink"}`}>
-            {m.title}
-          </span>
+          <span className={`type-item block ${done ? "!text-stone line-through" : ""}`}>{m.title}</span>
           {(details.length > 0 || overdue) && (
-            <span className="mt-0.5 block text-xs text-stone">
-              {overdue && <span className="font-medium text-champagne-600">Overdue · </span>}
+            <span className="type-meta mt-1 block">
+              {overdue && <span className="text-champagne-600">Overdue · </span>}
               {details.join(" · ")}
             </span>
           )}

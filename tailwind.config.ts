@@ -33,7 +33,7 @@ export default {
         body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       letterSpacing: {
-        label: "0.24em", // the widely spaced small capitals
+        label: "0.3em", // the widely spaced small capitals (.label, .section-label)
       },
     },
   },

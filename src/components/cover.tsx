@@ -34,8 +34,8 @@ export default function Cover({
       </div>
 
       <header className="text-center">
-        <p className="label tracking-[0.3em]">The wedding of</p>
-        <h1 className="mt-1.5 font-display text-[40px] font-light italic leading-[1.1] tracking-[-0.01em] text-ink md:text-5xl">
+        <p className="label">The wedding of</p>
+        <h1 className="type-display mt-1.5 text-[40px] md:text-5xl">
           {coupleName(name)}
         </h1>
         {weddingDate && (

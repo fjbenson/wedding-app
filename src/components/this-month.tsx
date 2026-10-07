@@ -26,8 +26,8 @@ export default function ThisMonth({
   return (
     <section className="relative px-5 lg:px-0">
       <div className="flex items-baseline justify-between px-1">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-stone">{label}</p>
-        <Link href="/plan" className="text-xs font-medium uppercase tracking-label text-champagne-600 hover:text-ink">
+        <p className="section-label">{label}</p>
+        <Link href="/plan" className="label hover:text-ink">
           The plan
         </Link>
       </div>
@@ -40,9 +40,9 @@ export default function ThisMonth({
                 {m.due_date ? m.due_date.slice(8) : "—"}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-display text-[19px] leading-tight text-ink">{m.title}</span>
+                <span className="type-item block">{m.title}</span>
                 {m.due_date && (
-                  <span className="mt-1 block text-xs font-medium uppercase tracking-[0.2em] text-stone">
+                  <span className="type-meta mt-1 block">
                     Due {formatWeekdayDayMonth(m.due_date)}
                   </span>
                 )}

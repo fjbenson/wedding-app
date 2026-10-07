@@ -29,7 +29,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#FBF9F5",
+  // The top of the satin background, so the iPhone's status bar blends in
+  // when it's opened from the home screen.
+  themeColor: "#F6EEE5",
 };
 
 export default function RootLayout({

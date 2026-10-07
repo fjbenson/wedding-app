@@ -10,8 +10,8 @@ The owner is starting a new chat and wants to pick up where they left off.
    than those files mention.
 3. Reply briefly, in plain language (the owner is new to development):
    - **Where we are** — two or three lines: what's built, what's live.
-   - **The look we chose** — one line (ivory magazine, champagne details,
-     floating glass ring).
+   - **The look we chose** — one line (ivory magazine on champagne
+     satin, editorial type, glass cards, frosted hub ring).
    - **Links** — the design canvas, Glass Lab and Taste Lab from `CLAUDE.md`.
    - **Next step** — the agreed next step from `CLAUDE.md`, as a question:
      "Shall I start on …?"

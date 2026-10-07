@@ -5,8 +5,9 @@ replaces the earlier "cream, dusty rose, plum ink" palette. The tokens below
 live in `tailwind.config.ts`; the glass recipe and the small-caps label are
 `.glass` and `.label` in `src/app/globals.css`.
 
-**In one line:** an ivory wedding magazine, with the ring floating on the cover
-in clear glass.
+**In one line:** an ivory wedding magazine on champagne satin — editorial
+type, glass cards, and a frosted hub ring (settled 7 Oct 2026; see "The home
+screen" below).
 
 The prototypes the decisions came from are in the design canvas ("Home screen
 directions", rounds 9 and 10: *Editorial + ring*, *Clear glass*).

@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV } from "@/lib/nav";
+import { NAV, showsMenuBar } from "@/lib/nav";
 
 /**
  * The floating glass menu bar at the bottom of the screen. Phones and tablets
- * only, and only on the main screens — on a form it would sit over the save
- * button.
+ * only, on every screen except forms (see showsMenuBar) — on a form it would
+ * sit over the save button.
  */
 export default function MenuBar() {
   const pathname = usePathname();
-  if (!NAV.some((tab) => tab.href === pathname)) return null;
+  if (!showsMenuBar(pathname)) return null;
 
   return (
     <nav
@@ -20,7 +20,8 @@ export default function MenuBar() {
     >
       {NAV.map((tab) => {
         const Icon = tab.icon;
-        const active = tab.href === pathname;
+        // A tab stays lit on the pages inside it (People on a household).
+        const active = tab.href === "/" ? pathname === "/" : !!tab.href && pathname.startsWith(tab.href);
         const className = `flex h-11 w-14 items-center justify-center rounded-full text-ink ${
           active ? "bg-ink/[0.08]" : ""
         } ${tab.href ? "" : "opacity-40"}`;

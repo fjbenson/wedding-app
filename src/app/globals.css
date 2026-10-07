@@ -10,6 +10,27 @@
   }
 }
 
+/*
+ * Champagne satin behind every screen (round 14, no. 4 on the design
+ * canvas): soft diagonal bands of cream and pale gold. It sits on a fixed
+ * layer so it stays put while the page scrolls (iPhones ignore a fixed
+ * body background). Left off when printing.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(118deg, #f3eadf 0%, #fff9f2 30%, #e9ddcf 48%, #fffaf3 66%, #f1e7db 100%);
+}
+
+@media print {
+  body::before {
+    display: none;
+  }
+}
+
 @layer components {
   /*
    * The frame every screen sits in: one readable column, centred, that grows

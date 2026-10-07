@@ -29,7 +29,7 @@ ring on a champagne cover described further down:
 - **Glass cards below** (`.glass-card`): "coming up" and Inspo, over soft
   champagne glows the page puts behind them so the glass shows.
 - **Background: champagne satin** (round 14, no. 4) — a still diagonal
-  satin gradient on the home page, a warm champagne circle (`#EADCC6`)
+  satin gradient behind every screen (`body::before` in `globals.css`), a warm champagne circle (`#EADCC6`)
   behind the ring. Round 15's plain ivory looked flat on the phone.
 - What the owner rejected on the way: blue; stacking several "grounding"
   ideas at once (card + dark centre + ring line); solid white cards.

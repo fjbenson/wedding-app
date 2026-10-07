@@ -34,9 +34,9 @@ export default async function HomePage() {
   // Phone: the names and ring, then the list under them.
   // Desktop: the ring fills the left, with the list in a column beside it.
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[linear-gradient(118deg,#F3EADF_0%,#FFF9F2_30%,#E9DDCF_48%,#FFFAF3_66%,#F1E7DB_100%)] pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-      {/* Champagne satin (round 14, no. 4), with soft glows for the glass
-          cards to blur. On a phone the lower two follow the cards, so
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+      {/* The satin is behind every screen (globals.css); these soft glows
+          give the glass cards more to blur. On a phone the lower two follow the cards, so
           they stay behind them however tall the ring is. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -right-24 top-16 h-56 w-56 rounded-full bg-[#E6D2B4] opacity-70 blur-[60px]" />

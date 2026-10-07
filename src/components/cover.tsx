@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Inbox, PenLine, Settings } from "lucide-react";
 import Hub, { type HubArea } from "@/components/hub";
+import { coupleName } from "@/lib/couple-name";
 import { formatFullDotDate } from "@/lib/dates";
 
 /**
@@ -35,7 +36,7 @@ export default function Cover({
       <header className="text-center">
         <p className="label tracking-[0.3em]">The wedding of</p>
         <h1 className="mt-1.5 font-display text-[40px] font-light italic leading-[1.1] tracking-[-0.01em] text-ink md:text-5xl">
-          {name}
+          {coupleName(name)}
         </h1>
         {weddingDate && (
           <p className="mt-2 flex items-center justify-center gap-3 text-xs font-medium tracking-[0.3em] text-stone">

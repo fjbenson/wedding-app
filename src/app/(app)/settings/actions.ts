@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { coupleName } from "@/lib/couple-name";
 import { listAreas, setAreaOrder, updateArea } from "@/lib/db/areas";
 import { getCurrentWedding, updateWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
@@ -20,7 +21,7 @@ export async function saveWeddingAction(formData: FormData) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const name = String(formData.get("name") ?? "").trim();
+  const name = coupleName(String(formData.get("name") ?? ""));
   const date = String(formData.get("wedding_date") ?? "").trim();
   if (!name) redirect(`/settings?error=${encodeURIComponent("The wedding needs a name.")}`);
 

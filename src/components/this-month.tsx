@@ -1,80 +1,66 @@
 import Link from "next/link";
 import StarterPlanCard from "@/components/starter-plan-card";
-import { formatDayMonth, isThisMonth } from "@/lib/dates";
+import { formatWeekdayDayMonth, isThisMonth } from "@/lib/dates";
 import type { Milestone } from "@/types/db";
 
 /** How many upcoming milestones the home screen lists. */
 const LIST_LENGTH = 3;
 
 /**
- * The story under the cover: a headline written like a lead story, then the
- * next few things to do as a numbered list, like a contents page.
+ * Under the ring: the next few things to do on a glass card, each led by
+ * its day of the month in dark gold, like Editorial's contents numbers.
  */
 export default function ThisMonth({
   milestones,
   hasDate,
-  areaCount,
 }: {
   milestones: Milestone[];
   hasDate: boolean;
-  areaCount: number;
 }) {
   const open = milestones.filter((m) => m.status === "todo" || m.status === "in_progress");
-  const lastDone = milestones
-    .filter((m) => m.status === "done" && m.completed_at)
-    .sort((a, b) => b.completed_at!.localeCompare(a.completed_at!))[0];
   const upcoming = open.slice(0, LIST_LENGTH);
   const next = upcoming[0];
 
   const label = next?.due_date && !isThisMonth(next.due_date) ? "Coming up" : "This month";
 
-  let headline: string;
-  if (next && lastDone) headline = `${lastDone.title} — done. Next: ${next.title}.`;
-  else if (next) headline = `First up: ${next.title}.`;
-  else if (lastDone) headline = `${lastDone.title} — done. Nothing else due.`;
-  else if (hasDate) headline = "The date is set. Now for the plan.";
-  else headline = "Every wedding starts with a date.";
-
   return (
-    <section className="px-6 lg:px-0">
-      <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
-        <p className="label">{label}</p>
-        <p className="text-xs font-medium uppercase tracking-label text-stone">
-          {areaCount} areas
-        </p>
+    <section className="px-5 lg:px-0">
+      <div className="flex items-baseline justify-between px-1">
+        <p className="text-xs font-medium uppercase tracking-[0.3em] text-stone">{label}</p>
+        <Link href="/plan" className="text-xs font-medium uppercase tracking-label text-champagne-600 hover:text-ink">
+          The plan
+        </Link>
       </div>
 
-      <h2 className="mt-4 text-[28px] leading-[1.1] tracking-[-0.02em] text-ink">{headline}</h2>
-
       {upcoming.length > 0 ? (
-        <ol className="mt-4">
-          {upcoming.map((m, index) => (
-            <li key={m.id} className="flex items-baseline gap-3 border-t border-linen py-3">
-              <span className="w-5 font-display text-sm text-champagne-600">
-                {String(index + 1).padStart(2, "0")}
+        <ol className="glass-card mt-2.5 rounded-[22px] px-[18px] py-1.5">
+          {upcoming.map((m) => (
+            <li key={m.id} className="flex items-center gap-3.5 border-t border-linen py-3.5 first:border-t-0">
+              <span className="w-[34px] shrink-0 font-display text-[22px] font-light text-champagne-600">
+                {m.due_date ? m.due_date.slice(8) : "—"}
               </span>
-              <span className="flex-1 font-display text-lg text-ink">{m.title}</span>
-              {m.due_date && (
-                <span className="text-xs uppercase tracking-[0.14em] text-stone">
-                  {formatDayMonth(m.due_date)}
-                </span>
-              )}
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-[19px] leading-tight text-ink">{m.title}</span>
+                {m.due_date && (
+                  <span className="mt-1 block text-xs font-medium uppercase tracking-[0.2em] text-stone">
+                    Due {formatWeekdayDayMonth(m.due_date)}
+                  </span>
+                )}
+              </span>
             </li>
           ))}
         </ol>
+      ) : milestones.length === 0 ? (
+        <div className="mt-2.5">
+          <StarterPlanCard returnTo="/" hasDate={hasDate} />
+        </div>
       ) : (
-        milestones.length === 0 ? (
-          <div className="mt-6">
-            <StarterPlanCard returnTo="/" hasDate={hasDate} />
-          </div>
-        ) : (
-          <Link
-            href="/plan/new"
-            className="mt-4 block border-t border-linen pt-3 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
-          >
-            Add a to-do
-          </Link>
-        )
+        <Link
+          href="/plan/new"
+          className="glass-card mt-2.5 block rounded-[22px] px-[18px] py-4 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
+        >
+          Add a to-do
+        </Link>
       )}
     </section>
   );

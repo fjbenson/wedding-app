@@ -26,10 +26,10 @@ export function formatLongDate(date: string): string {
   });
 }
 
-/** "12.06.27" — the countdown's cover line. */
-export function formatDotDate(date: string): string {
+/** "12.06.2027" — the date under the couple's names on the home screen. */
+export function formatFullDotDate(date: string): string {
   const [year, month, day] = date.split("-");
-  return `${day}.${month}.${year.slice(2)}`;
+  return `${day}.${month}.${year}`;
 }
 
 /** "1 Nov" — dates beside list items. */

@@ -11,6 +11,28 @@ in clear glass.
 The prototypes the decisions came from are in the design canvas ("Home screen
 directions", rounds 9 and 10: *Editorial + ring*, *Clear glass*).
 
+## The home screen (7 Oct 2026)
+
+Rounds 11 to 15 on the canvas settled the home screen, and it is built
+(`cover.tsx`, `hub.tsx`, `this-month.tsx`). It replaces the floating glass
+ring on a champagne cover described further down:
+
+- **Layout from Dusty Blue (round 1), in our colours.** Names centred at
+  the top; the ring sits straight on the ivory page, **no card around it**,
+  grounded by a solid pale circle (`linen` at 70%) behind the buttons. White
+  buttons, ink icons, white disc with the countdown in the middle. No ring
+  line.
+- **Type from Editorial (round 8).** 260 in thin Fraunces set tight;
+  names in Fraunces italic; every small label in spaced capitals (THE
+  WEDDING OF, DAYS TO GO, area names, due dates); jobs in Fraunces with their
+  day number in `champagne-600`.
+- **Glass cards below** (`.glass-card`): "coming up" and Inspo, over soft
+  champagne glows the page puts behind them so the glass shows.
+- What the owner rejected on the way: blue; stacking several "grounding"
+  ideas at once (card + dark centre + ring line); solid white cards.
+- Area names wrap to two lines; past nine buttons they show only from
+  tablet width, and never under 360px.
+
 ## Settled
 
 ### Colour

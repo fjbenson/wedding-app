@@ -6,10 +6,10 @@ export interface HubArea {
   key: string;
   label: string;
 }
-import { daysUntil, formatDotDate } from "@/lib/dates";
+import { daysUntil } from "@/lib/dates";
 
 /** How far the nodes sit from the middle, as a share of the box's width. */
-const RING_RADIUS = 0.43;
+const RING_RADIUS = 0.39;
 
 function nodePosition(index: number, total: number) {
   // Start at the top and go clockwise.
@@ -20,44 +20,38 @@ function nodePosition(index: number, total: number) {
   };
 }
 
-/** White text on the cover needs a soft shadow to stay readable. */
-const ON_PHOTO = "text-white [text-shadow:0_2px_16px_rgb(30_20_10/0.45)]";
-
-/** The same for the white icons on the glass buttons. */
-const ICON_SHADOW = "drop-shadow-[0_1px_2px_rgb(60_40_10/0.4)]";
-
+/** The countdown, set like Editorial's cover number. */
 function Countdown({ weddingDate }: { weddingDate: string | null }) {
   if (!weddingDate) {
-    return <p className={`font-display text-2xl ${ON_PHOTO}`}>No date yet</p>;
+    return <p className="font-display text-xl font-light text-ink">No date yet</p>;
   }
 
   const days = daysUntil(weddingDate);
   const big = days > 1 ? String(days) : days === 1 ? "Tomorrow" : days === 0 ? "Today" : "Married";
 
   return (
-    <div className={ON_PHOTO}>
+    <div>
       <p
-        className={`font-display font-light leading-[0.85] tracking-[-0.05em] ${
-          days > 1 ? "text-7xl" : "text-4xl"
+        className={`font-display font-light leading-[0.8] tracking-[-0.05em] text-ink ${
+          days > 1 ? "text-[min(68px,18vw)] md:text-[84px]" : "text-2xl tracking-[-0.02em] md:text-3xl"
         }`}
       >
         {big}
       </p>
       {days > 1 && (
-        <p className="mt-3 text-xs font-medium uppercase tracking-[0.3em]">
-          Days until {formatDotDate(weddingDate)}
-        </p>
+        <p className="mt-3 text-xs font-medium uppercase tracking-[0.24em] text-stone">Days to go</p>
       )}
     </div>
   );
 }
 
 /**
- * The hub ring: the countdown in the middle, the wedding's areas as glass
- * buttons around it, and a dashed + to add another area.
+ * The hub ring: the countdown on a white disc in the middle, the wedding's
+ * areas as white buttons around it with their names beneath, and a dashed +
+ * to add another area.
  *
- * No disc behind it — the ring floats straight on the cover. Its line has a
- * light edge and a dark edge so one always shows.
+ * A solid pale circle sits behind the buttons (Round 15 on the design
+ * canvas): it grounds the ring without a card around it.
  */
 export default function Hub({
   weddingDate,
@@ -67,52 +61,70 @@ export default function Hub({
   areas: HubArea[];
 }) {
   const total = areas.length + 1; // + the "add an area" node
+  // Past nine buttons the names collide on a phone, so they show from tablet
+  // width up; on the narrowest phones (under 360px) there's never room. The
+  // buttons keep their names for screen readers either way.
+  const crowded = total > 9;
 
   return (
     <div className="relative aspect-square w-full">
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 aspect-square w-[86%] -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white/85 shadow-[0_0_0_1px_rgb(30_27_24/0.14),inset_0_0_0_1px_rgb(30_27_24/0.14)]"
+        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-linen/70"
       />
 
-      <div className="absolute left-1/2 top-1/2 w-[60%] -translate-x-1/2 -translate-y-1/2 text-center">
+      <div className="absolute left-1/2 top-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-center shadow-[0_16px_40px_-18px_rgb(60_50_40/0.5)]">
         <Countdown weddingDate={weddingDate} />
       </div>
 
-      {/* Each dot opens its area's page (screen 5). */}
+      {/* Each button opens its area's page (screen 5). */}
       {areas.map((area, index) => {
         const Icon = areaIcon(area.key);
         return (
-          <div
-            key={area.key}
-            style={nodePosition(index, total)}
-            className="absolute -translate-x-1/2 -translate-y-1/2"
-          >
-            <Link
-              href={`/area/${encodeURIComponent(area.key)}`}
-              title={area.label}
-              aria-label={area.label}
-              className="glass flex h-11 w-11 items-center justify-center rounded-full text-white transition active:scale-95"
-            >
-              <Icon className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
-            </Link>
-          </div>
+          <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} crowded={crowded}>
+            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-white text-ink shadow-[0_2px_8px_rgb(60_50_40/0.1)]">
+              <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+            </span>
+          </Node>
         );
       })}
 
-      <div
-        style={nodePosition(areas.length, total)}
-        className="absolute -translate-x-1/2 -translate-y-1/2"
-      >
-        <Link
-          href="/area/new"
-          title="Add an area"
-          aria-label="Add an area"
-          className="glass flex h-11 w-11 items-center justify-center rounded-full border-dashed text-white transition active:scale-95"
-        >
-          <Plus className={`h-[18px] w-[18px] ${ICON_SHADOW}`} strokeWidth={1.8} aria-hidden />
-        </Link>
-      </div>
+      <Node position={nodePosition(areas.length, total)} href="/area/new" label="Add" ariaLabel="Add an area" crowded={crowded}>
+        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/60 text-champagne-600">
+          <Plus className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+        </span>
+      </Node>
     </div>
+  );
+}
+
+/** A button on the ring, centred on its spot, with its name in small capitals below. */
+function Node({
+  position,
+  href,
+  label,
+  ariaLabel = label,
+  crowded,
+  children,
+}: {
+  position: { left: string; top: string };
+  href: string;
+  label: string;
+  ariaLabel?: string;
+  crowded: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      style={position}
+      aria-label={ariaLabel}
+      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[23px] flex-col items-center gap-1.5 transition active:scale-95"
+    >
+      {children}
+      <span aria-hidden className={`text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone ${crowded ? "hidden md:block" : "max-[359px]:hidden"}`}>
+        {label}
+      </span>
+    </Link>
   );
 }

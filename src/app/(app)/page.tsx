@@ -31,27 +31,29 @@ export default async function HomePage() {
   if (areas && areas.length === 0) redirect("/setup");
   const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS;
 
-  // Phone: the cover runs edge to edge, the list sits under it.
-  // Desktop: the cover is a panel filling the screen's height, with the
-  // list in a column beside it.
+  // Phone: the names and ring, then the list under them.
+  // Desktop: the ring fills the left, with the list in a column beside it.
   return (
-    <main className="min-h-dvh pb-28 lg:grid lg:pb-8 lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+      {/* Soft champagne glows, for the glass cards to blur. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -right-24 top-16 h-56 w-56 rounded-full bg-[#E8DDCB] opacity-70 blur-[60px]" />
+        <div className="absolute -left-20 top-[560px] h-64 w-64 rounded-full bg-[#E6D9C4] blur-[50px] lg:left-auto lg:right-[260px] lg:top-[120px]" />
+        <div className="absolute -right-16 top-[640px] h-60 w-60 rounded-full bg-[#EFE3D3] blur-[50px] lg:top-[420px]" />
+      </div>
+
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
-      <div className="mx-auto max-w-lg md:max-w-2xl lg:mx-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
-        <ThisMonth
-          milestones={milestones}
-          hasDate={wedding.wedding_date !== null}
-          areaCount={onHub.length}
-        />
+      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
+        <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
         {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
         <Link
           href="/inspo"
-          className="mx-6 mt-8 flex items-center gap-3 rounded-2xl border border-linen bg-white px-5 py-4 hover:border-champagne-400 lg:mx-0"
+          className="glass-card mx-5 mt-4 flex items-center gap-3 rounded-[22px] px-5 py-4 hover:border-champagne-400 lg:mx-0"
         >
           <Images className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.5} aria-hidden />
           <span className="flex-1">
-            <span className="block text-[15px] text-ink">Inspo</span>
-            <span className="block text-sm text-stone">Dresses, flowers, ideas you&apos;ve saved</span>
+            <span className="block font-display text-[19px] leading-tight text-ink">Inspo</span>
+            <span className="mt-1 block text-xs font-medium uppercase tracking-[0.2em] text-stone">Ideas you&apos;ve saved</span>
           </span>
           <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
         </Link>

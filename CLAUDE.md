@@ -48,7 +48,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Setup** (`/setup`, screen 2): the couple's names and the date, then which
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
-- **Hub** (`/`): cover, hub ring, "coming up" story. The ring's dots are the
+- **Hub** (`/`): names, hub ring, "coming up" on a glass card (design settled
+  7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the
   wedding's own **areas** (`areas` table, `0003_areas.sql`). Each dot opens
   its **area page** (`/area/[key]`, screens 5–6): key facts
   (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
@@ -303,10 +304,10 @@ is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
 **Phone and desktop are designed separately (30 Sep 2026).** Below 1024px:
 floating glass menu bar at the bottom (main tabs only, hidden on forms). From 1024px (`lg`): `AppShell` puts a
-sidebar on the left instead, and the home screen puts the cover as a rounded
-panel with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
-The cover is now a champagne-to-ivory gradient (no sample photo) and the ring's
-icons are white.
+sidebar on the left instead, and the home screen puts the ring on the left
+with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
+The home screen no longer has a coloured cover: the ring sits on the ivory
+page (round 15, 7 Oct 2026).
 
 **Speed (30 Sep 2026).** Taps felt ~1s slow. Signed-in screens now live in
 the `src/app/(app)/` route group (the brackets don't change any web address):

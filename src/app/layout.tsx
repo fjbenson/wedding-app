@@ -3,10 +3,13 @@ import { Fraunces, Geist } from "next/font/google";
 import "./globals.css";
 
 // Fraunces Light for headlines and big numbers; Geist for everything else.
+// Loaded whole, with its optical-size axis, as the design canvas loads it:
+// at big sizes Fraunces switches to its display drawing (finer, higher
+// contrast, the curly italic "&"); row titles use its Regular weight.
 const display = Fraunces({
   subsets: ["latin"],
-  weight: "300",
   style: ["normal", "italic"],
+  axes: ["opsz"],
   variable: "--font-display",
 });
 

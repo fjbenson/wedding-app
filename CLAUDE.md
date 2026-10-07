@@ -303,7 +303,8 @@ frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
 is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
 **Phone and desktop are designed separately (30 Sep 2026).** Below 1024px:
-floating glass menu bar at the bottom (main tabs only, hidden on forms). From 1024px (`lg`): `AppShell` puts a
+floating glass menu bar at the bottom (every screen except forms —
+`showsMenuBar()` in `src/lib/nav.ts`; add new non-form screens there). From 1024px (`lg`): `AppShell` puts a
 sidebar on the left instead, and the home screen puts the ring on the left
 with "coming up" in a column beside it. Both menus read `src/lib/nav.ts`.
 The home screen no longer has a coloured cover: the ring sits on the ivory

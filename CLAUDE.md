@@ -285,6 +285,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
    "Later" screens (The Day, Inspo, Brainstorm chat) — or the design pass. Suggested starter
    tasks (19) exist as the starter list.
 6. Replace the hand-written types with `npm run db:types`
+7. **Design pass, screen by screen** (agreed 7 Oct 2026, after the home
+   screen was settled). Shared pieces first (page titles, cards, buttons,
+   form fields), then in order: Plan, People, Money, The Day, area pages,
+   inbox and capture, the forms. Each round: the owner looks on their phone
+   and says what's off; big changes get options on the design canvas first,
+   small ones are built and pushed straight away.
+8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
+   chat screen that takes actions: "add Ellen Daniels to the guest list",
+   asking for missing details one at a time. Decided so far:
+   - It calls the same server actions / `src/lib/db/` queries as the forms,
+     with the user's session, so RLS still guards it.
+   - It **confirms before writing** (a card with Yes / Change) and never
+     deletes on its own.
+   - First version: add a guest, add a to-do, record a payment, answer RSVP
+     questions ("who hasn't replied?"), file a note. More actions later.
+   - Runs in a Vercel function with streaming; Anthropic SDK, Claude Opus
+     5.5. Needs an `ANTHROPIC_API_KEY` in Vercel (owner to set up).
+   - Costs a few pence per conversation; a per-wedding monthly cap is needed
+     before other couples use it.
 
 ### Design work so far (links)
 

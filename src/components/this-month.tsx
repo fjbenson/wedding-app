@@ -52,7 +52,7 @@ export default function ThisMonth({
         </ol>
       ) : milestones.length === 0 ? (
         <div className="mt-2.5">
-          <StarterPlanCard returnTo="/" hasDate={hasDate} />
+          <StarterPlanCard returnTo="/" hasDate={hasDate} glass />
         </div>
       ) : (
         <Link

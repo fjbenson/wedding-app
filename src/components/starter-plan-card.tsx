@@ -8,12 +8,21 @@ import { addStarterPlanAction } from "@/app/(app)/plan/actions";
 export default function StarterPlanCard({
   returnTo,
   hasDate,
+  glass = false,
 }: {
   returnTo: "/" | "/plan";
   hasDate: boolean;
+  /** On the home screen it matches the other glass cards there. */
+  glass?: boolean;
 }) {
   return (
-    <div className="rounded-3xl border border-linen bg-white p-6 shadow-[0_10px_30px_-18px_rgb(30_27_24/0.25)]">
+    <div
+      className={
+        glass
+          ? "glass-card rounded-[22px] p-6"
+          : "rounded-3xl border border-linen bg-white p-6 shadow-[0_10px_30px_-18px_rgb(30_27_24/0.25)]"
+      }
+    >
       <p className="label">Start your plan</p>
       <h3 className="mt-3 text-[22px] leading-snug text-ink">
         Begin with the usual to-dos, then make them yours.

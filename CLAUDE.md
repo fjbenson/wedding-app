@@ -55,6 +55,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
   tagged with that area, and "take off the hub" / "not planning this". The
   ring's + opens `/area/new` (screen 7): add your own, or bring one back.
+  **Area page design settled 7 Oct 2026** (canvas "Area page · Round 2", D):
+  a photo-collage cover from the area's Inspo folder (soft-colour tiles
+  and a camera button until photos exist; tapping it opens the folder,
+  and `/inspo/[id]` steps through it with ‹ ›), then glass cards — next
+  to-do, booked supplier with call/email, to pay, key facts (`?edit=facts`)
+  — and to-dos, suppliers and notes folded into "Everything else". A
+  completely empty area shows "Where to start" instead.
   Notes and Inspo blocks wait for Quick capture and Inspo. Suppliers file
   under the wedding's areas too (plus "Other").
 - **People** (`/people`): the guest list by household — add, edit, remove,

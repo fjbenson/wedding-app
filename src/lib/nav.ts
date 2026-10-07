@@ -1,4 +1,4 @@
-import { CalendarDays, CircleDot, Clock, PoundSterling, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Clock, Orbit, PoundSterling, Users, type LucideIcon } from "lucide-react";
 
 /**
  * The five tabs from docs/information-architecture.md. The phone's bottom
@@ -12,7 +12,7 @@ export interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { label: "Hub", icon: CircleDot, href: "/" },
+  { label: "Hub", icon: Orbit, href: "/" }, // the hub ring: areas around the centre
   { label: "People", icon: Users, href: "/people" },
   { label: "Plan", icon: CalendarDays, href: "/plan" },
   { label: "Money", icon: PoundSterling, href: "/money" },

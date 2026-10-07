@@ -16,7 +16,7 @@ function Switch({ on, label, action }: { on: boolean; label: string; action: () 
         type="submit"
         aria-pressed={on}
         className={`inline-flex h-8 items-center gap-1 rounded-full border px-3 text-xs transition ${
-          on ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-stone hover:border-champagne-400"
+          on ? "border-ink bg-ink text-ivory" : "border-white/80 bg-white/50 text-stone hover:border-champagne-400"
         }`}
       >
         {on && <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />}
@@ -62,7 +62,7 @@ export default function SettingsView({
         </p>
       )}
 
-      <section className="mt-10">
+      <section className="glass-card mt-8 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
         <form action={saveWeddingAction} className="mt-5 space-y-5">
           <Field label="Whose wedding?">
@@ -80,7 +80,7 @@ export default function SettingsView({
         </form>
       </section>
 
-      <section className="mt-12">
+      <section className="glass-card mt-6 rounded-[22px] p-5">
         <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
           <h2 className="text-xl text-ink">Areas</h2>
           <Link href="/area/new" className="inline-flex items-center gap-1 text-sm text-champagne-600 hover:text-ink">
@@ -158,7 +158,7 @@ export default function SettingsView({
         )}
       </section>
 
-      <section className="mt-12">
+      <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Who has a login</h2>
         <ul className="mt-2">
           {members.map((m) => (

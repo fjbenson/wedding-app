@@ -53,44 +53,46 @@ export default async function InspoItemPage({
           className="mt-4 max-h-[70dvh] w-full rounded-2xl bg-cream object-contain"
         />
       )}
-      {item.title && <h1 className="mt-6 text-2xl leading-snug text-ink">{item.title}</h1>}
-      <p className="mt-2 text-xs text-stone">Saved {formatDayMonth(item.created_at.slice(0, 10))}</p>
-      {item.url && (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
-        >
-          <ExternalLink className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Open where it came from
-        </a>
-      )}
+      <div className="glass-card mt-6 rounded-[22px] p-5">
+        {item.title && <h1 className="mb-2 text-2xl leading-snug text-ink">{item.title}</h1>}
+        <p className="text-xs text-stone">Saved {formatDayMonth(item.created_at.slice(0, 10))}</p>
+        {item.url && (
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
+          >
+            <ExternalLink className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Open where it came from
+          </a>
+        )}
 
-      <form action={updateInspoAction.bind(null, item.id)} className="mt-8 space-y-4">
-        <label className="block text-sm text-ink">
-          Folder
-          <select name="folder" defaultValue={item.area_key ?? ""} className={INPUT}>
-            <option value="">Unsorted</option>
-            {areas.map((a) => (
-              <option key={a.key} value={a.key}>
-                {a.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm text-ink">
-          Note
-          <textarea name="note" rows={3} defaultValue={item.note ?? ""} className={INPUT} />
-        </label>
-        <div className="flex items-center gap-3">
-          <InlineSubmit label="Save" pendingLabel="Saving…" />
-          {saved && <span className="text-sm text-stone">Saved.</span>}
+        <form action={updateInspoAction.bind(null, item.id)} className="mt-8 space-y-4">
+          <label className="block text-sm text-ink">
+            Folder
+            <select name="folder" defaultValue={item.area_key ?? ""} className={INPUT}>
+              <option value="">Unsorted</option>
+              {areas.map((a) => (
+                <option key={a.key} value={a.key}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm text-ink">
+            Note
+            <textarea name="note" rows={3} defaultValue={item.note ?? ""} className={INPUT} />
+          </label>
+          <div className="flex items-center gap-3">
+            <InlineSubmit label="Save" pendingLabel="Saving…" />
+            {saved && <span className="text-sm text-stone">Saved.</span>}
+          </div>
+        </form>
+
+        <div className="mt-8 border-t border-linen pt-4">
+          <RemoveButton action={deleteInspoAction.bind(null, item.id)} label="Remove this idea" question="Remove this from Inspo?" />
         </div>
-      </form>
-
-      <div className="mt-8 border-t border-linen pt-4">
-        <RemoveButton action={deleteInspoAction.bind(null, item.id)} label="Remove this idea" question="Remove this from Inspo?" />
       </div>
     </main>
   );

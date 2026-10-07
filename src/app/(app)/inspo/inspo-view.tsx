@@ -14,7 +14,7 @@ function host(url: string) {
 /** One saved idea as a tile: its picture, or a card for a link with none. */
 export function InspoTile({ item }: { item: InspoWithPicture }) {
   return (
-    <Link href={`/inspo/${item.id}`} className="group mb-3 block break-inside-avoid overflow-hidden rounded-2xl bg-cream">
+    <Link href={`/inspo/${item.id}`} className="glass-card group mb-3 block break-inside-avoid overflow-hidden rounded-2xl">
       {item.picture ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -24,7 +24,7 @@ export function InspoTile({ item }: { item: InspoWithPicture }) {
           className="w-full transition group-hover:opacity-90"
         />
       ) : (
-        <span className="flex aspect-[4/3] flex-col justify-end gap-1 border border-linen bg-white p-4">
+        <span className="flex aspect-[4/3] flex-col justify-end gap-1 p-4">
           <ExternalLink className="h-4 w-4 text-champagne-600" strokeWidth={1.8} aria-hidden />
           <span className="line-clamp-3 font-display text-lg leading-snug text-ink">{item.title ?? host(item.url ?? "")}</span>
           {item.url && <span className="text-xs text-stone">{host(item.url)}</span>}
@@ -65,7 +65,7 @@ export default function InspoView({
   const title = folder === undefined ? "Inspo" : folder === null ? "Unsorted" : (areas.find((a) => a.key === folder)?.label ?? folder);
   const chip = (active: boolean) =>
     `shrink-0 rounded-full border px-4 py-2 text-sm transition ${
-      active ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
+      active ? "border-ink bg-ink text-ivory" : "glass-card text-ink hover:border-champagne-400"
     }`;
   const newHref = `/inspo/new${folder ? `?folder=${encodeURIComponent(folder)}` : ""}`;
 
@@ -88,7 +88,7 @@ export default function InspoView({
 
       {total === 0 ? (
         // Screen 33: the empty gallery, and how to make the first save.
-        <div className="mt-6 max-w-lg">
+        <div className="glass-card mt-6 max-w-lg rounded-[22px] p-5">
           <p className="text-[15px] leading-relaxed text-stone">
             Dresses, flowers, table ideas, a cake someone posted — save them here as you find them. A photo from your phone,
             or a link from Pinterest or anywhere else. File each under an area and it turns up on that area&apos;s page too.
@@ -129,7 +129,7 @@ export default function InspoView({
 
           <Link
             href={newHref}
-            className="mt-4 inline-flex items-center gap-2 rounded-full border border-champagne-400 px-4 py-2 text-sm text-ink hover:bg-champagne-100"
+            className="glass-card mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-ink hover:border-champagne-400"
           >
             <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
             Save an idea

@@ -224,6 +224,13 @@ Sign-out is hidden for anonymous users (it would lose the wedding). To bring
 email sign-in back: set up custom SMTP (e.g. Resend), then link the anonymous
 user to an email with `updateUser({ email })` so the wedding carries over.
 
+**Home-screen app (7 Oct 2026).** `src/app/manifest.ts` and `appleWebApp` in
+`layout.tsx` let it be added to a phone's home screen and open full screen.
+On an iPhone the home-screen app keeps its own cookies, separate from the
+browser, so it starts as a new anonymous visitor with no wedding — the
+browser's wedding doesn't carry over until proper sign-in. Icons: the hub
+ring on satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
+
 **The owner's call (30 Sep 2026): proper sign-in is the very last thing
 built.** Don't propose it as a next step before everything else is done;
 Settings already warns that the wedding lives in one browser.

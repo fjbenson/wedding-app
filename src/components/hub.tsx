@@ -67,7 +67,7 @@ export default function Hub({
     <div className="relative aspect-square w-full">
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-linen/70"
+        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#EADCC6]"
       />
 
       <div className="absolute left-1/2 top-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-center shadow-[0_16px_40px_-18px_rgb(60_50_40/0.5)]">

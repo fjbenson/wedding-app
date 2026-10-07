@@ -34,21 +34,21 @@ export default async function HomePage() {
   // Phone: the names and ring, then the list under them.
   // Desktop: the ring fills the left, with the list in a column beside it.
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#F7F5F0] pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-      {/* Soft champagne glows, for the glass cards to blur (round 15's
-          colours and sizes). On a phone the lower two follow the cards, so
+    <main className="relative min-h-dvh overflow-hidden bg-[linear-gradient(118deg,#F3EADF_0%,#FFF9F2_30%,#E9DDCF_48%,#FFFAF3_66%,#F1E7DB_100%)] pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+      {/* Champagne satin (round 14, no. 4), with soft glows for the glass
+          cards to blur. On a phone the lower two follow the cards, so
           they stay behind them however tall the ring is. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-24 top-16 h-56 w-56 rounded-full bg-[#E8DDCB] opacity-70 blur-[60px]" />
-        <div className="absolute right-[260px] top-[120px] hidden h-64 w-64 rounded-full bg-[#E6D9C4] blur-[50px] lg:block" />
-        <div className="absolute -right-16 top-[420px] hidden h-60 w-60 rounded-full bg-[#EFE3D3] blur-[50px] lg:block" />
+        <div className="absolute -right-24 top-16 h-56 w-56 rounded-full bg-[#E6D2B4] opacity-70 blur-[60px]" />
+        <div className="absolute right-[260px] top-[120px] hidden h-64 w-64 rounded-full bg-[#E2C9A0] blur-[50px] lg:block" />
+        <div className="absolute -right-16 top-[420px] hidden h-60 w-60 rounded-full bg-[#EED8C0] blur-[50px] lg:block" />
       </div>
 
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
       <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
         <div aria-hidden className="pointer-events-none absolute inset-0 lg:hidden">
-          <div className="absolute -left-[70px] -top-6 h-64 w-64 rounded-full bg-[#E6D9C4] blur-[50px]" />
-          <div className="absolute -right-[60px] top-16 h-60 w-60 rounded-full bg-[#EFE3D3] blur-[50px]" />
+          <div className="absolute -left-[70px] -top-6 h-64 w-64 rounded-full bg-[#E2C9A0] blur-[50px]" />
+          <div className="absolute -right-[60px] top-16 h-60 w-60 rounded-full bg-[#EED8C0] blur-[50px]" />
         </div>
         <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
         {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}

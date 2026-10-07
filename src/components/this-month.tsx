@@ -24,7 +24,7 @@ export default function ThisMonth({
   const label = next?.due_date && !isThisMonth(next.due_date) ? "Coming up" : "This month";
 
   return (
-    <section className="px-5 lg:px-0">
+    <section className="relative px-5 lg:px-0">
       <div className="flex items-baseline justify-between px-1">
         <p className="text-xs font-medium uppercase tracking-[0.3em] text-stone">{label}</p>
         <Link href="/plan" className="text-xs font-medium uppercase tracking-label text-champagne-600 hover:text-ink">

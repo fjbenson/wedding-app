@@ -45,7 +45,7 @@ export async function saveSupplierAction(supplierId: string | null, formData: Fo
   const details = {
     company_name: company,
     category: text(formData, "category"),
-    status: SUPPLIER_STATUSES.some((s) => s.status === status) ? status : ("researching" as const),
+    status: SUPPLIER_STATUSES.some((s) => s.status === status) ? status : ("enquired" as const),
     quoted_cost: parseMoney(formData.get("quoted_cost")),
     deposit_paid: parseMoney(formData.get("deposit_paid")),
     contract_url: text(formData, "contract_url"),
@@ -58,6 +58,10 @@ export async function saveSupplierAction(supplierId: string | null, formData: Fo
   } catch (error) {
     console.error("saving supplier failed", error);
     detail = describe(error);
+    // "Quote in" arrives with 0012_area_stages.sql; say so plainly.
+    if (status === "quoted" && /supplier_status/.test(detail)) {
+      detail = "Run supabase/migrations/0012_area_stages.sql in Supabase first.";
+    }
   }
 
   if (detail) {

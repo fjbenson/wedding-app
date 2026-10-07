@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import RichText from "@/components/rich-text";
 import type { Note } from "@/types/db";
 
 /** "pinterest.co.uk/pin/123…" → "pinterest.co.uk" */
@@ -14,7 +15,7 @@ function host(url: string) {
 export default function NoteText({ note }: { note: Note }) {
   return (
     <>
-      {note.body && <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{note.body}</p>}
+      {note.body && <RichText text={note.body} />}
       {note.url && (
         <a
           href={note.url}

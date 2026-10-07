@@ -11,7 +11,8 @@ function failed(back: string, message: string, error: unknown): never {
   console.error(message, error);
   const code = (error as { code?: string }).code;
   // The details column arrives with 0005_area_details.sql; say so plainly.
-  const detail = code === "PGRST204" ? "Run supabase/migrations/0005_area_details.sql in Supabase first." : describe(error);
+  const detail =
+    code === "PGRST204" ? "Run the newest files in supabase/migrations in Supabase first (0012_area_stages.sql)." : describe(error);
   redirect(`${back}?error=${encodeURIComponent(message)}&detail=${encodeURIComponent(detail)}`);
 }
 
@@ -78,4 +79,17 @@ export async function addAreaAction(formData: FormData) {
 
   refresh(key);
   redirect(`/area/${key}`);
+}
+
+/**
+ * The area's two hand-set stage switches: "we're doing this ourselves"
+ * (skips Compare and Book) and "we're ready" (the last stage).
+ */
+export async function setAreaStageFlagAction(areaId: string, key: string, flag: "diy" | "ready", on: boolean) {
+  try {
+    await updateArea(areaId, { [flag]: on });
+  } catch (error) {
+    failed(`/area/${key}`, "That didn't change.", error);
+  }
+  refresh(key);
 }

@@ -55,13 +55,21 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
   tagged with that area, and "take off the hub" / "not planning this". The
   ring's + opens `/area/new` (screen 7): add your own, or bring one back.
-  **Area page design settled 7 Oct 2026** (canvas "Area page · Round 2", D):
-  a photo-collage cover from the area's Inspo folder (soft-colour tiles
-  and a camera button until photos exist; tapping it opens the folder,
-  and `/inspo/[id]` steps through it with ‹ ›), then glass cards — next
-  to-do, booked supplier with call/email, to pay, key facts (`?edit=facts`)
-  — and to-dos, suppliers and notes folded into "Everything else". A
-  completely empty area shows "Where to start" instead.
+  **Area page design settled 7 Oct 2026** (canvas "Area page · Round 4 ·
+  One template"): one template, same pieces in the same order for every
+  area. A photo-collage cover from the area's Inspo folder (soft-colour
+  tiles and a camera until photos exist; tapping it opens the folder, and
+  `/inspo/[id]` steps through with ‹ ›; "⋯" holds take-off-hub / stop
+  planning). Then the **five stages** — Dream · Compare · Book · Pay ·
+  Ready (`src/lib/area-stage.ts`): the first four tick themselves from
+  what's recorded, Ready is a button; "we're doing this ourselves"
+  (`areas.diy`) skips Compare and Book. Then tiles (booked supplier with
+  phone/email pop-ups to call or copy · to pay or budget · next
+  appointment) and five sections: Suppliers (quotes until one's booked,
+  then the rest fold away), Appointments, To-dos, Payment schedule, Notes
+  (key facts via `?edit=facts`, plus captures; "- " lines become bullets,
+  `rich-text.tsx`). Supplier labels: Asked · Quote in · Booked · Not taken
+  (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
   Notes and Inspo blocks wait for Quick capture and Inspo. Suppliers file
   under the wedding's areas too (plus "Other").
 - **People** (`/people`): the guest list by household — add, edit, remove,
@@ -196,7 +204,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0011_floor_plan.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0012_area_stages.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role

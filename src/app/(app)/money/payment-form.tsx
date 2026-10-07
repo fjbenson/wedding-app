@@ -35,7 +35,7 @@ export default function PaymentForm({
   suppliers: { id: string; name: string }[];
   areas: AreaOption[];
   /** From "Add as a payment" on an unscheduled balance. */
-  prefill?: { supplier?: string; amount?: number; description?: string };
+  prefill?: { supplier?: string; amount?: number; description?: string; area?: string };
 }) {
   const [paid, setPaid] = useState(Boolean(payment?.paid_on));
 
@@ -72,7 +72,7 @@ export default function PaymentForm({
       </Field>
 
       <Field label="Area" hint="optional — a supplier's payment goes under theirs">
-        <select name="area" defaultValue={payment?.area_key ?? ""} className={INPUT}>
+        <select name="area" defaultValue={payment?.area_key ?? prefill?.area ?? ""} className={INPUT}>
           <option value="">—</option>
           {areas.map((a) => (
             <option key={a.key} value={a.key}>

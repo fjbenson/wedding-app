@@ -23,7 +23,8 @@ export interface Money {
 
 const n = (value: number | string | null | undefined) => Number(value ?? 0) || 0;
 
-function paymentArea(payment: Payment, suppliers: Supplier[]): string | null {
+/** Which area a payment belongs to: its own, or its supplier's. */
+export function paymentArea(payment: Payment, suppliers: Supplier[]): string | null {
   if (payment.area_key) return payment.area_key;
   const supplier = suppliers.find((s) => s.id === payment.contact_id);
   return supplier?.supplier_details?.category ?? null;

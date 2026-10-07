@@ -7,7 +7,8 @@
 
 export type MemberRole = "owner" | "planner" | "guest";
 export type ContactType = "guest" | "supplier" | "bridal_party" | "venue";
-export type SupplierStatus = "researching" | "enquired" | "booked" | "cancelled";
+/** "researching" is from before 0012_area_stages.sql, which moves those rows to "enquired". */
+export type SupplierStatus = "researching" | "enquired" | "quoted" | "booked" | "cancelled";
 export type RsvpStatus = "pending" | "attending" | "declined";
 export type MilestoneStatus = "todo" | "in_progress" | "done" | "skipped";
 
@@ -123,6 +124,10 @@ export interface AreaRow {
   details?: string | null;
   /** This area's share of the budget, if set (0006_money.sql). */
   budget?: number | null;
+  /** "We're doing this ourselves": skips Compare and Book (0012_area_stages.sql). */
+  diy?: boolean;
+  /** The couple has marked the area ready, its last stage (0012_area_stages.sql). */
+  ready?: boolean;
   created_at: string;
 }
 

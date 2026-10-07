@@ -63,7 +63,7 @@ export async function getArea(weddingId: string, key: string): Promise<AreaRow |
 /** Changes an area's key facts, name, or whether it's planned / on the hub. */
 export async function updateArea(
   areaId: string,
-  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub">>,
+  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub" | "diy" | "ready">>,
 ): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("areas").update(fields).eq("id", areaId);

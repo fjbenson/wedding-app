@@ -1,23 +1,25 @@
 import Link from "next/link";
-import { Camera, ChevronLeft, ChevronRight, Mail, Phone, Plus } from "lucide-react";
+import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
+import ContactButtons from "@/components/contact-buttons";
 import { InlineSubmit } from "@/components/form-bits";
-import { areaIcon } from "@/lib/areas";
-import type { Supplier } from "@/lib/db/suppliers";
-import { daysUntil, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
-import type { Money } from "@/lib/budget";
+import NoteText from "@/components/note-text";
+import RichText from "@/components/rich-text";
+import { areaStage, STAGES } from "@/lib/area-stage";
+import { unscheduledBalances, type Money } from "@/lib/budget";
+import { formatDayMonth, formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
+import type { Supplier } from "@/lib/db/suppliers";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
-import NoteText from "@/components/note-text";
-import type { AreaRow, Milestone, Note } from "@/types/db";
-import { toggleMilestoneAction } from "../plan/actions";
+import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
+import { markPaidAction } from "../money/actions";
 import { MilestoneRow } from "../plan/milestone-row";
-import { saveAreaDetailsAction, setAreaAction } from "./actions";
+import { saveAreaDetailsAction, setAreaAction, setAreaStageFlagAction } from "./actions";
 
 const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";
 
-/** Soonest first; undated to-dos after dated ones. */
-const byDue = (a: Milestone, b: Milestone) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999");
+/** Soonest first; undated after dated. */
+const byDate = (a: string | null, b: string | null) => (a ?? "9999").localeCompare(b ?? "9999");
 
 function supplierName(s: Supplier) {
   return s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" ");
@@ -27,12 +29,8 @@ function plural(n: number, word: string) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-/** "Due Sat 1 Nov · in 25 days" */
-function dueLine(date: string) {
-  const days = daysUntil(date);
-  const when = days < 0 ? "overdue" : days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`;
-  return `Due ${formatWeekdayDayMonth(date)} · ${when}`;
-}
+/** Booked first, then quoted, then asked; not taken last. */
+const STATUS_ORDER = { booked: 0, quoted: 1, enquired: 2, researching: 2, cancelled: 3 } as const;
 
 /**
  * The cover's four tiles (one tall, two stacked, one tall). With no photos
@@ -50,39 +48,24 @@ function Tile({ photo, index }: { photo?: InspoWithPicture; index: number }) {
   if (photo?.picture) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={photo.picture}
-        alt={photo.title ?? photo.note ?? "A saved idea"}
-        className="h-full w-full min-h-0 object-cover"
-      />
+      <img src={photo.picture} alt={photo.title ?? photo.note ?? "A saved idea"} className="h-full min-h-0 w-full object-cover" />
     );
   }
   return <span aria-hidden className="block h-full w-full" style={{ background: PLACEHOLDERS[index] }} />;
 }
 
+const glassButton = "glass-card flex h-11 items-center justify-center rounded-full text-ink hover:border-champagne-400";
+
 /**
- * The top of the page: the area's saved pictures as a collage (round 2, "D",
- * on the design canvas), the name set on a fade at the bottom. Tapping the
- * collage opens the area's Inspo folder; with nothing saved, a camera in the
- * middle invites the first one instead.
+ * The top of the page: the area's saved pictures as a collage, the name on a
+ * fade at the bottom. Tapping the collage opens the area's Inspo folder; with
+ * nothing saved, a camera in the middle invites the first one. The "⋯" holds
+ * the rarely-used "take off the hub" and "stop planning this".
  */
-function AreaCover({
-  area,
-  photos,
-  ideaCount,
-  summary,
-}: {
-  area: AreaRow;
-  photos: InspoWithPicture[];
-  ideaCount: number;
-  summary: string;
-}) {
-  const Icon = areaIcon(area.key);
+function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWithPicture[]; ideaCount: number }) {
   const from = encodeURIComponent(`/area/${area.key}`);
   const saveHref = `/inspo/new?folder=${encodeURIComponent(area.key)}&from=${from}`;
   const galleryHref = `/inspo?folder=${encodeURIComponent(area.key)}`;
-  const glassButton =
-    "glass-card flex h-11 items-center justify-center rounded-full text-ink hover:border-champagne-400";
 
   const collage = (
     <span className="absolute inset-0 grid grid-cols-3 gap-[3px]">
@@ -96,7 +79,7 @@ function AreaCover({
   );
 
   return (
-    <div className="relative -mx-5 -mt-[max(2.5rem,env(safe-area-inset-top))] h-[340px] overflow-hidden md:mx-0 md:mt-0 md:h-[380px] md:rounded-3xl">
+    <div className="relative -mx-5 -mt-[max(2.5rem,env(safe-area-inset-top))] h-[300px] overflow-hidden md:mx-0 md:mt-0 md:h-[360px] md:rounded-3xl">
       {photos.length > 0 ? (
         <Link href={galleryHref} aria-label={`See all ${plural(ideaCount, "saved idea")}`}>
           {collage}
@@ -107,7 +90,7 @@ function AreaCover({
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-b from-[#FBF7F0]/0 via-[#FBF7F0]/85 to-[#FAF5EE]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[180px] bg-gradient-to-b from-[#FBF7F0]/0 via-[#FBF7F0]/85 to-[#FAF5EE]"
       />
 
       {photos.length === 0 && (
@@ -120,28 +103,43 @@ function AreaCover({
         </Link>
       )}
 
-      <div className="absolute inset-x-4 top-[max(1rem,env(safe-area-inset-top))] flex justify-between">
+      <div className="absolute inset-x-4 top-[max(1rem,env(safe-area-inset-top))] flex justify-between gap-2">
         <Link href="/" aria-label="Back to the hub" className={`${glassButton} w-11`}>
           <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
         </Link>
-        <Link href={saveHref} className={`${glassButton} gap-1.5 px-4 text-sm`}>
-          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Save an idea
-        </Link>
+        <div className="flex gap-2">
+          <Link href={saveHref} className={`${glassButton} gap-1.5 px-4 text-sm`}>
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Save an idea
+          </Link>
+          {area.show_on_hub && (
+            <details className="relative">
+              <summary aria-label="More" className={`${glassButton} w-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
+                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+              </summary>
+              <div className="absolute right-0 top-full z-10 mt-2 w-56 rounded-[18px] bg-white p-2 shadow-[0_18px_40px_-16px_rgba(60,50,40,0.45)]">
+                <form action={setAreaAction.bind(null, area.id, area.key, "hide")}>
+                  <button type="submit" className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink hover:bg-cream">
+                    Take off the hub
+                  </button>
+                </form>
+                <form action={setAreaAction.bind(null, area.id, area.key, "stop")}>
+                  <button type="submit" className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink hover:bg-cream">
+                    Stop planning this
+                  </button>
+                </form>
+              </div>
+            </details>
+          )}
+        </div>
       </div>
 
-      <div className="absolute inset-x-6 bottom-2.5 flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <p className="label flex items-center gap-2 tracking-[0.3em]">
-            <Icon className="h-[15px] w-[15px] shrink-0" strokeWidth={1.5} aria-hidden />
-            <span className="truncate">{summary}</span>
-          </p>
-          <h1 className="mt-2 font-display text-[52px] font-light leading-[0.95] tracking-[-0.035em] text-ink md:text-6xl">
-            {area.label}
-          </h1>
-        </div>
+      <div className="pointer-events-none absolute inset-x-6 bottom-2 flex items-end justify-between gap-3">
+        <h1 className="min-w-0 font-display text-[52px] font-light leading-[0.95] tracking-[-0.035em] text-ink md:text-6xl">
+          {area.label}
+        </h1>
         {ideaCount > 0 && (
-          <Link href={galleryHref} className="label mb-1.5 shrink-0 hover:text-ink">
+          <Link href={galleryHref} className="label pointer-events-auto mb-2 shrink-0 hover:text-ink">
             {plural(ideaCount, "idea")} ›
           </Link>
         )}
@@ -150,43 +148,133 @@ function AreaCover({
   );
 }
 
-/** A small capitals heading above a card. */
-function CardHeading({ children }: { children: React.ReactNode }) {
-  return <h2 className="-mb-1.5 mt-2 px-1.5 text-xs font-medium uppercase tracking-[0.3em] text-stone">{children}</h2>;
+/** Dream · Compare · Book · Pay · Ready, with a line filling as they're done. */
+function StageStrip({ done, current }: { done: boolean[]; current: number }) {
+  const filled = Math.max(done.lastIndexOf(true), 0);
+  return (
+    <div className="relative">
+      <div aria-hidden className="absolute left-[10%] right-[10%] top-3 h-px bg-champagne-400" />
+      <div
+        aria-hidden
+        className="absolute left-[10%] top-[11px] h-[3px] rounded-full bg-champagne-600"
+        style={{ width: `${filled * 20}%` }}
+      />
+      <ol className="relative grid grid-cols-5">
+        {STAGES.map((name, i) => {
+          const now = i === current;
+          return (
+            <li key={name} aria-current={now ? "step" : undefined} className="flex flex-col items-center gap-2">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                  done[i] ? "bg-champagne-600 text-white" : now ? "bg-ink" : "border-[1.5px] border-champagne-400 bg-ivory"
+                }`}
+              >
+                {done[i] && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
+              </span>
+              <span className={`text-xs tracking-[0.06em] ${done[i] || now ? "text-ink" : "text-stone"} ${now ? "font-semibold" : ""}`}>
+                {name}
+                {done[i] && <span className="sr-only"> (done)</span>}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
 }
 
-/** One row of "Everything else" that opens in place. */
-function Drawer({ title, count, children }: { title: string; count: string; children: React.ReactNode }) {
+/** A section: a small heading with "+ Add", over one glass card. */
+function Section({ title, addHref, addLabel, children }: { title: string; addHref?: string; addLabel?: string; children: React.ReactNode }) {
   return (
-    <details className="group border-b border-linen last:border-b-0">
-      <summary className="flex cursor-pointer list-none items-center gap-3 py-[15px] [&::-webkit-details-marker]:hidden">
-        <span className="flex-1 font-display text-lg text-ink">{title}</span>
-        <span className="text-[13px] text-stone">{count}</span>
+    <section className="mt-3">
+      <div className="mb-2 flex items-baseline justify-between px-1.5">
+        <h2 className="text-xs font-medium uppercase tracking-[0.28em] text-stone">{title}</h2>
+        {addHref && (
+          <Link href={addHref} className="label py-1 hover:text-ink">
+            <span aria-hidden>+ </span>
+            {addLabel ?? "Add"}
+          </Link>
+        )}
+      </div>
+      <div className="glass-card relative rounded-[22px] px-[18px] py-0.5">{children}</div>
+    </section>
+  );
+}
+
+/** One line of quiet text in a card with nothing in it yet. */
+function Empty({ children }: { children: React.ReactNode }) {
+  return <p className="py-4 text-sm text-stone">{children}</p>;
+}
+
+/** Rows folded away under one line ("2 not taken", "4 done"), opened in place. */
+function Folded({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-t border-linen">
+      <summary className="flex cursor-pointer list-none items-center gap-3 py-3.5 [&::-webkit-details-marker]:hidden">
+        <span className="flex-1 text-[15px] text-stone">{label}</span>
         <ChevronRight className="h-4 w-4 text-stone transition group-open:rotate-90" strokeWidth={1.8} aria-hidden />
       </summary>
-      <div className="pb-3">{children}</div>
+      <div className="pb-1">{children}</div>
     </details>
   );
 }
 
-const addLink = "inline-flex items-center gap-1 py-2 text-sm text-champagne-600 hover:text-ink";
+function DateBox({ date }: { date: string }) {
+  const [day, month] = formatDayMonth(date).split(" ");
+  return (
+    <span aria-hidden className="w-10 shrink-0 text-center">
+      <span className="block font-display text-2xl font-light leading-none text-ink">{day}</span>
+      <span className="mt-1 block text-xs font-medium uppercase tracking-[0.12em] text-champagne-600">{month}</span>
+    </span>
+  );
+}
+
+function appointmentLine(a: Appointment) {
+  return [a.at_time && formatTime(a.at_time), a.location].filter(Boolean).join(" · ");
+}
+
+function SupplierRow({ s }: { s: Supplier }) {
+  const d = s.supplier_details;
+  const status = d?.status ?? "enquired";
+  const strong = status === "booked" || status === "quoted";
+  return (
+    <li className="border-b border-linen last:border-b-0">
+      <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3.5">
+        <span className={`min-w-0 flex-1 truncate font-display text-lg ${status === "cancelled" ? "text-stone" : "text-ink"}`}>
+          {supplierName(s)}
+        </span>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em] ${
+            strong ? "bg-champagne-100 text-champagne-600" : "bg-cream text-stone"
+          }`}
+        >
+          {supplierStatusLabel(status)}
+        </span>
+        <span className="w-[4.5rem] shrink-0 text-right font-display text-xl font-light text-ink">
+          {d?.quoted_cost != null ? formatMoney(d.quoted_cost) : <span className="text-stone">—</span>}
+        </span>
+      </Link>
+    </li>
+  );
+}
 
 /**
  * One area of the wedding (screens 5 and 6 in docs/information-architecture.md):
- * the same template for every area, including ones a couple invents. It
- * gathers what's already tagged with the area elsewhere — to-dos from Plan,
- * suppliers from People — plus a plain key-facts block and the cost so far.
- * Notes are quick captures filed here; saved ideas are its Inspo folder.
+ * the same template for every area, including ones a couple invents.
  *
- * Laid out as round 2's "D" on the design canvas: a collage cover, then
- * glass cards — the next job, who's booked, what's left to pay, key facts —
- * and everything else folded away underneath.
+ * Laid out as "Area page · Round 4 · One template" on the design canvas: the
+ * collage cover, the five stages, tiles for the supplier, the money and the
+ * next appointment, then always the same five sections in the same order —
+ * Suppliers, Appointments, To-dos, Payment schedule, Notes. Only what's in
+ * them changes as the area moves through its stages.
  */
 export default function AreaView({
   area,
   milestones,
   suppliers,
   money,
+  payments,
+  appointments,
   notes,
   photos,
   ideaCount,
@@ -199,58 +287,66 @@ export default function AreaView({
   suppliers: Supplier[];
   /** Budget, committed and paid, counted as the Money tab counts them. */
   money: Money;
+  /** Payments for this area, or for one of its suppliers. */
+  payments: Payment[];
+  /** Appointments for this area, oldest first. */
+  appointments: Appointment[];
   /** Captures filed under this area (screens 35–36). */
   notes: Note[];
   /** The latest saved ideas with a picture, for the cover (up to four). */
   photos: InspoWithPicture[];
   /** Everything in this area's Inspo folder, pictures or not. */
   ideaCount: number;
-  /** `?edit=facts`: the key-facts card shows its box to type in. */
+  /** `?edit=facts`: the key facts show their box to type in. */
   editingFacts: boolean;
   error?: string;
   detail?: string;
 }) {
   const today = todayISO();
+  const key = encodeURIComponent(area.key);
   const from = encodeURIComponent(`/area/${area.key}`);
-  const openTodos = milestones.filter(isOpen).sort(byDue);
-  const todos = [...openTodos, ...milestones.filter((m) => !isOpen(m))];
-  const next = openTodos[0];
+  const stage = areaStage(area, suppliers, money, ideaCount);
 
-  const live = suppliers.filter((s) => s.supplier_details?.status !== "cancelled");
-  const booked = live.find((s) => s.supplier_details?.status === "booked");
-  const bookedCount = live.filter((s) => s.supplier_details?.status === "booked").length;
+  const sorted = [...suppliers].sort(
+    (a, b) => STATUS_ORDER[a.supplier_details?.status ?? "enquired"] - STATUS_ORDER[b.supplier_details?.status ?? "enquired"],
+  );
+  const booked = sorted.filter((s) => s.supplier_details?.status === "booked");
+  const live = sorted.filter((s) => s.supplier_details?.status !== "cancelled");
+  const quotes = live.map((s) => s.supplier_details?.quoted_cost).filter((q): q is number => q != null);
+  const quoteCount = live.filter((s) => s.supplier_details?.status === "quoted").length;
+  // Once someone's booked, everyone else folds away; before that, only the ones not taken.
+  const shown = booked.length > 0 ? booked : live;
+  const folded = sorted.filter((s) => !shown.includes(s));
+  const lead = booked[0];
+
+  const openTodos = milestones.filter(isOpen).sort((a, b) => byDate(a.due_date, b.due_date));
+  const doneTodos = milestones.filter((m) => !isOpen(m));
+
+  const upcoming = appointments.filter((a) => a.on_date >= today);
+  const past = appointments.filter((a) => a.on_date < today).reverse();
+  const nextAppointment = upcoming[0];
+
+  const supplierIds = new Set(suppliers.map((s) => s.id));
+  const deposits = live.filter((s) => (s.supplier_details?.deposit_paid ?? 0) > 0);
+  const schedule = [...payments].sort((a, b) =>
+    !!a.paid_on !== !!b.paid_on ? (a.paid_on ? -1 : 1) : byDate(a.paid_on ?? a.due_date, b.paid_on ?? b.due_date),
+  );
+  const unscheduled = unscheduledBalances(booked, payments.filter((p) => p.contact_id && supplierIds.has(p.contact_id)));
   const toPay = Math.max(money.committed - money.paid, 0);
   const paidShare = money.committed > 0 ? Math.min(money.paid / money.committed, 1) : 0;
 
-  const summary =
-    [
-      openTodos.length > 0 ? `${openTodos.length} to do` : milestones.length > 0 ? "All done" : null,
-      booked ? "Booked" : null,
-    ]
-      .filter(Boolean)
-      .join(" · ") || "Not started";
-
-  /** Nothing filed here at all: offer three ways in rather than a page of empty cards. */
-  const blank =
-    milestones.length === 0 &&
-    suppliers.length === 0 &&
-    notes.length === 0 &&
-    !area.details &&
-    money.committed === 0 &&
-    money.paid === 0;
-
-  const card = "glass-card relative rounded-[22px]";
+  const tile = "glass-card relative flex flex-col rounded-[22px] p-4";
 
   return (
     <main className="page relative pb-28 lg:pb-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 top-[560px] h-72 w-72 rounded-full bg-[#E6D9C4] blur-[55px]" />
-        <div className="absolute -right-16 top-[900px] h-64 w-64 rounded-full bg-[#EFE3D3] blur-[55px]" />
+        <div className="absolute -left-20 top-[520px] h-72 w-72 rounded-full bg-[#E6D9C4] blur-[55px]" />
+        <div className="absolute -right-16 top-[1000px] h-64 w-64 rounded-full bg-[#EFE3D3] blur-[55px]" />
       </div>
 
-      <AreaCover area={area} photos={photos} ideaCount={ideaCount} summary={summary} />
+      <AreaCover area={area} photos={photos} ideaCount={ideaCount} />
 
-      <div className="relative mt-4 flex flex-col gap-3.5">
+      <div className="relative mt-5 flex flex-col gap-3.5">
         {error && (
           <p role="alert" className="rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
             {error}
@@ -267,293 +363,305 @@ export default function AreaView({
           </div>
         )}
 
-        {next && (
-          <>
-            <CardHeading>Next up</CardHeading>
-            <div className={`${card} flex items-start gap-3.5 p-[18px]`}>
-              <form action={toggleMilestoneAction.bind(null, next.id, true)}>
-                <button
-                  type="submit"
-                  aria-label={`Mark "${next.title}" as done`}
-                  className="mt-0.5 flex h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-champagne-400 bg-white/60 hover:bg-champagne-100"
-                />
-              </form>
-              <Link href={`/plan/${next.id}`} className="min-w-0 flex-1">
-                <span className="block font-display text-[21px] leading-tight text-ink">{next.title}</span>
-                {next.due_date && (
-                  <span
-                    className={`mt-1.5 block text-xs font-medium uppercase tracking-[0.2em] ${
-                      next.due_date < today ? "text-ink" : "text-champagne-600"
-                    }`}
-                  >
-                    {dueLine(next.due_date)}
-                  </span>
-                )}
-              </Link>
-            </div>
-          </>
+        <StageStrip done={stage.done} current={stage.current} />
+
+        {stage.current === STAGES.length - 1 && (
+          <form
+            action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", true)}
+            className="glass-card flex items-center gap-3 rounded-[22px] px-[18px] py-3.5"
+          >
+            <p className="flex-1 text-sm text-ink">Booked and paid. Anything left to sort?</p>
+            <InlineSubmit label="We're ready" pendingLabel="Saving…" primary />
+          </form>
+        )}
+        {area.ready && (
+          <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", false)} className="-mt-1 text-center">
+            <button type="submit" className="py-1 text-xs text-stone underline underline-offset-4 hover:text-ink">
+              Not ready after all
+            </button>
+          </form>
         )}
 
-        {blank && !editingFacts ? (
-          <>
-            <CardHeading>Where to start</CardHeading>
-            <div className={`${card} px-[18px] py-1`}>
-              {[
-                { title: "A to-do", hint: "Something to get done", href: `/plan/new?area=${encodeURIComponent(area.key)}` },
-                {
-                  title: "A supplier",
-                  hint: "Someone you're talking to, or have booked",
-                  href: `/people/suppliers/new?category=${encodeURIComponent(area.key)}`,
-                },
-                { title: "Key facts", hint: "Colours, numbers, who's deciding", href: `/area/${area.key}?edit=facts` },
-              ].map((s) => (
-                <Link key={s.title} href={s.href} className="flex items-center gap-3.5 border-b border-linen py-[15px] last:border-b-0">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
-                    <Plus className="h-4 w-4 text-champagne-600" strokeWidth={1.6} aria-hidden />
-                  </span>
-                  <span>
-                    <span className="block font-display text-lg text-ink">{s.title}</span>
-                    <span className="mt-0.5 block text-xs text-stone">{s.hint}</span>
-                  </span>
+        <div className="mt-1 grid grid-cols-2 gap-3">
+          {/* Who: the booked supplier, or where the choosing is up to. Above the
+              tiles after it so its contact pop-up isn't covered. */}
+          <div className={`${tile} z-10`}>
+            {lead ? (
+              <>
+                <span className="label">Booked</span>
+                <Link href={`/people/${lead.id}`} className="mt-2 font-display text-xl leading-tight text-ink hover:underline">
+                  {supplierName(lead)}
                 </Link>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-        <div className="grid grid-cols-2 gap-3">
-          {booked ? (
-            <div className={`${card} flex flex-col p-4`}>
-              <span className="label">Booked</span>
-              <Link href={`/people/${booked.id}`} className="mt-2 font-display text-xl leading-tight text-ink hover:underline">
-                {supplierName(booked)}
-              </Link>
-              {booked.supplier_details?.company_name && (booked.first_name || booked.last_name) && (
-                <span className="mt-1 text-xs text-stone">{[booked.first_name, booked.last_name].filter(Boolean).join(" ")}</span>
-              )}
-              {(booked.phone || booked.email) && (
-                <span className="mt-auto flex gap-2 pt-3.5">
-                  {booked.phone && (
-                    <a
-                      href={`tel:${booked.phone}`}
-                      aria-label={`Call ${supplierName(booked)}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink hover:bg-cream"
-                    >
-                      <Phone className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                    </a>
-                  )}
-                  {booked.email && (
-                    <a
-                      href={`mailto:${booked.email}`}
-                      aria-label={`Email ${supplierName(booked)}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink hover:bg-cream"
-                    >
-                      <Mail className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                    </a>
-                  )}
+                {lead.supplier_details?.company_name && (lead.first_name || lead.last_name) && (
+                  <span className="mt-1 text-[13px] text-stone">{[lead.first_name, lead.last_name].filter(Boolean).join(" ")}</span>
+                )}
+                <div className="mt-auto pt-3.5">
+                  <ContactButtons name={supplierName(lead)} phone={lead.phone} email={lead.email} />
+                </div>
+              </>
+            ) : area.diy ? (
+              <>
+                <span className="label">Supplier</span>
+                <span className="mt-2 font-display text-xl leading-tight text-ink">Doing it ourselves</span>
+                <span className="mt-1 text-[13px] text-stone">No one to book</span>
+              </>
+            ) : (
+              <>
+                <span className="label">Choosing</span>
+                <span className="mt-2 font-display text-xl leading-tight text-ink">
+                  {live.length > 0 ? plural(live.length, "supplier") : "No one yet"}
                 </span>
-              )}
-            </div>
-          ) : (
-            <Link
-              href={`/people/suppliers/new?category=${encodeURIComponent(area.key)}`}
-              className={`${card} flex flex-col p-4 hover:border-champagne-400`}
-            >
-              <span className="label">Booked</span>
-              <span className="mt-2 font-display text-xl leading-tight text-ink">No one yet</span>
-              <span className="mt-1 text-xs text-stone">
-                {live.length > 0 ? `${plural(live.length, "supplier")} in the running` : "Add who you're talking to"}
-              </span>
-              <span className="mt-auto inline-flex items-center gap-1 pt-3.5 text-sm text-champagne-600">
-                <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-                Supplier
-              </span>
-            </Link>
-          )}
+                <span className="mt-1 text-[13px] text-stone">
+                  {live.length === 0 ? "Add who you're asking" : quoteCount > 0 ? `${plural(quoteCount, "quote")} in` : "No quotes yet"}
+                </span>
+              </>
+            )}
+          </div>
 
-          <Link href="/money" className={`${card} flex flex-col p-4 hover:border-champagne-400`}>
-            <span className="label">To pay</span>
+          <Link href="/money" className={`${tile} hover:border-champagne-400`}>
             {money.committed > 0 || money.paid > 0 ? (
               <>
+                <span className="label">To pay</span>
                 <span className="mt-2.5 font-display text-[34px] font-light leading-none tracking-[-0.03em] text-ink">
                   {formatMoney(toPay)}
                 </span>
                 <span className="mt-4 block h-1 overflow-hidden rounded-full bg-linen">
                   <span className="block h-1 bg-champagne-600" style={{ width: `${Math.round(paidShare * 100)}%` }} />
                 </span>
-                <span className="mt-2 text-xs text-stone">
+                <span className="mt-2 text-[13px] text-stone">
                   {formatMoney(money.paid)} of {formatMoney(money.committed)} paid
                 </span>
+                {money.budget !== null && <span className="text-[13px] text-stone">Budget {formatMoney(money.budget)}</span>}
               </>
             ) : (
-              <span className="mt-2 font-display text-xl leading-tight text-ink">Nothing yet</span>
+              <>
+                <span className="label">Budget</span>
+                <span className="mt-2.5 font-display text-[34px] font-light leading-none tracking-[-0.03em] text-ink">
+                  {money.budget !== null ? formatMoney(money.budget) : "—"}
+                </span>
+                <span className="mt-4 block h-1 rounded-full bg-linen" />
+                <span className="mt-2 text-[13px] text-stone">{money.budget !== null ? "Nothing committed" : "No budget set"}</span>
+                {quotes.length > 0 && (
+                  <span className="text-[13px] text-stone">
+                    {quotes.length > 1 ? "Quotes from" : "Quote"} {formatMoney(Math.min(...quotes))}
+                  </span>
+                )}
+              </>
             )}
-            <span className="mt-0.5 text-xs text-stone">
-              {money.budget !== null ? `Budget ${formatMoney(money.budget)}` : "No budget set"}
-            </span>
           </Link>
         </div>
 
-        <section className={`${card} px-[18px] py-4`}>
-          <div className="flex items-baseline justify-between">
-            <h2 className="label">Key facts</h2>
-            {!editingFacts && (
-              <Link href={`/area/${area.key}?edit=facts`} className="label hover:text-ink">
-                {area.details ? "Edit" : "Add"}
-              </Link>
-            )}
-          </div>
-          {editingFacts ? (
-            <form action={saveAreaDetailsAction.bind(null, area.id, area.key)} className="mt-3">
-              <textarea
-                name="details"
-                rows={4}
-                autoFocus
-                defaultValue={area.details ?? ""}
-                aria-label={`Key facts about ${area.label}`}
-                placeholder="Anything worth having to hand — colours, a budget, who's deciding, what you've ruled out."
-                className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
-              />
-              <div className="mt-2 flex items-center justify-end gap-4">
-                <Link href={`/area/${area.key}`} className="text-sm text-stone hover:text-ink">
-                  Cancel
-                </Link>
-                <InlineSubmit label="Save" pendingLabel="Saving…" />
-              </div>
-            </form>
-          ) : area.details ? (
-            <p className="mt-2.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{area.details}</p>
-          ) : (
-            <p className="mt-2.5 text-sm text-stone">Colours, numbers, who&apos;s deciding, what you&apos;ve ruled out.</p>
-          )}
-        </section>
+        {nextAppointment && (
+          <Link href={`/plan/appointments/${nextAppointment.id}`} className="glass-card flex items-center gap-3.5 rounded-[22px] px-[18px] py-3.5 hover:border-champagne-400">
+            <DateBox date={nextAppointment.on_date} />
+            <span className="min-w-0 flex-1">
+              <span className="label block">Next appointment</span>
+              <span className="mt-1 block truncate font-display text-lg text-ink">{nextAppointment.title}</span>
+              <span className="block truncate text-[13px] text-stone">
+                {[formatWeekdayDayMonth(nextAppointment.on_date), appointmentLine(nextAppointment)].filter(Boolean).join(" · ")}
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+          </Link>
+        )}
 
-        <CardHeading>Everything else</CardHeading>
-        <div className={`${card} px-[18px] py-1`}>
-          <Drawer
-            title="To-dos"
-            count={
-              milestones.length === 0
-                ? "None yet"
-                : [openTodos.length > 0 && `${openTodos.length} open`, todos.length > openTodos.length && `${todos.length - openTodos.length} done`]
-                    .filter(Boolean)
-                    .join(" · ")
-            }
-          >
-            {todos.length > 0 && (
+        <Section title="Suppliers" addHref={`/people/suppliers/new?category=${key}`}>
+          {shown.length > 0 ? (
+            <ul>
+              {shown.map((s) => (
+                <SupplierRow key={s.id} s={s} />
+              ))}
+            </ul>
+          ) : (
+            <Empty>{area.diy ? "No supplier needed — you're doing this yourselves." : "No one yet. Add who you're asking for quotes."}</Empty>
+          )}
+          {folded.length > 0 && (
+            <Folded label={booked.length > 0 && folded.some((s) => s.supplier_details?.status !== "cancelled") ? plural(folded.length, "other") : `${folded.length} not taken`}>
               <ul>
-                {todos.map((m) => (
-                  <MilestoneRow key={m.id} milestone={m} overdue={isOpen(m) && !!m.due_date && m.due_date < today} />
+                {folded.map((s) => (
+                  <SupplierRow key={s.id} s={s} />
                 ))}
               </ul>
-            )}
-            <Link href={`/plan/new?area=${encodeURIComponent(area.key)}`} className={addLink}>
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Add a to-do
-            </Link>
-          </Drawer>
+            </Folded>
+          )}
+          {booked.length === 0 && (
+            <form
+              action={setAreaStageFlagAction.bind(null, area.id, area.key, "diy", !area.diy)}
+              className="border-t border-linen py-2"
+            >
+              <button type="submit" className="py-1.5 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                {area.diy ? "We need a supplier after all" : "We're doing this ourselves"}
+              </button>
+            </form>
+          )}
+        </Section>
 
-          <Drawer
-            title="Suppliers"
-            count={
-              suppliers.length === 0
-                ? "None yet"
-                : [bookedCount > 0 && `${bookedCount} booked`, live.length > bookedCount && `${live.length - bookedCount} more`]
-                    .filter(Boolean)
-                    .join(" · ") || plural(suppliers.length, "supplier")
-            }
-          >
-            {suppliers.length > 0 && (
+        <Section title="Appointments" addHref={`/plan/appointments/new?area=${key}`}>
+          {upcoming.length > 0 ? (
+            <ul>
+              {upcoming.map((a) => (
+                <li key={a.id} className="border-b border-linen last:border-b-0">
+                  <Link href={`/plan/appointments/${a.id}`} className="flex items-center gap-3.5 py-3.5">
+                    <DateBox date={a.on_date} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-lg text-ink">{a.title}</span>
+                      <span className="block truncate text-[13px] text-stone">
+                        {appointmentLine(a) || formatWeekdayDayMonth(a.on_date)}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty>Nothing booked in. Consultations, tastings and fittings go here.</Empty>
+          )}
+          {past.length > 0 && (
+            <Folded label={`${past.length} been`}>
               <ul>
-                {suppliers.map((s) => {
-                  const d = s.supplier_details;
-                  const cancelled = d?.status === "cancelled";
-                  return (
-                    <li key={s.id} className="border-b border-linen last:border-b-0">
-                      <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3 hover:bg-cream/60">
-                        <span className="min-w-0 flex-1">
-                          <span className={`block truncate text-[15px] ${cancelled ? "text-stone line-through" : "text-ink"}`}>
-                            {supplierName(s)}
-                          </span>
-                          {d && <span className="mt-0.5 block text-xs text-stone">{supplierStatusLabel(d.status)}</span>}
-                        </span>
-                        {d?.quoted_cost != null && (
-                          <span className="shrink-0 font-display text-lg text-ink">{formatMoney(d.quoted_cost)}</span>
-                        )}
-                        <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <Link href={`/people/suppliers/new?category=${encodeURIComponent(area.key)}`} className={addLink}>
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Add a supplier
-            </Link>
-          </Drawer>
-
-          <div className="border-b border-linen last:border-b-0">
-            <Link href={`/inspo?folder=${encodeURIComponent(area.key)}`} className="flex items-center gap-3 py-[15px]">
-              <span className="flex-1 font-display text-lg text-ink">Saved ideas</span>
-              <span className="text-[13px] text-stone">{ideaCount > 0 ? ideaCount : "None yet"}</span>
-              <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
-            </Link>
-          </div>
-
-          <Drawer title="Notes" count={notes.length > 0 ? String(notes.length) : "None yet"}>
-            {notes.length > 0 && (
-              <ul>
-                {notes.map((n) => (
-                  <li key={n.id} className="border-b border-linen py-3 last:border-b-0">
-                    <NoteText note={n} />
+                {past.map((a) => (
+                  <li key={a.id}>
+                    <Link href={`/plan/appointments/${a.id}`} className="flex items-center gap-3.5 py-2.5 text-stone">
+                      <DateBox date={a.on_date} />
+                      <span className="min-w-0 flex-1 truncate text-[15px]">{a.title}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
+            </Folded>
+          )}
+        </Section>
+
+        <Section title="To-dos" addHref={`/plan/new?area=${key}`}>
+          {openTodos.length > 0 ? (
+            <ul>
+              {openTodos.map((m) => (
+                <MilestoneRow key={m.id} milestone={m} overdue={!!m.due_date && m.due_date < today} />
+              ))}
+            </ul>
+          ) : (
+            <Empty>{doneTodos.length > 0 ? "All done." : "Nothing to do here yet."}</Empty>
+          )}
+          {doneTodos.length > 0 && (
+            <Folded label={`${doneTodos.length} done`}>
+              <ul>
+                {doneTodos.map((m) => (
+                  <MilestoneRow key={m.id} milestone={m} overdue={false} />
+                ))}
+              </ul>
+            </Folded>
+          )}
+        </Section>
+
+        <Section title="Payment schedule" addHref={`/money/payments/new?area=${key}`}>
+          {deposits.length + schedule.length + unscheduled.length > 0 ? (
+            <ul>
+              {deposits.map((s) => (
+                <li key={`deposit-${s.id}`} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white">
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
+                  </span>
+                  <Link href={`/people/${s.id}`} className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] text-ink">Deposit</span>
+                    <span className="block truncate text-xs text-stone">Paid · {supplierName(s)}</span>
+                  </Link>
+                  <span className="font-display text-lg font-light text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
+                </li>
+              ))}
+              {schedule.map((p) => {
+                const overdue = !p.paid_on && !!p.due_date && p.due_date < today;
+                return (
+                  <li key={p.id} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
+                    <form action={markPaidAction.bind(null, p.id, !p.paid_on)}>
+                      <button
+                        type="submit"
+                        aria-label={p.paid_on ? `Mark "${p.description}" as not paid` : `Mark "${p.description}" as paid`}
+                        className={`flex h-6 w-6 items-center justify-center rounded-full transition ${
+                          p.paid_on ? "bg-champagne-600 text-white" : "border border-champagne-400 bg-white hover:bg-champagne-100"
+                        }`}
+                      >
+                        {p.paid_on && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
+                      </button>
+                    </form>
+                    <Link href={`/money/payments/${p.id}`} className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] text-ink">{p.description}</span>
+                      <span className={`block truncate text-xs ${overdue ? "font-medium text-ink" : "text-stone"}`}>
+                        {p.paid_on
+                          ? `Paid ${formatDayMonth(p.paid_on)}`
+                          : p.due_date
+                            ? `${overdue ? "Overdue · was due" : "Due"} ${formatWeekdayDayMonth(p.due_date)}`
+                            : "No date yet"}
+                      </span>
+                    </Link>
+                    <span className={`font-display text-lg font-light ${p.paid_on ? "text-stone" : "text-ink"}`}>{formatMoney(p.amount)}</span>
+                  </li>
+                );
+              })}
+              {unscheduled.map(({ supplier: s, balance }) => (
+                <li key={`balance-${s.id}`} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
+                  <span className="h-6 w-6 shrink-0 rounded-full border border-dashed border-champagne-400" aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] text-ink">Balance, not scheduled</span>
+                    <Link
+                      href={`/money/payments/new?supplier=${s.id}&amount=${balance}`}
+                      className="block text-xs text-champagne-600 underline underline-offset-4 hover:text-ink"
+                    >
+                      Add a due date
+                    </Link>
+                  </span>
+                  <span className="font-display text-lg font-light text-ink">{formatMoney(balance)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty>Nothing to pay yet. The deposit and balance go here once you book.</Empty>
+          )}
+        </Section>
+
+        <Section title="Notes" addHref={`/capture?area=${key}&from=${from}`}>
+          <div className={notes.length > 0 ? "border-b border-linen" : ""}>
+            <div className="flex items-baseline justify-between pt-3.5">
+              <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-champagne-600">Key facts</h3>
+              {!editingFacts && (
+                <Link href={`/area/${area.key}?edit=facts`} className="label py-1 hover:text-ink">
+                  {area.details ? "Edit" : "Write"}
+                </Link>
+              )}
+            </div>
+            {editingFacts ? (
+              <form action={saveAreaDetailsAction.bind(null, area.id, area.key)} className="py-3">
+                <textarea
+                  name="details"
+                  rows={5}
+                  autoFocus
+                  defaultValue={area.details ?? ""}
+                  aria-label={`Key facts about ${area.label}`}
+                  placeholder={"Colours, numbers, who's deciding.\n- Start a line with a dash for a bullet"}
+                  className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
+                />
+                <div className="mt-2 flex items-center justify-end gap-4">
+                  <Link href={`/area/${area.key}`} className="text-sm text-stone hover:text-ink">
+                    Cancel
+                  </Link>
+                  <InlineSubmit label="Save" pendingLabel="Saving…" />
+                </div>
+              </form>
+            ) : area.details ? (
+              <RichText text={area.details} className="pb-3.5 pt-2" />
+            ) : (
+              <p className="pb-3.5 pt-1.5 text-sm text-stone">The things worth having to hand: colours, numbers, what you&apos;ve ruled out.</p>
             )}
-            <Link href={`/capture?area=${encodeURIComponent(area.key)}&from=${from}`} className={addLink}>
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Add a note
-            </Link>
-          </Drawer>
-        </div>
-
-        <div className="mt-1 grid grid-cols-3 gap-2">
-          {[
-            { label: "To-do", href: `/plan/new?area=${encodeURIComponent(area.key)}` },
-            { label: "Supplier", href: `/people/suppliers/new?category=${encodeURIComponent(area.key)}` },
-            { label: "Note", href: `/capture?area=${encodeURIComponent(area.key)}&from=${from}` },
-          ].map((a) => (
-            <Link
-              key={a.label}
-              href={a.href}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-champagne-400 px-1 py-3 text-xs text-ink hover:bg-white/40"
-            >
-              <Plus className="h-[18px] w-[18px] text-champagne-600" strokeWidth={1.6} aria-hidden />
-              <span>
-                <span className="sr-only">Add a </span>
-                {a.label}
-              </span>
-            </Link>
-          ))}
-        </div>
-          </>
-        )}
-
-        {area.show_on_hub && (
-          <div className="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-1 text-[13px]">
-            <form action={setAreaAction.bind(null, area.id, area.key, "hide")}>
-              <button type="submit" className="py-2 text-stone underline underline-offset-4 hover:text-ink">
-                Take off the hub
-              </button>
-            </form>
-            <form action={setAreaAction.bind(null, area.id, area.key, "stop")}>
-              <button type="submit" className="py-2 text-stone underline underline-offset-4 hover:text-ink">
-                We&apos;re not planning this
-              </button>
-            </form>
           </div>
-        )}
+          {notes.length > 0 && (
+            <ul>
+              {notes.map((n) => (
+                <li key={n.id} className="border-b border-linen py-3.5 last:border-b-0">
+                  <NoteText note={n} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
       </div>
     </main>
   );

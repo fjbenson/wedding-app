@@ -77,7 +77,7 @@ export default function SupplierForm({
                 type="radio"
                 name="status"
                 value={s.status}
-                defaultChecked={(d?.status ?? "researching") === s.status}
+                defaultChecked={(!d || d.status === "researching" ? "enquired" : d.status) === s.status}
                 className="peer sr-only"
               />
               <span className="flex h-11 items-center justify-center rounded-xl border border-linen bg-white px-2 text-sm text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400/40">

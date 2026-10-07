@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   // "black-translucent" lets the page run up under the clock (whose text the
   // iPhone then makes white); every screen pads itself clear of the notch.
   appleWebApp: { capable: true, title: "Wedding", statusBarStyle: "black-translucent" },
+  // Next writes the newer "mobile-web-app-capable"; iPhones only honour the
+  // status-bar style above alongside the older Apple tag, so add it too.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 // Fit the phone's width, and let the page reach under the notch and home bar

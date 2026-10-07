@@ -70,8 +70,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (key facts via `?edit=facts`, plus captures; "- " lines become bullets,
   `rich-text.tsx`). Supplier labels: Asked · Quote in · Booked · Not taken
   (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
-  Notes and Inspo blocks wait for Quick capture and Inspo. Suppliers file
-  under the wedding's areas too (plus "Other").
+  Notes can be added, edited and removed in place on the area page.
+  Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): the guest list by household — add, edit, remove,
   with a **role on the day** (bridesmaid, usher…; `0004_guest_roles.sql`;
   a role makes them `bridal_party`). "Everyone" is a row per guest that opens
@@ -306,6 +306,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
    inbox and capture, the forms. Each round: the owner looks on their phone
    and says what's off; big changes get options on the design canvas first,
    small ones are built and pushed straight away.
+   **Done so far (7 Oct 2026):** the home screen; **area pages** (taken out
+   of order — see "Current state"); a shared **type system** taken from the
+   home screen (`docs/DESIGN.md`, "Type system" — use its classes on every
+   screen); Fraunces now loads with its optical-size axis, as the canvas
+   does; the Hub menu button is a **house** (owner's pick of twelve). **Next
+   up: Plan.** Open idea: a new home-screen app icon (offered options on
+   the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",
    asking for missing details one at a time. Decided so far:
@@ -324,7 +331,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 All private to the owner; open with the Artifact tool's `read` action.
 
-- **Design canvas** — every home-screen round, 1 to 10:
+- **Design canvas** — every home-screen round, then the area page
+  (rounds 1–4, the stages) and the Hub button icons, each on its own page:
   https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
 - **Glass Lab** — glass settings; the owner's saves are in its `glass`
   collection: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq

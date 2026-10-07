@@ -38,6 +38,12 @@ export async function fileNote(noteId: string, areaKey: string | null): Promise<
   if (error) throw error;
 }
 
+export async function updateNote(noteId: string, fields: Pick<Note, "body" | "url">): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("notes").update(fields).eq("id", noteId);
+  if (error) throw error;
+}
+
 export async function deleteNote(noteId: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("notes").delete().eq("id", noteId);

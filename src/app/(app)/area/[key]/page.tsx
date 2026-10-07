@@ -56,7 +56,9 @@ export default async function AreaPage({
       notes={notes ?? []}
       photos={(inspo ?? []).filter((i) => i.picture).slice(0, 4)}
       ideaCount={inspoCounts?.get(area.key) ?? 0}
-      editing={edit === "facts" || edit === "note" ? edit : null}
+      editing={
+        edit === "facts" || edit === "note" || (edit && /^note:[0-9a-f-]{36}$/i.test(edit)) ? edit : null
+      }
       error={error}
       detail={detail}
     />

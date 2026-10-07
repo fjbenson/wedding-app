@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { areaKey } from "@/lib/areas";
 import { addArea, getArea, updateArea } from "@/lib/db/areas";
-import { createNote } from "@/lib/db/notes";
+import { createNote, deleteNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
@@ -105,16 +105,55 @@ export async function addAreaNoteAction(key: string, formData: FormData) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const text = String(formData.get("body") ?? "").trim();
-  if (text) {
-    const isLink = /^https?:\/\/\S+$/i.test(text);
+  const fields = noteFields(formData);
+  if (fields) {
     try {
-      await createNote(wedding.id, { body: isLink ? null : text, url: isLink ? text : null, area_key: key });
+      await createNote(wedding.id, { ...fields, area_key: key });
     } catch (error) {
       failed(`/area/${key}`, "That note didn't save.", error);
     }
-    revalidatePath(`/area/${key}`);
-    revalidatePath("/inbox");
+    refreshNotes(key);
   }
   redirect(`/area/${key}#notes`);
+}
+
+/**
+ * Saves changes to one of an area's notes; emptying it removes it. A note
+ * captured with words *and* a link (`keepUrl`) only has its words edited
+ * here, and keeps the link.
+ */
+export async function saveAreaNoteAction(key: string, noteId: string, keepUrl: string | null, formData: FormData) {
+  const text = String(formData.get("body") ?? "").trim();
+  const fields = keepUrl ? { body: text || null, url: keepUrl } : noteFields(formData);
+  try {
+    if (fields) await updateNote(noteId, fields);
+    else await deleteNote(noteId);
+  } catch (error) {
+    failed(`/area/${key}`, "That note didn't save.", error);
+  }
+  refreshNotes(key);
+  redirect(`/area/${key}#notes`);
+}
+
+export async function deleteAreaNoteAction(key: string, noteId: string) {
+  try {
+    await deleteNote(noteId);
+  } catch (error) {
+    failed(`/area/${key}`, "That note wasn't removed.", error);
+  }
+  refreshNotes(key);
+  redirect(`/area/${key}#notes`);
+}
+
+/** The typed text as a note: a lone web address is kept as a link. Null if empty. */
+function noteFields(formData: FormData): { body: string | null; url: string | null } | null {
+  const text = String(formData.get("body") ?? "").trim();
+  if (!text) return null;
+  const isLink = /^https?:\/\/\S+$/i.test(text);
+  return { body: isLink ? null : text, url: isLink ? text : null };
+}
+
+function refreshNotes(key: string) {
+  revalidatePath(`/area/${key}`);
+  revalidatePath("/inbox");
 }

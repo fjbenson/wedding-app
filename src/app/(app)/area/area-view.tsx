@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import ContactButtons from "@/components/contact-buttons";
-import { InlineSubmit } from "@/components/form-bits";
+import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
@@ -14,7 +14,14 @@ import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
 import { markPaidAction } from "../money/actions";
 import { MilestoneRow } from "../plan/milestone-row";
-import { addAreaNoteAction, saveAreaDetailsAction, setAreaAction, setAreaStageFlagAction } from "./actions";
+import {
+  addAreaNoteAction,
+  deleteAreaNoteAction,
+  saveAreaDetailsAction,
+  saveAreaNoteAction,
+  setAreaAction,
+  setAreaStageFlagAction,
+} from "./actions";
 
 const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";
 
@@ -53,6 +60,10 @@ function Tile({ photo, index }: { photo?: InspoWithPicture; index: number }) {
   }
   return <span aria-hidden className="block h-full w-full" style={{ background: PLACEHOLDERS[index] }} />;
 }
+
+/** The box notes and key facts are typed into. */
+const NOTE_BOX =
+  "w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
 
 const glassButton = "glass-card flex h-11 items-center justify-center rounded-full text-ink hover:border-champagne-400";
 
@@ -319,8 +330,11 @@ export default function AreaView({
   photos: InspoWithPicture[];
   /** Everything in this area's Inspo folder, pictures or not. */
   ideaCount: number;
-  /** `?edit=facts` or `?edit=note`: a box to type in opens in the Notes card. */
-  editing: "facts" | "note" | null;
+  /**
+   * A box to type in, open in the Notes card: `?edit=facts` (key facts),
+   * `?edit=note` (a new note) or `?edit=note:<id>` (changing that note).
+   */
+  editing: string | null;
   error?: string;
   detail?: string;
 }) {
@@ -660,7 +674,7 @@ export default function AreaView({
                   defaultValue={area.details ?? ""}
                   aria-label={`Key facts about ${area.label}`}
                   placeholder={"Colours, numbers, who's deciding.\n- Start a line with a dash for a bullet"}
-                  className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
+                  className={NOTE_BOX}
                 />
                 <div className="mt-2 flex items-center justify-end gap-4">
                   <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
@@ -683,7 +697,7 @@ export default function AreaView({
                 autoFocus
                 aria-label={`A note about ${area.label}`}
                 placeholder={"A thought, a link, a list.\n- Start a line with a dash for a bullet"}
-                className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
+                className={NOTE_BOX}
               />
               <div className="mt-2 flex items-center justify-end gap-4">
                 <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
@@ -695,11 +709,42 @@ export default function AreaView({
           )}
           {notes.length > 0 && (
             <ul>
-              {notes.map((n) => (
-                <li key={n.id} className="border-b border-linen py-3.5 last:border-b-0">
-                  <NoteText note={n} />
-                </li>
-              ))}
+              {notes.map((n) =>
+                editing === `note:${n.id}` ? (
+                  <li key={n.id} className="border-b border-linen py-3 last:border-b-0">
+                    <form action={saveAreaNoteAction.bind(null, area.key, n.id, n.body && n.url ? n.url : null)}>
+                      <textarea
+                        name="body"
+                        rows={4}
+                        autoFocus
+                        defaultValue={n.body ?? n.url ?? ""}
+                        aria-label="This note"
+                        className={NOTE_BOX}
+                      />
+                      <div className="mt-2 flex items-center justify-end gap-4">
+                        <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
+                          Cancel
+                        </Link>
+                        <InlineSubmit label="Save" pendingLabel="Saving…" />
+                      </div>
+                    </form>
+                    <RemoveButton
+                      action={deleteAreaNoteAction.bind(null, area.key, n.id)}
+                      label="Remove this note"
+                      question="Remove this note?"
+                    />
+                  </li>
+                ) : (
+                  <li key={n.id} className="flex items-start gap-3 border-b border-linen py-3.5 last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <NoteText note={n} />
+                    </div>
+                    <Link href={`/area/${area.key}?edit=note:${n.id}#notes`} scroll={false} className="label shrink-0 py-0.5 hover:text-ink">
+                      Edit
+                    </Link>
+                  </li>
+                ),
+              )}
             </ul>
           )}
         </Section>

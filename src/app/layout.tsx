@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   description: "Plan a wedding — contacts, timeline and RSVPs in one place.",
   // On an iPhone, "Add to Home Screen" opens it full screen, like an app.
   // The icon is src/app/apple-icon.png; the rest is in manifest.ts.
-  appleWebApp: { capable: true, title: "Wedding", statusBarStyle: "default" },
+  // "black-translucent" lets the page run up under the clock (whose text the
+  // iPhone then makes white); every screen pads itself clear of the notch.
+  appleWebApp: { capable: true, title: "Wedding", statusBarStyle: "black-translucent" },
 };
 
 // Fit the phone's width, and let the page reach under the notch and home bar

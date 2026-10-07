@@ -51,8 +51,9 @@ function Countdown({ weddingDate }: { weddingDate: string | null }) {
  * From tablet width up each button has its name beneath; on phones there
  * isn't room, so it's icons only (the owner's call, 7 Oct 2026).
  *
- * A solid pale circle sits behind the buttons (Round 15 on the design
- * canvas): it grounds the ring without a card around it.
+ * A champagne circle sits behind the buttons (Round 15 on the design
+ * canvas): it grounds the ring without a card around it. The circle, the
+ * middle disc and the buttons are all frosted glass over the satin page.
  */
 export default function Hub({
   weddingDate,
@@ -67,10 +68,10 @@ export default function Hub({
     <div className="relative aspect-square w-full">
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#EADCC6]"
+        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/60 bg-[#EADCC6]/55 shadow-[inset_0_1px_0_rgb(255_255_255/0.6),0_20px_50px_-30px_rgb(90_65_35/0.35)] backdrop-blur-md"
       />
 
-      <div className="absolute left-1/2 top-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-center shadow-[0_16px_40px_-18px_rgb(60_50_40/0.5)]">
+      <div className="absolute left-1/2 top-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/90 bg-white/70 text-center shadow-[inset_0_2px_0_rgb(255_255_255/0.9),0_16px_40px_-18px_rgb(60_50_40/0.5)] backdrop-blur-xl">
         <Countdown weddingDate={weddingDate} />
       </div>
 
@@ -79,7 +80,7 @@ export default function Hub({
         const Icon = areaIcon(area.key);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label}>
-            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-white text-ink shadow-[0_2px_8px_rgb(60_50_40/0.1)]">
+            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
               <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
             </span>
           </Node>
@@ -87,7 +88,7 @@ export default function Hub({
       })}
 
       <Node position={nodePosition(areas.length, total)} href="/area/new" label="Add" ariaLabel="Add an area">
-        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/60 text-champagne-600">
+        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/45 text-champagne-600 backdrop-blur-md">
           <Plus className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
         </span>
       </Node>

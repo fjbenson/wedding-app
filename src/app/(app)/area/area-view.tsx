@@ -148,30 +148,37 @@ function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWi
   );
 }
 
-/** Dream · Compare · Book · Pay · Ready, with a line filling as they're done. */
+/**
+ * Dream · Compare · Book · Pay · Ready: small dots on a hairline, labelled in
+ * the type system's capitals. Done is champagne, now is ink with a soft halo,
+ * still to come is a fine gold ring.
+ */
 function StageStrip({ done, current }: { done: boolean[]; current: number }) {
   const filled = Math.max(done.lastIndexOf(true), 0);
   return (
     <div className="relative">
-      <div aria-hidden className="absolute left-[10%] right-[10%] top-3 h-px bg-champagne-400" />
-      <div
-        aria-hidden
-        className="absolute left-[10%] top-[11px] h-[3px] rounded-full bg-champagne-600"
-        style={{ width: `${filled * 20}%` }}
-      />
+      <div aria-hidden className="absolute left-[10%] right-[10%] top-[5px] h-px bg-champagne-400/70" />
+      <div aria-hidden className="absolute left-[10%] top-[5px] h-px bg-champagne-600" style={{ width: `${filled * 20}%` }} />
       <ol className="relative grid grid-cols-5">
         {STAGES.map((name, i) => {
           const now = i === current;
           return (
-            <li key={name} aria-current={now ? "step" : undefined} className="flex flex-col items-center gap-2">
+            <li key={name} aria-current={now ? "step" : undefined} className="flex flex-col items-center">
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                  done[i] ? "bg-champagne-600 text-white" : now ? "bg-ink" : "border-[1.5px] border-champagne-400 bg-ivory"
+                aria-hidden
+                className={`h-[11px] w-[11px] rounded-full ${
+                  done[i]
+                    ? "bg-champagne-600"
+                    : now
+                      ? "bg-ink shadow-[0_0_0_4px_theme(colors.champagne.100)]"
+                      : "border border-champagne-400 bg-ivory"
+                }`}
+              />
+              <span
+                className={`mt-2.5 text-xs font-medium uppercase tracking-[0.03em] min-[360px]:tracking-[0.1em] ${
+                  done[i] ? "text-champagne-600" : now ? "text-ink" : "text-stone"
                 }`}
               >
-                {done[i] && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
-              </span>
-              <span className={`text-xs tracking-[0.06em] ${done[i] || now ? "text-ink" : "text-stone"} ${now ? "font-semibold" : ""}`}>
                 {name}
                 {done[i] && <span className="sr-only"> (done)</span>}
               </span>

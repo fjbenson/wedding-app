@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { areaKey } from "@/lib/areas";
 import { addArea, getArea, updateArea } from "@/lib/db/areas";
+import { createNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
@@ -93,4 +94,27 @@ export async function setAreaStageFlagAction(areaId: string, key: string, flag: 
     failed(`/area/${key}`, "That didn't change.", error);
   }
   refresh(key);
+}
+
+/**
+ * A note written straight into an area's Notes card — the same little box
+ * as key facts, rather than a trip to the capture page. A note that's just
+ * a web address is kept as a link, as capture would.
+ */
+export async function addAreaNoteAction(key: string, formData: FormData) {
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+
+  const text = String(formData.get("body") ?? "").trim();
+  if (text) {
+    const isLink = /^https?:\/\/\S+$/i.test(text);
+    try {
+      await createNote(wedding.id, { body: isLink ? null : text, url: isLink ? text : null, area_key: key });
+    } catch (error) {
+      failed(`/area/${key}`, "That note didn't save.", error);
+    }
+    revalidatePath(`/area/${key}`);
+    revalidatePath("/inbox");
+  }
+  redirect(`/area/${key}#notes`);
 }

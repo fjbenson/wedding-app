@@ -14,7 +14,7 @@ import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
 import { markPaidAction } from "../money/actions";
 import { MilestoneRow } from "../plan/milestone-row";
-import { saveAreaDetailsAction, setAreaAction, setAreaStageFlagAction } from "./actions";
+import { addAreaNoteAction, saveAreaDetailsAction, setAreaAction, setAreaStageFlagAction } from "./actions";
 
 const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";
 
@@ -189,12 +189,15 @@ function Section({
   title,
   addHref,
   addLabel,
+  addStays = false,
   children,
 }: {
   id?: string;
   title: string;
   addHref?: string;
   addLabel?: string;
+  /** "+ Add" opens something on this page: keep the scroll where it is. */
+  addStays?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -202,7 +205,7 @@ function Section({
       <div className="mb-2 flex items-baseline justify-between px-1.5">
         <h2 className="section-label">{title}</h2>
         {addHref && (
-          <Link href={addHref} className="label py-1 hover:text-ink">
+          <Link href={addHref} scroll={!addStays} className="label py-1 hover:text-ink">
             <span aria-hidden>+ </span>
             {addLabel ?? "Add"}
           </Link>
@@ -290,7 +293,7 @@ export default function AreaView({
   notes,
   photos,
   ideaCount,
-  editingFacts,
+  editing,
   error,
   detail,
 }: {
@@ -309,14 +312,13 @@ export default function AreaView({
   photos: InspoWithPicture[];
   /** Everything in this area's Inspo folder, pictures or not. */
   ideaCount: number;
-  /** `?edit=facts`: the key facts show their box to type in. */
-  editingFacts: boolean;
+  /** `?edit=facts` or `?edit=note`: a box to type in opens in the Notes card. */
+  editing: "facts" | "note" | null;
   error?: string;
   detail?: string;
 }) {
   const today = todayISO();
   const key = encodeURIComponent(area.key);
-  const from = encodeURIComponent(`/area/${area.key}`);
   const stage = areaStage(area, suppliers, money, ideaCount);
 
   const sorted = [...suppliers].sort(
@@ -632,17 +634,17 @@ export default function AreaView({
           )}
         </Section>
 
-        <Section id="notes" title="Notes" addHref={`/capture?area=${key}&from=${from}`}>
-          <div className={notes.length > 0 ? "border-b border-linen" : ""}>
+        <Section id="notes" title="Notes" addHref={`/area/${area.key}?edit=note#notes`} addStays>
+          <div className={notes.length > 0 || editing === "note" ? "border-b border-linen" : ""}>
             <div className="flex items-baseline justify-between pt-3.5">
               <h3 className="label">Key facts</h3>
-              {!editingFacts && (
+              {editing !== "facts" && (
                 <Link href={`/area/${area.key}?edit=facts#notes`} scroll={false} className="label py-1 hover:text-ink">
                   {area.details ? "Edit" : "Write"}
                 </Link>
               )}
             </div>
-            {editingFacts ? (
+            {editing === "facts" ? (
               <form action={saveAreaDetailsAction.bind(null, area.id, area.key)} className="py-3">
                 <textarea
                   name="details"
@@ -666,6 +668,24 @@ export default function AreaView({
               <p className="pb-3.5 pt-1.5 text-sm text-stone">The things worth having to hand: colours, numbers, what you&apos;ve ruled out.</p>
             )}
           </div>
+          {editing === "note" && (
+            <form action={addAreaNoteAction.bind(null, area.key)} className="border-b border-linen py-3">
+              <textarea
+                name="body"
+                rows={4}
+                autoFocus
+                aria-label={`A note about ${area.label}`}
+                placeholder={"A thought, a link, a list.\n- Start a line with a dash for a bullet"}
+                className="w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
+              />
+              <div className="mt-2 flex items-center justify-end gap-4">
+                <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
+                  Cancel
+                </Link>
+                <InlineSubmit label="Save note" pendingLabel="Saving…" />
+              </div>
+            </form>
+          )}
           {notes.length > 0 && (
             <ul>
               {notes.map((n) => (

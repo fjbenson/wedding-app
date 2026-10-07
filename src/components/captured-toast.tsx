@@ -21,9 +21,15 @@ export default function CapturedToast() {
     const rest = new URLSearchParams(params);
     rest.delete("captured");
     router.replace(rest.size ? `${pathname}?${rest}` : pathname, { scroll: false });
+  }, [params, pathname, router]);
+
+  // Its own timer: tidying the address above re-runs that effect, which
+  // used to cancel the timer and leave "Saved" up for good.
+  useEffect(() => {
+    if (!shown) return;
     const timer = setTimeout(() => setShown(false), 3500);
     return () => clearTimeout(timer);
-  }, [params, pathname, router]);
+  }, [shown]);
 
   if (!shown) return null;
   return (

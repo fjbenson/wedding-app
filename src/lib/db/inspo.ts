@@ -37,6 +37,16 @@ export async function listInspo(weddingId: string, options: { folder?: string | 
   return withPictures(data ?? []);
 }
 
+/** Every idea's id in one folder, newest first — for stepping through them one by one. */
+export async function listInspoIds(weddingId: string, folder: string | null): Promise<string[]> {
+  const supabase = await createClient();
+  let query = supabase.from("inspo_items").select("id").eq("wedding_id", weddingId).order("created_at", { ascending: false });
+  query = folder === null ? query.is("area_key", null) : query.eq("area_key", folder);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []).map((row) => row.id as string);
+}
+
 /** How many ideas sit in each folder ("" for Unsorted). */
 export async function countInspo(weddingId: string): Promise<Map<string, number> | null> {
   const supabase = await createClient();

@@ -31,6 +31,7 @@ export async function saveAreaDetailsAction(areaId: string, key: string, formDat
     failed(`/area/${key}`, "That didn't save.", error);
   }
   revalidatePath(`/area/${key}`);
+  redirect(`/area/${key}`);
 }
 
 /**

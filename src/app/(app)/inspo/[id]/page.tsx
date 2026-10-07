@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
 import { areaOptions } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
-import { getInspo } from "@/lib/db/inspo";
+import { getInspo, listInspoIds } from "@/lib/db/inspo";
 import { formatDayMonth } from "@/lib/dates";
 import { deleteInspoAction, updateInspoAction } from "../actions";
 
@@ -26,7 +26,14 @@ export default async function InspoItemPage({
   // Row-level security returns nothing for another wedding's idea.
   const item = await getInspo(id);
   if (!item) notFound();
-  const areas = areaOptions(await listAreas(item.wedding_id));
+  const [areaRows, ids] = await Promise.all([listAreas(item.wedding_id), listInspoIds(item.wedding_id, item.area_key)]);
+  const areas = areaOptions(areaRows);
+
+  // Step through the folder one at a time, newest first, as the grid shows it.
+  const at = ids.indexOf(item.id);
+  const prev = at > 0 ? ids[at - 1] : null;
+  const next = at >= 0 && at < ids.length - 1 ? ids[at + 1] : null;
+  const stepButton = "flex h-11 w-11 items-center justify-center rounded-full";
 
   return (
     <main className="page pb-28 lg:max-w-3xl lg:pb-16">
@@ -52,6 +59,27 @@ export default async function InspoItemPage({
           alt={item.title ?? item.note ?? "A saved idea"}
           className="mt-4 max-h-[70dvh] w-full rounded-2xl bg-cream object-contain"
         />
+      )}
+      {ids.length > 1 && (
+        <nav aria-label="More ideas in this folder" className="mt-3 flex items-center justify-between">
+          {prev ? (
+            <Link href={`/inspo/${prev}`} aria-label="Previous idea" className={`glass-card ${stepButton} text-ink hover:border-champagne-400`}>
+              <ChevronLeft className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+            </Link>
+          ) : (
+            <span className={stepButton} />
+          )}
+          <span className="text-xs font-medium uppercase tracking-[0.24em] text-stone">
+            {at + 1} of {ids.length}
+          </span>
+          {next ? (
+            <Link href={`/inspo/${next}`} aria-label="Next idea" className={`glass-card ${stepButton} text-ink hover:border-champagne-400`}>
+              <ChevronRight className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+            </Link>
+          ) : (
+            <span className={stepButton} />
+          )}
+        </nav>
       )}
       <div className="glass-card mt-6 rounded-[22px] p-5">
         {item.title && <h1 className="mb-2 text-2xl leading-snug text-ink">{item.title}</h1>}

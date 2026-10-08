@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createContact, createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { joinRoles } from "@/lib/guest-roles";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -38,8 +39,11 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
       householdId = (await createHousehold({ weddingId: wedding.id, name })).id;
     }
 
-    const picked = text(formData, "role");
-    const role = picked === "other" ? text(formData, "custom_role") : picked;
+    // Ticked roles plus any they typed in; one guest can have several.
+    const role = joinRoles([
+      ...formData.getAll("roles").map(String),
+      ...(text(formData, "custom_role") ?? "").split(","),
+    ]);
     const fields = {
       household_id: householdId,
       // Anyone with a job on the day counts as the bridal party (the plan's filter).
@@ -101,27 +105,19 @@ export async function deleteGuestAction(guestId: string) {
 }
 
 /**
- * Gives a guest a role from the Bridal party tab without opening their form.
- * A role makes them bridal_party, as saveGuestAction does.
+ * Sets a guest's roles from their card (tap a pill on or off). Anyone with
+ * a role counts as the bridal party, as in saveGuestAction. The card shows
+ * the change straight away; if saving fails, the next refresh shows the truth.
  */
-export async function assignRoleAction(formData: FormData) {
-  const guestId = text(formData, "guest");
-  const picked = text(formData, "role");
-  const role = picked === "other" ? text(formData, "custom_role") : picked;
-  if (!guestId || !role) {
-    redirect(`/people?tab=party&error=${encodeURIComponent("Please pick someone and their role.")}`);
-  }
-
-  let detail = "";
+export async function setRolesAction(guestId: string, roles: string[]) {
+  const role = joinRoles(roles);
   try {
-    await updateContact(guestId, { role_on_the_day: role, contact_type: "bridal_party" });
+    await updateContact(guestId, {
+      role_on_the_day: role,
+      contact_type: role ? "bridal_party" : "guest",
+    });
   } catch (error) {
-    console.error("assigning role failed", error);
-    detail = describe(error);
+    console.error("saving roles failed", error);
   }
-  if (detail) {
-    redirect(`/people?tab=party&error=${encodeURIComponent("That didn't save.")}&detail=${encodeURIComponent(detail)}`);
-  }
-
   revalidatePath("/people");
 }

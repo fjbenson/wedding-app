@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Field, INPUT, SubmitButton } from "@/components/form-bits";
-import { GUEST_ROLES } from "@/lib/guest-roles";
+import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Household } from "@/types/db";
 
 /** Add or edit one guest. `guest` is missing when adding. */
@@ -18,12 +18,11 @@ export default function GuestForm({
   /** Adding from a household's page: start in that household, and go back there. */
   defaultHousehold?: string;
 }) {
-  // A new guest usually starts a new household; an existing one keeps theirs.
-  // A role that isn't one of the suggestions shows as "Something else".
-  const saved = guest?.role_on_the_day ?? "";
-  const customRole = saved && !GUEST_ROLES.includes(saved) ? saved : "";
-  const [role, setRole] = useState(customRole ? "other" : saved);
+  // Their roles, plus any they have that aren't among the suggestions.
+  const saved = guest ? rolesOf(guest) : [];
+  const choices = [...GUEST_ROLES, ...saved.filter((r) => !GUEST_ROLES.includes(r))];
 
+  // A new guest usually starts a new household; an existing one keeps theirs.
   const [household, setHousehold] = useState(
     guest ? (guest.household_id ?? "none") : (defaultHousehold ?? "new"),
   );
@@ -65,34 +64,27 @@ export default function GuestForm({
         </Field>
       )}
 
-      <Field label="Role on the day" hint="optional">
-        <select
-          name="role"
-          value={role}
-          onChange={(event) => setRole(event.target.value)}
-          className={INPUT}
-        >
-          <option value="">Guest</option>
-          {GUEST_ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
+      <fieldset>
+        <legend className="text-sm text-ink">
+          Role on the day <span className="text-stone">(as many as apply)</span>
+        </legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {choices.map((r) => (
+            <label key={r} className="cursor-pointer">
+              <input type="checkbox" name="roles" value={r} defaultChecked={saved.includes(r)} className="peer sr-only" />
+              <span className="flex h-9 items-center rounded-full border border-linen bg-white px-3.5 text-sm text-ink transition peer-checked:border-champagne-600 peer-checked:bg-champagne-100 peer-checked:font-medium peer-checked:text-champagne-600 peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400">
+                {r}
+              </span>
+            </label>
           ))}
-          <option value="other">Something else…</option>
-        </select>
-      </Field>
-
-      {role === "other" && (
-        <Field label="What's their role?">
-          <input
-            name="custom_role"
-            required
-            defaultValue={customRole}
-            placeholder="e.g. Chief dog handler"
-            className={INPUT}
-          />
-        </Field>
-      )}
+        </div>
+        <input
+          name="custom_role"
+          placeholder="Or your own, e.g. Chief dog handler"
+          aria-label="Another role"
+          className={INPUT}
+        />
+      </fieldset>
 
       <div className="space-y-3">
         <label className="flex items-center gap-3 text-sm text-ink">

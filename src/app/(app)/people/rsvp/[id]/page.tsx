@@ -30,8 +30,8 @@ export default async function RsvpPage({
 
   return (
     <FormPage
-      backHref={`/people?event=${event.id}`}
-      backLabel={`People · ${event.name}`}
+      backHref={`/people?guest=${guest.id}`}
+      backLabel="Guest list"
       title={name}
       error={error}
       detail={detail}
@@ -39,7 +39,7 @@ export default async function RsvpPage({
       <RsvpForm action={saveRsvpAction.bind(null, rsvp.id)} rsvp={rsvp} eventName={event.name} />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton
-          action={uninviteAction.bind(null, rsvp.id, event.id)}
+          action={uninviteAction.bind(null, rsvp.id, guest.id)}
           label={`Take off the list for ${event.name.toLowerCase()}`}
           question={`Take ${name} off the list for ${event.name.toLowerCase()}?`}
         />

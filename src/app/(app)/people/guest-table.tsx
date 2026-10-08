@@ -1,44 +1,28 @@
-import Link from "next/link";
-import { Check, ChevronRight, Minus, X } from "lucide-react";
-import type { Contact, Rsvp, RsvpStatus, WeddingEvent } from "@/types/db";
+import { Check, Minus, X } from "lucide-react";
+import { rolesOf } from "@/lib/guest-roles";
+import type { Contact, Rsvp, RsvpStatus } from "@/types/db";
 
-/**
- * The "Everyone" view of the guest list, two ways from the same data:
- * phones get a row per guest that opens to show the rest; desktops (lg+) get
- * the whole thing as a table. Households are the groups in both.
- */
+/** Small pieces shared by the guest list, the guest card and household pages. */
 
-export interface GuestGroup {
-  id: string;
-  name: string;
-  guests: Contact[];
-}
-
-/** A household's name, linking to its page — except the "not in a household" group. */
-export function HouseholdName({ group, className }: { group: GuestGroup; className: string }) {
-  if (group.id === "none") return <span className={className}>{group.name}</span>;
-  return (
-    <Link href={`/people/household/${group.id}`} className={`${className} hover:underline hover:decoration-champagne-400 hover:underline-offset-4`}>
-      {group.name}
-    </Link>
-  );
-}
-
-function fullName(guest: Contact) {
+export function fullName(guest: Pick<Contact, "first_name" | "last_name">) {
   return [guest.first_name, guest.last_name].filter(Boolean).join(" ");
 }
 
-/** The first meal and dietary note given for any event. */
-function mealAndDiet(rsvps: Rsvp[]) {
-  return {
-    meal: rsvps.find((r) => r.meal_choice)?.meal_choice ?? null,
-    diet: rsvps.find((r) => r.dietary_notes)?.dietary_notes ?? null,
-  };
+/** "ED" for Ellen Daniels — the circle at the start of each row. */
+export function initials(guest: Pick<Contact, "first_name" | "last_name">) {
+  return (guest.first_name.charAt(0) + (guest.last_name?.charAt(0) ?? "")).toUpperCase();
+}
+
+/** "Day" for "The day", "Eve" for "The evening": the heading over each dot. */
+export function shortEvent(name: string) {
+  const bare = name.replace(/^the\s+/i, "");
+  const word = bare.charAt(0).toUpperCase() + bare.slice(1);
+  return word.length <= 5 ? word : word.slice(0, 3);
 }
 
 const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeof Check }> = {
   attending: { label: "Coming", className: "bg-ink text-ivory", icon: Check },
-  declined: { label: "Not coming", className: "bg-cream text-stone", icon: X },
+  declined: { label: "Can't come", className: "bg-cream text-stone", icon: X },
   pending: {
     label: "Waiting",
     className: "border border-dashed border-champagne-400 text-champagne-600",
@@ -46,10 +30,10 @@ const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeo
   },
 };
 
-/** An answer as a small pill. `short` drops the word, for tight phone rows. */
+/** An answer as a small pill. `short` swaps the word for the event's name. */
 export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: string; short?: boolean }) {
   if (!rsvp) {
-    return <span className="text-xs text-stone/60">{short ? `${event} —` : "Not invited"}</span>;
+    return <span className="text-xs text-stone">{short ? `${event} —` : "Not invited"}</span>;
   }
   const a = ANSWER[rsvp.status];
   const Icon = a.icon;
@@ -64,178 +48,53 @@ export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: st
   );
 }
 
-export function RoleLabel({ guest }: { guest: Contact }) {
-  const bits = [guest.role_on_the_day, guest.is_child && "Child"].filter(Boolean);
-  if (bits.length === 0) return null;
+const DOT: Record<RsvpStatus | "none", { className: string; word: string }> = {
+  attending: { className: "bg-ink", word: "coming" },
+  pending: { className: "border-[1.5px] border-dashed border-champagne-400", word: "waiting" },
+  declined: { className: "bg-[#D8D0C4]", word: "can't come" },
+  none: { className: "border border-linen", word: "not invited" },
+};
+
+/** One event's answer as a dot: filled = coming, dashed = waiting, grey = can't. */
+export function AnswerDot({ status }: { status?: RsvpStatus }) {
+  return <span aria-hidden className={`block h-3.5 w-3.5 shrink-0 rounded-full ${DOT[status ?? "none"].className}`} />;
+}
+
+export function answerWord(status?: RsvpStatus) {
+  return DOT[status ?? "none"].word;
+}
+
+/** The key under the list, so the dots explain themselves. */
+export function DotKey() {
   return (
-    <span className="text-xs font-medium uppercase tracking-[0.12em] text-champagne-600">
-      {bits.join(" · ")}
+    <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-stone">
+      <span className="flex items-center gap-1.5"><AnswerDot status="attending" />Coming</span>
+      <span className="flex items-center gap-1.5"><AnswerDot status="pending" />Waiting</span>
+      <span className="flex items-center gap-1.5"><AnswerDot status="declined" />Can&apos;t come</span>
+      <span className="flex items-center gap-1.5"><AnswerDot />Not invited</span>
+    </p>
+  );
+}
+
+/** A role as a champagne pill: "Bridesmaid". */
+export function RolePill({ role }: { role: string }) {
+  return (
+    <span className="inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-full bg-champagne-100 px-2.5 text-xs font-medium text-champagne-600">
+      {role}
     </span>
   );
 }
 
-/** Phones and tablets: tap a guest to see everything about them. */
-export function GuestCards({
-  groups,
-  events,
-  rsvps,
-}: {
-  groups: GuestGroup[];
-  events: WeddingEvent[];
-  rsvps: Rsvp[];
-}) {
+/** A guest's roles as pills, plus "Child" — or nothing for a plain guest. */
+export function RoleLabel({ guest, className = "" }: { guest: Contact; className?: string }) {
+  const roles = rolesOf(guest);
+  if (roles.length === 0 && !guest.is_child) return null;
   return (
-    <div className="mt-10 space-y-8 lg:hidden">
-      {groups.map((group, index) => (
-        <section key={group.id}>
-          <div className="flex items-center gap-3 border-b border-champagne-400 pb-2">
-            <span className="font-display text-sm text-champagne-600">{String(index + 1).padStart(2, "0")}</span>
-            <h2 className="min-w-0 flex-1 text-xl text-ink">
-              <HouseholdName group={group} className="text-ink" />
-            </h2>
-            <span className="text-xs uppercase tracking-[0.14em] text-stone">
-              {group.guests.length} {group.guests.length === 1 ? "guest" : "guests"}
-            </span>
-          </div>
-          <ul>
-            {group.guests.map((guest) => {
-              const theirs = rsvps.filter((r) => r.contact_id === guest.id);
-              const { meal, diet } = mealAndDiet(theirs);
-              const details = [
-                ["Email", guest.email],
-                ["Phone", guest.phone],
-                ["Meal", meal],
-                ["Dietary", diet],
-                ["Notes", guest.notes],
-              ].filter(([, value]) => value) as [string, string][];
-
-              return (
-                <li key={guest.id} className="border-b border-linen last:border-b-0">
-                  <details className="group">
-                    <summary className="flex cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[15px] text-ink">{fullName(guest)}</span>
-                        <RoleLabel guest={guest} />
-                        {events.length > 0 && (
-                          <span className="mt-1.5 flex flex-wrap gap-1.5">
-                            {events.map((e) => (
-                              <Answer
-                                key={e.id}
-                                rsvp={theirs.find((r) => r.event_id === e.id)}
-                                event={e.name.replace(/^The /, "")}
-                                short
-                              />
-                            ))}
-                          </span>
-                        )}
-                      </span>
-                      <ChevronRight
-                        className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-90"
-                        strokeWidth={1.8}
-                        aria-hidden
-                      />
-                    </summary>
-
-                    <div className="mb-4 rounded-xl bg-cream/70 px-4 py-3 text-sm">
-                      {details.length > 0 ? (
-                        <dl className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-1.5">
-                          {details.map(([label, value]) => (
-                            <div key={label} className="contents">
-                              <dt className="text-stone">{label}</dt>
-                              <dd className="min-w-0 break-words text-ink">{value}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                      ) : (
-                        <p className="text-stone">No details yet.</p>
-                      )}
-                      <Link
-                        href={`/people/${guest.id}`}
-                        className="mt-3 inline-block text-sm text-ink underline underline-offset-4"
-                      >
-                        Edit {guest.first_name}
-                      </Link>
-                    </div>
-                  </details>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+    <span className={`flex flex-wrap items-center gap-1.5 ${className}`}>
+      {roles.map((role) => (
+        <RolePill key={role} role={role} />
       ))}
-    </div>
-  );
-}
-
-/** Desktop: every guest, every detail, one table. */
-export function GuestTable({
-  groups,
-  events,
-  rsvps,
-}: {
-  groups: GuestGroup[];
-  events: WeddingEvent[];
-  rsvps: Rsvp[];
-}) {
-  const head = "pb-3 pr-4 text-xs font-medium uppercase tracking-[0.14em] text-stone";
-
-  return (
-    <table className="mt-10 hidden w-full border-collapse text-left lg:table">
-      <thead>
-        <tr className="border-b border-champagne-400">
-          <th scope="col" className={head}>Guest</th>
-          <th scope="col" className={head}>Role</th>
-          {events.map((e) => (
-            <th key={e.id} scope="col" className={head}>{e.name}</th>
-          ))}
-          <th scope="col" className={head}>Meal &amp; dietary</th>
-          <th scope="col" className={head}>Contact</th>
-          <th scope="col" className="w-8"><span className="sr-only">Edit</span></th>
-        </tr>
-      </thead>
-      {groups.map((group, index) => (
-        <tbody key={group.id}>
-          <tr>
-            <th colSpan={events.length + 5} scope="colgroup" className="pb-2 pt-8 text-left font-normal">
-              <span className="font-display text-sm text-champagne-600">{String(index + 1).padStart(2, "0")}</span>{" "}
-              <HouseholdName group={group} className="font-display text-xl text-ink" />
-            </th>
-          </tr>
-          {group.guests.map((guest) => {
-            const theirs = rsvps.filter((r) => r.contact_id === guest.id);
-            const { meal, diet } = mealAndDiet(theirs);
-            return (
-              <tr key={guest.id} className="border-t border-linen align-top hover:bg-cream/60">
-                <td className="py-3 pr-4">
-                  <Link href={`/people/${guest.id}`} className="text-[15px] text-ink hover:underline">
-                    {fullName(guest)}
-                  </Link>
-                  {guest.is_child && <span className="block text-xs text-stone">Child</span>}
-                </td>
-                <td className="py-3 pr-4 text-sm text-champagne-600">{guest.role_on_the_day ?? ""}</td>
-                {events.map((e) => (
-                  <td key={e.id} className="py-3 pr-4">
-                    <Answer rsvp={theirs.find((r) => r.event_id === e.id)} />
-                  </td>
-                ))}
-                <td className="py-3 pr-4 text-sm">
-                  {meal && <span className="block text-ink">{meal}</span>}
-                  {diet && <span className="block text-stone">{diet}</span>}
-                </td>
-                <td className="max-w-56 py-3 pr-4 text-sm text-stone">
-                  {guest.email && <span className="block truncate">{guest.email}</span>}
-                  {guest.phone && <span className="block">{guest.phone}</span>}
-                </td>
-                <td className="py-3">
-                  <Link href={`/people/${guest.id}`} aria-label={`Edit ${fullName(guest)}`} className="text-stone hover:text-ink">
-                    <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-                  </Link>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      ))}
-    </table>
+      {guest.is_child && <span className="type-meta">Child</span>}
+    </span>
   );
 }

@@ -5,13 +5,13 @@ import type { RsvpStatus } from "@/types/db";
 import { setStatusAction } from "./rsvp-actions";
 
 const CHOICES: { status: RsvpStatus; label: string; aria: string; on: string }[] = [
-  { status: "attending", label: "Yes", aria: "coming", on: "border-ink bg-ink text-ivory" },
-  { status: "declined", label: "No", aria: "not coming", on: "border-stone bg-stone text-ivory" },
-  { status: "pending", label: "?", aria: "not heard yet", on: "border-champagne-400 bg-champagne-100 text-ink" },
+  { status: "attending", label: "✓", aria: "coming", on: "border-ink bg-ink text-ivory" },
+  { status: "pending", label: "?", aria: "waiting", on: "border-champagne-400 bg-champagne-100 text-champagne-600" },
+  { status: "declined", label: "✕", aria: "can't come", on: "border-stone bg-stone text-ivory" },
 ];
 
 /**
- * Yes / No / ? beside a name. Lights up the moment it's tapped and saves in
+ * Coming / waiting / can't come (✓ ? ✕) beside an event on the guest card. Lights up the moment it's tapped and saves in
  * the background, so ticking through a pile of replies doesn't lag.
  */
 export default function StatusButtons({
@@ -42,7 +42,7 @@ export default function StatusButtons({
                 await setStatusAction(rsvpId, choice.status);
               })
             }
-            className={`h-9 min-w-9 rounded-full border px-2.5 text-sm transition sm:min-w-10 sm:px-3 ${
+            className={`h-10 w-11 rounded-full border text-[15px] transition ${
               active ? choice.on : "border-linen bg-white text-stone hover:border-champagne-400"
             }`}
           >

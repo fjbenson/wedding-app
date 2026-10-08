@@ -120,7 +120,7 @@ export default function HouseholdView({
                     <span className="block text-[15px] text-ink">
                       {[person.first_name, person.last_name].filter(Boolean).join(" ")}
                     </span>
-                    <RoleLabel guest={person} />
+                    <RoleLabel guest={person} className="mt-1.5" />
                     {events.length > 0 && (
                       <span className="mt-2 flex flex-wrap gap-1.5">
                         {events.map((e) => (

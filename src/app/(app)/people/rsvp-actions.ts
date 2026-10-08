@@ -124,10 +124,10 @@ export async function saveRsvpAction(rsvpId: string, formData: FormData) {
   }
 
   revalidatePath("/people");
-  redirect(`/people?event=${rsvp.event_id}`);
+  redirect(`/people?guest=${rsvp.contact_id}`);
 }
 
-export async function uninviteAction(rsvpId: string, eventId: string) {
+export async function uninviteAction(rsvpId: string, guestId: string) {
   try {
     await deleteRsvp(rsvpId);
   } catch (error) {
@@ -135,5 +135,5 @@ export async function uninviteAction(rsvpId: string, eventId: string) {
   }
 
   revalidatePath("/people");
-  redirect(`/people?event=${eventId}`);
+  redirect(`/people?guest=${guestId}`);
 }

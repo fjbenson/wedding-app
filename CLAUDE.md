@@ -72,21 +72,32 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
   Notes can be added, edited and removed in place on the area page.
   Suppliers file under the wedding's areas too (plus "Other").
-- **People** (`/people`): the guest list by household — add, edit, remove,
-  with a **role on the day** (bridesmaid, usher…; `0004_guest_roles.sql`;
-  a role makes them `bridal_party`). "Everyone" is a row per guest that opens
-  to show details on phones, and a full table on desktop (`guest-table.tsx`) —
-  with **RSVPs folded in**: "Everyone" or one event at a time (`?event=`),
-  invite by household or all, yes/no/? per person, meal and dietary notes.
-  RSVPs are recorded by the couple; guests answering via their own link is
-  "guest access", still deliberately not built. A **Suppliers** tab
+- **People** (`/people`): two tabs, **Guests · Suppliers**. **Guest list
+  design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
+  `guest-browser.tsx` — an answers card (coming / waiting / can't come for
+  one event at a time, a switch between events, "invite the rest"), search,
+  filter pills (All · Bridal party · Waiting · Can't come · Dietary ·
+  Children · No address), then everyone **A–Z by first name** with a letter
+  index down the side, or **Households** (so a couple with different
+  surnames sit together; in A–Z each shows "With …"). Each row: initials,
+  name, role pills, a dot per event (filled coming, dashed waiting, grey
+  can't come), an arrow. Bridal party is a **filter**, grouped by role (the
+  old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
+  full table instead. Tapping anyone opens their **card**
+  (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
+  text/call/email, role pills to tap on or off, ✓ ? ✕ per event (or
+  "Invite"), meal and diet; Edit opens `/people/[id]`. Search, filters and
+  the open card are client state, not in the address; links can still use
+  `?event=`, `?guest=`, `?view=households`. **A guest can have several
+  roles**: stored in the one `role_on_the_day` column joined with " · "
+  (`rolesOf()` / `joinRoles()` in `src/lib/guest-roles.ts`), so no
+  migration was needed; any role makes them `bridal_party`. RSVPs are
+  recorded by the couple; guests answering via their own link is "guest
+  access", still deliberately not built. A **Suppliers** tab
   (`?tab=suppliers`, screens 12 and 13): business, category, status, quote,
   deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
   categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
-  up when areas become rows. `/people/[id]` opens a guest or a supplier.
-  A **Bridal party** tab (`?tab=party`, screen 11): guests with a role,
-  grouped by role in the usual order, with call/email buttons, and "give
-  someone a role" in place (`assignRoleAction`).
+  up when areas become rows. `/people/[id]` edits a guest or a supplier.
   **Invitations** (`/invitations`, screen 15, linked from the guest list):
   households to send to (flagging missing addresses; mark sent, or all),
   sent ones with how many have answered, and "still to hear from" — pending
@@ -307,7 +318,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    and says what's off; big changes get options on the design canvas first,
    small ones are built and pushed straight away.
    **Done so far (7 Oct 2026):** the home screen; **area pages** (taken out
-   of order — see "Current state"); a shared **type system** taken from the
+   of order — see "Current state"); the **guest list** (8 Oct, also out of
+   order; People's other screens are still to do); a shared **type system** taken from the
    home screen (`docs/DESIGN.md`, "Type system" — use its classes on every
    screen); Fraunces now loads with its optical-size axis, as the canvas
    does; the Hub menu button is a **house** (owner's pick of twelve). **Next

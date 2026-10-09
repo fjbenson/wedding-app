@@ -138,6 +138,17 @@ export default function GuestForm({
           <Row label="Email">
             <input name="email" type="email" autoComplete="off" aria-label="Email" placeholder="Add email" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
           </Row>
+          {/* Only with a day or evening to hang them on — they're kept on that answer. */}
+          {events.length > 0 && (
+            <>
+              <Row label="Meal">
+                <input name="meal_choice" aria-label="Meal" placeholder="Add meal" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
+              </Row>
+              <Row label="Allergies">
+                <input name="dietary_notes" aria-label="Allergies" placeholder="Add allergies" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
+              </Row>
+            </>
+          )}
           <Row label="Notes">
             <textarea name="notes" rows={2} aria-label="Notes" placeholder="Add notes, e.g. Sam's university friend" className="w-full resize-none bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
           </Row>

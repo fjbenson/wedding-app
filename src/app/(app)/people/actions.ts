@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createContact, createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
-import { inviteGuestsToEvent, listEvents } from "@/lib/db/rsvps";
+import { inviteGuestsToEvent, listEvents, listRsvps, updateRsvp } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { joinRoles } from "@/lib/guest-roles";
@@ -83,6 +83,14 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
       const from = events.findIndex((e) => e.id === eventId);
       for (const event of from === -1 ? [] : events.slice(from)) {
         await inviteGuestsToEvent(wedding.id, event.id, [created]);
+      }
+      // Meal and allergies, if already known, go on their own event's answer
+      // (where the guest card keeps them).
+      const meal = text(formData, "meal_choice");
+      const diet = text(formData, "dietary_notes");
+      if (from !== -1 && (meal || diet)) {
+        const own = (await listRsvps(wedding.id, { eventId: events[from].id })).find((r) => r.contact_id === created!.id);
+        if (own) await updateRsvp(own.id, { meal_choice: meal, dietary_notes: diet });
       }
     }
   } catch (error) {

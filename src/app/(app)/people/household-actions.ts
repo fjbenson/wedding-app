@@ -75,3 +75,17 @@ export async function saveAddressAction(
   revalidatePath("/people");
   return {};
 }
+
+/** A new name for the household, from its page. */
+export async function renameHouseholdAction(householdId: string, name: string): Promise<{ error?: string }> {
+  const tidy = name.trim();
+  if (!tidy) return { error: "Please give the household a name." };
+  try {
+    await updateHousehold(householdId, { name: tidy });
+  } catch (error) {
+    console.error("renaming household failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}

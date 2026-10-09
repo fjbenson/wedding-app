@@ -161,9 +161,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   none); the name as the italic title with "3 people · 1 child · day
   guests"; an address card (Copy, tap to change in place via
   `saveAddressAction`); then "Who's in it" as the guest list's own rows
-  (`GuestRow`), each opening the guest card right on this page. "Add
-  someone to this household" opens the guest form with it picked and comes
-  back; "Rename or remove this household" is the old edit page. The
+  (`GuestRow`), each opening the guest card right on this page. Tap the
+  name to rename it in place (`renameHouseholdAction`). "Add someone to
+  this household" asks first: **Someone new** (the guest form with it
+  picked, coming back after) or **Already on the list** (search, tap to
+  move them in, leaving any household they were in). "Remove this
+  household" is the old edit page. The
   separate dietary box is gone.
 - **Plan** (`/plan`): the **Agenda** (screens 16–17, `agenda.tsx`) — to-dos,
   **appointments** (`0007_appointments.sql`, screen 21, `/plan/appointments/…`)

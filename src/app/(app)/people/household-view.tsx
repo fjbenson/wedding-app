@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { Check, ChevronLeft, Copy, Mail, MapPin, Phone, Plus } from "lucide-react";
+import { Check, ChevronLeft, Copy, Mail, MapPin, Pencil, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { GuestRow, eventWord } from "./guest-browser";
 import { fullName } from "./guest-table";
-import { saveAddressAction } from "./household-actions";
+import { renameHouseholdAction, saveAddressAction } from "./household-actions";
+import { updateGuestAction } from "./actions";
 
 /**
  * One household (screen 9), settled on the canvas as "Household · Round 1",
@@ -73,7 +74,7 @@ export default function HouseholdView({
         </span>
       </div>
 
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">{household.name}</h1>
+      <HouseholdName household={household} />
       <p className="type-meta mt-2">{summary}</p>
 
       <AddressCard household={household} />
@@ -93,17 +94,15 @@ export default function HouseholdView({
           ))}
         </ul>
       )}
-      <Link
-        href={`/people/new?household=${household.id}`}
-        className="mt-4 inline-flex items-center gap-1.5 px-1 text-sm text-champagne-600 hover:text-ink"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Add someone to this household
-      </Link>
+      <AddSomeone
+        household={household}
+        others={guests.filter((g) => g.household_id !== household.id)}
+        householdName={(id) => households.find((h) => h.id === id)?.name}
+      />
 
       <p className="mt-10 text-center">
         <Link href={`/people/household/${household.id}/edit`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-          Rename or remove this household
+          Remove this household
         </Link>
       </p>
 
@@ -276,5 +275,196 @@ function AddressCard({ household }: { household: Household }) {
         </button>
       )}
     </section>
+  );
+}
+
+/** What a failed save says, rather than taking the page down (see guest-card.tsx). */
+const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
+
+/** The household's name, large; tap it to change it in place. */
+function HouseholdName({ household }: { household: Household }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(household.name);
+  const [error, setError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setName(household.name);
+          setError(undefined);
+          setEditing(true);
+        }}
+        aria-label={`${household.name} — change name`}
+        className="group mt-3 block text-left"
+      >
+        <span className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">{household.name}</span>
+        <Pencil className="ml-2 inline h-4 w-4 align-baseline text-stone/60 group-hover:text-ink" strokeWidth={1.6} aria-hidden />
+      </button>
+    );
+  }
+  return (
+    <form
+      className="mt-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        startTransition(async () => {
+          try {
+            const result = await renameHouseholdAction(household.id, name);
+            setError(result.error);
+            if (!result.error) setEditing(false);
+          } catch {
+            setError(UNSAVED);
+          }
+        });
+      }}
+    >
+      <input
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
+        aria-label="Household name"
+        placeholder="e.g. The Bensons"
+        className={FIELD}
+      />
+      {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+      <span className="mt-2 flex items-center gap-2">
+        <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90 disabled:opacity-60">
+          {pending ? "Saving…" : "Save"}
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="h-9 px-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
+          Cancel
+        </button>
+      </span>
+    </form>
+  );
+}
+
+/**
+ * "Add someone to this household": first, someone new (the add-a-guest form,
+ * with this household picked) or someone already on the list (a quick search;
+ * tap them and they move in — leaving any household they were in).
+ */
+function AddSomeone({
+  household,
+  others,
+  householdName,
+}: {
+  household: Household;
+  /** Guests not in this household. */
+  others: Contact[];
+  householdName: (id: string) => string | undefined;
+}) {
+  const [step, setStep] = useState<"closed" | "choose" | "existing">("closed");
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = others
+    .filter((g) => words.every((w) => fullName(g).toLowerCase().includes(w)))
+    .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
+
+  const move = (guest: Contact) =>
+    startTransition(async () => {
+      try {
+        const result = await updateGuestAction(guest.id, { household_id: household.id });
+        setError(result.error);
+        if (!result.error) {
+          setStep("closed");
+          setQuery("");
+        }
+      } catch {
+        setError(UNSAVED);
+      }
+    });
+
+  if (step === "closed") {
+    return (
+      <button
+        type="button"
+        onClick={() => setStep("choose")}
+        className="mt-4 inline-flex items-center gap-1.5 px-1 text-sm text-champagne-600 hover:text-ink"
+      >
+        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        Add someone to this household
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-linen bg-white p-3">
+      {step === "choose" ? (
+        <>
+          <p className="px-1 text-sm text-ink">Who are you adding?</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link
+              href={`/people/new?household=${household.id}`}
+              className="flex h-12 items-center justify-center rounded-xl bg-ink px-2 text-center text-sm text-ivory hover:bg-ink/90"
+            >
+              Someone new
+            </Link>
+            <button
+              type="button"
+              onClick={() => setStep("existing")}
+              disabled={others.length === 0}
+              className="flex h-12 items-center justify-center rounded-xl border border-linen bg-white px-2 text-center text-sm text-ink hover:border-champagne-400 disabled:opacity-50"
+            >
+              Already on the list
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <label className="flex h-11 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+            <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Find a guest"
+              aria-label="Find a guest"
+              className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+            />
+          </label>
+          <ul className="mt-2 max-h-64 overflow-y-auto">
+            {matches.map((g) => {
+              const from = g.household_id ? householdName(g.household_id) : undefined;
+              return (
+                <li key={g.id} className="border-b border-linen last:border-b-0">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => move(g)}
+                    className="flex min-h-11 w-full items-center gap-3 px-1 py-2 text-left hover:text-champagne-600 disabled:opacity-60"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="type-item block truncate text-[17px]">{fullName(g)}</span>
+                      {from && <span className="block truncate text-xs text-stone">Now in {from} — moves here</span>}
+                    </span>
+                    <Plus className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
+            {matches.length === 0 && <li className="px-1 py-3 text-sm text-stone">No one matches that.</li>}
+          </ul>
+        </>
+      )}
+      {error && <p role="alert" className="mt-2 px-1 text-sm text-ink">{error}</p>}
+      <button
+        type="button"
+        onClick={() => {
+          setStep("closed");
+          setQuery("");
+        }}
+        className="mt-2 w-full py-1.5 text-sm text-stone underline underline-offset-4 hover:text-ink"
+      >
+        Cancel
+      </button>
+    </div>
   );
 }

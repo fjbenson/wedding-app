@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Mail, MessageSquare, Pencil, Phone, Plus, X } from "lucide-react";
+import { ChevronDown, Mail, MessageSquare, Pencil, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -480,20 +480,26 @@ function RemoveGuest({ guest, name }: { guest: Contact; name: string }) {
   );
 }
 
+/** The handful of roles shown straight away; the rest wait behind "More". */
+const COMMON_ROLES = ["Maid of honour", "Bridesmaid", "Best man", "Groomsman"];
+
 /**
- * Role on the day: only the roles they have, each tappable to take off, and
- * "+ Add a role" to open the usual list (and "Your own"). Most guests have
- * no role, so this is one small line rather than the whole list. Shows the
- * change at once and saves behind it.
+ * Role on the day: their roles (ticked), the common ones to tap on, and
+ * "More" to open the rest of the usual list and "Your own" — "Less" folds it
+ * away again. Tap any role to put it on or take it off. Shows the change at
+ * once and saves behind it.
  */
 function Roles({ guest }: { guest: Contact }) {
   const saved = rolesOf(guest);
   const [roles, setRoles] = useOptimistic(saved);
   const [, startTransition] = useTransition();
-  const [open, setOpen] = useState(false);
+  const [more, setMore] = useState(false);
   const [custom, setCustom] = useState("");
 
-  const others = GUEST_ROLES.filter((r) => !roles.includes(r));
+  // Theirs first (including any of their own), then the suggestions.
+  const theirs = roles;
+  const common = COMMON_ROLES.filter((r) => !roles.includes(r));
+  const rest = GUEST_ROLES.filter((r) => !roles.includes(r) && !COMMON_ROLES.includes(r));
 
   function save(next: string[]) {
     startTransition(async () => {
@@ -501,79 +507,68 @@ function Roles({ guest }: { guest: Contact }) {
       await setRolesAction(guest.id, next);
     });
   }
+  const toggle = (role: string) => save(roles.includes(role) ? roles.filter((r) => r !== role) : [...roles, role]);
 
   const pill = "h-9 rounded-full border px-3.5 text-[13px] transition";
+  const offPill = `${pill} border-linen bg-white text-ink hover:border-champagne-400`;
 
   return (
     <section className="mt-6">
       <h3 className="section-label">Role on the day</h3>
       <div className="mt-2.5 flex flex-wrap gap-2">
-        {roles.map((role) => (
+        {theirs.map((role) => (
           <button
             key={role}
             type="button"
             aria-pressed="true"
-            aria-label={`${role} — tap to take off`}
-            onClick={() => save(roles.filter((r) => r !== role))}
-            className={`${pill} flex items-center gap-1.5 border-champagne-600 bg-champagne-100 font-medium text-champagne-600`}
+            onClick={() => toggle(role)}
+            className={`${pill} border-champagne-600 bg-champagne-100 font-medium text-champagne-600`}
           >
-            {role}
-            <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+            ✓ {role}
           </button>
         ))}
-        {!open && (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className={`${pill} flex items-center gap-1 border-dashed border-champagne-400 text-champagne-600 hover:bg-champagne-100`}
-          >
-            <Plus className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-            {roles.length > 0 ? "Add another" : "Add a role"}
+        {common.map((role) => (
+          <button key={role} type="button" aria-pressed="false" onClick={() => toggle(role)} className={offPill}>
+            {role}
           </button>
-        )}
+        ))}
+        {more &&
+          rest.map((role) => (
+            <button key={role} type="button" aria-pressed="false" onClick={() => toggle(role)} className={offPill}>
+              {role}
+            </button>
+          ))}
+        <button
+          type="button"
+          aria-expanded={more}
+          onClick={() => setMore((m) => !m)}
+          className={`${pill} flex items-center gap-1 border-dashed border-champagne-400 text-champagne-600 hover:bg-champagne-100`}
+        >
+          {more ? "Less" : "More"}
+          <ChevronDown className={`h-3.5 w-3.5 transition ${more ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
+        </button>
       </div>
 
-      {open && (
-        <div className="mt-3 rounded-2xl border border-linen bg-white p-3">
-          <div className="flex flex-wrap gap-2">
-            {others.map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => {
-                  save([...roles, role]);
-                  setOpen(false);
-                }}
-                className={`${pill} border-linen bg-white text-ink hover:border-champagne-400`}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
-          <form
-            className="mt-3 flex gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (custom.trim()) save([...roles, custom.trim()]);
-              setCustom("");
-              setOpen(false);
-            }}
-          >
-            <input
-              value={custom}
-              onChange={(event) => setCustom(event.target.value)}
-              placeholder="Or your own, e.g. Chief dog handler"
-              aria-label="Their role"
-              className="h-11 min-w-0 flex-1 rounded-full border border-linen bg-white px-4 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
-            />
-            <button type="submit" className="h-11 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90">
-              Add
-            </button>
-          </form>
-          <button type="button" onClick={() => setOpen(false)} className="mt-2 w-full py-1.5 text-sm text-stone underline underline-offset-4 hover:text-ink">
-            Done
+      {more && (
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (custom.trim()) save([...roles, custom.trim()]);
+            setCustom("");
+          }}
+        >
+          <input
+            value={custom}
+            onChange={(event) => setCustom(event.target.value)}
+            placeholder="Your own, e.g. Chief dog handler"
+            aria-label="Their own role"
+            className="h-11 min-w-0 flex-1 rounded-full border border-linen bg-white px-4 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
+          />
+          <button type="submit" className="h-11 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90">
+            Add
           </button>
-        </div>
+        </form>
       )}
     </section>
   );

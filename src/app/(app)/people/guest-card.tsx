@@ -10,7 +10,25 @@ import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } 
 import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
 import { fullName } from "./guest-table";
 
-type Saver = () => Promise<{ error?: string }>;
+type Saver = () => Promise<{ error?: string } | void>;
+
+/**
+ * What to say when a save didn't reach the server at all. The usual cause is
+ * the app being updated while this page was open: the page still asks for
+ * the old version's save, which is no longer there. Without this, the whole
+ * screen gave way to "Application error" (9 Oct 2026).
+ */
+const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
+
+/** Runs a save, turning any failure into a message rather than a crash. */
+async function safely(saver: Saver): Promise<{ error?: string }> {
+  try {
+    return (await saver()) ?? {};
+  } catch (error) {
+    console.error("save failed", error);
+    return { error: UNSAVED };
+  }
+}
 
 /** A small down-arrow for the household picker, drawn in stone. */
 const CHEVRON =
@@ -146,7 +164,7 @@ function useSaver() {
   const [error, setError] = useState<string>();
   const run = (saver: Saver, after?: () => void) =>
     startTransition(async () => {
-      const result = await saver();
+      const result = await safely(saver);
       setError(result.error);
       if (!result.error) after?.();
     });
@@ -350,6 +368,7 @@ function HouseholdRow({
 function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
   const [child, setChild] = useOptimistic(guest.is_child);
   const [, startTransition] = useTransition();
+  const [failed, setFailed] = useState<string>();
 
   return (
     <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
@@ -363,7 +382,8 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
           onClick={() =>
             startTransition(async () => {
               setChild(!child);
-              await onSave({ is_child: !child });
+              const { error } = await safely(() => onSave({ is_child: !child }));
+              if (error) setFailed(error);
             })
           }
           className={`relative h-7 w-12 rounded-full transition ${child ? "bg-ink" : "bg-linen"}`}
@@ -371,6 +391,7 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
           <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${child ? "left-6" : "left-1"}`} />
         </button>
         <span className="ml-3 text-sm text-stone">{child ? "Yes" : "No"}</span>
+        {failed && <span role="alert" className="ml-3 text-xs text-ink">{failed}</span>}
       </dd>
     </div>
   );
@@ -415,7 +436,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
                 onClick={() =>
                   startTransition(async () => {
                     setAnswer(a.status);
-                    setError((await setGuestAnswerAction(guest.id, a.status)).error);
+                    setError((await safely(() => setGuestAnswerAction(guest.id, a.status))).error);
                   })
                 }
                 className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
@@ -437,7 +458,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
               onClick={() =>
                 startTransition(async () => {
                   setOf(e.id);
-                  setError((await setGuestOfAction(guest.id, e.id)).error);
+                  setError((await safely(() => setGuestOfAction(guest.id, e.id))).error);
                 })
               }
               className={`${cell} ${of === e.id ? `bg-white text-ink ${lifted}` : off}`}
@@ -495,6 +516,7 @@ function Roles({ guest }: { guest: Contact }) {
   const [, startTransition] = useTransition();
   const [more, setMore] = useState(false);
   const [custom, setCustom] = useState("");
+  const [failed, setFailed] = useState<string>();
 
   // Theirs first (including any of their own), then the suggestions.
   const theirs = roles;
@@ -504,7 +526,7 @@ function Roles({ guest }: { guest: Contact }) {
   function save(next: string[]) {
     startTransition(async () => {
       setRoles(next);
-      await setRolesAction(guest.id, next);
+      setFailed((await safely(() => setRolesAction(guest.id, next))).error);
     });
   }
   const toggle = (role: string) => save(roles.includes(role) ? roles.filter((r) => r !== role) : [...roles, role]);
@@ -548,6 +570,8 @@ function Roles({ guest }: { guest: Contact }) {
           <ChevronDown className={`h-3.5 w-3.5 transition ${more ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
         </button>
       </div>
+
+      {failed && <p role="alert" className="mt-2 text-sm text-ink">{failed}</p>}
 
       {more && (
         <form

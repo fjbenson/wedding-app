@@ -149,17 +149,6 @@ export async function inviteGuestsToEvent(
   if (error) throw error;
 }
 
-/** "We've sent them": everyone still at "To invite" becomes "Invited". */
-export async function markAllInvited(weddingId: string): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("rsvps")
-    .update({ status: "pending" })
-    .eq("wedding_id", weddingId)
-    .eq("status", "to_invite");
-  if (error) throw error;
-}
-
 export async function setRsvpStatus(
   rsvpId: string,
   status: RsvpStatus,

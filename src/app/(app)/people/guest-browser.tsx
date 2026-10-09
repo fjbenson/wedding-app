@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpDown, Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
-import { InlineSubmit } from "@/components/form-bits";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
-import { markInvitedAction } from "./rsvp-actions";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
 
@@ -207,15 +205,12 @@ export default function GuestBrowser({
   const letters = az ? new Set(shown.map(letterOf)) : new Set<string>();
   const indexed = az && shown.length > 12;
   const firstOfLetter = new Set(az ? [...letters].map((l) => shown.find((g) => letterOf(g) === l)!.id) : []);
-  // Anyone at "To invite" for any event: one tap marks them all invited.
-  const toInvite = guests.filter((g) => data.answers.get(g.id)?.some((r) => r.status === "to_invite")).length;
 
   return (
     <>
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
         {events.length > 0 && (
           <div>
-            {toInvite > 0 && <SentStrip count={toInvite} />}
             <AnswersCard
               total={filtered.length}
               homes={new Set(filtered.map((g) => g.household_id).filter(Boolean)).size}
@@ -409,20 +404,6 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
   );
 }
 
-/** While anyone is still "To invite": once the invitations are in the post, one tap marks them all invited. */
-function SentStrip({ count }: { count: number }) {
-  return (
-    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-dashed border-champagne-400 px-3.5 py-2.5">
-      <p className="min-w-0 flex-1 text-sm text-ink">
-        {count} {count === 1 ? "guest" : "guests"} to invite.
-      </p>
-      <form action={markInvitedAction}>
-        <InlineSubmit label="We've sent them" pendingLabel="Saving…" />
-      </form>
-    </div>
-  );
-}
-
 /**
  * The numbers for whoever the filters leave: all of them on the left, big, and the
  * breakdown beside it. Each one is a button — tap Invited to see just who
@@ -455,7 +436,7 @@ function AnswersCard({
   return (
     <section
       aria-label="Answers"
-      className="mt-3 grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2.5 rounded-[22px] border border-white/85 bg-white/45 p-3 pb-2 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)] backdrop-blur-xl sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3 sm:p-3.5 sm:pb-2.5"
+      className="grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2.5 rounded-[22px] border border-white/85 bg-white/45 p-3 pb-2 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)] backdrop-blur-xl sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3 sm:p-3.5 sm:pb-2.5"
     >
       <button
         type="button"

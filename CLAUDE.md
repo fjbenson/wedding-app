@@ -138,8 +138,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   evening only (`saveGuestAction`).
   **Answer statuses** (9 Oct 2026): **To invite** (`to_invite`, new in
   `0013_to_invite.sql`) → **Invited** (`pending`) → **Coming** / **Can't
-  come**. New guests start at To invite; "We've sent them" on the guest
-  list moves everyone at To invite to Invited (`markAllInvited`). Until
+  come**. New guests start at To invite and are moved on from their card
+  (the "We've sent them" strip was taken out, owner's call). Until
   0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`
   retries on error 22P02). Guests from before "Guest of" show "Day or
   evening?" and their card asks which (`setGuestOfAction`).

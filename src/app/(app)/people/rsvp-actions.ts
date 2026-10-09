@@ -11,7 +11,6 @@ import {
   listEvents,
   listRsvps,
   setContactStatus,
-  markAllInvited,
   updateEvent,
   updateRsvp,
 } from "@/lib/db/rsvps";
@@ -95,18 +94,6 @@ export async function saveMealAction(
   }
   revalidatePath("/people");
   return {};
-}
-
-/** "We've sent them": everyone at "To invite" moves to "Invited". */
-export async function markInvitedAction(): Promise<void> {
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-  try {
-    await markAllInvited(wedding.id);
-  } catch (error) {
-    failed("/people", "That didn't save.", error);
-  }
-  revalidatePath("/people");
 }
 
 /**

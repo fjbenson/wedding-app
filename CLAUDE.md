@@ -154,10 +154,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`
   retries on error 22P02). Guests from before "Guest of" show "Day or
   evening?" and their card asks which (`setGuestOfAction`).
-  **Household detail** (`/people/household/[id]`, screen 9): address, a
-  dietary summary, and each person's role, answers and meal; household names
-  in the list link there. "Add someone" opens the guest form with that
-  household picked and comes back after.
+  **Household page** (`/people/household/[id]`, screen 9; canvas
+  "Household · Round 1", A plus contact buttons, 9 Oct 2026): back arrow,
+  and phone / email buttons top right (they reach the household's people —
+  straight through if one has a number, a pick-list if several, hidden if
+  none); the name as the italic title with "3 people · 1 child · day
+  guests"; an address card (Copy, tap to change in place via
+  `saveAddressAction`); then "Who's in it" as the guest list's own rows
+  (`GuestRow`), each opening the guest card right on this page. "Add
+  someone to this household" opens the guest form with it picked and comes
+  back; "Rename or remove this household" is the old edit page. The
+  separate dietary box is gone.
 - **Plan** (`/plan`): the **Agenda** (screens 16–17, `agenda.tsx`) — to-dos,
   **appointments** (`0007_appointments.sql`, screen 21, `/plan/appointments/…`)
   and payments due on one month-by-month timeline, the wedding day as the

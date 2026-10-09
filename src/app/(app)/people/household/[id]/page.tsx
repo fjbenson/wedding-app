@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getHousehold, listGuests } from "@/lib/db/contacts";
+import { getHousehold, listGuests, listHouseholds } from "@/lib/db/contacts";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import HouseholdView from "../../household-view";
 
@@ -14,11 +14,20 @@ export default async function HouseholdPage({ params }: { params: Promise<{ id: 
   const household = await getHousehold(id);
   if (!household) notFound();
 
-  const [guests, events, rsvps] = await Promise.all([
+  const [guests, households, events, rsvps] = await Promise.all([
     listGuests(household.wedding_id),
+    listHouseholds(household.wedding_id),
     listEvents(household.wedding_id),
     listRsvps(household.wedding_id),
   ]);
 
-  return <HouseholdView household={household} guests={guests} events={events} rsvps={rsvps} />;
+  return (
+    <HouseholdView
+      household={household}
+      households={households.map((h) => ({ id: h.id, name: h.name }))}
+      guests={guests}
+      events={events}
+      rsvps={rsvps}
+    />
+  );
 }

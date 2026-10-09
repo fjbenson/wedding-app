@@ -59,7 +59,7 @@ const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> =
 };
 
 /** "The evening" → "evening": the word after a guest's name. */
-const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCase();
+export const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCase();
 
 const SHOWING_WORD: Record<Showing, string> = {
   all: "Everyone",
@@ -528,7 +528,7 @@ function AnswerKey({ unset }: { unset: boolean }) {
  * One guest in the phone list: initials, their name with "day" or "evening"
  * after it, any roles as pills underneath, and their answer in a word.
  */
-function GuestRow({
+export function GuestRow({
   guest,
   event,
   status,

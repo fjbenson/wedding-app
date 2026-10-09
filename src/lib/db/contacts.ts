@@ -127,7 +127,7 @@ type HouseholdFields = Pick<
   "name" | "address_line1" | "address_line2" | "city" | "postcode" | "country"
 >;
 
-export async function updateHousehold(householdId: string, fields: HouseholdFields): Promise<void> {
+export async function updateHousehold(householdId: string, fields: Partial<HouseholdFields>): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("households").update(fields).eq("id", householdId);
   if (error) throw error;

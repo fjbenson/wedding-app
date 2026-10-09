@@ -54,3 +54,24 @@ export async function deleteHouseholdAction(householdId: string) {
   revalidatePath("/people");
   redirect("/people");
 }
+
+/** The household's address, saved from its page without leaving it. */
+export async function saveAddressAction(
+  householdId: string,
+  address: { address_line1: string; address_line2: string; city: string; postcode: string },
+): Promise<{ error?: string }> {
+  const tidy = (v: string) => v.trim() || null;
+  try {
+    await updateHousehold(householdId, {
+      address_line1: tidy(address.address_line1),
+      address_line2: tidy(address.address_line2),
+      city: tidy(address.city),
+      postcode: tidy(address.postcode),
+    });
+  } catch (error) {
+    console.error("saving address failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}

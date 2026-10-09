@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 /**
- * Guests | Suppliers, as a small rounded switch in the top-right corner of
- * People (owner's pick, canvas "Guest list · Round 13", 9 Oct 2026). Each
+ * The top of People: a back arrow to the Hub on the left (phones — laptops
+ * have the sidebar), and Guests | Suppliers as a small rounded switch on the
+ * right (owner's pick, canvas "Guest list · Round 13", 9 Oct 2026). Each
  * half is a link, so the tab lives in the address.
  */
 export default function PeopleTabs({ current }: { current: "guests" | "suppliers" }) {
@@ -12,7 +14,14 @@ export default function PeopleTabs({ current }: { current: "guests" | "suppliers
   ] as const;
 
   return (
-    <nav aria-label="People" className="flex justify-end">
+    <nav aria-label="People" className="flex items-center justify-between gap-3">
+      <Link
+        href="/"
+        aria-label="Back to the hub"
+        className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream lg:invisible"
+      >
+        <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />
+      </Link>
       <span className="flex rounded-full bg-cream p-[3px]">
         {tabs.map((tab) => {
           const on = tab.key === current;

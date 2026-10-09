@@ -76,19 +76,34 @@ export default function GuestCard({
   }, [onClose]);
 
   const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
+  const drag = usePullToClose(onClose);
   // Their answer for their own event — the first they're on (day before evening).
   const own = events.map((e) => rsvps.find((r) => r.event_id === e.id)).find(Boolean);
   const phone = guest.phone?.replace(/\s+/g, "");
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={name}>
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 h-full w-full cursor-default bg-ink/30" />
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+        className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+      />
 
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px]">
-        <span aria-hidden className="mx-auto mt-2.5 h-[5px] w-10 shrink-0 rounded-full bg-linen lg:hidden" />
+      <div
+        style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+        className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
+          drag.dragging ? "" : "transition-transform duration-200 ease-out"
+        }`}
+      >
+        {/* The grab bar: pull it (or the name area) down to close, as the bar promises. */}
+        <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center lg:hidden">
+          <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
+        </div>
 
-        <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 lg:pt-8">
-          <div className="flex items-start gap-3">
+        <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8">
+          <div onPointerDown={drag.start} className="flex touch-none items-start gap-3 lg:touch-auto">
             <div className="min-w-0 flex-1">
               {household && (
                 <Link href={`/people/household/${household.id}`} className="label hover:text-ink">
@@ -158,6 +173,50 @@ export default function GuestCard({
       </div>
     </div>
   );
+}
+
+/**
+ * Pull the sheet down to close it (phones). The card follows the finger;
+ * let go past 110px and it closes, otherwise it springs back. A pull that
+ * moved doesn't also count as a tap on whatever it started on.
+ */
+function usePullToClose(onClose: () => void) {
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const start = (event: React.PointerEvent) => {
+    if (event.pointerType === "mouse") return;
+    const from = event.clientY;
+    let current = 0;
+    setDragging(true);
+
+    const move = (e: PointerEvent) => {
+      current = Math.max(0, e.clientY - from);
+      setOffset(current);
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      setDragging(false);
+      if (current > 6) {
+        // Swallow the click that follows a pull, so it doesn't press a button.
+        const swallow = (e: MouseEvent) => {
+          e.stopPropagation();
+          e.preventDefault();
+        };
+        window.addEventListener("click", swallow, { capture: true, once: true });
+        setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 300);
+      }
+      if (current > 110) onClose();
+      else setOffset(0);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+  };
+
+  return { offset, dragging, start };
 }
 
 /** Runs a save, holding on to any problem so it can be shown in place. */

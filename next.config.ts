@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       { source: "/timeline", destination: "/plan", permanent: true },
       { source: "/timeline/:path*", destination: "/plan/:path*", permanent: true },
       { source: "/rsvps", destination: "/people", permanent: true },
+      // Invitation tracking was taken out (9 Oct 2026); sending them is a Stationery job.
+      { source: "/invitations", destination: "/people", permanent: false },
     ];
   },
 };

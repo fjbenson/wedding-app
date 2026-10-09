@@ -241,22 +241,3 @@ export async function getRsvpSummary(weddingId: string, eventId?: string) {
     pending: rsvps.filter((r) => r.status === "pending").length,
   };
 }
-
-/** Every household's invitation — made when they're first invited to an event. */
-export async function listInvitations(weddingId: string): Promise<Invitation[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("invitations").select("*").eq("wedding_id", weddingId);
-  if (error) throw error;
-  return data ?? [];
-}
-
-/** Marks invitations as sent today, or (sent false) as not sent after all. */
-export async function setInvitationsSent(invitationIds: string[], sent: boolean): Promise<void> {
-  if (invitationIds.length === 0) return;
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("invitations")
-    .update({ sent_at: sent ? new Date().toISOString() : null })
-    .in("id", invitationIds);
-  if (error) throw error;
-}

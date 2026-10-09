@@ -3,18 +3,21 @@
 import { useState } from "react";
 import { Field, INPUT, SubmitButton } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
-import type { Contact, Household } from "@/types/db";
+import type { Contact, Household, WeddingEvent } from "@/types/db";
 
 /** Add or edit one guest. `guest` is missing when adding. */
 export default function GuestForm({
   action,
   households,
   guest,
+  events = [],
   defaultHousehold,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   households: Household[];
   guest?: Contact;
+  /** When adding: which event they're a guest of. The day includes the evening. */
+  events?: Pick<WeddingEvent, "id" | "name">[];
   /** Adding from a household's page: start in that household, and go back there. */
   defaultHousehold?: string;
 }) {
@@ -40,6 +43,27 @@ export default function GuestForm({
           <input name="last_name" defaultValue={guest?.last_name ?? ""} className={INPUT} />
         </Field>
       </div>
+
+      {!guest && events.length > 0 && (
+        <fieldset>
+          <legend className="text-sm text-ink">Guest of</legend>
+          <div className="mt-2 grid auto-cols-fr grid-flow-col gap-2">
+            {events.map((e, i) => (
+              <label key={e.id} className="cursor-pointer">
+                <input type="radio" name="event_id" value={e.id} defaultChecked={i === 0} className="peer sr-only" />
+                <span className="flex h-12 items-center justify-center rounded-xl border border-linen bg-white px-2 text-center text-sm text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400/40">
+                  {e.name}
+                </span>
+              </label>
+            ))}
+          </div>
+          {events.length > 1 && (
+            <p className="mt-2 text-xs text-stone">
+              {events[0].name} guests come to everything after it too.
+            </p>
+          )}
+        </fieldset>
+      )}
 
       <Field label="Household" hint="who shares an invitation">
         <select

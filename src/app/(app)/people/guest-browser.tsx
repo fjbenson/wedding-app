@@ -296,11 +296,8 @@ export default function GuestBrowser({
         </>
       )}
 
-      {/* The card no longer carries these, so they sit at the foot of the list. */}
+      {/* The card no longer carries this, so it sits at the foot of the list. */}
       <p className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-        <Link href="/invitations" className="label hover:text-ink">
-          Invitations ›
-        </Link>
         {event && (
           <Link href={`/people/events/${event.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
             Rename {event.name.toLowerCase()}

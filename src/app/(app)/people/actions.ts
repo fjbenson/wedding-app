@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createContact, createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
+import { inviteGuestsToEvent, listEvents } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { joinRoles } from "@/lib/guest-roles";
@@ -31,6 +32,7 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
   const lastName = text(formData, "last_name");
 
   let detail = "";
+  let created: Awaited<ReturnType<typeof createContact>> | null = null;
   try {
     let householdId = text(formData, "household");
     if (householdId === "none") householdId = null;
@@ -59,14 +61,25 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
 
     try {
       if (guestId) await updateContact(guestId, fields);
-      else await createContact({ wedding_id: wedding.id, ...fields });
+      else created = await createContact({ wedding_id: wedding.id, ...fields });
     } catch (error) {
       // Until 0004_guest_roles.sql is run in Supabase the column isn't there;
       // save everything else rather than fail.
       if ((error as { code?: string }).code !== "PGRST204") throw error;
       const { role_on_the_day: _unsaved, ...rest } = fields;
       if (guestId) await updateContact(guestId, rest);
-      else await createContact({ wedding_id: wedding.id, ...rest } as Parameters<typeof createContact>[0]);
+      else created = await createContact({ wedding_id: wedding.id, ...rest } as Parameters<typeof createContact>[0]);
+    }
+
+    // A new guest goes on the event they're a guest of and every one after
+    // it — a day guest is at the evening too; an evening guest only that.
+    const eventId = text(formData, "event_id");
+    if (created && eventId) {
+      const events = await listEvents(wedding.id);
+      const from = events.findIndex((e) => e.id === eventId);
+      for (const event of from === -1 ? [] : events.slice(from)) {
+        await inviteGuestsToEvent(wedding.id, event.id, [created]);
+      }
     }
   } catch (error) {
     console.error("saving guest failed", error);

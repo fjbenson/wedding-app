@@ -84,7 +84,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Children · No address yet, any mix); with filters on, the button goes
   dark with a count and each filter shows as a pill to take off. Beside
   it a **Sort** button: first name, surname, household, or day guests
-  then evening. Invitations and "Rename" moved to the foot of the list.
+  then evening. "Rename" (the picked event) sits at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), role pills
@@ -122,11 +122,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
   categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
   up when areas become rows. `/people/[id]` edits a guest or a supplier.
-  **Invitations** (`/invitations`, screen 15, linked from the guest list):
-  households to send to (flagging missing addresses; mark sent, or all),
-  sent ones with how many have answered, and "still to hear from" — pending
-  answers where the invitation has gone out — with text/call/email buttons,
-  the text and email pre-written. Uses the existing `invitations.sent_at`.
+  **Invitations page removed** (9 Oct 2026, owner's call): sending
+  invitations is done by post, so it's a **Stationery** area job (that
+  area and its "Send the invitations" to-do already exist), not tracking
+  in the guest list. `/invitations` redirects to `/people`. The
+  `invitations` table stays — RSVPs still hang off a household's row.
+  **Adding a guest** asks "Guest of": the day or the evening; a day guest
+  is put on that event and every later one, an evening guest on the
+  evening only (`saveGuestAction`).
   **Household detail** (`/people/household/[id]`, screen 9): address, a
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that

@@ -6,7 +6,7 @@ import { ArrowUpDown, Check, ChevronRight, Plus, Search, SlidersHorizontal, X } 
 import { InlineSubmit } from "@/components/form-bits";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
-import { inviteAction } from "./rsvp-actions";
+import { markInvitedAction } from "./rsvp-actions";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
 
@@ -55,7 +55,8 @@ const SORTS: { key: SortBy; label: string; short: string }[] = [
 /** How each answer reads at the end of a row. */
 const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> = {
   attending: { word: "Coming", className: "text-ink" },
-  pending: { word: "Waiting", className: "italic text-champagne-600" },
+  to_invite: { word: "To invite", className: "text-stone" },
+  pending: { word: "Invited", className: "italic text-champagne-600" },
   declined: { word: "Can't come", className: "text-stone" },
 };
 
@@ -65,7 +66,8 @@ const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCas
 const SHOWING_WORD: Record<Showing, string> = {
   all: "Everyone",
   attending: "Coming",
-  pending: "Waiting",
+  to_invite: "To invite",
+  pending: "Invited",
   declined: "Can't come",
 };
 
@@ -170,7 +172,7 @@ export default function GuestBrowser({
       }))
       .filter((group) => group.guests.length > 0);
     const loose = shown.filter((g) => !ownEvent(g));
-    if (loose.length > 0) groups.push({ key: "none", title: "Not invited yet", guests: loose });
+    if (loose.length > 0) groups.push({ key: "none", title: "Day or evening?", guests: loose });
   } else if (sort === "household") {
     groups = households
       .map((h) => ({
@@ -194,7 +196,8 @@ export default function GuestBrowser({
   const letters = az ? new Set(shown.map(letterOf)) : new Set<string>();
   const indexed = az && shown.length > 12;
   const firstOfLetter = new Set(az ? [...letters].map((l) => shown.find((g) => letterOf(g) === l)!.id) : []);
-  const uninvited = event ? guests.filter((g) => !statusFor(g, event)) : [];
+  // Anyone at "To invite" for any event: one tap marks them all invited.
+  const toInvite = guests.filter((g) => data.answers.get(g.id)?.some((r) => r.status === "to_invite")).length;
 
   return (
     <>
@@ -202,11 +205,12 @@ export default function GuestBrowser({
         {event && (
           <div>
             <EventSwitch events={events} event={event} onPick={setEventId} />
-            {uninvited.length > 0 && <InviteStrip event={event} uninvited={uninvited} everyone={uninvited.length === guests.length} />}
+            {toInvite > 0 && <SentStrip count={toInvite} />}
             <AnswersCard
               total={guests.length}
               homes={households.length}
               counts={{
+                to_invite: guests.filter((g) => statusFor(g, event) === "to_invite").length,
                 attending: guests.filter((g) => statusFor(g, event) === "attending").length,
                 pending: guests.filter((g) => statusFor(g, event) === "pending").length,
                 declined: guests.filter((g) => statusFor(g, event) === "declined").length,
@@ -408,15 +412,15 @@ function EventSwitch({
   );
 }
 
-/** Only when someone isn't invited to the picked event: invite them all at once. */
-function InviteStrip({ event, uninvited, everyone }: { event: WeddingEvent; uninvited: Contact[]; everyone: boolean }) {
+/** While anyone is still "To invite": once the invitations are in the post, one tap marks them all invited. */
+function SentStrip({ count }: { count: number }) {
   return (
     <div className="mt-3 flex items-center gap-3 rounded-2xl border border-dashed border-champagne-400 px-3.5 py-2.5">
       <p className="min-w-0 flex-1 text-sm text-ink">
-        {everyone ? `No one's invited to ${event.name.toLowerCase()} yet.` : `${uninvited.length} not invited to ${event.name.toLowerCase()}.`}
+        {count} {count === 1 ? "guest" : "guests"} to invite.
       </p>
-      <form action={inviteAction.bind(null, event.id, uninvited.map((g) => g.id))}>
-        <InlineSubmit label={everyone ? "Invite all" : "Invite them"} pendingLabel="Inviting…" />
+      <form action={markInvitedAction}>
+        <InlineSubmit label="We've sent them" pendingLabel="Saving…" />
       </form>
     </div>
   );
@@ -424,7 +428,7 @@ function InviteStrip({ event, uninvited, everyone }: { event: WeddingEvent; unin
 
 /**
  * The numbers for the picked event: everyone on the left, big, and the
- * breakdown beside it. Each one is a button — tap Waiting to see just who
+ * breakdown beside it. Each one is a button — tap Invited to see just who
  * hasn't answered, tap it again (or All) to see everyone.
  */
 function AnswersCard({
@@ -443,8 +447,12 @@ function AnswersCard({
   const all = showing === "all";
   const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
     { status: "attending", label: "Coming", tone: "text-ink" },
-    { status: "pending", label: "Waiting", tone: "text-champagne-600" },
+    { status: "pending", label: "Invited", tone: "text-champagne-600" },
     { status: "declined", label: "Can't come", tone: "text-stone" },
+    // Only while someone hasn't been sent an invitation yet.
+    ...(counts.to_invite > 0 || showing === "to_invite"
+      ? [{ status: "to_invite" as const, label: "To invite", tone: "text-stone" }]
+      : []),
   ];
 
   return (
@@ -513,7 +521,8 @@ function GuestRow({
   onOpen: () => void;
 }) {
   const roles = rolesOf(guest);
-  const answer = status ? ANSWER_WORD[status] : { word: "Not invited", className: "text-stone/70" };
+  // Guests from before "Guest of" existed aren't on any event yet.
+  const answer = status ? ANSWER_WORD[status] : { word: "Day or evening?", className: "text-champagne-600" };
 
   return (
     <button type="button" onClick={onOpen} className="flex min-h-[54px] w-full items-center gap-3 py-1.5 text-left">
@@ -750,7 +759,7 @@ function GuestTable({
               const event = ownEvent(g);
               // Meal and diet are recorded per event: show the ones for their own.
               const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;
-              const answer = rsvp ? ANSWER_WORD[rsvp.status] : { word: "Not invited", className: "text-stone/70" };
+              const answer = rsvp ? ANSWER_WORD[rsvp.status] : { word: "Day or evening?", className: "text-champagne-600" };
               return (
                 <tr key={g.id} onClick={() => onOpen(g.id)} className="cursor-pointer border-t border-linen align-middle hover:bg-champagne-100/50">
                   <td className="py-2.5 pr-4">

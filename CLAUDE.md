@@ -131,6 +131,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Adding a guest** asks "Guest of": the day or the evening; a day guest
   is put on that event and every later one, an evening guest on the
   evening only (`saveGuestAction`).
+  **Answer statuses** (9 Oct 2026): **To invite** (`to_invite`, new in
+  `0013_to_invite.sql`) → **Invited** (`pending`) → **Coming** / **Can't
+  come**. New guests start at To invite; "We've sent them" on the guest
+  list moves everyone at To invite to Invited (`markAllInvited`). Until
+  0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`
+  retries on error 22P02). Guests from before "Guest of" show "Day or
+  evening?" and their card asks which (`setGuestOfAction`).
   **Household detail** (`/people/household/[id]`, screen 9): address, a
   dietary summary, and each person's role, answers and meal; household names
   in the list link there. "Add someone" opens the guest form with that
@@ -243,7 +250,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0012_area_stages.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0013_to_invite.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role

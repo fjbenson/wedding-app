@@ -9,7 +9,8 @@ export type MemberRole = "owner" | "planner" | "guest";
 export type ContactType = "guest" | "supplier" | "bridal_party" | "venue";
 /** "researching" is from before 0012_area_stages.sql, which moves those rows to "enquired". */
 export type SupplierStatus = "researching" | "enquired" | "quoted" | "booked" | "cancelled";
-export type RsvpStatus = "pending" | "attending" | "declined";
+/** To invite → Invited ("pending") → Coming / Can't come. "to_invite" needs 0013_to_invite.sql. */
+export type RsvpStatus = "to_invite" | "pending" | "attending" | "declined";
 export type MilestoneStatus = "todo" | "in_progress" | "done" | "skipped";
 
 export interface Profile {

@@ -23,8 +23,9 @@ export function shortEvent(name: string) {
 const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeof Check }> = {
   attending: { label: "Coming", className: "bg-ink text-ivory", icon: Check },
   declined: { label: "Can't come", className: "bg-cream text-stone", icon: X },
+  to_invite: { label: "To invite", className: "border border-linen text-stone", icon: Minus },
   pending: {
-    label: "Waiting",
+    label: "Invited",
     className: "border border-dashed border-champagne-400 text-champagne-600",
     icon: Minus,
   },
@@ -33,7 +34,7 @@ const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeo
 /** An answer as a small pill. `short` swaps the word for the event's name. */
 export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: string; short?: boolean }) {
   if (!rsvp) {
-    return <span className="text-xs text-stone">{short ? `${event} —` : "Not invited"}</span>;
+    return <span className="text-xs text-stone">{short ? `${event} —` : "Not on the list"}</span>;
   }
   const a = ANSWER[rsvp.status];
   const Icon = a.icon;
@@ -45,34 +46,6 @@ export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: st
       <Icon className="h-3 w-3" strokeWidth={2.4} aria-hidden />
       {short ? event : a.label}
     </span>
-  );
-}
-
-const DOT: Record<RsvpStatus | "none", { className: string; word: string }> = {
-  attending: { className: "bg-ink", word: "coming" },
-  pending: { className: "border-[1.5px] border-dashed border-champagne-400", word: "waiting" },
-  declined: { className: "bg-[#D8D0C4]", word: "can't come" },
-  none: { className: "border border-linen", word: "not invited" },
-};
-
-/** One event's answer as a dot: filled = coming, dashed = waiting, grey = can't. */
-export function AnswerDot({ status }: { status?: RsvpStatus }) {
-  return <span aria-hidden className={`block h-3.5 w-3.5 shrink-0 rounded-full ${DOT[status ?? "none"].className}`} />;
-}
-
-export function answerWord(status?: RsvpStatus) {
-  return DOT[status ?? "none"].word;
-}
-
-/** The key under the list, so the dots explain themselves. */
-export function DotKey() {
-  return (
-    <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-stone">
-      <span className="flex items-center gap-1.5"><AnswerDot status="attending" />Coming</span>
-      <span className="flex items-center gap-1.5"><AnswerDot status="pending" />Waiting</span>
-      <span className="flex items-center gap-1.5"><AnswerDot status="declined" />Can&apos;t come</span>
-      <span className="flex items-center gap-1.5"><AnswerDot />Not invited</span>
-    </p>
   );
 }
 

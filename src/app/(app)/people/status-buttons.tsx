@@ -6,12 +6,12 @@ import { setStatusAction } from "./rsvp-actions";
 
 const CHOICES: { status: RsvpStatus; label: string; aria: string; on: string }[] = [
   { status: "attending", label: "✓", aria: "coming", on: "border-ink bg-ink text-ivory" },
-  { status: "pending", label: "?", aria: "waiting", on: "border-champagne-400 bg-champagne-100 text-champagne-600" },
+  { status: "pending", label: "?", aria: "invited, no answer yet", on: "border-champagne-400 bg-champagne-100 text-champagne-600" },
   { status: "declined", label: "✕", aria: "can't come", on: "border-stone bg-stone text-ivory" },
 ];
 
 /**
- * Coming / waiting / can't come (✓ ? ✕) beside an event on the guest card. Lights up the moment it's tapped and saves in
+ * Coming / invited, no answer yet / can't come (✓ ? ✕) beside an event on the guest card. Lights up the moment it's tapped and saves in
  * the background, so ticking through a pile of replies doesn't lag.
  */
 export default function StatusButtons({

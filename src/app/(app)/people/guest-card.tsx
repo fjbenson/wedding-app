@@ -7,7 +7,7 @@ import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
-import { inviteAction, removeFromEventAction, saveMealAction } from "./rsvp-actions";
+import { inviteAction, removeFromEventAction, saveMealAction, setGuestOfAction } from "./rsvp-actions";
 import { fullName } from "./guest-table";
 import StatusButtons from "./status-buttons";
 
@@ -115,11 +115,15 @@ export default function GuestCard({
           {events.length > 0 && (
             <section className="mt-6">
               <h3 className="section-label">Answers</h3>
-              <ul className="mt-2 rounded-[22px] border border-white bg-white/70 px-4 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)]">
-                {events.map((event) => (
-                  <EventRow key={event.id} guest={guest} name={name} event={event} rsvp={rsvps.find((r) => r.event_id === event.id)} />
-                ))}
-              </ul>
+              {rsvps.length === 0 ? (
+                <GuestOf guest={guest} events={events} />
+              ) : (
+                <ul className="mt-2 rounded-[22px] border border-white bg-white/70 px-4 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)]">
+                  {events.map((event) => (
+                    <EventRow key={event.id} guest={guest} name={name} event={event} rsvp={rsvps.find((r) => r.event_id === event.id)} />
+                  ))}
+                </ul>
+              )}
             </section>
           )}
 
@@ -392,16 +396,16 @@ function EventRow({ guest, name, event, rsvp }: { guest: Contact; name: string; 
       <li className="flex min-h-[60px] items-center gap-2 border-b border-linen py-2 last:border-b-0">
         <span className="min-w-0 flex-1">
           <span className="type-item block truncate text-stone">{event.name}</span>
-          <span className="type-meta mt-0.5 block">Not invited</span>
+          <span className="type-meta mt-0.5 block">Not on the list</span>
         </span>
         <form action={inviteAction.bind(null, event.id, [guest.id])}>
-          <InlineSubmit label="Invite" pendingLabel="Inviting…" />
+          <InlineSubmit label="Add" pendingLabel="Adding…" />
         </form>
       </li>
     );
   }
 
-  const summary = [rsvp.meal_choice, rsvp.dietary_notes].filter(Boolean).join(" · ");
+  const summary = [rsvp.status === "to_invite" && "To invite", rsvp.meal_choice, rsvp.dietary_notes].filter(Boolean).join(" · ");
   const start = () => {
     setMeal(rsvp.meal_choice ?? "");
     setDiet(rsvp.dietary_notes ?? "");
@@ -446,6 +450,34 @@ function EventRow({ guest, name, event, rsvp }: { guest: Contact; name: string; 
         </form>
       )}
     </li>
+  );
+}
+
+/**
+ * For guests added before "Guest of" existed: not on any event yet, so ask
+ * which they are. A day guest goes on every event from the day onwards.
+ */
+function GuestOf({ guest, events }: { guest: Contact; events: WeddingEvent[] }) {
+  const { pending, error, run } = useSaver();
+
+  return (
+    <div className="mt-2 rounded-2xl border border-dashed border-champagne-400 px-4 py-3">
+      <p className="text-sm text-ink">Are they a day or an evening guest?</p>
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {events.map((e) => (
+          <button
+            key={e.id}
+            type="button"
+            disabled={pending}
+            onClick={() => run(() => setGuestOfAction(guest.id, e.id))}
+            className="h-10 rounded-full border border-linen bg-white px-4 text-sm text-ink hover:border-champagne-400 disabled:opacity-60"
+          >
+            {e.name}
+          </button>
+        ))}
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+    </div>
   );
 }
 

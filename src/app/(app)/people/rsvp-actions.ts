@@ -9,6 +9,8 @@ import {
   deleteRsvp,
   getRsvp,
   inviteGuestsToEvent,
+  listEvents,
+  markAllInvited,
   updateEvent,
   updateRsvp,
 } from "@/lib/db/rsvps";
@@ -26,7 +28,7 @@ function failed(back: string, message: string, error: unknown): never {
   redirect(`${back}?error=${encodeURIComponent(message)}&detail=${encodeURIComponent(describe(error))}`);
 }
 
-const STATUSES: RsvpStatus[] = ["pending", "attending", "declined"];
+const STATUSES: RsvpStatus[] = ["to_invite", "pending", "attending", "declined"];
 
 /** The usual two: day guests and evening guests. */
 export async function addStarterEventsAction() {
@@ -161,6 +163,39 @@ export async function removeFromEventAction(rsvpId: string): Promise<{ error?: s
   } catch (error) {
     console.error("removing from event failed", error);
     return { error: `That didn't take them off. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}
+
+/** "We've sent them": everyone at "To invite" moves to "Invited". */
+export async function markInvitedAction(): Promise<void> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+  try {
+    await markAllInvited(wedding.id);
+  } catch (error) {
+    failed("/people", "That didn't save.", error);
+  }
+  revalidatePath("/people");
+}
+
+/**
+ * Makes a guest from before "Guest of" existed a day or an evening guest:
+ * on that event and every one after it, starting at "To invite".
+ */
+export async function setGuestOfAction(guestId: string, eventId: string): Promise<{ error?: string }> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "Your wedding couldn't be found." };
+  try {
+    const [events, guests] = await Promise.all([listEvents(wedding.id), listGuests(wedding.id)]);
+    const guest = guests.find((g) => g.id === guestId);
+    const from = events.findIndex((e) => e.id === eventId);
+    if (!guest || from === -1) return { error: "That couldn't be found." };
+    for (const event of events.slice(from)) await inviteGuestsToEvent(wedding.id, event.id, [guest]);
+  } catch (error) {
+    console.error("setting day or evening failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
   }
   revalidatePath("/people");
   return {};

@@ -6,7 +6,8 @@ import type { Rsvp, RsvpStatus } from "@/types/db";
 const ANSWERS: { status: RsvpStatus; label: string }[] = [
   { status: "attending", label: "Coming" },
   { status: "declined", label: "Not coming" },
-  { status: "pending", label: "Not heard yet" },
+  { status: "pending", label: "Invited" },
+  { status: "to_invite", label: "To invite" },
 ];
 
 /** One person's answer for one event, with their meal and dietary needs. */
@@ -23,7 +24,7 @@ export default function RsvpForm({
     <form action={action} className="space-y-5">
       <fieldset>
         <legend className="text-sm text-ink">{eventName}</legend>
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ANSWERS.map((answer) => (
             <label key={answer.status} className="cursor-pointer">
               <input

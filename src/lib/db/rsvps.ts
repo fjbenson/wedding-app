@@ -87,7 +87,7 @@ export async function updateRsvp(
   const supabase = await createClient();
   const update: Partial<Rsvp> = { ...fields };
   if (fields.status) {
-    update.responded_at = fields.status === "pending" ? null : new Date().toISOString();
+    update.responded_at = fields.status === "pending" || fields.status === "to_invite" ? null : new Date().toISOString();
   }
 
   const { error } = await supabase.from("rsvps").update(update).eq("id", rsvpId);
@@ -132,17 +132,31 @@ export async function inviteGuestsToEvent(
     }
   }
 
-  const { error } = await supabase.from("rsvps").upsert(
+  const rows = (status: RsvpStatus) =>
     guests.map((guest) => ({
       wedding_id: weddingId,
       invitation_id: guest.household_id ? (invitationFor.get(guest.household_id) ?? null) : null,
       contact_id: guest.id,
       event_id: eventId,
-      status: "pending" as const,
-    })),
-    { onConflict: "contact_id,event_id", ignoreDuplicates: true },
-  );
+      status,
+    }));
+  const options = { onConflict: "contact_id,event_id", ignoreDuplicates: true };
 
+  // New to the list: "To invite". Until 0013_to_invite.sql is run that
+  // status doesn't exist (22P02), so they go straight to "Invited".
+  let { error } = await supabase.from("rsvps").upsert(rows("to_invite"), options);
+  if (error?.code === "22P02") ({ error } = await supabase.from("rsvps").upsert(rows("pending"), options));
+  if (error) throw error;
+}
+
+/** "We've sent them": everyone still at "To invite" becomes "Invited". */
+export async function markAllInvited(weddingId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("rsvps")
+    .update({ status: "pending" })
+    .eq("wedding_id", weddingId)
+    .eq("status", "to_invite");
   if (error) throw error;
 }
 

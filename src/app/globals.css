@@ -128,3 +128,17 @@ body::before {
     );
   }
 }
+
+/*
+ * iPhones zoom in on any text box whose writing is under 16px, and don't
+ * zoom back out afterwards (owner's report, 9 Oct 2026). On phones and
+ * tablets, every box writes at 16px or more so that never happens; pinch to
+ * zoom still works. Unlayered, so it wins over the 15px set on many boxes.
+ */
+@media (max-width: 1023px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}

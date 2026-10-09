@@ -424,9 +424,10 @@ function AnswersCard({
 }) {
   const all = showing === "all";
   const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
-    { status: "attending", label: "Coming", tone: "text-ink" },
+    // All three in champagne (owner's call); only the big All is ink.
+    { status: "attending", label: "Coming", tone: "text-champagne-600" },
     { status: "pending", label: "Invited", tone: "text-champagne-600" },
-    { status: "declined", label: "Can't come", tone: "text-stone" },
+    { status: "declined", label: "Can't come", tone: "text-champagne-600" },
     // "To invite" isn't listed (owner's call): those guests count in All.
   ];
 

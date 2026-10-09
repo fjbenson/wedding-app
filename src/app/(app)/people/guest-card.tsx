@@ -328,13 +328,13 @@ function HouseholdRow({
           className="w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-1.5 pr-6 text-[15px] text-ink hover:text-champagne-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/40"
           style={{ backgroundImage: CHEVRON }}
         >
+          <option value="none">Not in a household</option>
           {households.map((h) => (
             <option key={h.id} value={h.id}>
               {h.name}
             </option>
           ))}
-          <option value="none">Not in a household</option>
-          <option value="new">+ A new household…</option>
+          <option value="new">+ New household…</option>
         </select>
         {adding && (
           <form

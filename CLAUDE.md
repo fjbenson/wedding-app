@@ -124,7 +124,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   message instead of redirecting. The old per-event RSVP page is gone. `/people/[id]` is
   now suppliers only — a guest's id there redirects to their card, and
   household/invitation links open the card. Adding a guest still uses the
-  form (`/people/new`). Search, filters and
+  form (`/people/new`, `guest-form.tsx`), now laid out like the card: name,
+  Guest of slider, Role on the day (four common + More), then Details
+  rows; household defaults to "Not in a household", "+ New household…"
+  last (same order on the card). Search, filters and
   the open card are client state, not in the address; links can still use
   `?event=`, `?guest=`, `?view=households`. **A guest can have several
   roles**: stored in the one `role_on_the_day` column joined with " · "

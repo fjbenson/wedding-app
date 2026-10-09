@@ -294,7 +294,10 @@ user to an email with `updateUser({ email })` so the wedding carries over.
 `layout.tsx` let it be added to a phone's home screen and open full screen.
 On an iPhone the home-screen app keeps its own cookies, separate from the
 browser, so it starts as a new anonymous visitor with no wedding — the
-browser's wedding doesn't carry over until proper sign-in. Icons: the hub
+browser's wedding doesn't carry over until proper sign-in. Because it runs
+full screen under a see-through status bar, `AppShell` puts a frosted
+ivory strip the height of `env(safe-area-inset-top)` behind the clock, so
+scrolled pages don't run into the time (9 Oct 2026). Icons: the hub
 ring on satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
 
 **The owner's call (30 Sep 2026): proper sign-in is the very last thing

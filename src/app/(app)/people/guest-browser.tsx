@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpDown, Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { inviteAction } from "./rsvp-actions";
 import GuestCard from "./guest-card";
-import { Answer, AnswerDot, DotKey, RolePill, answerWord, fullName, initials, shortEvent } from "./guest-table";
+import { Answer, RolePill, fullName, initials } from "./guest-table";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
+/** How the list is ordered (the Sort button). */
+type SortBy = "first" | "last" | "household" | "type";
 /** Which answer the numbers card is showing, for the picked event. */
 type Showing = "all" | Rsvp["status"];
 
@@ -33,6 +35,8 @@ interface Group {
 
 const byName = (a: Contact, b: Contact) =>
   fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" });
+const bySurname = (a: Contact, b: Contact) =>
+  (a.last_name ?? "").localeCompare(b.last_name ?? "", undefined, { sensitivity: "base" }) || byName(a, b);
 
 const FILTERS: { key: GuestFilter; label: string }[] = [
   { key: "party", label: "Bridal party" },
@@ -40,6 +44,23 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
   { key: "children", label: "Children" },
   { key: "noaddress", label: "No address yet" },
 ];
+
+const SORTS: { key: SortBy; label: string; short: string }[] = [
+  { key: "first", label: "First name, A–Z", short: "by first name" },
+  { key: "last", label: "Surname, A–Z", short: "by surname" },
+  { key: "household", label: "Household", short: "by household" },
+  { key: "type", label: "Day guests, then evening", short: "day, then evening" },
+];
+
+/** How each answer reads at the end of a row. */
+const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> = {
+  attending: { word: "Coming", className: "text-ink" },
+  pending: { word: "Waiting", className: "italic text-champagne-600" },
+  declined: { word: "Can't come", className: "text-stone" },
+};
+
+/** "The evening" → "evening": the word after a guest's name. */
+const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCase();
 
 const SHOWING_WORD: Record<Showing, string> = {
   all: "Everyone",
@@ -50,13 +71,15 @@ const SHOWING_WORD: Record<Showing, string> = {
 
 /**
  * The guest list (People › Guests), as settled on the design canvas in
- * "Guest list · Rounds 4–7" (9 Oct 2026). The event switch, then the numbers
- * card — a big "All" and the breakdown beside it, each one tappable to show
- * just those people — then search with a Filter menu, then everyone A–Z with
- * a letter index, or grouped by household. Phones get compact rows; laptops
- * a full table. Tapping anyone opens their card (guest-card.tsx).
+ * "Guest list · Rounds 4–12" (9 Oct 2026). The event switch, then the
+ * numbers card — a big "All" and the breakdown beside it, each one tappable
+ * to show just those people — then search with Filter and Sort menus, then
+ * the guests: each row is a name with "day" or "evening" after it, any roles
+ * as pills, and their answer in a word. A–Z by first name (with a letter
+ * index) unless sorted otherwise. Phones get these rows; laptops a full
+ * table. Tapping anyone opens their card (guest-card.tsx).
  *
- * Search, filters and the view are kept here rather than in the address, so
+ * Search, filters and sort are kept here rather than in the address, so
  * they answer instantly and survive the card opening and closing.
  */
 export default function GuestBrowser({
@@ -82,7 +105,7 @@ export default function GuestBrowser({
   const [query, setQuery] = useState("");
   const [showing, setShowing] = useState<Showing>("all");
   const [filters, setFilters] = useState<GuestFilter[]>(initialFilter ? [initialFilter] : []);
-  const [view, setView] = useState<GuestView>(initialView);
+  const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
 
@@ -101,6 +124,12 @@ export default function GuestBrowser({
 
   const statusFor = (g: Contact, e: WeddingEvent | undefined) =>
     e ? data.answers.get(g.id)?.find((r) => r.event_id === e.id)?.status : undefined;
+  /**
+   * Each guest is a day guest or an evening guest: the first event they're
+   * invited to (events come in date order). The day includes the evening,
+   * so one word and one answer say it all.
+   */
+  const ownEvent = (g: Contact) => events.find((e) => statusFor(g, e));
   const dietOf = (g: Contact) => data.answers.get(g.id)?.find((r) => r.dietary_notes)?.dietary_notes ?? null;
 
   const tests: Record<GuestFilter, (g: Contact) => boolean> = {
@@ -124,15 +153,25 @@ export default function GuestBrowser({
         .toLowerCase();
       return words.every((w) => hay.includes(w));
     })
-    .sort(byName);
+    .sort(sort === "last" ? bySurname : byName);
 
-  // How the list is grouped: by role for the bridal party, by household if
-  // asked, otherwise one A–Z run.
+  // How the list is grouped: by role for the bridal party, by household or
+  // by day/evening if sorted that way, otherwise one A–Z run.
   let groups: Group[];
   if (filters.includes("party")) {
     const roles = [...new Set(shown.flatMap(rolesOf))].sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b));
     groups = roles.map((role) => ({ key: role, title: role, guests: shown.filter((g) => rolesOf(g).includes(role)) }));
-  } else if (view === "households") {
+  } else if (sort === "type") {
+    groups = events
+      .map((e) => ({
+        key: e.id,
+        title: `${eventWord(e).replace(/^\w/, (c) => c.toUpperCase())} guests`,
+        guests: shown.filter((g) => ownEvent(g)?.id === e.id),
+      }))
+      .filter((group) => group.guests.length > 0);
+    const loose = shown.filter((g) => !ownEvent(g));
+    if (loose.length > 0) groups.push({ key: "none", title: "Not invited yet", guests: loose });
+  } else if (sort === "household") {
     groups = households
       .map((h) => ({
         key: h.id,
@@ -148,25 +187,13 @@ export default function GuestBrowser({
     groups = [{ key: "az", title: "", guests: shown }];
   }
 
-  /** "With Sam Patel" for a couple, "The Daniels" for a bigger household. */
-  const metaOf = (g: Contact) => {
-    const housemates = g.household_id ? (data.members.get(g.household_id) ?? []) : [];
-    const home =
-      view === "households" || filters.includes("party") || housemates.length < 2
-        ? null
-        : housemates.length === 2
-          ? `With ${fullName(housemates.find((m) => m.id !== g.id)!)}`
-          : data.household.get(g.household_id!)?.name;
-    return [g.is_child && "Child", home, dietOf(g)].filter(Boolean).join(" · ");
-  };
 
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
   const az = groups.length === 1 && groups[0].key === "az";
-  const letters = az ? new Set(shown.map((g) => g.first_name.charAt(0).toUpperCase())) : new Set<string>();
+  const letterOf = (g: Contact) => ((sort === "last" && g.last_name) || g.first_name).charAt(0).toUpperCase();
+  const letters = az ? new Set(shown.map(letterOf)) : new Set<string>();
   const indexed = az && shown.length > 12;
-  const firstOfLetter = new Set(
-    az ? [...letters].map((l) => shown.find((g) => g.first_name.charAt(0).toUpperCase() === l)!.id) : [],
-  );
+  const firstOfLetter = new Set(az ? [...letters].map((l) => shown.find((g) => letterOf(g) === l)!.id) : []);
   const uninvited = event ? guests.filter((g) => !statusFor(g, event)) : [];
 
   return (
@@ -199,11 +226,12 @@ export default function GuestBrowser({
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find a guest or household"
+                placeholder="Find a guest"
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            <FilterMenu filters={counted} on={filters} onToggle={toggle} onClear={() => setFilters([])} view={view} onView={setView} />
+            <FilterMenu filters={counted} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
+            <SortMenu sort={sort} onSort={setSort} />
           </div>
 
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
@@ -227,17 +255,7 @@ export default function GuestBrowser({
               </span>
             ) : (
               <span className="type-meta">
-                {SHOWING_WORD[showing]} · {view === "az" ? "A–Z" : "Households"}
-              </span>
-            )}
-            {/* Over the dots on a phone: which event each one is. */}
-            {events.length > 0 && (
-              <span className={`flex shrink-0 gap-3.5 text-xs text-stone lg:hidden ${indexed ? "pr-12" : "pr-7"}`} aria-hidden>
-                {events.map((e) => (
-                  <span key={e.id} className="w-3.5 text-center">
-                    {shortEvent(e.name).charAt(0)}
-                  </span>
-                ))}
+                {SHOWING_WORD[showing]} · {SORTS.find((o) => o.key === sort)!.short}
               </span>
             )}
           </div>
@@ -256,36 +274,13 @@ export default function GuestBrowser({
                   {group.title && <GroupTitle group={group} />}
                   <ul>
                     {group.guests.map((g) => (
-                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${g.first_name.charAt(0).toUpperCase()}` : undefined} className="scroll-mt-4 border-b border-linen">
-                        <button type="button" onClick={() => setOpenId(g.id)} className="flex min-h-[58px] w-full items-center gap-3 py-2 text-left">
-                          <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cream font-display text-sm text-champagne-600">
-                            {initials(g)}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="type-item block truncate text-lg">{fullName(g)}</span>
-                            {(rolesOf(g).length > 0 || metaOf(g)) && (
-                              <span className="mt-1 flex min-w-0 items-center gap-1.5">
-                                {rolesOf(g).map((role) => <RolePill key={role} role={role} />)}
-                                {metaOf(g) && <span className="type-meta truncate tracking-[0.14em]">{metaOf(g)}</span>}
-                              </span>
-                            )}
-                          </span>
-                          {events.length > 0 && (
-                            <span className="flex shrink-0 gap-3.5">
-                              {events.map((e) => <AnswerDot key={e.id} status={statusFor(g, e)} />)}
-                              <span className="sr-only">
-                                {events.map((e) => `${e.name}: ${answerWord(statusFor(g, e))}`).join(", ")}
-                              </span>
-                            </span>
-                          )}
-                          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-                        </button>
+                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b border-linen">
+                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => setOpenId(g.id)} />
                       </li>
                     ))}
                   </ul>
                 </section>
               ))}
-              {events.length > 0 && <div className="mt-5"><DotKey /></div>}
             </div>
             {indexed && <LetterIndex letters={letters} />}
           </div>
@@ -493,29 +488,58 @@ function AnswersCard({
 }
 
 /**
- * The Filter button beside the search, and the small menu it drops down:
- * what to show (any mix of these) and how to arrange the list. The list
- * changes as you tick, so there's no "apply" step.
+ * One guest in the phone list: initials, their name with "day" or "evening"
+ * after it, any roles as pills underneath, and their answer in a word.
  */
-function FilterMenu({
-  filters,
-  on,
-  onToggle,
-  onClear,
-  view,
-  onView,
+function GuestRow({
+  guest,
+  event,
+  status,
+  showEvent,
+  onOpen,
 }: {
-  filters: { key: GuestFilter; label: string; count: number }[];
-  on: GuestFilter[];
-  onToggle: (key: GuestFilter) => void;
-  onClear: () => void;
-  view: GuestView;
-  onView: (v: GuestView) => void;
+  guest: Contact;
+  /** Off when the list is already grouped into day and evening guests. */
+  showEvent: boolean;
+  /** The event they're a guest of — their first invitation. */
+  event?: WeddingEvent;
+  status?: Rsvp["status"];
+  onOpen: () => void;
 }) {
+  const roles = rolesOf(guest);
+  const answer = status ? ANSWER_WORD[status] : { word: "Not invited", className: "text-stone/70" };
+
+  return (
+    <button type="button" onClick={onOpen} className="flex min-h-[54px] w-full items-center gap-3 py-1.5 text-left">
+      {/* Below 360px wide the name needs the room more than the initials do. */}
+      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cream font-display text-sm text-champagne-600 max-[359px]:hidden">
+        {initials(guest)}
+      </span>
+      <span className="min-w-0 flex-1">
+        {/* Inline, so a long name wraps rather than being cut short. */}
+        <span className="block break-words">
+          <span className="type-item text-lg">{fullName(guest)}</span>
+          {event && showEvent && (
+            <span className="ml-2 whitespace-nowrap font-display text-sm italic text-champagne-600">{eventWord(event)}</span>
+          )}
+        </span>
+        {roles.length > 0 && (
+          <span className="mt-1 flex flex-wrap gap-1.5">
+            {roles.map((role) => <RolePill key={role} role={role} />)}
+          </span>
+        )}
+      </span>
+      <span className={`shrink-0 text-[13px] ${answer.className}`}>{answer.word}</span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+    </button>
+  );
+}
+
+/** A round button beside the search that drops a small menu below it. Tapping elsewhere, or Escape, closes it. */
+function useDropdown() {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
-  // Tapping anywhere else, or Escape, closes it.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -529,6 +553,29 @@ function FilterMenu({
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
+
+  return { open, setOpen, box };
+}
+
+const MENU =
+  "absolute right-0 top-[calc(100%+8px)] z-30 rounded-[20px] border border-linen bg-white px-4 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]";
+
+/**
+ * The Filter button and its menu: what to show (any mix of these). The list
+ * changes as you tick, so there's no "apply" step.
+ */
+function FilterMenu({
+  filters,
+  on,
+  onToggle,
+  onClear,
+}: {
+  filters: { key: GuestFilter; label: string; count: number }[];
+  on: GuestFilter[];
+  onToggle: (key: GuestFilter) => void;
+  onClear: () => void;
+}) {
+  const { open, setOpen, box } = useDropdown();
 
   return (
     <div ref={box} className="relative shrink-0">
@@ -554,7 +601,7 @@ function FilterMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[17rem] rounded-[20px] border border-linen bg-white px-4 pb-3.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+        <div className={`${MENU} w-[17rem] pb-2 pt-2.5`}>
           <div className="flex items-baseline justify-between py-1">
             <span className="section-label">Show only</span>
             {on.length > 0 && (
@@ -590,24 +637,53 @@ function FilterMenu({
               );
             })}
           </ul>
-          <div className="mt-2 border-t border-linen pt-3">
-            <span className="section-label block">Arrange by</span>
-            <span role="group" aria-label="Arrange by" className="mt-2 grid grid-cols-2 rounded-full bg-cream p-[3px]">
-              {(["az", "households"] as const).map((v) => (
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The Sort button and its menu: pick one; the menu closes as you do. */
+function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void }) {
+  const { open, setOpen, box } = useDropdown();
+
+  return (
+    <div ref={box} className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={`Sort: ${SORTS.find((o) => o.key === sort)!.label}`}
+        onClick={() => setOpen((o) => !o)}
+        className={`flex h-12 w-12 items-center justify-center rounded-full border bg-white text-ink transition ${
+          open ? "border-champagne-400" : "border-linen hover:border-champagne-400"
+        }`}
+      >
+        <ArrowUpDown className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+      </button>
+
+      {open && (
+        <div className={`${MENU} w-[16rem] pb-1.5 pt-2.5`}>
+          <span className="section-label block py-1">Sort by</span>
+          <ul>
+            {SORTS.map((o) => (
+              <li key={o.key} className="border-t border-linen first:border-t-0">
                 <button
-                  key={v}
                   type="button"
-                  aria-pressed={view === v}
-                  onClick={() => onView(v)}
-                  className={`h-8 rounded-full text-[13px] transition ${
-                    view === v ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
-                  }`}
+                  role="menuitemradio"
+                  aria-checked={sort === o.key}
+                  onClick={() => {
+                    onSort(o.key);
+                    setOpen(false);
+                  }}
+                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
                 >
-                  {v === "az" ? "A–Z" : "Households"}
+                  <span className="flex-1">{o.label}</span>
+                  {sort === o.key && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
                 </button>
-              ))}
-            </span>
-          </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

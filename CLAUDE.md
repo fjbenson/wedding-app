@@ -81,12 +81,19 @@ Next.js scaffold. Built so far, against the plan's tabs:
   it (Coming · Waiting · Can't come, each with an arrow) — every one is a
   button that shows just those people. Then search with a **Filter**
   button that drops down a small menu (Bridal party · Dietary needs ·
-  Children · No address yet, any mix, plus Arrange by A–Z / Households);
-  with filters on, the button goes dark with a count and each filter
-  shows as a pill to take off. Invitations and "Rename" moved to the foot
-  of the list. Then everyone **A–Z by first name** with a letter
-  index down the side, or **Households** (so a couple with different
-  surnames sit together; in A–Z each shows "With …"). Each row: initials,
+  Children · No address yet, any mix); with filters on, the button goes
+  dark with a count and each filter shows as a pill to take off. Beside
+  it a **Sort** button: first name, surname, household, or day guests
+  then evening. Invitations and "Rename" moved to the foot of the list.
+  **Rows (rounds 8–12):** initials, the name with "day" or "evening"
+  after it in gold italic (a guest's *type* is the first event they're
+  invited to — events come in date order — so no new column), role pills
+  underneath only for the bridal party, and their answer to that event as
+  a word on the right (Coming · *Waiting* · Can't come · Not invited). No
+  household, diet or "child" under the name any more — those are on the
+  card, in Filter, and in Sort › Household. Sun/moon icons were tried and
+  dropped (looked like light/dark mode); words for now. A letter index
+  runs down the side when sorted by first name or surname. Each row: initials,
   name, role pills, a dot per event (filled coming, dashed waiting, grey
   can't come), an arrow. Bridal party is a **filter**, grouped by role (the
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a

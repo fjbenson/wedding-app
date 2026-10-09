@@ -76,8 +76,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big dark **All**
-  with the breakdown beside it (Coming · Invited · Can't come, plus To
-  invite while anyone's at it, each with an arrow) — every one is a button
+  with the breakdown beside it (Coming · Invited · Can't come, each with
+  an arrow; To invite guests count only in All) — every one is a button
   that shows just those people. **The card counts whatever the filters
   leave**, by each guest's answer for their own event. Then search with a
   **Filter** button that drops down a small menu (Day guests · Evening

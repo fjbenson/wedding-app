@@ -427,10 +427,7 @@ function AnswersCard({
     { status: "attending", label: "Coming", tone: "text-ink" },
     { status: "pending", label: "Invited", tone: "text-champagne-600" },
     { status: "declined", label: "Can't come", tone: "text-stone" },
-    // Only while someone hasn't been sent an invitation yet.
-    ...(counts.to_invite > 0 || showing === "to_invite"
-      ? [{ status: "to_invite" as const, label: "To invite", tone: "text-stone" }]
-      : []),
+    // "To invite" isn't listed (owner's call): those guests count in All.
   ];
 
   return (

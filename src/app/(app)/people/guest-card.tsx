@@ -486,8 +486,8 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
     <section className="mt-6 space-y-5">
       {own && (
         <div>
-          <h3 className="section-label">Answer</h3>
-          <div role="group" aria-label="Answer" className={track}>
+          <h3 className="section-label">RSVP</h3>
+          <div role="group" aria-label="RSVP" className={track}>
             {ANSWERS.map((a) => (
               <button
                 key={a.status}

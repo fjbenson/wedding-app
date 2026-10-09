@@ -107,14 +107,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   card, in Filter, and in Sort › Household. Sun/moon icons were tried and
   dropped (looked like light/dark mode); words for now. A letter index
   runs down the side when sorted by first name or surname. The laptop
-  table matches: name with day/evening, Role, one Answer column, then
+  table matches: name with day/evening, Role, one RSVP column, then
   meal and diet for their own event, phone, email. Each row: initials,
   name, role pills, a dot per event (filled coming, dashed waiting, grey
   can't come), an arrow. Bridal party is a **filter**, grouped by role (the
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  text/call/email, then one **Answer** (To invite · Invited · Coming ·
+  text/call/email, then one **RSVP** (To invite · Invited · Coming ·
   Can't come) and **Guest of** (Day / Evening) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
   Bridesmaid, Best man, Groomsman), and "More" to open the rest plus "Your

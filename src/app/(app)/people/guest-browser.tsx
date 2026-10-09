@@ -452,10 +452,12 @@ function AnswersCard({
               type="button"
               aria-pressed={on}
               onClick={() => onShow(on ? "all" : row.status)}
-              className={`flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-left sm:gap-2.5 sm:px-2.5 transition ${
+              className={`relative flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-left sm:gap-2.5 sm:px-2.5 transition ${
                 on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "hover:bg-white/60"
-              } ${i > 0 && !on && showing !== rows[i - 1].status ? "border-t border-linen" : "border-t border-transparent"}`}
+              }`}
             >
+              {/* A straight line between rows (a border would follow the rounded corners). */}
+              {i > 0 && !on && showing !== rows[i - 1].status && <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-linen" />}
               <span className={`type-figure min-w-[2.25rem] text-[26px] leading-none tabular-nums ${row.tone}`}>{counts[row.status]}</span>
               <span className={`type-meta min-w-0 flex-1 leading-tight tracking-[0.12em] ${on ? "text-ink" : ""}`}>{row.label}</span>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-stone" strokeWidth={2} aria-hidden />

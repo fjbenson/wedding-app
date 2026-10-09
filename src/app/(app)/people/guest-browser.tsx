@@ -27,9 +27,10 @@ interface Group {
   title: string;
   /** Household groups link to the household's page. */
   href?: string;
-  note?: string;
   guests: Contact[];
 }
+
+const guestCount = (n: number) => `${n} ${n === 1 ? "guest" : "guests"}`;
 
 const byName = (a: Contact, b: Contact) =>
   fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" });
@@ -180,7 +181,6 @@ export default function GuestBrowser({
         key: h.id,
         title: h.name,
         href: `/people/household/${h.id}`,
-        note: h.hasAddress ? undefined : "No address",
         guests: shown.filter((g) => g.household_id === h.id),
       }))
       .filter((group) => group.guests.length > 0);
@@ -355,7 +355,7 @@ function GroupTitle({ group }: { group: Group }) {
     <>
       <span className="label">{group.title}</span>
       <span className="text-xs text-stone">
-        {group.note ?? group.guests.length}
+        {guestCount(group.guests.length)}
         {group.href && " ›"}
       </span>
     </>
@@ -790,7 +790,7 @@ function GuestTable({
                   ) : (
                     <span className="font-display text-lg text-ink">{group.title}</span>
                   )}
-                  {group.note && <span className="type-meta ml-3">{group.note}</span>}
+                  <span className="type-meta ml-3">{guestCount(group.guests.length)}</span>
                 </th>
               </tr>
             )}

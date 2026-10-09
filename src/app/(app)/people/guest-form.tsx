@@ -5,6 +5,7 @@ import { ChevronDown, Star } from "lucide-react";
 import { SubmitButton } from "@/components/form-bits";
 import { GUEST_ROLES } from "@/lib/guest-roles";
 import type { Household, WeddingEvent } from "@/types/db";
+import { DetailLabel } from "./guest-table";
 
 /** The handful of roles shown straight away; the rest wait behind "More" (as on the guest card). */
 const COMMON_ROLES = ["Maid of honour", "Bridesmaid", "Best man", "Groomsman"];
@@ -164,7 +165,7 @@ export default function GuestForm({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[7.5rem_1fr] items-start gap-x-3 border-b border-linen py-2">
-      <span className="type-meta pt-2.5">{label}</span>
+      <span className="type-meta pt-2.5"><DetailLabel label={label} /></span>
       <div className="min-w-0">{children}</div>
     </div>
   );

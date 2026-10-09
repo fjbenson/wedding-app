@@ -8,7 +8,7 @@ import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
 import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
-import { fullName } from "./guest-table";
+import { DetailLabel, fullName } from "./guest-table";
 import { splitName } from "@/lib/names";
 
 type Saver = () => Promise<{ error?: string } | void>;
@@ -269,7 +269,7 @@ function TextRow({
 
   return (
     <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-      <dt className="type-meta py-3.5">{label}</dt>
+      <dt className="type-meta py-3.5"><DetailLabel label={label} /></dt>
       <dd className="min-w-0">
         {editing ? (
           <form
@@ -313,7 +313,7 @@ function HouseholdRow({
 
   return (
     <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-      <dt className="type-meta py-3.5">Household</dt>
+      <dt className="type-meta py-3.5"><DetailLabel label="Household" /></dt>
       <dd className="min-w-0 py-2">
         <select
           aria-label="Household"
@@ -373,7 +373,7 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
 
   return (
     <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-      <dt className="type-meta py-3.5">Child</dt>
+      <dt className="type-meta py-3.5"><DetailLabel label="Child" /></dt>
       <dd className="flex items-center py-2">
         <button
           type="button"

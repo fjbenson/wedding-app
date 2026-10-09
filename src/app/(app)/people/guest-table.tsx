@@ -1,4 +1,4 @@
-import { Check, Minus, X } from "lucide-react";
+import { Baby, Check, House, Mail, Minus, PenLine, Phone, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
 import { rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, RsvpStatus } from "@/types/db";
 
@@ -72,6 +72,27 @@ export function RoleLabel({ guest, className = "" }: { guest: Contact; className
         <RolePill key={role} role={role} />
       ))}
       {guest.is_child && <span className="type-meta">Child</span>}
+    </span>
+  );
+}
+
+const DETAIL_ICONS: Record<string, LucideIcon> = {
+  Household: House,
+  Phone,
+  Email: Mail,
+  "Meal choice": UtensilsCrossed,
+  "Allergies & diet": WheatOff,
+  Notes: PenLine,
+  Child: Baby,
+};
+
+/** A detail's label with its small icon — phone for Phone, knife and fork for Meal choice. */
+export function DetailLabel({ label }: { label: string }) {
+  const Icon = DETAIL_ICONS[label];
+  return (
+    <span className="flex items-start gap-2">
+      {Icon && <Icon aria-hidden className="mt-px h-3.5 w-3.5 shrink-0 text-stone/80" strokeWidth={1.7} />}
+      <span>{label}</span>
     </span>
   );
 }

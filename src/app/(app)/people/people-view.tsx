@@ -14,7 +14,6 @@ export default function PeopleView({
   households,
   events,
   rsvps,
-  eventId,
   guestId,
   filter,
   view,
@@ -25,7 +24,6 @@ export default function PeopleView({
   households: Household[];
   events: WeddingEvent[];
   rsvps: Rsvp[];
-  eventId?: string;
   guestId?: string;
   filter?: GuestFilter;
   view?: GuestView;
@@ -69,7 +67,6 @@ export default function PeopleView({
             }))}
             events={events}
             rsvps={rsvps}
-            initialEventId={eventId}
             initialGuestId={guestId}
             initialFilter={filter}
             initialView={view}

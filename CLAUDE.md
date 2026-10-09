@@ -75,17 +75,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **People** (`/people`): two tabs, **Guests · Suppliers**. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
-  Rounds 3–7"): the Day / Evening switch (+ to add an event) sits above
-  the numbers card; "invite the rest" appears under it only when someone
-  isn't invited. The card is a big dark **All** with the breakdown beside
-  it (Coming · Waiting · Can't come, each with an arrow) — every one is a
-  button that shows just those people. Then search with a **Filter**
-  button that drops down a small menu (Bridal party · Dietary needs ·
-  Children · No address yet, any mix); with filters on, the button goes
-  dark with a count and each filter shows as a pill to take off. Beside
-  it a **Sort** button: first name, surname, household, or day guests
-  then evening. "+ Add a guest" sits on the line just above the list (not
-  by the title); "Rename" (the picked event) sits at the foot of the list.
+  Rounds 3–7"): no event switch any more. The card is a big dark **All**
+  with the breakdown beside it (Coming · Invited · Can't come, plus To
+  invite while anyone's at it, each with an arrow) — every one is a button
+  that shows just those people. **The card counts whatever the filters
+  leave**, by each guest's answer for their own event. Then search with a
+  **Filter** button that drops down a small menu (Day guests · Evening
+  guests, then Bridal party · Dietary needs · Children · No address yet,
+  any mix); with filters on, the button goes dark with a count and each
+  filter shows as a pill to take off. Beside it a **Sort** button: first
+  name, surname, household, or day guests then evening. "+ Add a guest"
+  sits on the line just above the list (not by the title); "Rename the
+  day / evening" and "Add an event" sit at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), role pills

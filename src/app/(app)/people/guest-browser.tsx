@@ -15,7 +15,7 @@ export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
 /** How the list is ordered (the Sort button). */
 type SortBy = "first" | "last" | "household" | "type";
-/** Which answer the numbers card is showing, for the picked event. */
+/** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
 export interface HouseholdSummary {
@@ -73,9 +73,10 @@ const SHOWING_WORD: Record<Showing, string> = {
 
 /**
  * The guest list (People › Guests), as settled on the design canvas in
- * "Guest list · Rounds 4–12" (9 Oct 2026). The event switch, then the
- * numbers card — a big "All" and the breakdown beside it, each one tappable
- * to show just those people — then search with Filter and Sort menus, then
+ * "Guest list · Rounds 4–12" (9 Oct 2026). The numbers card — a big "All"
+ * and the breakdown beside it, each one tappable to show just those people,
+ * and counting whoever the filters leave — then search with Filter (day or
+ * evening guests, bridal party, …) and Sort menus, then
  * the guests: each row is a name with "day" or "evening" after it, any roles
  * as pills, and their answer in a word. A–Z by first name (with a letter
  * index) unless sorted otherwise. Phones get these rows; laptops a full
@@ -89,7 +90,6 @@ export default function GuestBrowser({
   households,
   events,
   rsvps,
-  initialEventId,
   initialGuestId,
   initialFilter,
   initialView = "az",
@@ -98,20 +98,18 @@ export default function GuestBrowser({
   households: HouseholdSummary[];
   events: WeddingEvent[];
   rsvps: Rsvp[];
-  initialEventId?: string;
   initialGuestId?: string;
   initialFilter?: GuestFilter;
   initialView?: GuestView;
 }) {
-  const [eventId, setEventId] = useState(initialEventId);
   const [query, setQuery] = useState("");
   const [showing, setShowing] = useState<Showing>("all");
   const [filters, setFilters] = useState<GuestFilter[]>(initialFilter ? [initialFilter] : []);
+  /** "Day guests" / "Evening guests" in the Filter menu: event ids, any of. */
+  const [guestOf, setGuestOf] = useState<string[]>([]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
-
-  const event = events.find((e) => e.id === eventId) ?? events[0];
 
   const data = useMemo(() => {
     const answers = new Map<string, Rsvp[]>();
@@ -143,11 +141,24 @@ export default function GuestBrowser({
   const counted = FILTERS.map((f) => ({ ...f, count: guests.filter(tests[f.key]).length }));
   const toggle = (key: GuestFilter) =>
     setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
+  const ofLabel = (e: WeddingEvent) => `${eventWord(e).replace(/^\w/, (c) => c.toUpperCase())} guests`;
+  const ofCounted = events.map((e) => ({ id: e.id, label: ofLabel(e), count: guests.filter((g) => ownEvent(g)?.id === e.id).length }));
+  const toggleOf = (id: string) => setGuestOf((on) => (on.includes(id) ? on.filter((k) => k !== id) : [...on, id]));
+  const clearAll = () => {
+    setFilters([]);
+    setGuestOf([]);
+  };
+
+  // What the filters leave, before search and the numbers card: the card
+  // counts these, so every filter narrows its numbers too.
+  const filtered = guests
+    .filter((g) => guestOf.length === 0 || guestOf.includes(ownEvent(g)?.id ?? ""))
+    .filter((g) => filters.every((f) => tests[f](g)));
+  const answerOf = (g: Contact) => statusFor(g, ownEvent(g));
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = guests
-    .filter((g) => showing === "all" || statusFor(g, event) === showing)
-    .filter((g) => filters.every((f) => tests[f](g)))
+  const shown = filtered
+    .filter((g) => showing === "all" || answerOf(g) === showing)
     .filter((g) => {
       if (words.length === 0) return true;
       const hay = [fullName(g), g.household_id && data.household.get(g.household_id)?.name, ...rolesOf(g)]
@@ -202,18 +213,17 @@ export default function GuestBrowser({
   return (
     <>
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
-        {event && (
+        {events.length > 0 && (
           <div>
-            <EventSwitch events={events} event={event} onPick={setEventId} />
             {toInvite > 0 && <SentStrip count={toInvite} />}
             <AnswersCard
-              total={guests.length}
-              homes={households.length}
+              total={filtered.length}
+              homes={new Set(filtered.map((g) => g.household_id).filter(Boolean)).size}
               counts={{
-                to_invite: guests.filter((g) => statusFor(g, event) === "to_invite").length,
-                attending: guests.filter((g) => statusFor(g, event) === "attending").length,
-                pending: guests.filter((g) => statusFor(g, event) === "pending").length,
-                declined: guests.filter((g) => statusFor(g, event) === "declined").length,
+                to_invite: filtered.filter((g) => answerOf(g) === "to_invite").length,
+                attending: filtered.filter((g) => answerOf(g) === "attending").length,
+                pending: filtered.filter((g) => answerOf(g) === "pending").length,
+                declined: filtered.filter((g) => answerOf(g) === "declined").length,
               }}
               showing={showing}
               onShow={setShowing}
@@ -234,13 +244,35 @@ export default function GuestBrowser({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            <FilterMenu filters={counted} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
+            <FilterMenu
+              guestOf={ofCounted}
+              ofOn={guestOf}
+              onToggleOf={toggleOf}
+              filters={counted}
+              on={filters}
+              onToggle={toggle}
+              onClear={clearAll}
+            />
             <SortMenu sort={sort} onSort={setSort} />
           </div>
 
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
-            {filters.length > 0 ? (
+            {filters.length + guestOf.length > 0 ? (
               <span className="flex min-w-0 flex-wrap items-center gap-2">
+                {ofCounted
+                  .filter((o) => guestOf.includes(o.id))
+                  .map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => toggleOf(o.id)}
+                      aria-label={`Take off ${o.label}`}
+                      className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                    >
+                      {o.label}
+                      <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                    </button>
+                  ))}
                 {filters.map((key) => (
                   <button
                     key={key}
@@ -253,7 +285,7 @@ export default function GuestBrowser({
                     <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
                   </button>
                 ))}
-                <button type="button" onClick={() => setFilters([])} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                <button type="button" onClick={clearAll} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
                   Clear
                 </button>
               </span>
@@ -307,13 +339,16 @@ export default function GuestBrowser({
         </>
       )}
 
-      {/* The card no longer carries this, so it sits at the foot of the list. */}
-      <p className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-        {event && (
-          <Link href={`/people/events/${event.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-            Rename {event.name.toLowerCase()}
+      {/* The events themselves — renaming them, or adding another — at the foot of the list. */}
+      <p className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        {events.map((e) => (
+          <Link key={e.id} href={`/people/events/${e.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
+            Rename {e.name.toLowerCase()}
           </Link>
-        )}
+        ))}
+        <Link href="/people/events/new" className="text-xs text-stone underline underline-offset-4 hover:text-ink">
+          Add an event
+        </Link>
       </p>
 
       {open && (
@@ -374,44 +409,6 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
   );
 }
 
-/** Day | Evening (or the couple's own events), and + to add one. */
-function EventSwitch({
-  events,
-  event,
-  onPick,
-}: {
-  events: WeddingEvent[];
-  event: WeddingEvent;
-  onPick: (id: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      <span role="group" aria-label="Which event" className="flex min-w-0 rounded-full bg-cream p-[3px]">
-        {events.map((e) => (
-          <button
-            key={e.id}
-            type="button"
-            aria-pressed={e.id === event.id}
-            onClick={() => onPick(e.id)}
-            className={`h-8 max-w-[8rem] truncate rounded-full px-4 text-[13px] transition ${
-              e.id === event.id ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
-            }`}
-          >
-            {events.length > 1 ? e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase()) : e.name}
-          </button>
-        ))}
-      </span>
-      <Link
-        href="/people/events/new"
-        aria-label="Add an event"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-champagne-600 hover:bg-champagne-100"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-      </Link>
-    </div>
-  );
-}
-
 /** While anyone is still "To invite": once the invitations are in the post, one tap marks them all invited. */
 function SentStrip({ count }: { count: number }) {
   return (
@@ -427,7 +424,7 @@ function SentStrip({ count }: { count: number }) {
 }
 
 /**
- * The numbers for the picked event: everyone on the left, big, and the
+ * The numbers for whoever the filters leave: all of them on the left, big, and the
  * breakdown beside it. Each one is a button — tap Invited to see just who
  * hasn't answered, tap it again (or All) to see everyone.
  */
@@ -582,17 +579,29 @@ const MENU =
  * changes as you tick, so there's no "apply" step.
  */
 function FilterMenu({
+  guestOf,
+  ofOn,
+  onToggleOf,
   filters,
   on,
   onToggle,
   onClear,
 }: {
+  /** Day guests, evening guests: one per event. */
+  guestOf: { id: string; label: string; count: number }[];
+  ofOn: string[];
+  onToggleOf: (id: string) => void;
   filters: { key: GuestFilter; label: string; count: number }[];
   on: GuestFilter[];
   onToggle: (key: GuestFilter) => void;
   onClear: () => void;
 }) {
   const { open, setOpen, box } = useDropdown();
+  const active = on.length + ofOn.length;
+  const rows = [
+    ...guestOf.map((o) => ({ key: o.id, label: o.label, count: o.count, ticked: ofOn.includes(o.id), flip: () => onToggleOf(o.id) })),
+    ...filters.map((f) => ({ key: f.key, label: f.label, count: f.count, ticked: on.includes(f.key), flip: () => onToggle(f.key) })),
+  ];
 
   return (
     <div ref={box} className="relative shrink-0">
@@ -600,19 +609,19 @@ function FilterMenu({
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={on.length > 0 ? `Filter, ${on.length} on` : "Filter"}
+        aria-label={active > 0 ? `Filter, ${active} on` : "Filter"}
         onClick={() => setOpen((o) => !o)}
         className={`relative flex h-12 w-12 items-center justify-center rounded-full border transition ${
-          on.length > 0 ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
+          active > 0 ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
         }`}
       >
         <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-        {on.length > 0 && (
+        {active > 0 && (
           <span
             aria-hidden
             className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400 px-1 text-[11px] font-semibold text-white"
           >
-            {on.length}
+            {active}
           </span>
         )}
       </button>
@@ -621,22 +630,23 @@ function FilterMenu({
         <div className={`${MENU} w-[17rem] pb-2 pt-2.5`}>
           <div className="flex items-baseline justify-between py-1">
             <span className="section-label">Show only</span>
-            {on.length > 0 && (
+            {active > 0 && (
               <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
                 Clear
               </button>
             )}
           </div>
           <ul>
-            {filters.map((f) => {
-              const ticked = on.includes(f.key);
+            {rows.map((f, i) => {
+              const ticked = f.ticked;
               return (
-                <li key={f.key} className="border-t border-linen first:border-t-0">
+                // A firmer line between "day / evening" and the rest.
+                <li key={f.key} className={`border-t first:border-t-0 ${i === guestOf.length && i > 0 ? "border-champagne-400" : "border-linen"}`}>
                   <button
                     type="button"
                     role="menuitemcheckbox"
                     aria-checked={ticked}
-                    onClick={() => onToggle(f.key)}
+                    onClick={f.flip}
                     className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
                   >
                     <span

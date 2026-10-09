@@ -58,16 +58,15 @@ export async function saveEventAction(eventId: string | null, formData: FormData
   if (!name) redirect(`${back}?error=${encodeURIComponent("Please give it a name.")}`);
 
   const fields = { name, location: text(formData, "location") };
-  let savedId = eventId;
   try {
     if (eventId) await updateEvent(eventId, fields);
-    else savedId = (await createEvents(wedding.id, [fields]))[0]?.id ?? null;
+    else await createEvents(wedding.id, [fields]);
   } catch (error) {
     failed(back, "That didn't save.", error);
   }
 
   revalidatePath("/people");
-  redirect(savedId ? `/people?event=${savedId}` : "/people");
+  redirect("/people");
 }
 
 export async function deleteEventAction(eventId: string) {

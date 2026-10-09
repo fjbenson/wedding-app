@@ -26,7 +26,7 @@ export default async function EditEventPage({
 
   return (
     <FormPage
-      backHref={`/people?event=${event.id}`}
+      backHref="/people"
       backLabel="People"
       title={event.name}
       error={error}

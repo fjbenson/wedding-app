@@ -16,19 +16,19 @@ export const metadata = { title: "People — Wedding App" };
  * the bridal party folded in (screens 8 and 11), and the suppliers (screen
  * 12) via ?tab=suppliers.
  *
- * Links can open the guest list a particular way: ?event= picks whose answers
- * the totals show, ?guest= opens someone's card, ?view=households groups it,
- * and ?tab=party (the old Bridal party tab) starts on that filter.
+ * Links can open the guest list a particular way: ?guest= opens someone's
+ * card, ?view=households groups it, and ?tab=party (the old Bridal party
+ * tab) starts on that filter.
  */
 export default async function PeoplePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; event?: string; guest?: string; view?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ tab?: string; guest?: string; view?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const { tab, event: eventId, guest, view, error, detail } = await searchParams;
+  const { tab, guest, view, error, detail } = await searchParams;
   const [guests, households, events, rsvps, suppliers, areaRows] = await Promise.all([
     listGuests(wedding.id),
     listHouseholds(wedding.id),
@@ -55,7 +55,6 @@ export default async function PeoplePage({
           households={households}
           events={events}
           rsvps={rsvps}
-          eventId={eventId}
           guestId={guest}
           filter={tab === "party" ? "party" : undefined}
           view={view === "households" ? "households" : undefined}

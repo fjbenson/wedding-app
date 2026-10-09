@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpDown, Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpDown, Check, ChevronRight, Mail, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
@@ -319,6 +319,7 @@ export default function GuestBrowser({
                   </ul>
                 </section>
               ))}
+              <AnswerKey unset={shown.some((g) => !ownEvent(g))} />
             </div>
             {indexed && <LetterIndex letters={letters} />}
           </div>
@@ -478,6 +479,52 @@ function AnswersCard({
 }
 
 /**
+ * A guest's answer as one small round icon (canvas "Guest list · Round 14",
+ * option A): ✓ coming, an envelope once invited, a dashed envelope still to
+ * invite, ✕ can't come, and a dashed ? for someone not yet day or evening.
+ */
+const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNode }> = {
+  attending: { ring: "bg-ink text-ivory", icon: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
+  pending: { ring: "bg-champagne-100 text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
+  to_invite: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-400", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
+  declined: { ring: "bg-[#EEE9E1] text-[#8A837B]", icon: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
+  unset: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },
+};
+
+function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?: boolean }) {
+  const look = ICON[status ?? "unset"];
+  return (
+    <span
+      aria-hidden
+      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[30px] w-[30px] text-[17px]"}`}
+    >
+      {look.icon}
+    </span>
+  );
+}
+
+/** The key under the list, so the icons explain themselves. */
+function AnswerKey({ unset }: { unset: boolean }) {
+  const items: [Rsvp["status"] | undefined, string][] = [
+    ["attending", "Coming"],
+    ["pending", "Invited"],
+    ["to_invite", "To invite"],
+    ["declined", "Can't come"],
+    ...(unset ? ([[undefined, "Day or evening?"]] as [undefined, string][]) : []),
+  ];
+  return (
+    <p className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-stone">
+      {items.map(([status, word]) => (
+        <span key={word} className="flex items-center gap-1.5">
+          <AnswerIcon status={status} small />
+          {word}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/**
  * One guest in the phone list: initials, their name with "day" or "evening"
  * after it, any roles as pills underneath, and their answer in a word.
  */
@@ -522,7 +569,8 @@ function GuestRow({
           </span>
         )}
       </span>
-      <span className={`shrink-0 text-[13px] ${answer.className}`}>{answer.word}</span>
+      <AnswerIcon status={status} />
+      <span className="sr-only">{answer.word}</span>
       <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
     </button>
   );
@@ -766,7 +814,12 @@ function GuestTable({
                       {rolesOf(g).map((role) => <RolePill key={role} role={role} />)}
                     </span>
                   </td>
-                  <td className={`whitespace-nowrap py-2.5 pr-4 ${answer.className}`}>{answer.word}</td>
+                  <td className={`whitespace-nowrap py-2.5 pr-4 ${answer.className}`}>
+                    <span className="flex items-center gap-2">
+                      <AnswerIcon status={rsvp?.status} small />
+                      {answer.word}
+                    </span>
+                  </td>
                   <td className="py-2.5 pr-4 text-ink">{rsvp?.meal_choice}</td>
                   <td className="py-2.5 pr-4 text-stone">{rsvp?.dietary_notes}</td>
                   <td className="whitespace-nowrap py-2.5 pr-4 text-stone">{g.phone}</td>

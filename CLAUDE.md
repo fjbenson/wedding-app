@@ -93,9 +93,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), role pills
-  underneath only for the bridal party, and their answer to that event as
-  a word on the right (To invite · *Invited* · Coming · Can't come, or
-  "Day or evening?" for guests on no event yet). No
+  underneath only for the bridal party, and their answer as **one small
+  round icon** on the right (canvas Round 14, option A: ✓ on ink coming,
+  envelope on champagne invited, dashed envelope to invite, ✕ on grey
+  can't come, dashed ? not yet day or evening — `AnswerIcon`), with a key
+  under the list. The laptop table shows the icon with its word. No
   household, diet or "child" under the name any more — those are on the
   card, in Filter, and in Sort › Household. Sun/moon icons were tried and
   dropped (looked like light/dark mode); words for now. A letter index

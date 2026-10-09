@@ -49,10 +49,14 @@ export function Answer({ rsvp, event, short = false }: { rsvp?: Rsvp; event?: st
   );
 }
 
-/** A role as a champagne pill: "Bridesmaid". */
+/**
+ * A role as a champagne pill: "Bridesmaid". White with a fine champagne edge:
+ * a pale-gold fill came and went against the page's satin sheen, which runs
+ * through almost the same shade.
+ */
 export function RolePill({ role }: { role: string }) {
   return (
-    <span className="inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-full bg-champagne-100 px-2.5 text-xs font-medium text-champagne-600">
+    <span className="inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-full border border-champagne-400/50 bg-white px-2.5 text-xs font-medium text-champagne-600">
       {role}
     </span>
   );

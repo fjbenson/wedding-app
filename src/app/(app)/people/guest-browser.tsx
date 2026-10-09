@@ -527,7 +527,9 @@ function GuestRow({
   return (
     <button type="button" onClick={onOpen} className="flex min-h-[54px] w-full items-center gap-3 py-1.5 text-left">
       {/* Below 360px wide the name needs the room more than the initials do. */}
-      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cream font-display text-sm text-champagne-600 max-[359px]:hidden">
+      {/* White with a fine edge: the page's satin sheen runs light to dark down
+          the list, and a cream circle came and went against it. */}
+      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
         {initials(guest)}
       </span>
       <span className="min-w-0 flex-1">

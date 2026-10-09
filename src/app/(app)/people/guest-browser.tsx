@@ -8,7 +8,7 @@ import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { inviteAction } from "./rsvp-actions";
 import GuestCard from "./guest-card";
-import { Answer, RolePill, fullName, initials } from "./guest-table";
+import { RolePill, fullName, initials } from "./guest-table";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
@@ -288,8 +288,9 @@ export default function GuestBrowser({
           {/* Laptops: every detail at once. */}
           <GuestTable
             groups={groups}
-            events={events}
             answers={data.answers}
+            ownEvent={ownEvent}
+            showEvent={sort !== "type"}
             onOpen={setOpenId}
           />
         </>
@@ -690,20 +691,25 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
   );
 }
 
-/** Desktop: the same people as a table — roles, every answer, meal, diet, contact. */
+/**
+ * Laptops: the same rows as the phone list, with room for everything — the
+ * name with "day" or "evening", roles, their answer in a word, then meal,
+ * diet and how to reach them.
+ */
 function GuestTable({
   groups,
-  events,
   answers,
+  ownEvent,
+  showEvent,
   onOpen,
 }: {
   groups: Group[];
-  events: WeddingEvent[];
   answers: Map<string, Rsvp[]>;
+  ownEvent: (g: Contact) => WeddingEvent | undefined;
+  showEvent: boolean;
   onOpen: (id: string) => void;
 }) {
   const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-stone";
-  const columns = events.length + 6;
 
   return (
     <div className="mt-6 hidden rounded-[22px] border border-white bg-white/60 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
@@ -712,9 +718,7 @@ function GuestTable({
           <tr className="border-b border-champagne-400">
             <th scope="col" className={head}>Guest</th>
             <th scope="col" className={head}>Role</th>
-            {events.map((e) => (
-              <th key={e.id} scope="col" className={head}>{e.name}</th>
-            ))}
+            <th scope="col" className={head}>Answer</th>
             <th scope="col" className={head}>Meal</th>
             <th scope="col" className={head}>Dietary</th>
             <th scope="col" className={head}>Phone</th>
@@ -725,7 +729,7 @@ function GuestTable({
           <tbody key={group.key}>
             {group.title && (
               <tr>
-                <th colSpan={columns} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
+                <th colSpan={7} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
                   {group.href ? (
                     <Link href={group.href} className="font-display text-lg text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
                       {group.title}
@@ -738,29 +742,28 @@ function GuestTable({
               </tr>
             )}
             {group.guests.map((g) => {
-              const theirs = answers.get(g.id) ?? [];
-              const meal = theirs.find((r) => r.meal_choice)?.meal_choice;
-              const diet = theirs.find((r) => r.dietary_notes)?.dietary_notes;
+              const event = ownEvent(g);
+              // Meal and diet are recorded per event: show the ones for their own.
+              const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;
+              const answer = rsvp ? ANSWER_WORD[rsvp.status] : { word: "Not invited", className: "text-stone/70" };
               return (
                 <tr key={g.id} onClick={() => onOpen(g.id)} className="cursor-pointer border-t border-linen align-middle hover:bg-champagne-100/50">
                   <td className="py-2.5 pr-4">
-                    <button type="button" onClick={() => onOpen(g.id)} className="whitespace-nowrap text-left text-[15px] text-ink hover:underline">
+                    <button type="button" onClick={() => onOpen(g.id)} className="whitespace-nowrap text-left font-display text-[17px] text-ink hover:underline">
                       {fullName(g)}
                     </button>
-                    {g.is_child && <span className="type-meta ml-2">Child</span>}
+                    {event && showEvent && (
+                      <span className="ml-2 whitespace-nowrap font-display text-sm italic text-champagne-600">{eventWord(event)}</span>
+                    )}
                   </td>
                   <td className="py-2.5 pr-4">
                     <span className="flex flex-wrap gap-1">
                       {rolesOf(g).map((role) => <RolePill key={role} role={role} />)}
                     </span>
                   </td>
-                  {events.map((e) => (
-                    <td key={e.id} className="py-2.5 pr-4">
-                      <Answer rsvp={theirs.find((r) => r.event_id === e.id)} />
-                    </td>
-                  ))}
-                  <td className="py-2.5 pr-4 text-ink">{meal}</td>
-                  <td className="py-2.5 pr-4 text-stone">{diet}</td>
+                  <td className={`whitespace-nowrap py-2.5 pr-4 ${answer.className}`}>{answer.word}</td>
+                  <td className="py-2.5 pr-4 text-ink">{rsvp?.meal_choice}</td>
+                  <td className="py-2.5 pr-4 text-stone">{rsvp?.dietary_notes}</td>
                   <td className="whitespace-nowrap py-2.5 pr-4 text-stone">{g.phone}</td>
                   <td className="max-w-56 truncate py-2.5 pr-4 text-stone">{g.email}</td>
                 </tr>

@@ -93,7 +93,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   household, diet or "child" under the name any more — those are on the
   card, in Filter, and in Sort › Household. Sun/moon icons were tried and
   dropped (looked like light/dark mode); words for now. A letter index
-  runs down the side when sorted by first name or surname. Each row: initials,
+  runs down the side when sorted by first name or surname. The laptop
+  table matches: name with day/evening, Role, one Answer column, then
+  meal and diet for their own event, phone, email. Each row: initials,
   name, role pills, a dot per event (filled coming, dashed waiting, grey
   can't come), an arrow. Bridal party is a **filter**, grouped by role (the
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a

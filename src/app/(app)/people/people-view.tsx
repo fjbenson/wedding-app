@@ -34,19 +34,9 @@ export default function PeopleView({
 }) {
   return (
     <>
-      <div className="mt-7 flex items-end justify-between gap-4">
-        <h1 className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
-          {guests.length === 0 ? "No one on the list yet." : "The guest list"}
-        </h1>
-        <Link
-          href="/people/new"
-          aria-label="Add a guest"
-          className="flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-ink text-ivory transition hover:bg-ink/90 lg:w-auto lg:px-5"
-        >
-          <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-          <span className="hidden text-sm lg:inline">Add a guest</span>
-        </Link>
-      </div>
+      <h1 className="type-display mt-7 text-[40px] leading-[1.05] tracking-[-0.02em]">
+        {guests.length === 0 ? "No one on the list yet." : "The guest list"}
+      </h1>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -56,7 +46,17 @@ export default function PeopleView({
       )}
 
       {guests.length === 0 ? (
-        <p className="mt-3 text-sm text-stone">Start with the people you can&apos;t imagine the day without.</p>
+        <>
+          <p className="mt-3 text-sm text-stone">Start with the people you can&apos;t imagine the day without.</p>
+          {/* With guests, "Add a guest" sits just above the list (guest-browser.tsx). */}
+          <Link
+            href="/people/new"
+            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90"
+          >
+            <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+            Add your first guest
+          </Link>
+        </>
       ) : (
         <>
           {events.length === 0 && <StartRsvps />}

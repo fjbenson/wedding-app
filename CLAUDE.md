@@ -84,7 +84,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Children · No address yet, any mix); with filters on, the button goes
   dark with a count and each filter shows as a pill to take off. Beside
   it a **Sort** button: first name, surname, household, or day guests
-  then evening. "Rename" (the picked event) sits at the foot of the list.
+  then evening. "+ Add a guest" sits on the line just above the list (not
+  by the title); "Rename" (the picked event) sits at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), role pills

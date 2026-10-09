@@ -254,10 +254,17 @@ export default function GuestBrowser({
                 </button>
               </span>
             ) : (
-              <span className="type-meta">
+              <span className="type-meta min-w-0 truncate max-[359px]:tracking-[0.12em]">
                 {SHOWING_WORD[showing]} · {SORTS.find((o) => o.key === sort)!.short}
               </span>
             )}
+            <Link
+              href="/people/new"
+              className="flex h-9 shrink-0 items-center gap-1 whitespace-nowrap text-sm text-champagne-600 hover:text-ink"
+            >
+              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+              Add<span className="max-[359px]:sr-only"> a guest</span>
+            </Link>
           </div>
         </div>
       </div>

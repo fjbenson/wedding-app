@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpDown, Check, ChevronRight, Mail, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Mail, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
@@ -240,48 +240,10 @@ export default function GuestBrowser({
               onToggle={toggle}
               onClear={clearAll}
             />
-            <SortMenu sort={sort} onSort={setSort} />
           </div>
 
+          {/* Add on the left; the order on the right, which opens Sort (owner's call, 9 Oct 2026). */}
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
-            {filters.length + guestOf.length > 0 ? (
-              <span className="flex min-w-0 flex-wrap items-center gap-2">
-                {ofCounted
-                  .filter((o) => guestOf.includes(o.id))
-                  .map((o) => (
-                    <button
-                      key={o.id}
-                      type="button"
-                      onClick={() => toggleOf(o.id)}
-                      aria-label={`Take off ${o.label}`}
-                      className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
-                    >
-                      {o.label}
-                      <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
-                    </button>
-                  ))}
-                {filters.map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => toggle(key)}
-                    aria-label={`Take off ${FILTERS.find((f) => f.key === key)!.label}`}
-                    className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
-                  >
-                    {FILTERS.find((f) => f.key === key)!.label}
-                    <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
-                  </button>
-                ))}
-                <button type="button" onClick={clearAll} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-                  Clear
-                </button>
-              </span>
-            ) : (
-              <span className="type-meta min-w-0 truncate max-[359px]:tracking-[0.12em]">
-                {/* Just the order; the numbers card already shows what's picked. */}
-                {SORTS.find((o) => o.key === sort)!.short}
-              </span>
-            )}
             <Link
               href="/people/new"
               className="flex h-9 shrink-0 items-center gap-1 whitespace-nowrap text-sm text-champagne-600 hover:text-ink"
@@ -289,7 +251,41 @@ export default function GuestBrowser({
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Add<span className="max-[359px]:sr-only"> a guest</span>
             </Link>
+            <SortMenu sort={sort} onSort={setSort} />
           </div>
+          {filters.length + guestOf.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+              {ofCounted
+                .filter((o) => guestOf.includes(o.id))
+                .map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => toggleOf(o.id)}
+                    aria-label={`Take off ${o.label}`}
+                    className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                  >
+                    {o.label}
+                    <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                  </button>
+                ))}
+              {filters.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggle(key)}
+                  aria-label={`Take off ${FILTERS.find((f) => f.key === key)!.label}`}
+                  className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                >
+                  {FILTERS.find((f) => f.key === key)!.label}
+                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                </button>
+              ))}
+              <button type="button" onClick={clearAll} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                Clear
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -707,18 +703,17 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
   const { open, setOpen, box } = useDropdown();
 
   return (
-    <div ref={box} className="relative shrink-0">
+    <div ref={box} className="relative min-w-0">
       <button
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={`Sort: ${SORTS.find((o) => o.key === sort)!.label}`}
         onClick={() => setOpen((o) => !o)}
-        className={`flex h-12 w-12 items-center justify-center rounded-full border bg-white text-ink transition ${
-          open ? "border-champagne-400" : "border-linen hover:border-champagne-400"
-        }`}
+        className="type-meta flex h-9 min-w-0 items-center gap-1 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
-        <ArrowUpDown className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        <span className="truncate">{SORTS.find((o) => o.key === sort)!.short}</span>
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
 
       {open && (

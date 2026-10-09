@@ -86,9 +86,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Filter** button that drops down a small menu (Day guests · Evening
   guests, then Bridal party · Dietary needs · Children · No address yet,
   any mix); with filters on, the button goes dark with a count and each
-  filter shows as a pill to take off. Beside it a **Sort** button: first
-  name, surname, household, or day guests then evening. "+ Add a guest"
-  sits on the line just above the list (not by the title); "Rename the
+  filter shows as a pill to take off (on their own line). The line just
+  above the list has "+ Add a guest" on the left and the order ("BY FIRST
+  NAME ⌄") on the right — tapping that is **Sort**: first name, surname,
+  household, or day guests then evening (9 Oct 2026; no separate sort
+  button by the search); "Rename the
   day / evening" and "Add an event" sit at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're

@@ -134,7 +134,8 @@ export default function GuestCard({
 
           <Roles guest={guest} />
 
-          <section className="mt-6">
+          {/* A hairline right across the card between sections. */}
+          <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
             <h3 className="section-label">Details</h3>
             <dl className="mt-1">
               <HouseholdRow guest={guest} households={households} onSave={save} />
@@ -535,7 +536,7 @@ function Roles({ guest }: { guest: Contact }) {
   const offPill = `${pill} border-linen bg-white text-ink hover:border-champagne-400`;
 
   return (
-    <section className="mt-6">
+    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
       <h3 className="section-label">Role on the day</h3>
       <div className="mt-2.5 flex flex-wrap gap-2">
         {theirs.map((role) => (

@@ -61,14 +61,6 @@ const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> =
 /** "The evening" → "evening": the word after a guest's name. */
 export const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCase();
 
-const SHOWING_WORD: Record<Showing, string> = {
-  all: "Everyone",
-  attending: "Coming",
-  to_invite: "To invite",
-  pending: "Invited",
-  declined: "Can't come",
-};
-
 /**
  * The guest list (People › Guests), as settled on the design canvas in
  * "Guest list · Rounds 4–12" (9 Oct 2026). The numbers card — a big "All"
@@ -286,7 +278,8 @@ export default function GuestBrowser({
               </span>
             ) : (
               <span className="type-meta min-w-0 truncate max-[359px]:tracking-[0.12em]">
-                {SHOWING_WORD[showing]} · {SORTS.find((o) => o.key === sort)!.short}
+                {/* Just the order; the numbers card already shows what's picked. */}
+                {SORTS.find((o) => o.key === sort)!.short}
               </span>
             )}
             <Link

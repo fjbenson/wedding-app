@@ -376,10 +376,11 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
 }
 
 const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
+  // All picked the same way, like "Guest of" above (owner's call).
   { status: "to_invite", label: "To invite", on: "bg-white text-ink" },
-  { status: "pending", label: "Invited", on: "bg-white italic text-champagne-600" },
-  { status: "attending", label: "Coming", on: "bg-ink text-ivory" },
-  { status: "declined", label: "Can't come", on: "bg-white text-stone" },
+  { status: "pending", label: "Invited", on: "bg-white text-ink" },
+  { status: "attending", label: "Coming", on: "bg-white text-ink" },
+  { status: "declined", label: "Can't come", on: "bg-white text-ink" },
 ];
 
 /**

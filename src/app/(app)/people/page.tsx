@@ -41,12 +41,7 @@ export default async function PeoplePage({
 
   return (
     <main className="page pb-28 lg:max-w-6xl lg:pb-16">
-      <p className="label">People</p>
-      <PeopleTabs
-        current={current}
-        guestCount={guests.length}
-        supplierCount={suppliers.length}
-      />
+      <PeopleTabs current={current} />
       {current === "suppliers" ? (
         <SupplierList suppliers={suppliers} areas={areaOptions(areaRows)} />
       ) : (

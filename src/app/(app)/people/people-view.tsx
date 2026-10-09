@@ -32,7 +32,7 @@ export default function PeopleView({
 }) {
   return (
     <>
-      <h1 className="type-display mt-7 text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
         {guests.length === 0 ? "No one on the list yet." : "The guest list"}
       </h1>
 

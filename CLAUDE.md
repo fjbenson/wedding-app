@@ -72,7 +72,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
   Notes can be added, edited and removed in place on the area page.
   Suppliers file under the wedding's areas too (plus "Other").
-- **People** (`/people`): two tabs, **Guests · Suppliers**. **Guest list
+- **People** (`/people`): two tabs, **Guests · Suppliers** — a small
+  rounded switch in the top-right corner above the title ("The guest list"
+  / "Suppliers"); no PEOPLE label (canvas "Guest list · Round 13", C with
+  a corner switch, 9 Oct 2026). **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big dark **All**

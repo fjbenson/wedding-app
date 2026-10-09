@@ -30,7 +30,7 @@ export default function SupplierList({ suppliers, areas }: { suppliers: Supplier
 
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
         {suppliers.length === 0 ? "No suppliers yet." : "Suppliers"}
       </h1>
       <p className="mt-2 text-sm text-stone">

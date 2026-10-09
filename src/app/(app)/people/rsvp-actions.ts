@@ -7,9 +7,10 @@ import {
   createEvents,
   deleteEvent,
   deleteRsvp,
-  getRsvp,
   inviteGuestsToEvent,
   listEvents,
+  listRsvps,
+  setContactStatus,
   markAllInvited,
   updateEvent,
   updateRsvp,
@@ -80,65 +81,6 @@ export async function deleteEventAction(eventId: string) {
   redirect("/people");
 }
 
-/** Invites the given guests (a household, or everyone not yet asked). */
-export async function inviteAction(eventId: string, guestIds: string[]) {
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-
-  try {
-    const wanted = new Set(guestIds);
-    const guests = (await listGuests(wedding.id)).filter((g) => wanted.has(g.id));
-    await inviteGuestsToEvent(wedding.id, eventId, guests);
-  } catch (error) {
-    failed("/people", "That didn't invite them.", error);
-  }
-
-  revalidatePath("/people");
-}
-
-/** The quick yes / no / not yet tap beside a name. */
-export async function setStatusAction(rsvpId: string, status: RsvpStatus) {
-  if (!STATUSES.includes(status)) return;
-  try {
-    await updateRsvp(rsvpId, { status });
-  } catch (error) {
-    // The button flips back to what's really saved when the page refreshes.
-    console.error("saving answer failed", error);
-  }
-  revalidatePath("/people");
-}
-
-/** The full answer: yes/no plus meal and dietary needs. */
-export async function saveRsvpAction(rsvpId: string, formData: FormData) {
-  const status = String(formData.get("status")) as RsvpStatus;
-  const rsvp = await getRsvp(rsvpId);
-  if (!rsvp) redirect("/people");
-
-  try {
-    await updateRsvp(rsvpId, {
-      status: STATUSES.includes(status) ? status : rsvp.status,
-      meal_choice: text(formData, "meal_choice"),
-      dietary_notes: text(formData, "dietary_notes"),
-    });
-  } catch (error) {
-    failed(`/people/rsvp/${rsvpId}`, "That didn't save.", error);
-  }
-
-  revalidatePath("/people");
-  redirect(`/people?guest=${rsvp.contact_id}`);
-}
-
-export async function uninviteAction(rsvpId: string, guestId: string) {
-  try {
-    await deleteRsvp(rsvpId);
-  } catch (error) {
-    failed(`/people/rsvp/${rsvpId}`, "That didn't take them off.", error);
-  }
-
-  revalidatePath("/people");
-  redirect(`/people?guest=${guestId}`);
-}
-
 /** Meal and dietary needs for one event, saved from the guest card. */
 export async function saveMealAction(
   rsvpId: string,
@@ -150,18 +92,6 @@ export async function saveMealAction(
   } catch (error) {
     console.error("saving meal failed", error);
     return { error: `That didn't save. ${describe(error)}` };
-  }
-  revalidatePath("/people");
-  return {};
-}
-
-/** Takes a guest off one event, from their card. */
-export async function removeFromEventAction(rsvpId: string): Promise<{ error?: string }> {
-  try {
-    await deleteRsvp(rsvpId);
-  } catch (error) {
-    console.error("removing from event failed", error);
-    return { error: `That didn't take them off. ${describe(error)}` };
   }
   revalidatePath("/people");
   return {};
@@ -180,20 +110,44 @@ export async function markInvitedAction(): Promise<void> {
 }
 
 /**
- * Makes a guest from before "Guest of" existed a day or an evening guest:
- * on that event and every one after it, starting at "To invite".
+ * Day or evening guest, from their card: on that event and every one after
+ * it, off any before it. Their answer carries over (new rows start at "To
+ * invite" for someone who hasn't got one yet).
  */
 export async function setGuestOfAction(guestId: string, eventId: string): Promise<{ error?: string }> {
   const wedding = await getCurrentWedding();
   if (!wedding) return { error: "Your wedding couldn't be found." };
   try {
-    const [events, guests] = await Promise.all([listEvents(wedding.id), listGuests(wedding.id)]);
+    const [events, guests, rsvps] = await Promise.all([
+      listEvents(wedding.id),
+      listGuests(wedding.id),
+      listRsvps(wedding.id),
+    ]);
     const guest = guests.find((g) => g.id === guestId);
     const from = events.findIndex((e) => e.id === eventId);
     if (!guest || from === -1) return { error: "That couldn't be found." };
+
+    const theirs = rsvps.filter((r) => r.contact_id === guestId);
+    const earlier = new Set(events.slice(0, from).map((e) => e.id));
+    for (const r of theirs.filter((r) => earlier.has(r.event_id))) await deleteRsvp(r.id);
     for (const event of events.slice(from)) await inviteGuestsToEvent(wedding.id, event.id, [guest]);
+    const kept = theirs.find((r) => !earlier.has(r.event_id)) ?? theirs[0];
+    if (kept) await setContactStatus(guestId, kept.status);
   } catch (error) {
     console.error("setting day or evening failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}
+
+/** A guest's one answer — To invite, Invited, Coming or Can't come — from their card. */
+export async function setGuestAnswerAction(guestId: string, status: RsvpStatus): Promise<{ error?: string }> {
+  if (!STATUSES.includes(status)) return { error: "That isn't an answer." };
+  try {
+    await setContactStatus(guestId, status);
+  } catch (error) {
+    console.error("saving answer failed", error);
     return { error: `That didn't save. ${describe(error)}` };
   }
   revalidatePath("/people");

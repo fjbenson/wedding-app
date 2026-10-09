@@ -7,9 +7,8 @@ import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
-import { inviteAction, removeFromEventAction, saveMealAction, setGuestOfAction } from "./rsvp-actions";
+import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
 import { fullName } from "./guest-table";
-import StatusButtons from "./status-buttons";
 
 type Saver = () => Promise<{ error?: string }>;
 
@@ -58,6 +57,8 @@ export default function GuestCard({
   }, [onClose]);
 
   const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
+  // Their answer for their own event — the first they're on (day before evening).
+  const own = events.map((e) => rsvps.find((r) => r.event_id === e.id)).find(Boolean);
   const phone = guest.phone?.replace(/\s+/g, "");
 
   return (
@@ -112,20 +113,7 @@ export default function GuestCard({
 
           <Roles guest={guest} />
 
-          {events.length > 0 && (
-            <section className="mt-6">
-              <h3 className="section-label">Answers</h3>
-              {rsvps.length === 0 ? (
-                <GuestOf guest={guest} events={events} />
-              ) : (
-                <ul className="mt-2 rounded-[22px] border border-white bg-white/70 px-4 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)]">
-                  {events.map((event) => (
-                    <EventRow key={event.id} guest={guest} name={name} event={event} rsvp={rsvps.find((r) => r.event_id === event.id)} />
-                  ))}
-                </ul>
-              )}
-            </section>
-          )}
+          {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
 
           <section className="mt-6">
             <h3 className="section-label">Details</h3>
@@ -133,6 +121,12 @@ export default function GuestCard({
               <HouseholdRow guest={guest} households={households} onSave={save} />
               <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
               <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
+              {own && (
+                <>
+                  <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
+                  <TextRow label="Dietary" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
+                </>
+              )}
               <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
               <ChildRow guest={guest} onSave={save} />
             </dl>
@@ -381,103 +375,80 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
   );
 }
 
+const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
+  { status: "to_invite", label: "To invite", on: "bg-white text-ink" },
+  { status: "pending", label: "Invited", on: "bg-white italic text-champagne-600" },
+  { status: "attending", label: "Coming", on: "bg-ink text-ivory" },
+  { status: "declined", label: "Can't come", on: "bg-white text-stone" },
+];
+
 /**
- * One event on the card: ✓ ? ✕ to answer, and under the name their meal
- * and diet — tap to fill them in, or to take them off this event.
+ * Day or evening guest, and their one answer — the same two things their
+ * row in the list shows. A day guest's evening follows along, so there's
+ * no answer per event. Both change with a tap and save behind it.
  */
-function EventRow({ guest, name, event, rsvp }: { guest: Contact; name: string; event: WeddingEvent; rsvp?: Rsvp }) {
-  const [open, setOpen] = useState(false);
-  const [meal, setMeal] = useState(rsvp?.meal_choice ?? "");
-  const [diet, setDiet] = useState(rsvp?.dietary_notes ?? "");
-  const { pending, error, setError, run } = useSaver();
-
-  if (!rsvp) {
-    return (
-      <li className="flex min-h-[60px] items-center gap-2 border-b border-linen py-2 last:border-b-0">
-        <span className="min-w-0 flex-1">
-          <span className="type-item block truncate text-stone">{event.name}</span>
-          <span className="type-meta mt-0.5 block">Not on the list</span>
-        </span>
-        <form action={inviteAction.bind(null, event.id, [guest.id])}>
-          <InlineSubmit label="Add" pendingLabel="Adding…" />
-        </form>
-      </li>
-    );
-  }
-
-  const summary = [rsvp.status === "to_invite" && "To invite", rsvp.meal_choice, rsvp.dietary_notes].filter(Boolean).join(" · ");
-  const start = () => {
-    setMeal(rsvp.meal_choice ?? "");
-    setDiet(rsvp.dietary_notes ?? "");
-    setError(undefined);
-    setOpen((o) => !o);
-  };
+function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: WeddingEvent[]; own?: Rsvp }) {
+  const [of, setOf] = useOptimistic(own?.event_id);
+  const [answer, setAnswer] = useOptimistic(own?.status);
+  const [, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
+  const word = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
+  // One-line sliders, like the switches elsewhere: a cream track, the picked one lifted out.
+  const track = "mt-2.5 grid auto-cols-fr grid-flow-col gap-0.5 rounded-2xl bg-cream p-[3px]";
+  const cell = "h-10 min-w-0 rounded-xl px-1 text-[13px] transition";
+  const lifted = "shadow-[0_1px_4px_rgb(60_50_40/0.14)]";
+  const off = "text-stone hover:text-ink";
 
   return (
-    <li className="border-b border-linen py-2 last:border-b-0">
-      <div className="flex min-h-[44px] items-center gap-2">
-        <button type="button" onClick={start} aria-expanded={open} className="min-w-0 flex-1 text-left hover:text-champagne-600">
-          <span className="type-item block truncate">{event.name}</span>
-          <span className={`mt-0.5 block truncate text-xs ${summary ? "text-stone" : "text-stone/70"}`}>
-            {summary || "Add meal & diet"}
-          </span>
-        </button>
-        <StatusButtons rsvpId={rsvp.id} status={rsvp.status} name={`${name}, ${event.name}`} />
-      </div>
-
-      {open && (
-        <form
-          className="mt-2 space-y-2 pb-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => saveMealAction(rsvp.id, meal, diet), () => setOpen(false));
-          }}
-        >
-          <input autoFocus value={meal} onChange={(e) => setMeal(e.target.value)} onKeyDown={editorKeys(() => undefined, () => setOpen(false), true)} placeholder="Meal, e.g. Beef" aria-label="Meal" className={FIELD} />
-          <input value={diet} onChange={(e) => setDiet(e.target.value)} onKeyDown={editorKeys(() => undefined, () => setOpen(false), true)} placeholder="Dietary needs, e.g. nut allergy" aria-label="Dietary needs" className={FIELD} />
-          {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-          <div className="flex items-center justify-between gap-3">
-            <SaveCancel pending={pending} onCancel={() => setOpen(false)} />
+    <section className="mt-6 space-y-5">
+      <div>
+        <h3 className="section-label">Guest of</h3>
+        <div role="group" aria-label="Guest of" className={track}>
+          {events.map((e) => (
             <button
+              key={e.id}
               type="button"
-              disabled={pending}
-              onClick={() => run(() => removeFromEventAction(rsvp.id))}
-              className="mt-2 text-xs text-stone underline underline-offset-4 hover:text-ink"
+              aria-pressed={of === e.id}
+              onClick={() =>
+                startTransition(async () => {
+                  setOf(e.id);
+                  setError((await setGuestOfAction(guest.id, e.id)).error);
+                })
+              }
+              className={`${cell} ${of === e.id ? `bg-white text-ink ${lifted}` : off}`}
             >
-              Take off {event.name.toLowerCase()}
+              {word(e)}
             </button>
-          </div>
-        </form>
-      )}
-    </li>
-  );
-}
-
-/**
- * For guests added before "Guest of" existed: not on any event yet, so ask
- * which they are. A day guest goes on every event from the day onwards.
- */
-function GuestOf({ guest, events }: { guest: Contact; events: WeddingEvent[] }) {
-  const { pending, error, run } = useSaver();
-
-  return (
-    <div className="mt-2 rounded-2xl border border-dashed border-champagne-400 px-4 py-3">
-      <p className="text-sm text-ink">Are they a day or an evening guest?</p>
-      <div className="mt-2.5 flex flex-wrap gap-2">
-        {events.map((e) => (
-          <button
-            key={e.id}
-            type="button"
-            disabled={pending}
-            onClick={() => run(() => setGuestOfAction(guest.id, e.id))}
-            className="h-10 rounded-full border border-linen bg-white px-4 text-sm text-ink hover:border-champagne-400 disabled:opacity-60"
-          >
-            {e.name}
-          </button>
-        ))}
+          ))}
+        </div>
+        {!own && <p className="mt-2 text-sm text-champagne-600">Are they a day or an evening guest?</p>}
       </div>
-      {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
-    </div>
+
+      {own && (
+        <div>
+          <h3 className="section-label">Answer</h3>
+          <div role="group" aria-label="Answer" className={track}>
+            {ANSWERS.map((a) => (
+              <button
+                key={a.status}
+                type="button"
+                aria-pressed={answer === a.status}
+                onClick={() =>
+                  startTransition(async () => {
+                    setAnswer(a.status);
+                    setError((await setGuestAnswerAction(guest.id, a.status)).error);
+                  })
+                }
+                className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
+    </section>
   );
 }
 

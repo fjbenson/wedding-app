@@ -255,3 +255,16 @@ export async function getRsvpSummary(weddingId: string, eventId?: string) {
     pending: rsvps.filter((r) => r.status === "pending").length,
   };
 }
+
+/** One guest's answer, set across every event they're on (a day guest's evening follows the day). */
+export async function setContactStatus(contactId: string, status: RsvpStatus): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("rsvps")
+    .update({
+      status,
+      responded_at: status === "pending" || status === "to_invite" ? null : new Date().toISOString(),
+    })
+    .eq("contact_id", contactId);
+  if (error) throw error;
+}

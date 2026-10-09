@@ -91,7 +91,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), role pills
   underneath only for the bridal party, and their answer to that event as
-  a word on the right (Coming · *Waiting* · Can't come · Not invited). No
+  a word on the right (To invite · *Invited* · Coming · Can't come, or
+  "Day or evening?" for guests on no event yet). No
   household, diet or "child" under the name any more — those are on the
   card, in Filter, and in Sort › Household. Sun/moon icons were tried and
   dropped (looked like light/dark mode); words for now. A letter index
@@ -103,13 +104,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  text/call/email, role pills to tap on or off, ✓ ? ✕ per event (or
-  "Invite"). **Everything is edited on the card** (9 Oct 2026, no edit
-  page): tap the name, household, phone, email, notes or the child switch
-  to change it in place; tap an event for its meal and diet (or to take
-  them off it); "Remove from the guest list" asks on the card. Saves go
-  through `updateGuestAction` / `saveMealAction` / `removeFromEventAction`,
-  which return an error message instead of redirecting. `/people/[id]` is
+  text/call/email, role pills to tap on or off, then **Guest of** (Day /
+  Evening) and one **Answer** (To invite · Invited · Coming · Can't come)
+  as sliders — no answer per event: `setGuestAnswerAction` sets all their
+  RSVPs, `setGuestOfAction` moves them between day and evening keeping the
+  answer. **Everything is edited on the card** (9 Oct 2026, no edit
+  page): tap the name, household, phone, email, meal, dietary, notes or
+  the child switch to change it in place (meal and diet live on their own
+  event's RSVP); "Remove from the guest list" asks on the card. Saves go
+  through `updateGuestAction` / `saveMealAction` and return an error
+  message instead of redirecting. The old per-event RSVP page is gone. `/people/[id]` is
   now suppliers only — a guest's id there redirects to their card, and
   household/invitation links open the card. Adding a guest still uses the
   form (`/people/new`). Search, filters and

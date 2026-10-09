@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -10,8 +10,11 @@ import { inviteAction } from "./rsvp-actions";
 import GuestCard from "./guest-card";
 import { Answer, AnswerDot, DotKey, RolePill, answerWord, fullName, initials, shortEvent } from "./guest-table";
 
-export type GuestFilter = "all" | "party" | "waiting" | "declined" | "dietary" | "children" | "noaddress";
+/** The filters in the Filter menu. More than one can be on: they narrow together. */
+export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
+/** Which answer the numbers card is showing, for the picked event. */
+type Showing = "all" | Rsvp["status"];
 
 export interface HouseholdSummary {
   id: string;
@@ -31,12 +34,27 @@ interface Group {
 const byName = (a: Contact, b: Contact) =>
   fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" });
 
+const FILTERS: { key: GuestFilter; label: string }[] = [
+  { key: "party", label: "Bridal party" },
+  { key: "dietary", label: "Dietary needs" },
+  { key: "children", label: "Children" },
+  { key: "noaddress", label: "No address yet" },
+];
+
+const SHOWING_WORD: Record<Showing, string> = {
+  all: "Everyone",
+  attending: "Coming",
+  pending: "Waiting",
+  declined: "Can't come",
+};
+
 /**
- * The guest list (People › Guests), designed on the canvas as "Guest list ·
- * Round 2". The answers card (one event at a time), search, filters, then
- * everyone A–Z with a letter index — or grouped by household, so a couple
- * with different surnames sit together. Phones get compact rows; laptops a
- * full table. Tapping anyone opens their card (guest-card.tsx).
+ * The guest list (People › Guests), as settled on the design canvas in
+ * "Guest list · Rounds 4–7" (9 Oct 2026). The event switch, then the numbers
+ * card — a big "All" and the breakdown beside it, each one tappable to show
+ * just those people — then search with a Filter menu, then everyone A–Z with
+ * a letter index, or grouped by household. Phones get compact rows; laptops
+ * a full table. Tapping anyone opens their card (guest-card.tsx).
  *
  * Search, filters and the view are kept here rather than in the address, so
  * they answer instantly and survive the card opening and closing.
@@ -48,7 +66,7 @@ export default function GuestBrowser({
   rsvps,
   initialEventId,
   initialGuestId,
-  initialFilter = "all",
+  initialFilter,
   initialView = "az",
 }: {
   guests: Contact[];
@@ -62,7 +80,8 @@ export default function GuestBrowser({
 }) {
   const [eventId, setEventId] = useState(initialEventId);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<GuestFilter>(initialFilter);
+  const [showing, setShowing] = useState<Showing>("all");
+  const [filters, setFilters] = useState<GuestFilter[]>(initialFilter ? [initialFilter] : []);
   const [view, setView] = useState<GuestView>(initialView);
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
@@ -85,30 +104,19 @@ export default function GuestBrowser({
   const dietOf = (g: Contact) => data.answers.get(g.id)?.find((r) => r.dietary_notes)?.dietary_notes ?? null;
 
   const tests: Record<GuestFilter, (g: Contact) => boolean> = {
-    all: () => true,
     party: (g) => rolesOf(g).length > 0,
-    waiting: (g) => statusFor(g, event) === "pending",
-    declined: (g) => statusFor(g, event) === "declined",
     dietary: (g) => Boolean(dietOf(g)),
     children: (g) => g.is_child,
     noaddress: (g) => !g.household_id || !data.household.get(g.household_id)?.hasAddress,
   };
-  const filters: { key: GuestFilter; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "party", label: "Bridal party" },
-    { key: "waiting", label: "Waiting" },
-    { key: "declined", label: "Can't come" },
-    { key: "dietary", label: "Dietary" },
-    { key: "children", label: "Children" },
-    { key: "noaddress", label: "No address" },
-  ];
-  const counted = filters
-    .map((f) => ({ ...f, count: guests.filter(tests[f.key]).length }))
-    .filter((f) => f.key === "all" || f.key === filter || f.count > 0);
+  const counted = FILTERS.map((f) => ({ ...f, count: guests.filter(tests[f.key]).length }));
+  const toggle = (key: GuestFilter) =>
+    setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const shown = guests
-    .filter(tests[filter])
+    .filter((g) => showing === "all" || statusFor(g, event) === showing)
+    .filter((g) => filters.every((f) => tests[f](g)))
     .filter((g) => {
       if (words.length === 0) return true;
       const hay = [fullName(g), g.household_id && data.household.get(g.household_id)?.name, ...rolesOf(g)]
@@ -121,7 +129,7 @@ export default function GuestBrowser({
   // How the list is grouped: by role for the bridal party, by household if
   // asked, otherwise one A–Z run.
   let groups: Group[];
-  if (filter === "party") {
+  if (filters.includes("party")) {
     const roles = [...new Set(shown.flatMap(rolesOf))].sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b));
     groups = roles.map((role) => ({ key: role, title: role, guests: shown.filter((g) => rolesOf(g).includes(role)) }));
   } else if (view === "households") {
@@ -144,7 +152,7 @@ export default function GuestBrowser({
   const metaOf = (g: Contact) => {
     const housemates = g.household_id ? (data.members.get(g.household_id) ?? []) : [];
     const home =
-      view === "households" || filter === "party" || housemates.length < 2
+      view === "households" || filters.includes("party") || housemates.length < 2
         ? null
         : housemates.length === 2
           ? `With ${fullName(housemates.find((m) => m.id !== g.id)!)}`
@@ -159,68 +167,72 @@ export default function GuestBrowser({
   const firstOfLetter = new Set(
     az ? [...letters].map((l) => shown.find((g) => g.first_name.charAt(0).toUpperCase() === l)!.id) : [],
   );
+  const uninvited = event ? guests.filter((g) => !statusFor(g, event)) : [];
 
   return (
     <>
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
-        {event && <AnswersCard guests={guests} households={households.length} events={events} event={event} statusFor={statusFor} onPick={setEventId} />}
+        {event && (
+          <div>
+            <EventSwitch events={events} event={event} onPick={setEventId} />
+            {uninvited.length > 0 && <InviteStrip event={event} uninvited={uninvited} everyone={uninvited.length === guests.length} />}
+            <AnswersCard
+              total={guests.length}
+              homes={households.length}
+              counts={{
+                attending: guests.filter((g) => statusFor(g, event) === "attending").length,
+                pending: guests.filter((g) => statusFor(g, event) === "pending").length,
+                declined: guests.filter((g) => statusFor(g, event) === "declined").length,
+              }}
+              showing={showing}
+              onShow={setShowing}
+            />
+          </div>
+        )}
 
         <div className="mt-5 lg:mt-0">
-          <label className="flex h-12 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
-            <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-            <span className="sr-only">Find a guest</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Find a guest, household or role"
-              className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
-            />
-          </label>
-
-          {/* Scrolls sideways within itself on a phone, never the page. */}
-          <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
-            {counted.map((f) => {
-              const on = f.key === filter;
-              return (
-                <button
-                  key={f.key}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => setFilter(f.key)}
-                  className={`h-9 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[13px] transition ${
-                    on ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
-                  }`}
-                >
-                  {f.label} <span className={on ? "text-ivory/70" : "text-stone"}>{f.count}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            <label className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+              <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+              <span className="sr-only">Find a guest</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find a guest or household"
+                className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+              />
+            </label>
+            <FilterMenu filters={counted} on={filters} onToggle={toggle} onClear={() => setFilters([])} view={view} onView={setView} />
           </div>
 
-          <div className="mt-5 flex items-center justify-between gap-3 px-1">
-            {filter === "party" ? (
-              <span className="type-meta">By role</span>
-            ) : (
-              <span role="group" aria-label="Order" className="flex gap-4">
-                {(["az", "households"] as const).map((v) => (
+          <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
+            {filters.length > 0 ? (
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
+                {filters.map((key) => (
                   <button
-                    key={v}
+                    key={key}
                     type="button"
-                    aria-pressed={view === v}
-                    onClick={() => setView(v)}
-                    className={`type-meta py-2 ${
-                      view === v ? "text-ink underline decoration-champagne-400 underline-offset-[6px]" : "hover:text-ink"
-                    }`}
+                    onClick={() => toggle(key)}
+                    aria-label={`Take off ${FILTERS.find((f) => f.key === key)!.label}`}
+                    className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
                   >
-                    {v === "az" ? "A–Z" : "Households"}
+                    {FILTERS.find((f) => f.key === key)!.label}
+                    <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
                   </button>
                 ))}
+                <button type="button" onClick={() => setFilters([])} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                  Clear
+                </button>
+              </span>
+            ) : (
+              <span className="type-meta">
+                {SHOWING_WORD[showing]} · {view === "az" ? "A–Z" : "Households"}
               </span>
             )}
             {/* Over the dots on a phone: which event each one is. */}
             {events.length > 0 && (
-              <span className={`flex gap-3.5 text-xs text-stone lg:hidden ${indexed ? "pr-12" : "pr-7"}`} aria-hidden>
+              <span className={`flex shrink-0 gap-3.5 text-xs text-stone lg:hidden ${indexed ? "pr-12" : "pr-7"}`} aria-hidden>
                 {events.map((e) => (
                   <span key={e.id} className="w-3.5 text-center">
                     {shortEvent(e.name).charAt(0)}
@@ -288,6 +300,18 @@ export default function GuestBrowser({
         </>
       )}
 
+      {/* The card no longer carries these, so they sit at the foot of the list. */}
+      <p className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+        <Link href="/invitations" className="label hover:text-ink">
+          Invitations ›
+        </Link>
+        {event && (
+          <Link href={`/people/events/${event.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
+            Rename {event.name.toLowerCase()}
+          </Link>
+        )}
+      </p>
+
       {open && (
         <GuestCard
           guest={open}
@@ -345,93 +369,248 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
   );
 }
 
-/** One event's totals, a switch between events, and inviting whoever's left. */
-function AnswersCard({
-  guests,
-  households,
+/** Day | Evening (or the couple's own events), and + to add one. */
+function EventSwitch({
   events,
   event,
-  statusFor,
   onPick,
 }: {
-  guests: Contact[];
-  households: number;
   events: WeddingEvent[];
   event: WeddingEvent;
-  statusFor: (g: Contact, e: WeddingEvent) => Rsvp["status"] | undefined;
   onPick: (id: string) => void;
 }) {
-  const count = (status: Rsvp["status"]) => guests.filter((g) => statusFor(g, event) === status).length;
-  const uninvited = guests.filter((g) => !statusFor(g, event));
-  const figures = [
-    { n: count("attending"), label: "Coming", tone: "text-ink" },
-    { n: count("pending"), label: "Waiting", tone: "text-champagne-600" },
-    { n: count("declined"), label: "Can't come", tone: "text-stone" },
+  return (
+    <div className="flex items-center gap-1">
+      <span role="group" aria-label="Which event" className="flex min-w-0 rounded-full bg-cream p-[3px]">
+        {events.map((e) => (
+          <button
+            key={e.id}
+            type="button"
+            aria-pressed={e.id === event.id}
+            onClick={() => onPick(e.id)}
+            className={`h-8 max-w-[8rem] truncate rounded-full px-4 text-[13px] transition ${
+              e.id === event.id ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
+            }`}
+          >
+            {events.length > 1 ? e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase()) : e.name}
+          </button>
+        ))}
+      </span>
+      <Link
+        href="/people/events/new"
+        aria-label="Add an event"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-champagne-600 hover:bg-champagne-100"
+      >
+        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+      </Link>
+    </div>
+  );
+}
+
+/** Only when someone isn't invited to the picked event: invite them all at once. */
+function InviteStrip({ event, uninvited, everyone }: { event: WeddingEvent; uninvited: Contact[]; everyone: boolean }) {
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-dashed border-champagne-400 px-3.5 py-2.5">
+      <p className="min-w-0 flex-1 text-sm text-ink">
+        {everyone ? `No one's invited to ${event.name.toLowerCase()} yet.` : `${uninvited.length} not invited to ${event.name.toLowerCase()}.`}
+      </p>
+      <form action={inviteAction.bind(null, event.id, uninvited.map((g) => g.id))}>
+        <InlineSubmit label={everyone ? "Invite all" : "Invite them"} pendingLabel="Inviting…" />
+      </form>
+    </div>
+  );
+}
+
+/**
+ * The numbers for the picked event: everyone on the left, big, and the
+ * breakdown beside it. Each one is a button — tap Waiting to see just who
+ * hasn't answered, tap it again (or All) to see everyone.
+ */
+function AnswersCard({
+  total,
+  homes,
+  counts,
+  showing,
+  onShow,
+}: {
+  total: number;
+  homes: number;
+  counts: Record<Rsvp["status"], number>;
+  showing: Showing;
+  onShow: (s: Showing) => void;
+}) {
+  const all = showing === "all";
+  const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
+    { status: "attending", label: "Coming", tone: "text-ink" },
+    { status: "pending", label: "Waiting", tone: "text-champagne-600" },
+    { status: "declined", label: "Can't come", tone: "text-stone" },
   ];
 
   return (
-    <section className="rounded-[22px] border border-white/85 bg-white/45 px-[18px] pb-4 pt-3.5 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)] backdrop-blur-xl">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="type-meta">
-          {guests.length} {guests.length === 1 ? "guest" : "guests"} · {households} {households === 1 ? "home" : "homes"}
-        </h2>
-        <span className="flex items-center gap-1">
-          <span role="group" aria-label="Which event" className="flex rounded-full bg-cream p-[3px]">
-            {events.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                aria-pressed={e.id === event.id}
-                onClick={() => onPick(e.id)}
-                className={`h-8 max-w-[7.5rem] truncate rounded-full px-3.5 text-[13px] transition ${
-                  e.id === event.id ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
-                }`}
-              >
-                {events.length > 1 ? e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase()) : e.name}
-              </button>
-            ))}
+    <section
+      aria-label="Answers"
+      className="mt-3 grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2.5 rounded-[22px] border border-white/85 bg-white/45 p-3 pb-2 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)] backdrop-blur-xl sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3 sm:p-3.5 sm:pb-2.5"
+    >
+      <button
+        type="button"
+        aria-pressed={all}
+        onClick={() => onShow("all")}
+        className={`mb-1 flex flex-col justify-between rounded-2xl p-3 text-left transition ${
+          all ? "bg-ink text-ivory" : "bg-cream text-ink hover:bg-champagne-100"
+        }`}
+      >
+        <span className={`type-meta ${all ? "text-ivory/75" : ""}`}>All</span>
+        <span>
+          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-ivory" : ""}`}>{total}</span>
+          <span className={`mt-1.5 block text-xs ${all ? "text-ivory/75" : "text-stone"}`}>
+            {total === 1 ? "guest" : "guests"} · {homes} {homes === 1 ? "home" : "homes"}
           </span>
-          <Link
-            href="/people/events/new"
-            aria-label="Add an event"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-champagne-600 hover:bg-champagne-100"
-          >
-            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          </Link>
         </span>
-      </div>
+      </button>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {figures.map((f) => (
-          <div key={f.label}>
-            <p className={`type-figure text-[38px] leading-none ${f.tone}`}>{f.n}</p>
-            <p className="type-meta mt-1.5">{f.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {uninvited.length > 0 && (
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-champagne-400 px-3.5 py-2.5">
-          <p className="min-w-0 flex-1 text-sm text-ink">
-            {uninvited.length === guests.length
-              ? `No one's invited to ${event.name.toLowerCase()} yet.`
-              : `${uninvited.length} not invited to ${event.name.toLowerCase()}.`}
-          </p>
-          <form action={inviteAction.bind(null, event.id, uninvited.map((g) => g.id))}>
-            <InlineSubmit label={uninvited.length === guests.length ? "Invite all" : "Invite them"} pendingLabel="Inviting…" />
-          </form>
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-linen pt-3">
-        <Link href="/invitations" className="label hover:text-ink">
-          Invitations ›
-        </Link>
-        <Link href={`/people/events/${event.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-          Rename
-        </Link>
+      <div className="flex min-w-0 flex-col justify-center">
+        {rows.map((row, i) => {
+          const on = showing === row.status;
+          return (
+            <button
+              key={row.status}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onShow(on ? "all" : row.status)}
+              className={`flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-left sm:gap-2.5 sm:px-2.5 transition ${
+                on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "hover:bg-white/60"
+              } ${i > 0 && !on && showing !== rows[i - 1].status ? "border-t border-linen" : "border-t border-transparent"}`}
+            >
+              <span className={`type-figure min-w-[2.25rem] text-[26px] leading-none tabular-nums ${row.tone}`}>{counts[row.status]}</span>
+              <span className={`type-meta min-w-0 flex-1 leading-tight tracking-[0.12em] ${on ? "text-ink" : ""}`}>{row.label}</span>
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-stone" strokeWidth={2} aria-hidden />
+            </button>
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+/**
+ * The Filter button beside the search, and the small menu it drops down:
+ * what to show (any mix of these) and how to arrange the list. The list
+ * changes as you tick, so there's no "apply" step.
+ */
+function FilterMenu({
+  filters,
+  on,
+  onToggle,
+  onClear,
+  view,
+  onView,
+}: {
+  filters: { key: GuestFilter; label: string; count: number }[];
+  on: GuestFilter[];
+  onToggle: (key: GuestFilter) => void;
+  onClear: () => void;
+  view: GuestView;
+  onView: (v: GuestView) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  // Tapping anywhere else, or Escape, closes it.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={box} className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={on.length > 0 ? `Filter, ${on.length} on` : "Filter"}
+        onClick={() => setOpen((o) => !o)}
+        className={`relative flex h-12 w-12 items-center justify-center rounded-full border transition ${
+          on.length > 0 ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
+        }`}
+      >
+        <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        {on.length > 0 && (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400 px-1 text-[11px] font-semibold text-white"
+          >
+            {on.length}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[17rem] rounded-[20px] border border-linen bg-white px-4 pb-3.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <div className="flex items-baseline justify-between py-1">
+            <span className="section-label">Show only</span>
+            {on.length > 0 && (
+              <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                Clear
+              </button>
+            )}
+          </div>
+          <ul>
+            {filters.map((f) => {
+              const ticked = on.includes(f.key);
+              return (
+                <li key={f.key} className="border-t border-linen first:border-t-0">
+                  <button
+                    type="button"
+                    role="menuitemcheckbox"
+                    aria-checked={ticked}
+                    onClick={() => onToggle(f.key)}
+                    className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                  >
+                    <span
+                      aria-hidden
+                      className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                        ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                      }`}
+                    >
+                      {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                    </span>
+                    <span className="flex-1">{f.label}</span>
+                    <span className="text-[13px] text-stone">{f.count}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-2 border-t border-linen pt-3">
+            <span className="section-label block">Arrange by</span>
+            <span role="group" aria-label="Arrange by" className="mt-2 grid grid-cols-2 rounded-full bg-cream p-[3px]">
+              {(["az", "households"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={view === v}
+                  onClick={() => onView(v)}
+                  className={`h-8 rounded-full text-[13px] transition ${
+                    view === v ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
+                  }`}
+                >
+                  {v === "az" ? "A–Z" : "Households"}
+                </button>
+              ))}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

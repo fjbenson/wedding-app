@@ -74,10 +74,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers**. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
-  `guest-browser.tsx` — an answers card (coming / waiting / can't come for
-  one event at a time, a switch between events, "invite the rest"), search,
-  filter pills (All · Bridal party · Waiting · Can't come · Dietary ·
-  Children · No address), then everyone **A–Z by first name** with a letter
+  `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
+  Rounds 3–7"): the Day / Evening switch (+ to add an event) sits above
+  the numbers card; "invite the rest" appears under it only when someone
+  isn't invited. The card is a big dark **All** with the breakdown beside
+  it (Coming · Waiting · Can't come, each with an arrow) — every one is a
+  button that shows just those people. Then search with a **Filter**
+  button that drops down a small menu (Bridal party · Dietary needs ·
+  Children · No address yet, any mix, plus Arrange by A–Z / Households);
+  with filters on, the button goes dark with a count and each filter
+  shows as a pill to take off. Invitations and "Rename" moved to the foot
+  of the list. Then everyone **A–Z by first name** with a letter
   index down the side, or **Households** (so a couple with different
   surnames sit together; in A–Z each shows "With …"). Each row: initials,
   name, role pills, a dot per event (filled coming, dashed waiting, grey

@@ -114,8 +114,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  text/call/email, then one **RSVP** (To invite · Invited · Coming ·
-  Can't come) and **Guest of** (Day / Evening) as sliders, then **Role on
+  text/call/email, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
+  Can't come) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
   Bridesmaid, Best man, Groomsman), and "More" to open the rest plus "Your
   own" ("Less" folds it away) — then Details (Meal = the dish they picked;

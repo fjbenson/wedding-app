@@ -484,29 +484,6 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
 
   return (
     <section className="mt-6 space-y-5">
-      {own && (
-        <div>
-          <h3 className="section-label">RSVP</h3>
-          <div role="group" aria-label="RSVP" className={track}>
-            {ANSWERS.map((a) => (
-              <button
-                key={a.status}
-                type="button"
-                aria-pressed={answer === a.status}
-                onClick={() =>
-                  startTransition(async () => {
-                    setAnswer(a.status);
-                    setError((await safely(() => setGuestAnswerAction(guest.id, a.status))).error);
-                  })
-                }
-                className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
       <div>
         <h3 className="section-label">Guest of</h3>
         <div role="group" aria-label="Guest of" className={track}>
@@ -530,6 +507,29 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
         {!own && <p className="mt-2 text-sm text-champagne-600">Are they a day or an evening guest?</p>}
       </div>
 
+      {own && (
+        <div>
+          <h3 className="section-label">RSVP</h3>
+          <div role="group" aria-label="RSVP" className={track}>
+            {ANSWERS.map((a) => (
+              <button
+                key={a.status}
+                type="button"
+                aria-pressed={answer === a.status}
+                onClick={() =>
+                  startTransition(async () => {
+                    setAnswer(a.status);
+                    setError((await safely(() => setGuestAnswerAction(guest.id, a.status))).error);
+                  })
+                }
+                className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {error && <p role="alert" className="text-sm text-ink">{error}</p>}
     </section>
   );

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpDown, Check, ChevronRight, Mail, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpDown, Check, ChevronRight, Mail, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
@@ -520,6 +520,12 @@ function AnswerKey({ unset }: { unset: boolean }) {
           {word}
         </span>
       ))}
+      <span className="flex items-center gap-1.5">
+        <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded-full bg-champagne-400">
+          <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+        </span>
+        Has a role
+      </span>
     </p>
   );
 }
@@ -552,8 +558,14 @@ export function GuestRow({
       {/* Below 360px wide the name needs the room more than the initials do. */}
       {/* White with a fine edge: the page's satin sheen runs light to dark down
           the list, and a cream circle came and went against it. */}
-      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
+      <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
         {initials(guest)}
+        {/* A gold star for anyone with a role (canvas Round 15, option 1). */}
+        {roles.length > 0 && (
+          <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
+            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+          </span>
+        )}
       </span>
       <span className="min-w-0 flex-1">
         {/* Inline, so a long name wraps rather than being cut short. */}
@@ -562,12 +574,12 @@ export function GuestRow({
           {event && showEvent && (
             <span className="ml-2 whitespace-nowrap font-display text-sm italic text-champagne-600">{eventWord(event)}</span>
           )}
+          {/* Where the initials are hidden, the star sits after the name instead. */}
+          {roles.length > 0 && (
+            <Star aria-hidden className="ml-1.5 inline h-3 w-3 fill-champagne-400 align-baseline text-champagne-400 min-[360px]:hidden" strokeWidth={1.4} />
+          )}
         </span>
-        {roles.length > 0 && (
-          <span className="mt-1 flex flex-wrap gap-1.5">
-            {roles.map((role) => <RolePill key={role} role={role} />)}
-          </span>
-        )}
+        {roles.length > 0 && <span className="sr-only">Role: {roles.join(", ")}</span>}
       </span>
       <AnswerIcon status={status} />
       <span className="sr-only">{answer.word}</span>

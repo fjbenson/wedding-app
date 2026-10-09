@@ -92,8 +92,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   day / evening" and "Add an event" sit at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
-  invited to — events come in date order — so no new column), role pills
-  underneath only for the bridal party, and their answer as **one small
+  invited to — events come in date order — so no new column), a **gold
+  star badge on the initials** for anyone with a role (canvas Round 15,
+  option 1 — no role pill under the name any more; the role itself is on
+  the card and in Filter › Bridal party; the laptop table keeps its Role
+  column), and their answer as **one small
   round icon** on the right (canvas Round 14, option A: ✓ on ink coming,
   envelope on champagne invited, dashed envelope to invite, ✕ on grey
   can't come, dashed ? not yet day or evening — `AnswerIcon`), with a key

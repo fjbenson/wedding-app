@@ -115,7 +115,7 @@ export default function HouseholdView({
             const meal = theirs.find((r) => r.meal_choice)?.meal_choice;
             return (
               <li key={person.id} className="border-b border-linen last:border-b-0">
-                <Link href={`/people/${person.id}`} className="flex items-center gap-3 py-4 hover:bg-cream/60">
+                <Link href={`/people?guest=${person.id}`} className="flex items-center gap-3 py-4 hover:bg-cream/60">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15px] text-ink">
                       {[person.first_name, person.last_name].filter(Boolean).join(" ")}

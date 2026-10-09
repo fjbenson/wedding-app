@@ -1,18 +1,16 @@
-import { notFound } from "next/navigation";
-import { getContact, listHouseholds } from "@/lib/db/contacts";
+import { notFound, redirect } from "next/navigation";
+import { getContact } from "@/lib/db/contacts";
 import { getSupplier } from "@/lib/db/suppliers";
 import { listAreas } from "@/lib/db/areas";
 import { areaOptions, supplierCategories } from "@/lib/areas";
-import { deleteGuestAction, saveGuestAction } from "../actions";
 import { deleteSupplierAction, saveSupplierAction } from "../supplier-actions";
 import FormPage from "@/components/form-page";
 import { RemoveButton } from "@/components/form-bits";
-import GuestForm from "../guest-form";
 import SupplierForm from "../supplier-form";
 
 export const metadata = { title: "People — Wedding App" };
 
-/** One person: a guest's details, or a supplier's (screen 13). */
+/** One supplier's details (screen 13). A guest's link opens their card in the list. */
 export default async function EditPersonPage({
   params,
   searchParams,
@@ -52,22 +50,7 @@ export default async function EditPersonPage({
     );
   }
 
-  const households = await listHouseholds(person.wedding_id);
-
-  return (
-    <FormPage backHref="/people" backLabel="People" title={name} error={error} detail={detail}>
-      <GuestForm
-        action={saveGuestAction.bind(null, person.id)}
-        households={households}
-        guest={person}
-      />
-      <div className="mt-6 border-t border-linen pt-4">
-        <RemoveButton
-          action={deleteGuestAction.bind(null, person.id)}
-          label="Remove from the guest list"
-          question={`Remove ${name} from the guest list?`}
-        />
-      </div>
-    </FormPage>
-  );
+  // A guest is edited on their card in the list now (owner's call, 9 Oct
+  // 2026), so an old link to here opens that card instead.
+  redirect(`/people?guest=${person.id}`);
 }

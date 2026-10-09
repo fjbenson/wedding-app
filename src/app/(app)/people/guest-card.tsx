@@ -2,29 +2,42 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronRight, Mail, MessageSquare, Phone, Plus, X } from "lucide-react";
+import { Mail, MessageSquare, Pencil, Phone, Plus, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
-import { setRolesAction } from "./actions";
-import { inviteAction } from "./rsvp-actions";
+import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
+import { inviteAction, removeFromEventAction, saveMealAction } from "./rsvp-actions";
 import { fullName } from "./guest-table";
 import StatusButtons from "./status-buttons";
 
+type Saver = () => Promise<{ error?: string }>;
+
+/** A small down-arrow for the household picker, drawn in stone. */
+const CHEVRON =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B655E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")";
+
+const FIELD =
+  "w-full rounded-xl border border-linen bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
+
 /**
  * One guest, over the list: a sheet that slides up on a phone, a panel on
- * the right on a laptop. Answers and roles change with a tap; everything
- * else is one link away (Edit, or an event's meal and dietary notes).
+ * the right on a laptop. Everything about them is changed right here — tap
+ * a detail to edit it, tap an answer or a role to change it — so there's no
+ * separate edit page once someone is on the list (owner's call, 9 Oct 2026).
  */
 export default function GuestCard({
   guest,
   household,
+  households,
   events,
   rsvps,
   onClose,
 }: {
   guest: Contact;
   household: { id: string; name: string } | null;
+  /** Every household, to move them between. */
+  households: { id: string; name: string }[];
   events: WeddingEvent[];
   /** This guest's answers. */
   rsvps: Rsvp[];
@@ -44,15 +57,7 @@ export default function GuestCard({
     };
   }, [onClose]);
 
-  const meal = rsvps.find((r) => r.meal_choice)?.meal_choice;
-  const diet = rsvps.find((r) => r.dietary_notes)?.dietary_notes;
-  const facts = [
-    ["Meal", meal],
-    ["Dietary", diet],
-    ["Phone", guest.phone],
-    ["Email", guest.email],
-    ["Notes", guest.notes],
-  ].filter(([, value]) => value) as [string, string][];
+  const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
   const phone = guest.phone?.replace(/\s+/g, "");
 
   return (
@@ -70,15 +75,8 @@ export default function GuestCard({
                   {household.name} ›
                 </Link>
               )}
-              <h2 className="type-display mt-1.5 text-[34px] leading-[1.05]">{name}</h2>
-              {guest.is_child && <p className="type-meta mt-2">Child</p>}
+              <NameEditor guest={guest} onSave={save} />
             </div>
-            <Link
-              href={`/people/${guest.id}`}
-              className="flex h-11 shrink-0 items-center rounded-full border border-linen bg-white px-4 text-sm text-ink hover:border-champagne-400"
-            >
-              Edit
-            </Link>
             <button
               type="button"
               onClick={onClose}
@@ -118,49 +116,360 @@ export default function GuestCard({
             <section className="mt-6">
               <h3 className="section-label">Answers</h3>
               <ul className="mt-2 rounded-[22px] border border-white bg-white/70 px-4 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)]">
-                {events.map((event) => {
-                  const rsvp = rsvps.find((r) => r.event_id === event.id);
-                  return (
-                    <li key={event.id} className="flex min-h-[60px] items-center gap-2 border-b border-linen py-2 last:border-b-0">
-                      {rsvp ? (
-                        <>
-                          <Link href={`/people/rsvp/${rsvp.id}`} className="min-w-0 flex-1 hover:text-champagne-600">
-                            <span className="type-item block truncate">{event.name}</span>
-                            <span className="type-meta mt-0.5 flex items-center gap-1">
-                              Meal &amp; diet <ChevronRight className="h-3 w-3" strokeWidth={2} aria-hidden />
-                            </span>
-                          </Link>
-                          <StatusButtons rsvpId={rsvp.id} status={rsvp.status} name={`${name}, ${event.name}`} />
-                        </>
-                      ) : (
-                        <>
-                          <span className="min-w-0 flex-1">
-                            <span className="type-item block truncate text-stone">{event.name}</span>
-                            <span className="type-meta mt-0.5 block">Not invited</span>
-                          </span>
-                          <form action={inviteAction.bind(null, event.id, [guest.id])}>
-                            <InlineSubmit label="Invite" pendingLabel="Inviting…" />
-                          </form>
-                        </>
-                      )}
-                    </li>
-                  );
-                })}
+                {events.map((event) => (
+                  <EventRow key={event.id} guest={guest} name={name} event={event} rsvp={rsvps.find((r) => r.event_id === event.id)} />
+                ))}
               </ul>
             </section>
           )}
 
-          {facts.length > 0 && (
-            <dl className="mt-5 grid grid-cols-[6rem_1fr] text-[15px]">
-              {facts.map(([label, value]) => (
-                <div key={label} className="contents">
-                  <dt className="type-meta border-b border-linen py-3">{label}</dt>
-                  <dd className="min-w-0 break-words border-b border-linen py-2.5 text-ink">{value}</dd>
-                </div>
-              ))}
+          <section className="mt-6">
+            <h3 className="section-label">Details</h3>
+            <dl className="mt-1">
+              <HouseholdRow guest={guest} households={households} onSave={save} />
+              <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
+              <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
+              <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
+              <ChildRow guest={guest} onSave={save} />
             </dl>
-          )}
+          </section>
+
+          <RemoveGuest guest={guest} name={name} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Runs a save, holding on to any problem so it can be shown in place. */
+function useSaver() {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
+  const run = (saver: Saver, after?: () => void) =>
+    startTransition(async () => {
+      const result = await saver();
+      setError(result.error);
+      if (!result.error) after?.();
+    });
+  return { pending, error, setError, run };
+}
+
+/** Keys inside an editor: Enter saves (not in a note), Escape backs out without closing the card. */
+function editorKeys(onSave: () => void, onCancel: () => void, multiline = false) {
+  return (event: React.KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      event.nativeEvent.stopImmediatePropagation();
+      onCancel();
+    } else if (event.key === "Enter" && !multiline) {
+      event.preventDefault();
+      onSave();
+    }
+  };
+}
+
+function SaveCancel({ pending, onCancel }: { pending: boolean; onCancel: () => void }) {
+  return (
+    <span className="mt-2 flex items-center gap-2">
+      <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90 disabled:opacity-60">
+        {pending ? "Saving…" : "Save"}
+      </button>
+      <button type="button" onClick={onCancel} className="h-9 px-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
+        Cancel
+      </button>
+    </span>
+  );
+}
+
+/** Their name, large; tap it to change it. */
+function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
+  const [editing, setEditing] = useState(false);
+  const [first, setFirst] = useState(guest.first_name);
+  const [last, setLast] = useState(guest.last_name ?? "");
+  const { pending, error, setError, run } = useSaver();
+
+  const start = () => {
+    setFirst(guest.first_name);
+    setLast(guest.last_name ?? "");
+    setError(undefined);
+    setEditing(true);
+  };
+  const submit = () => run(() => onSave({ first_name: first, last_name: last }), () => setEditing(false));
+  const keys = editorKeys(submit, () => setEditing(false));
+
+  if (!editing) {
+    return (
+      <button type="button" onClick={start} className="group mt-1.5 block text-left" aria-label={`${fullName(guest)} — change name`}>
+        <span className="type-display text-[34px] leading-[1.05]">{fullName(guest)}</span>
+        <Pencil className="ml-2 inline h-4 w-4 align-baseline text-stone/60 group-hover:text-ink" strokeWidth={1.6} aria-hidden />
+      </button>
+    );
+  }
+  return (
+    <form
+      className="mt-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+    >
+      <div className="grid grid-cols-2 gap-2">
+        <input autoFocus value={first} onChange={(e) => setFirst(e.target.value)} onKeyDown={keys} aria-label="First name" placeholder="First name" className={FIELD} />
+        <input value={last} onChange={(e) => setLast(e.target.value)} onKeyDown={keys} aria-label="Last name" placeholder="Last name" className={FIELD} />
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+      <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
+    </form>
+  );
+}
+
+/** A label and its value; tap to change it there and then. */
+function TextRow({
+  label,
+  value,
+  type = "text",
+  multiline = false,
+  onSave,
+}: {
+  label: string;
+  value: string | null;
+  type?: string;
+  multiline?: boolean;
+  onSave: (value: string) => Promise<{ error?: string }>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? "");
+  const { pending, error, setError, run } = useSaver();
+
+  const start = () => {
+    setDraft(value ?? "");
+    setError(undefined);
+    setEditing(true);
+  };
+  const submit = () => run(() => onSave(draft), () => setEditing(false));
+  const keys = editorKeys(submit, () => setEditing(false), multiline);
+
+  return (
+    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+      <dt className="type-meta py-3.5">{label}</dt>
+      <dd className="min-w-0">
+        {editing ? (
+          <form
+            className="py-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+          >
+            {multiline ? (
+              <textarea autoFocus rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={keys} aria-label={label} className={FIELD} />
+            ) : (
+              <input autoFocus type={type} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={keys} aria-label={label} className={FIELD} />
+            )}
+            {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+            <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
+          </form>
+        ) : (
+          <button type="button" onClick={start} className="block min-h-11 w-full whitespace-pre-line break-words py-3 text-left text-[15px] text-ink hover:text-champagne-600">
+            {value || <span className="text-stone/70">Add {label.toLowerCase()}</span>}
+          </button>
+        )}
+      </dd>
+    </div>
+  );
+}
+
+/** Which household they're in: pick another, none, or start a new one. */
+function HouseholdRow({
+  guest,
+  households,
+  onSave,
+}: {
+  guest: Contact;
+  households: { id: string; name: string }[];
+  onSave: (edit: GuestEdit) => Promise<{ error?: string }>;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const { pending, error, run } = useSaver();
+
+  return (
+    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+      <dt className="type-meta py-3.5">Household</dt>
+      <dd className="min-w-0 py-2">
+        <select
+          aria-label="Household"
+          value={adding ? "new" : (guest.household_id ?? "none")}
+          disabled={pending}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value === "new") return setAdding(true);
+            setAdding(false);
+            run(() => onSave({ household_id: value === "none" ? null : value }));
+          }}
+          className="w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-1.5 pr-6 text-[15px] text-ink hover:text-champagne-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/40"
+          style={{ backgroundImage: CHEVRON }}
+        >
+          {households.map((h) => (
+            <option key={h.id} value={h.id}>
+              {h.name}
+            </option>
+          ))}
+          <option value="none">Not in a household</option>
+          <option value="new">+ A new household…</option>
+        </select>
+        {adding && (
+          <form
+            className="mt-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              run(() => onSave({ household_id: "new", new_household: newName }), () => {
+                setAdding(false);
+                setNewName("");
+              });
+            }}
+          >
+            <input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={editorKeys(() => undefined, () => setAdding(false), true)}
+              placeholder="e.g. The Bensons"
+              aria-label="New household's name"
+              className={FIELD}
+            />
+            <SaveCancel pending={pending} onCancel={() => setAdding(false)} />
+          </form>
+        )}
+        {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+      </dd>
+    </div>
+  );
+}
+
+/** Child or adult — a switch, saved as it's flipped. */
+function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
+  const [child, setChild] = useOptimistic(guest.is_child);
+  const [, startTransition] = useTransition();
+
+  return (
+    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+      <dt className="type-meta py-3.5">Child</dt>
+      <dd className="flex items-center py-2">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={child}
+          aria-label="This guest is a child"
+          onClick={() =>
+            startTransition(async () => {
+              setChild(!child);
+              await onSave({ is_child: !child });
+            })
+          }
+          className={`relative h-7 w-12 rounded-full transition ${child ? "bg-ink" : "bg-linen"}`}
+        >
+          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${child ? "left-6" : "left-1"}`} />
+        </button>
+        <span className="ml-3 text-sm text-stone">{child ? "Yes" : "No"}</span>
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * One event on the card: ✓ ? ✕ to answer, and under the name their meal
+ * and diet — tap to fill them in, or to take them off this event.
+ */
+function EventRow({ guest, name, event, rsvp }: { guest: Contact; name: string; event: WeddingEvent; rsvp?: Rsvp }) {
+  const [open, setOpen] = useState(false);
+  const [meal, setMeal] = useState(rsvp?.meal_choice ?? "");
+  const [diet, setDiet] = useState(rsvp?.dietary_notes ?? "");
+  const { pending, error, setError, run } = useSaver();
+
+  if (!rsvp) {
+    return (
+      <li className="flex min-h-[60px] items-center gap-2 border-b border-linen py-2 last:border-b-0">
+        <span className="min-w-0 flex-1">
+          <span className="type-item block truncate text-stone">{event.name}</span>
+          <span className="type-meta mt-0.5 block">Not invited</span>
+        </span>
+        <form action={inviteAction.bind(null, event.id, [guest.id])}>
+          <InlineSubmit label="Invite" pendingLabel="Inviting…" />
+        </form>
+      </li>
+    );
+  }
+
+  const summary = [rsvp.meal_choice, rsvp.dietary_notes].filter(Boolean).join(" · ");
+  const start = () => {
+    setMeal(rsvp.meal_choice ?? "");
+    setDiet(rsvp.dietary_notes ?? "");
+    setError(undefined);
+    setOpen((o) => !o);
+  };
+
+  return (
+    <li className="border-b border-linen py-2 last:border-b-0">
+      <div className="flex min-h-[44px] items-center gap-2">
+        <button type="button" onClick={start} aria-expanded={open} className="min-w-0 flex-1 text-left hover:text-champagne-600">
+          <span className="type-item block truncate">{event.name}</span>
+          <span className={`mt-0.5 block truncate text-xs ${summary ? "text-stone" : "text-stone/70"}`}>
+            {summary || "Add meal & diet"}
+          </span>
+        </button>
+        <StatusButtons rsvpId={rsvp.id} status={rsvp.status} name={`${name}, ${event.name}`} />
+      </div>
+
+      {open && (
+        <form
+          className="mt-2 space-y-2 pb-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(() => saveMealAction(rsvp.id, meal, diet), () => setOpen(false));
+          }}
+        >
+          <input autoFocus value={meal} onChange={(e) => setMeal(e.target.value)} onKeyDown={editorKeys(() => undefined, () => setOpen(false), true)} placeholder="Meal, e.g. Beef" aria-label="Meal" className={FIELD} />
+          <input value={diet} onChange={(e) => setDiet(e.target.value)} onKeyDown={editorKeys(() => undefined, () => setOpen(false), true)} placeholder="Dietary needs, e.g. nut allergy" aria-label="Dietary needs" className={FIELD} />
+          {error && <p role="alert" className="text-sm text-ink">{error}</p>}
+          <div className="flex items-center justify-between gap-3">
+            <SaveCancel pending={pending} onCancel={() => setOpen(false)} />
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => run(() => removeFromEventAction(rsvp.id))}
+              className="mt-2 text-xs text-stone underline underline-offset-4 hover:text-ink"
+            >
+              Take off {event.name.toLowerCase()}
+            </button>
+          </div>
+        </form>
+      )}
+    </li>
+  );
+}
+
+/** Taking someone off the list altogether — asks first, on the card itself. */
+function RemoveGuest({ guest, name }: { guest: Contact; name: string }) {
+  const [asking, setAsking] = useState(false);
+
+  if (!asking) {
+    return (
+      <button type="button" onClick={() => setAsking(true)} className="mt-6 w-full py-3 text-sm text-stone underline underline-offset-4 hover:text-ink">
+        Remove from the guest list
+      </button>
+    );
+  }
+  return (
+    <div className="mt-6 rounded-2xl border border-linen bg-white p-4 text-center">
+      <p className="text-sm text-ink">Take {name} off the guest list, with all their answers?</p>
+      <div className="mt-3 flex justify-center gap-2">
+        <form action={deleteGuestAction.bind(null, guest.id)}>
+          <InlineSubmit label="Yes, remove" pendingLabel="Removing…" />
+        </form>
+        <button type="button" onClick={() => setAsking(false)} className="rounded-full px-3 py-1.5 text-sm text-stone hover:text-ink">
+          Keep them
+        </button>
       </div>
     </div>
   );

@@ -96,7 +96,7 @@ export async function deleteGuestAction(guestId: string) {
 
   if (detail) {
     redirect(
-      `/people/${guestId}?error=${encodeURIComponent("That didn't remove them.")}&detail=${encodeURIComponent(detail)}`,
+      `/people?error=${encodeURIComponent("That didn't remove them.")}&detail=${encodeURIComponent(detail)}`,
     );
   }
 
@@ -120,4 +120,57 @@ export async function setRolesAction(guestId: string, roles: string[]) {
     console.error("saving roles failed", error);
   }
   revalidatePath("/people");
+}
+
+/** What the guest card can change in place, one field at a time. */
+export interface GuestEdit {
+  first_name?: string;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  is_child?: boolean;
+  /** An existing household's id, null for none, or "new" with `new_household`. */
+  household_id?: string | null;
+  new_household?: string;
+}
+
+/**
+ * Saves one change from the guest card. Unlike saveGuestAction it stays on
+ * the page: the card shows the new value as soon as the list refreshes, and
+ * any problem comes back as a short message to show beside the field.
+ */
+export async function updateGuestAction(guestId: string, edit: GuestEdit): Promise<{ error?: string }> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "Your wedding couldn't be found." };
+
+  const tidy = (value: string | null | undefined) => (value ?? "").trim() || null;
+  const fields: Parameters<typeof updateContact>[1] = {};
+  if (edit.first_name !== undefined) {
+    const first = tidy(edit.first_name);
+    if (!first) return { error: "Please add a first name." };
+    fields.first_name = first;
+  }
+  if (edit.last_name !== undefined) fields.last_name = tidy(edit.last_name);
+  if (edit.email !== undefined) fields.email = tidy(edit.email);
+  if (edit.phone !== undefined) fields.phone = tidy(edit.phone);
+  if (edit.notes !== undefined) fields.notes = tidy(edit.notes);
+  if (edit.is_child !== undefined) fields.is_child = edit.is_child;
+
+  try {
+    if (edit.household_id === "new") {
+      const name = tidy(edit.new_household);
+      if (!name) return { error: "Please give the household a name." };
+      fields.household_id = (await createHousehold({ weddingId: wedding.id, name })).id;
+    } else if (edit.household_id !== undefined) {
+      fields.household_id = edit.household_id;
+    }
+    await updateContact(guestId, fields);
+  } catch (error) {
+    console.error("saving guest failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+
+  revalidatePath("/people");
+  return {};
 }

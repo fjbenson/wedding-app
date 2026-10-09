@@ -150,7 +150,7 @@ export default function InvitationsView({
             <ul>
               {chase.map(({ guest: g, pending }) => (
                 <li key={g.id} className="flex items-center gap-2 border-b border-linen py-3 last:border-b-0">
-                  <Link href={`/people/${g.id}`} className="min-w-0 flex-1 hover:opacity-80">
+                  <Link href={`/people?guest=${g.id}`} className="min-w-0 flex-1 hover:opacity-80">
                     <span className="block truncate text-[15px] text-ink">{fullName(g)}</span>
                     <span className="mt-0.5 block text-xs text-stone">
                       Not heard: {pending.map((r) => eventName(r.event_id)).join(", ")}

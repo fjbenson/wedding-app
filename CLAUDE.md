@@ -102,7 +102,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
   text/call/email, role pills to tap on or off, ✓ ? ✕ per event (or
-  "Invite"), meal and diet; Edit opens `/people/[id]`. Search, filters and
+  "Invite"). **Everything is edited on the card** (9 Oct 2026, no edit
+  page): tap the name, household, phone, email, notes or the child switch
+  to change it in place; tap an event for its meal and diet (or to take
+  them off it); "Remove from the guest list" asks on the card. Saves go
+  through `updateGuestAction` / `saveMealAction` / `removeFromEventAction`,
+  which return an error message instead of redirecting. `/people/[id]` is
+  now suppliers only — a guest's id there redirects to their card, and
+  household/invitation links open the card. Adding a guest still uses the
+  form (`/people/new`). Search, filters and
   the open card are client state, not in the address; links can still use
   `?event=`, `?guest=`, `?view=households`. **A guest can have several
   roles**: stored in the one `role_on_the_day` column joined with " · "

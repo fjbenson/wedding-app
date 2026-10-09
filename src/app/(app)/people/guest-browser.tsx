@@ -312,6 +312,7 @@ export default function GuestBrowser({
         <GuestCard
           guest={open}
           household={open.household_id ? (data.household.get(open.household_id) ?? null) : null}
+          households={households}
           events={events}
           rsvps={data.answers.get(open.id) ?? []}
           onClose={close}

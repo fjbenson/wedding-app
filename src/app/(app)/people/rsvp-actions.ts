@@ -137,3 +137,31 @@ export async function uninviteAction(rsvpId: string, guestId: string) {
   revalidatePath("/people");
   redirect(`/people?guest=${guestId}`);
 }
+
+/** Meal and dietary needs for one event, saved from the guest card. */
+export async function saveMealAction(
+  rsvpId: string,
+  meal: string,
+  diet: string,
+): Promise<{ error?: string }> {
+  try {
+    await updateRsvp(rsvpId, { meal_choice: meal.trim() || null, dietary_notes: diet.trim() || null });
+  } catch (error) {
+    console.error("saving meal failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}
+
+/** Takes a guest off one event, from their card. */
+export async function removeFromEventAction(rsvpId: string): Promise<{ error?: string }> {
+  try {
+    await deleteRsvp(rsvpId);
+  } catch (error) {
+    console.error("removing from event failed", error);
+    return { error: `That didn't take them off. ${describe(error)}` };
+  }
+  revalidatePath("/people");
+  return {};
+}

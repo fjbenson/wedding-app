@@ -80,13 +80,13 @@ const DETAIL_ICONS: Record<string, LucideIcon> = {
   Household: House,
   Phone,
   Email: Mail,
-  "Meal choice": UtensilsCrossed,
-  "Allergies & diet": WheatOff,
+  Meal: UtensilsCrossed,
+  Allergies: WheatOff,
   Notes: PenLine,
   Child: Baby,
 };
 
-/** A detail's label with its small icon — phone for Phone, knife and fork for Meal choice. */
+/** A detail's label with its small icon — phone for Phone, knife and fork for Meal. */
 export function DetailLabel({ label }: { label: string }) {
   const Icon = DETAIL_ICONS[label];
   return (

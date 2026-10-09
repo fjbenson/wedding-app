@@ -116,8 +116,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Can't come) and **Guest of** (Day / Evening) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
   Bridesmaid, Best man, Groomsman), and "More" to open the rest plus "Your
-  own" ("Less" folds it away) — then Details (Meal choice = the dish they picked;
-  Allergies & diet = what the kitchen must avoid) — no answer per event: `setGuestAnswerAction` sets all their
+  own" ("Less" folds it away) — then Details (Meal = the dish they picked;
+  Allergies = what the kitchen must avoid) — no answer per event: `setGuestAnswerAction` sets all their
   RSVPs, `setGuestOfAction` moves them between day and evening keeping the
   answer. **Everything is edited on the card** (9 Oct 2026, no edit
   page): tap the name, household, phone, email, meal, dietary, notes or

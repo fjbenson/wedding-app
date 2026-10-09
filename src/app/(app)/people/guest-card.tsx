@@ -144,8 +144,8 @@ export default function GuestCard({
               <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
               {own && (
                 <>
-                  <TextRow label="Meal choice" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
-                  <TextRow label="Allergies & diet" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
+                  <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
+                  <TextRow label="Allergies" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
                 </>
               )}
               <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />

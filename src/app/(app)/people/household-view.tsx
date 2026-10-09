@@ -88,7 +88,7 @@ export default function HouseholdView({
       ) : (
         <ul>
           {people.map((g) => (
-            <li key={g.id} className="border-b border-linen">
+            <li key={g.id} className="border-b-[0.5px] border-champagne-400">
               <GuestRow guest={g} event={ownEvent(g)} status={statusOf(g)} showEvent onOpen={() => setOpenId(g.id)} />
             </li>
           ))}

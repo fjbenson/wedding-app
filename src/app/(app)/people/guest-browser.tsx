@@ -305,7 +305,7 @@ export default function GuestBrowser({
                   {group.title && <GroupTitle group={group} />}
                   <ul>
                     {group.guests.map((g) => (
-                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b border-linen">
+                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b-[0.5px] border-champagne-400">
                         <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => setOpenId(g.id)} />
                       </li>
                     ))}
@@ -805,7 +805,7 @@ function GuestTable({
               const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;
               const answer = rsvp ? ANSWER_WORD[rsvp.status] : { word: "Day or evening?", className: "text-champagne-600" };
               return (
-                <tr key={g.id} onClick={() => onOpen(g.id)} className="cursor-pointer border-t border-linen align-middle hover:bg-champagne-100/50">
+                <tr key={g.id} onClick={() => onOpen(g.id)} className="cursor-pointer border-t-[0.5px] border-champagne-400 align-middle hover:bg-champagne-100/50">
                   <td className="py-2.5 pr-4">
                     <button type="button" onClick={() => onOpen(g.id)} className="whitespace-nowrap text-left font-display text-[17px] text-ink hover:underline">
                       {fullName(g)}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronDown, Mail, MessageSquare, Pencil, Phone, X } from "lucide-react";
+import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -537,7 +537,13 @@ function Roles({ guest }: { guest: Contact }) {
 
   return (
     <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-      <h3 className="section-label">Role on the day</h3>
+      {/* The same gold star that marks anyone with a role in the list. */}
+      <h3 className="section-label flex items-center gap-2">
+        <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
+          <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+        </span>
+        Role on the day
+      </h3>
       <div className="mt-2.5 flex flex-wrap gap-2">
         {theirs.map((role) => (
           <button

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Star } from "lucide-react";
 import { SubmitButton } from "@/components/form-bits";
 import { GUEST_ROLES } from "@/lib/guest-roles";
 import type { Household, WeddingEvent } from "@/types/db";
@@ -78,7 +78,12 @@ export default function GuestForm({
 
       <fieldset className="mt-6 -mx-5 border-t border-linen px-5 pt-6">
         <legend className="sr-only">Role on the day</legend>
-        <p aria-hidden className="section-label">Role on the day</p>
+        <p aria-hidden className="section-label flex items-center gap-2">
+          <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
+            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+          </span>
+          Role on the day
+        </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
           {COMMON_ROLES.map((r) => rolePill(r))}
           {/* The rest stay in the form when folded away, so ticks aren't lost. */}

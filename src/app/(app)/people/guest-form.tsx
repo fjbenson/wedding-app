@@ -116,7 +116,7 @@ export default function GuestForm({
               aria-label="Household"
               value={household}
               onChange={(event) => setHousehold(event.target.value)}
-              className="w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-1.5 pr-6 text-[15px] text-ink focus:outline-none"
+              className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-0 pr-6 leading-9 text-[15px] text-ink focus:outline-none"
               style={{ backgroundImage: CHEVRON }}
             >
               <option value="none">Not in a household</option>

@@ -384,7 +384,7 @@ function HouseholdRow({
             setAdding(false);
             run(() => onSave({ household_id: value === "none" ? null : value }));
           }}
-          className="w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-1.5 pr-6 text-[15px] text-ink hover:text-champagne-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/40"
+          className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-0 pr-6 leading-9 text-[15px] text-ink hover:text-champagne-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/40"
           style={{ backgroundImage: CHEVRON }}
         >
           <option value="none">Not in a household</option>

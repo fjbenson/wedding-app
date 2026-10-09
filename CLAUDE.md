@@ -109,9 +109,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  text/call/email, role pills to tap on or off, then **Guest of** (Day /
-  Evening) and one **Answer** (To invite · Invited · Coming · Can't come)
-  as sliders — no answer per event: `setGuestAnswerAction` sets all their
+  text/call/email, then one **Answer** (To invite · Invited · Coming ·
+  Can't come) and **Guest of** (Day / Evening) as sliders, then **Role on
+  the day** — only their roles, each with ✕, plus "+ Add a role" that
+  opens the list — then Details (Meal choice = the dish they picked;
+  Allergies & diet = what the kitchen must avoid) — no answer per event: `setGuestAnswerAction` sets all their
   RSVPs, `setGuestOfAction` moves them between day and evening keeping the
   answer. **Everything is edited on the card** (9 Oct 2026, no edit
   page): tap the name, household, phone, email, meal, dietary, notes or

@@ -111,9 +111,10 @@ export default function GuestCard({
             </div>
           )}
 
-          <Roles guest={guest} />
-
+          {/* The answer first — it's what changes most — then day or evening, then roles. */}
           {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
+
+          <Roles guest={guest} />
 
           <section className="mt-6">
             <h3 className="section-label">Details</h3>
@@ -123,8 +124,8 @@ export default function GuestCard({
               <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
               {own && (
                 <>
-                  <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
-                  <TextRow label="Dietary" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
+                  <TextRow label="Meal choice" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
+                  <TextRow label="Allergies & diet" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
                 </>
               )}
               <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
@@ -248,7 +249,7 @@ function TextRow({
   const keys = editorKeys(submit, () => setEditing(false), multiline);
 
   return (
-    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
       <dt className="type-meta py-3.5">{label}</dt>
       <dd className="min-w-0">
         {editing ? (
@@ -292,7 +293,7 @@ function HouseholdRow({
   const { pending, error, run } = useSaver();
 
   return (
-    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
       <dt className="type-meta py-3.5">Household</dt>
       <dd className="min-w-0 py-2">
         <select
@@ -351,7 +352,7 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
   const [, startTransition] = useTransition();
 
   return (
-    <div className="grid grid-cols-[7rem_1fr] border-b border-linen">
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
       <dt className="type-meta py-3.5">Child</dt>
       <dd className="flex items-center py-2">
         <button
@@ -402,29 +403,6 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
 
   return (
     <section className="mt-6 space-y-5">
-      <div>
-        <h3 className="section-label">Guest of</h3>
-        <div role="group" aria-label="Guest of" className={track}>
-          {events.map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              aria-pressed={of === e.id}
-              onClick={() =>
-                startTransition(async () => {
-                  setOf(e.id);
-                  setError((await setGuestOfAction(guest.id, e.id)).error);
-                })
-              }
-              className={`${cell} ${of === e.id ? `bg-white text-ink ${lifted}` : off}`}
-            >
-              {word(e)}
-            </button>
-          ))}
-        </div>
-        {!own && <p className="mt-2 text-sm text-champagne-600">Are they a day or an evening guest?</p>}
-      </div>
-
       {own && (
         <div>
           <h3 className="section-label">Answer</h3>
@@ -448,6 +426,29 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
           </div>
         </div>
       )}
+      <div>
+        <h3 className="section-label">Guest of</h3>
+        <div role="group" aria-label="Guest of" className={track}>
+          {events.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              aria-pressed={of === e.id}
+              onClick={() =>
+                startTransition(async () => {
+                  setOf(e.id);
+                  setError((await setGuestOfAction(guest.id, e.id)).error);
+                })
+              }
+              className={`${cell} ${of === e.id ? `bg-white text-ink ${lifted}` : off}`}
+            >
+              {word(e)}
+            </button>
+          ))}
+        </div>
+        {!own && <p className="mt-2 text-sm text-champagne-600">Are they a day or an evening guest?</p>}
+      </div>
+
       {error && <p role="alert" className="text-sm text-ink">{error}</p>}
     </section>
   );
@@ -480,17 +481,19 @@ function RemoveGuest({ guest, name }: { guest: Contact; name: string }) {
 }
 
 /**
- * Role on the day: the usual roles as pills, tap on or off, plus their own.
- * Shows the change at once and saves behind it.
+ * Role on the day: only the roles they have, each tappable to take off, and
+ * "+ Add a role" to open the usual list (and "Your own"). Most guests have
+ * no role, so this is one small line rather than the whole list. Shows the
+ * change at once and saves behind it.
  */
 function Roles({ guest }: { guest: Contact }) {
   const saved = rolesOf(guest);
   const [roles, setRoles] = useOptimistic(saved);
   const [, startTransition] = useTransition();
-  const [adding, setAdding] = useState(false);
+  const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
 
-  const choices = [...GUEST_ROLES, ...roles.filter((r) => !GUEST_ROLES.includes(r))];
+  const others = GUEST_ROLES.filter((r) => !roles.includes(r));
 
   function save(next: string[]) {
     startTransition(async () => {
@@ -499,62 +502,78 @@ function Roles({ guest }: { guest: Contact }) {
     });
   }
 
+  const pill = "h-9 rounded-full border px-3.5 text-[13px] transition";
+
   return (
     <section className="mt-6">
       <h3 className="section-label">Role on the day</h3>
       <div className="mt-2.5 flex flex-wrap gap-2">
-        {choices.map((role) => {
-          const on = roles.includes(role);
-          return (
-            <button
-              key={role}
-              type="button"
-              aria-pressed={on}
-              onClick={() => save(on ? roles.filter((r) => r !== role) : [...roles, role])}
-              className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-                on
-                  ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600"
-                  : "border-linen bg-white text-ink hover:border-champagne-400"
-              }`}
-            >
-              {on && "✓ "}
-              {role}
-            </button>
-          );
-        })}
-        {!adding && (
+        {roles.map((role) => (
+          <button
+            key={role}
+            type="button"
+            aria-pressed="true"
+            aria-label={`${role} — tap to take off`}
+            onClick={() => save(roles.filter((r) => r !== role))}
+            className={`${pill} flex items-center gap-1.5 border-champagne-600 bg-champagne-100 font-medium text-champagne-600`}
+          >
+            {role}
+            <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+          </button>
+        ))}
+        {!open && (
           <button
             type="button"
-            onClick={() => setAdding(true)}
-            className="flex h-9 items-center gap-1 rounded-full border border-dashed border-champagne-400 px-3.5 text-[13px] text-champagne-600 hover:bg-champagne-100"
+            onClick={() => setOpen(true)}
+            className={`${pill} flex items-center gap-1 border-dashed border-champagne-400 text-champagne-600 hover:bg-champagne-100`}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-            Your own
+            {roles.length > 0 ? "Add another" : "Add a role"}
           </button>
         )}
       </div>
-      {adding && (
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (custom.trim()) save([...roles, custom.trim()]);
-            setCustom("");
-            setAdding(false);
-          }}
-        >
-          <input
-            autoFocus
-            value={custom}
-            onChange={(event) => setCustom(event.target.value)}
-            placeholder="e.g. Chief dog handler"
-            aria-label="Their role"
-            className="h-11 min-w-0 flex-1 rounded-full border border-linen bg-white px-4 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
-          />
-          <button type="submit" className="h-11 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90">
-            Add
+
+      {open && (
+        <div className="mt-3 rounded-2xl border border-linen bg-white p-3">
+          <div className="flex flex-wrap gap-2">
+            {others.map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => {
+                  save([...roles, role]);
+                  setOpen(false);
+                }}
+                className={`${pill} border-linen bg-white text-ink hover:border-champagne-400`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+          <form
+            className="mt-3 flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (custom.trim()) save([...roles, custom.trim()]);
+              setCustom("");
+              setOpen(false);
+            }}
+          >
+            <input
+              value={custom}
+              onChange={(event) => setCustom(event.target.value)}
+              placeholder="Or your own, e.g. Chief dog handler"
+              aria-label="Their role"
+              className="h-11 min-w-0 flex-1 rounded-full border border-linen bg-white px-4 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
+            />
+            <button type="submit" className="h-11 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90">
+              Add
+            </button>
+          </form>
+          <button type="button" onClick={() => setOpen(false)} className="mt-2 w-full py-1.5 text-sm text-stone underline underline-offset-4 hover:text-ink">
+            Done
           </button>
-        </form>
+        </div>
       )}
     </section>
   );

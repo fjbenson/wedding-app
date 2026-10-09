@@ -55,10 +55,7 @@ export default function GuestForm({
     <form action={action}>
       {defaultHousehold && <input type="hidden" name="return_to" value={`/people/household/${defaultHousehold}`} />}
 
-      <div className="grid grid-cols-2 gap-2">
-        <input name="first_name" required autoFocus aria-label="First name" placeholder="First name" className={FIELD} />
-        <input name="last_name" aria-label="Last name" placeholder="Last name" className={FIELD} />
-      </div>
+      <input name="full_name" required autoFocus autoComplete="off" aria-label="Full name" placeholder="Full name" className={FIELD} />
 
       {events.length > 0 && (
         <fieldset className="mt-6">

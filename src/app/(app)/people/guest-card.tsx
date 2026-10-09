@@ -9,6 +9,7 @@ import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
 import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
 import { fullName } from "./guest-table";
+import { splitName } from "@/lib/names";
 
 type Saver = () => Promise<{ error?: string } | void>;
 
@@ -202,17 +203,19 @@ function SaveCancel({ pending, onCancel }: { pending: boolean; onCancel: () => v
 /** Their name, large; tap it to change it. */
 function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
   const [editing, setEditing] = useState(false);
-  const [first, setFirst] = useState(guest.first_name);
-  const [last, setLast] = useState(guest.last_name ?? "");
+  const [full, setFull] = useState(fullName(guest));
   const { pending, error, setError, run } = useSaver();
 
   const start = () => {
-    setFirst(guest.first_name);
-    setLast(guest.last_name ?? "");
+    setFull(fullName(guest));
     setError(undefined);
     setEditing(true);
   };
-  const submit = () => run(() => onSave({ first_name: first, last_name: last }), () => setEditing(false));
+  // One box, split as when adding: the last word is the surname.
+  const submit = () => {
+    const { first, last } = splitName(full);
+    run(() => onSave({ first_name: first, last_name: last }), () => setEditing(false));
+  };
   const keys = editorKeys(submit, () => setEditing(false));
 
   if (!editing) {
@@ -231,10 +234,7 @@ function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdi
         submit();
       }}
     >
-      <div className="grid grid-cols-2 gap-2">
-        <input autoFocus value={first} onChange={(e) => setFirst(e.target.value)} onKeyDown={keys} aria-label="First name" placeholder="First name" className={FIELD} />
-        <input value={last} onChange={(e) => setLast(e.target.value)} onKeyDown={keys} aria-label="Last name" placeholder="Last name" className={FIELD} />
-      </div>
+      <input autoFocus value={full} onChange={(e) => setFull(e.target.value)} onKeyDown={keys} aria-label="Full name" placeholder="Full name" className={FIELD} />
       {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
       <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
     </form>

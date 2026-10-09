@@ -7,6 +7,7 @@ import { inviteGuestsToEvent, listEvents } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { joinRoles } from "@/lib/guest-roles";
+import { splitName } from "@/lib/names";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -25,11 +26,14 @@ export async function saveGuestAction(guestId: string | null, formData: FormData
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const firstName = text(formData, "first_name");
+  // One "Full name" box (split: last word is the surname), or the older pair.
+  const full = text(formData, "full_name");
+  const split = full ? splitName(full) : null;
+  const firstName = split ? split.first || null : text(formData, "first_name");
   if (!firstName) {
-    redirect(`${back}?error=${encodeURIComponent("Please add a first name.")}`);
+    redirect(`${back}?error=${encodeURIComponent("Please add their name.")}`);
   }
-  const lastName = text(formData, "last_name");
+  const lastName = split ? split.last : text(formData, "last_name");
 
   let detail = "";
   let created: Awaited<ReturnType<typeof createContact>> | null = null;
@@ -161,7 +165,7 @@ export async function updateGuestAction(guestId: string, edit: GuestEdit): Promi
   const fields: Parameters<typeof updateContact>[1] = {};
   if (edit.first_name !== undefined) {
     const first = tidy(edit.first_name);
-    if (!first) return { error: "Please add a first name." };
+    if (!first) return { error: "Please add their name." };
     fields.first_name = first;
   }
   if (edit.last_name !== undefined) fields.last_name = tidy(edit.last_name);

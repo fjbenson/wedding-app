@@ -314,6 +314,11 @@ Settings already warns that the wedding lives in one browser.
 - **All database queries live in `src/lib/db/`.** Nothing else imports the
   Supabase client. This is what keeps a future backend split mechanical — don't
   scatter queries into components.
+- **Server actions called from client code must not be able to throw into
+  React** (9 Oct 2026): after a deploy, a page left open calls the old
+  action, which no longer exists, and an uncaught error blanks the screen.
+  Wrap such calls like `safely()` in `guest-card.tsx` and show a message.
+  `src/app/(app)/error.tsx` is the safety net for anything else.
 - **Row-level security is the real access control.** Policies are built on
   `is_wedding_member()` and `is_wedding_host()`. App-level checks are a
   convenience, not the guarantee.

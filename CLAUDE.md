@@ -431,8 +431,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    home screen (`docs/DESIGN.md`, "Type system" — use its classes on every
    screen); Fraunces now loads with its optical-size axis, as the canvas
    does; the Hub menu button is a **house** (owner's pick of twelve). **Plan**
-   (10 Oct, By date view; By area not restyled yet). **Next up: Plan's
-   By area view, then People's other screens.** Open idea: a new home-screen app icon (offered options on
+   (10 Oct, By date view; By area not restyled yet). **Each tab gets its
+   own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
+   Hub ring · People count card · Plan calendar · Money one big
+   spent-vs-budget shape (to design) · The Day hour-by-hour line. **Next
+   up: Plan's By area view, then Money's signature on the canvas, then
+   People's other screens.** Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

@@ -56,6 +56,26 @@ drifting apart.
 
 Body text and buttons are Geist. Nothing under 12px.
 
+## Each tab has its own signature (10 Oct 2026)
+
+The owner's rule, agreed when Plan became a calendar: **every tab gets one
+signature picture**, so you know where you are at a glance, before reading
+a word. Everything else stays shared — the ivory and champagne, the type
+system above, the row marks, the corner switch — so the app still feels
+like one thing while each screen has its own face.
+
+| Tab | Signature | Status |
+|---|---|---|
+| Hub | The ring of areas | Done (7 Oct) |
+| People | The big dark count card, and initials on every row | Done for the guest list (8–9 Oct) |
+| Plan | The month calendar (what By date opens on) | Done (10 Oct) |
+| Money | One big shape for spent against the budget — a ring or a filling bar, each area a slice | To design: options on the canvas first |
+| The Day | An hour-by-hour line down the page, like an order of service; the floor plan for seating | Partly there |
+
+When designing a screen: find its tab's signature and make it the first
+big thing on the screen. Don't borrow another tab's (no calendar on
+Money, no ring on People).
+
 ## Settled
 
 ### Colour

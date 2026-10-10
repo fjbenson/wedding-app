@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, Check, ChevronRight } from "lucide-react";
+import { CalendarClock, CalendarDays, Check, ChevronRight, List } from "lucide-react";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { daysUntil, formatDayMonth, formatLongDate, formatMonthYear, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -7,6 +7,7 @@ import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone, Payment } from "@/types/db";
 import TickForm from "@/components/tick-form";
 import { markPaidAction } from "../money/actions";
+import PlanCalendar, { type Dot } from "./calendar";
 import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
 
@@ -55,6 +56,7 @@ export default function Agenda({
   areas,
   weddingDate,
   today,
+  as,
 }: {
   milestones: Milestone[];
   appointments: Appointment[] | null;
@@ -63,6 +65,8 @@ export default function Agenda({
   areas: AreaOption[];
   weddingDate: string | null;
   today: string;
+  /** The calendar is what By date opens on; the list is `?as=list`. */
+  as: "calendar" | "list";
 }) {
   const thisMonth = today.slice(0, 7);
 
@@ -213,13 +217,108 @@ export default function Agenda({
   const earlierWhen =
     earlierMonth && fromEarlier.every((e) => e.date!.startsWith(earlierMonth)) ? `from ${monthName(earlierMonth)}` : "from before";
 
+  const toggle = <ShowAs current={as} />;
+
+  const earlierFold = fromEarlier.length > 0 && (
+    <Fold
+      id="earlier"
+      className="mt-3 rounded-2xl bg-cream px-4 py-3"
+      header={
+        <span className="block text-sm text-ink">
+          {fromEarlier.length} still open {earlierWhen}
+        </span>
+      }
+    >
+      <ul className="mt-1">{fromEarlier.map((e) => row(e))}</ul>
+    </Fold>
+  );
+
+  const undatedFold = undated.length > 0 && (
+    <Fold
+      id="undated"
+      className="mt-10 border-t border-linen pt-4"
+      header={
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="section-label">No date yet</span>
+          <span className="type-meta">{undated.length}</span>
+        </span>
+      }
+    >
+      <ul className="mt-1">{undated.map((e) => row(e))}</ul>
+    </Fold>
+  );
+
+  if (as === "calendar") {
+    // Nudges have a month, not a day, so each month's sit above its grid
+    // ("Start this month"); everything else is a dot on its day.
+    const nudge = (e: Entry) => e.kind === "todo" && isNudge(e.milestone);
+    const dots: Record<string, Dot[]> = {};
+    const byDay: Record<string, Entry[]> = {};
+    const nudgesByMonth: Record<string, Entry[]> = {};
+    for (const e of all) {
+      if (!e.date) continue;
+      if (nudge(e)) {
+        // An open nudge from a month gone by belongs to now: "start now".
+        const key = !isDone(e) && monthOf(e)! < thisMonth ? thisMonth : monthOf(e)!;
+        (nudgesByMonth[key] ??= []).push(e);
+        continue;
+      }
+      (byDay[e.date] ??= []).push(e);
+      (dots[e.date] ??= []).push(isDone(e) ? "done" : e.kind);
+    }
+    const dayPanels = Object.fromEntries(
+      Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
+    );
+    const months = Object.keys(nudgesByMonth).concat(thisMonth);
+    const monthTops = Object.fromEntries(
+      [...new Set(months)].map((key) => [
+        key,
+        <div key={key}>
+          {key === thisMonth && earlierFold}
+          {nudgesByMonth[key] && (
+            <div className="mt-3 rounded-2xl bg-cream px-4 pb-1 pt-3">
+              <p className="label">Start this month</p>
+              <ul>{inOrder(nudgesByMonth[key]).map((e) => row(e))}</ul>
+            </div>
+          )}
+        </div>,
+      ]),
+    );
+    const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
+    const firstMonth = [thisMonth, ...dated].sort()[0];
+    const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
+
+    return (
+      <FoldGroup initiallyOpen={[]}>
+        <PlanCalendar
+          today={today}
+          weddingDate={weddingDate}
+          firstMonth={firstMonth}
+          lastMonth={lastMonth}
+          dots={dots}
+          dayPanels={dayPanels}
+          monthTops={monthTops}
+          toggle={toggle}
+          weddingPanel={
+            <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">
+              The wedding — open The Day ›
+            </Link>
+          }
+        />
+        {undatedFold}
+      </FoldGroup>
+    );
+  }
+
   return (
     <FoldGroup initiallyOpen={["month", ...roadFolds.slice(0, 1)]}>
+      <div className="mt-6 flex justify-end">{toggle}</div>
+
       {/* Past months: what got done in them, out of the way but not lost. */}
       {back.length > 0 && (
         <Fold
           id="back"
-          className="mt-6"
+          className="mt-4"
           header={
             <span className="flex items-baseline justify-between gap-3">
               <span className="section-label">Looking back</span>
@@ -253,7 +352,7 @@ export default function Agenda({
       {/* This month: the one to look at. */}
       <Fold
         id="month"
-        className={`glass-card rounded-3xl p-5 ${back.length > 0 ? "mt-4" : "mt-7"}`}
+        className="glass-card mt-4 rounded-3xl p-5"
         chevronClassName="text-champagne-600"
         header={
           <>
@@ -281,19 +380,7 @@ export default function Agenda({
         }
       >
         {now.length > 0 && <ul className="mt-2">{now.map((e) => row(e))}</ul>}
-        {fromEarlier.length > 0 && (
-          <Fold
-            id="earlier"
-            className="mt-3 rounded-2xl bg-cream px-4 py-3"
-            header={
-              <span className="block text-sm text-ink">
-                {fromEarlier.length} still open {earlierWhen}
-              </span>
-            }
-          >
-            <ul className="mt-1">{fromEarlier.map((e) => row(e))}</ul>
-          </Fold>
-        )}
+        {earlierFold}
       </Fold>
 
       {/* The road to the day. */}
@@ -379,21 +466,32 @@ export default function Agenda({
         </section>
       )}
 
-      {undated.length > 0 && (
-        <Fold
-          id="undated"
-          className="mt-10 border-t border-linen pt-4"
-          header={
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="section-label">No date yet</span>
-              <span className="type-meta">{undated.length}</span>
-            </span>
-          }
-        >
-          <ul className="mt-1">{undated.map((e) => row(e))}</ul>
-        </Fold>
-      )}
-
+      {undatedFold}
     </FoldGroup>
+  );
+}
+
+/** List or calendar: two small links in a rounded switch, like the corner one. */
+function ShowAs({ current }: { current: "calendar" | "list" }) {
+  const options = [
+    { as: "list", href: "/plan?as=list", label: "Show as a list", Icon: List },
+    { as: "calendar", href: "/plan", label: "Show as a calendar", Icon: CalendarDays },
+  ] as const;
+  return (
+    <nav aria-label="Show the plan as" className="flex shrink-0 rounded-full bg-cream p-[3px]">
+      {options.map(({ as, href, label, Icon }) => (
+        <Link
+          key={as}
+          href={href}
+          aria-label={label}
+          aria-current={current === as ? "page" : undefined}
+          className={`flex h-9 w-11 items-center justify-center rounded-full transition ${
+            current === as ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
+          }`}
+        >
+          <Icon className="h-[17px] w-[17px]" strokeWidth={1.8} aria-hidden />
+        </Link>
+      ))}
+    </nav>
   );
 }

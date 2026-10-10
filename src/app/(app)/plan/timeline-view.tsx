@@ -24,6 +24,7 @@ export default function TimelineView({
   weddingDate,
   areas,
   view,
+  as,
 }: {
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
@@ -33,6 +34,8 @@ export default function TimelineView({
   weddingDate: string | null;
   areas: AreaOption[];
   view: "agenda" | "area";
+  /** By date opens on the calendar; `?as=list` shows the list. */
+  as: "calendar" | "list";
 }) {
   const today = todayISO();
   const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
@@ -90,6 +93,7 @@ export default function TimelineView({
           areas={areas}
           weddingDate={weddingDate}
           today={today}
+          as={as}
         />
       )}
     </main>

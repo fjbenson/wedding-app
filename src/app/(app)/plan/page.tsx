@@ -13,12 +13,12 @@ export const metadata = { title: "Plan — Wedding App" };
 export default async function PlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; as?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const { view } = await searchParams;
+  const { view, as } = await searchParams;
   const [milestones, areas, appointments, payments, suppliers] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
@@ -39,6 +39,7 @@ export default async function PlanPage({
       weddingDate={wedding.wedding_date}
       areas={areaOptions(areas)}
       view={view === "area" ? "area" : "agenda"}
+      as={as === "list" ? "list" : "calendar"}
     />
   );
 }

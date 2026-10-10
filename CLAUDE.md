@@ -179,7 +179,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Rounds 1–4", B with option A's pill). A corner switch **By date | By
   area** (`CornerSwitch`, shared with People), the title, then two big
   buttons side by side: **Add a to-do** · **Add an appointment**. **By
-  date** (screens 16–17, `agenda.tsx`): this month on a glass card — big
+  date opens on a month calendar** (owner's call, 10 Oct 2026; canvas
+  "Plan · Calendar · Round 1", option A; `calendar.tsx`): ‹ month › with a
+  list/calendar switch on the right (`?as=list` for the list), that
+  month's nudges in a "Start this month" box (plus anything still open
+  from earlier, on the current month), a Monday-first grid with a dot per
+  thing on each day (to-do ring, appointment gold, payment pale gold,
+  done grey), today softly circled, the wedding in a gold ring; tap a day
+  and its rows show under the grid. The rows are drawn on the server and
+  handed in by date. Not tried: C, every month at a glance — a possible
+  zoomed-out view later. **The list** (`?as=list`, `agenda.tsx`): this
+  month on a glass card — big
   "4 still to do, 1 done", a progress bar, the rows, and anything "still
   open from September" in a fold inside it — then **the road to the day**:
   a line down the left with a dot per month ("November *2026*", year in

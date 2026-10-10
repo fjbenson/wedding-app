@@ -1,4 +1,5 @@
 import AppShell from "@/components/app-shell";
+import UndoToast from "@/components/undo-toast";
 import { listNotes } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AppShell wedding={wedding} inboxCount={unfiled?.length ?? 0}>
       {children}
+      <UndoToast />
     </AppShell>
   );
 }

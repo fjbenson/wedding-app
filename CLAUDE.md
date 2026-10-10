@@ -186,7 +186,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   gold italic), each month folding open to its rows, closed showing a
   one-line summary and a pill ("3 items"); runs of empty months say
   "Nothing planned. Enjoy it."; "Open all / Close all"; the wedding at the
-  end (links to The Day). Then "No date yet" and "Done and been" folds.
+  end (links to The Day). Then a "No date yet" fold. **Done things stay
+  in their month** (10 Oct 2026), faded and crossed out at the bottom of
+  it; the pill becomes "1 of 3 done", then "All done" with a gold ticked
+  dot; the card says "All done this month". When a month is over, its
+  done things move to a folded **Looking back** at the top, month by
+  month. Ticking off (or marking paid) shows an **Undo** note for 5s
+  (`undo-toast.tsx`, raised by `tick-form.tsx`, mounted once in the
+  `(app)` layout).
   What's open is remembered in the browser (`fold.tsx`). No dividers
   between months — the line does that. Rows: to-dos (plain circle),
   **nudges** (dashed gold circle, italic: "Start looking at

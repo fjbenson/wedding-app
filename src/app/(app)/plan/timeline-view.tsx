@@ -4,8 +4,10 @@ import StarterPlanCard from "@/components/starter-plan-card";
 import CornerSwitch from "@/components/corner-switch";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { todayISO } from "@/lib/dates";
+import { planDate } from "@/lib/plan";
 import type { Appointment, Milestone, Payment } from "@/types/db";
 import Agenda from "./agenda";
+import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
 
 /**
@@ -101,76 +103,93 @@ export default function TimelineView({
 }
 
 /**
- * By area: one group per area in the wedding's own order, then any to-dos
- * tagged with an area that's switched off (or an older "Guests" tag), then
- * the untagged. Open to-dos by date first, done ones after. An area with
- * nothing in it still shows, with a way to add its first to-do.
+ * By area (screen 18), in the By date list's style: one fold per area in
+ * the wedding's own order — the name, a pill ("3 items", "1 of 3 done",
+ * "All done"), a one-line summary while closed — then any to-dos tagged
+ * with an area that's switched off (or an older "Guests" tag), then the
+ * untagged. Inside: what's left by date, what's done crossed out below, a
+ * way to add one, and a link to the area's own page. An empty area still
+ * shows, with "Add a to-do" that pre-picks it.
  */
 function ByArea({ milestones, areas, today }: { milestones: Milestone[]; areas: AreaOption[]; today: string }) {
-  const inOrder = (items: Milestone[]) => [...items.filter(isOpen), ...items.filter((m) => !isOpen(m))];
+  const byPlanDate = (a: Milestone, b: Milestone) => (planDate(a) ?? "9999").localeCompare(planDate(b) ?? "9999");
+  const inOrder = (items: Milestone[]) => [...items.filter(isOpen).sort(byPlanDate), ...items.filter((m) => !isOpen(m))];
   const known = new Set(areas.map((a) => a.key));
   const others = [...new Set(milestones.map((m) => m.category).filter((c): c is string => !!c && !known.has(c)))];
 
   const groups = [
-    ...areas.map((a) => ({ key: a.key, title: a.label, addable: true })),
-    ...others.map((key) => ({ key, title: areaName(key, areas) ?? key, addable: false })),
+    ...areas.map((a) => ({ key: a.key, title: a.label, isArea: true })),
+    ...others.map((key) => ({ key, title: areaName(key, areas) ?? key, isArea: false })),
   ].map((g) => ({ ...g, items: inOrder(milestones.filter((m) => m.category === g.key)) }));
   const untagged = inOrder(milestones.filter((m) => !m.category));
+  if (untagged.length > 0) groups.push({ key: "", title: "No particular area", isArea: false, items: untagged });
+
+  const ids = groups.filter((g) => g.items.length > 0).map((g) => `a-${g.key}`);
 
   return (
-    <div className="mt-10 space-y-8">
-      {groups.map((group, index) => {
-        const open = group.items.filter(isOpen).length;
-        const done = group.items.length - open;
-        return (
-          <section key={group.key}>
-            <div className="flex items-baseline gap-3 border-b border-champagne-400 pb-2">
-              <span className="font-display text-sm text-champagne-600">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h2 className="flex-1 text-xl text-ink">{group.title}</h2>
-              {group.items.length > 0 && (
-                <span className="text-xs uppercase tracking-[0.14em] text-stone">
-                  {[open > 0 && `${open} to do`, done > 0 && `${done} done`].filter(Boolean).join(" · ")}
-                </span>
-              )}
-            </div>
-            {group.items.length > 0 ? (
-              <ul>
-                {group.items.map((m) => (
-                  <MilestoneRow key={m.id} milestone={m} overdue={isOpen(m) && !!m.due_date && m.due_date < today} />
-                ))}
-              </ul>
-            ) : (
-              <p className="py-3 text-sm text-stone">
-                Nothing here yet.{" "}
-                {group.addable && (
+    <FoldGroup initiallyOpen={[]}>
+      <div className="mt-8 flex items-baseline justify-between">
+        <h2 className="section-label">Every area</h2>
+        <FoldAll ids={ids} />
+      </div>
+      <ul className="mt-1">
+        {groups.map((group) => {
+          const n = group.items.length;
+          const done = group.items.filter((m) => !isOpen(m)).length;
+          const left = group.items.filter(isOpen);
+          const heading = <span className={`font-display text-xl ${n ? "text-ink" : "text-stone"}`}>{group.title}</span>;
+          return (
+            <li key={group.key || "untagged"} className="border-b border-linen py-3.5 last:border-b-0">
+              {n === 0 ? (
+                <div className="flex items-baseline justify-between gap-3">
+                  {heading}
                   <Link
                     href={`/plan/new?area=${encodeURIComponent(group.key)}`}
-                    className="text-ink underline underline-offset-4"
+                    className="shrink-0 text-sm text-champagne-600 hover:text-ink"
                   >
-                    Add a to-do
+                    + Add a to-do
                   </Link>
-                )}
-              </p>
-            )}
-          </section>
-        );
-      })}
-
-      {untagged.length > 0 && (
-        <section>
-          <div className="flex items-baseline gap-3 border-b border-champagne-400 pb-2">
-            <h2 className="flex-1 text-xl text-ink">No particular area</h2>
-            <span className="text-xs uppercase tracking-[0.14em] text-stone">{untagged.length}</span>
-          </div>
-          <ul>
-            {untagged.map((m) => (
-              <MilestoneRow key={m.id} milestone={m} overdue={isOpen(m) && !!m.due_date && m.due_date < today} />
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
+                </div>
+              ) : (
+                <Fold
+                  id={`a-${group.key}`}
+                  header={
+                    <span className="flex items-start justify-between gap-3">
+                      {heading}
+                      <span className="mt-0.5 inline-flex h-[26px] shrink-0 items-center rounded-full bg-champagne-100 px-3 text-[13px] font-medium text-champagne-600">
+                        {done === n ? "All done" : done > 0 ? `${done} of ${n} done` : `${n} ${n === 1 ? "item" : "items"}`}
+                      </span>
+                    </span>
+                  }
+                  closed={
+                    <span className="mt-1 block text-sm leading-relaxed text-stone">
+                      {left.length === 0
+                        ? "All done."
+                        : left.slice(0, 3).map((m) => m.title).join(" · ") + (left.length > 3 ? ` and ${left.length - 3} more` : "")}
+                    </span>
+                  }
+                >
+                  <ul className="mt-1">
+                    {group.items.map((m) => (
+                      <MilestoneRow key={m.id} milestone={m} overdue={isOpen(m) && !!m.due_date && m.due_date < today} />
+                    ))}
+                  </ul>
+                  {group.isArea && (
+                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                      <Link href={`/plan/new?area=${encodeURIComponent(group.key)}`} className="py-2 text-champagne-600 hover:text-ink">
+                        + Add a to-do
+                      </Link>
+                      <Link href={`/area/${encodeURIComponent(group.key)}`} className="py-2 text-stone hover:text-ink">
+                        Open the {group.title} page ›
+                      </Link>
+                    </div>
+                  )}
+                </Fold>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </FoldGroup>
   );
 }

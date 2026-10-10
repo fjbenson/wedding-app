@@ -215,9 +215,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   migration; its date passing means "start now", never overdue. The
   starter list now includes nudges. The old `?show=` filters are gone —
   or **By area**
-  (`?view=area`, screen 18) — every area of the wedding in its own order,
-  empty ones with an "Add a to-do" that pre-picks the area. Tick off, add,
-  edit, remove. The to-do form offers the wedding's own areas.
+  (`?view=area`, screen 18; restyled 10 Oct 2026 to match) — every area
+  of the wedding in its own order as a fold: the name, a pill ("3 items" /
+  "1 of 3 done" / "All done"), a one-line summary while closed; open, its
+  to-dos (done ones crossed out below), "+ Add a to-do" and "Open the
+  Flowers page ›". Empty areas show "+ Add a to-do" that pre-picks the
+  area. Tick off, add, edit, remove. The to-do form offers the wedding's own areas.
 - **Money** (`/money`, screens 22–24; `0006_money.sql`): **Budget** — the
   wedding's budget and each area's share against committed and paid, by
   area — and **Payments** (`?tab=payments`): due and paid, tick to mark paid,
@@ -431,12 +434,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    home screen (`docs/DESIGN.md`, "Type system" — use its classes on every
    screen); Fraunces now loads with its optical-size axis, as the canvas
    does; the Hub menu button is a **house** (owner's pick of twelve). **Plan**
-   (10 Oct, By date view; By area not restyled yet). **Each tab gets its
+   (10 Oct: calendar, list and By area). **Each tab gets its
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (to design) · The Day hour-by-hour line. **Next
-   up: Plan's By area view, then Money's signature on the canvas, then
-   People's other screens.** Open idea: a new home-screen app icon (offered options on
+   up: Money's signature on the canvas, then People's other screens.** Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

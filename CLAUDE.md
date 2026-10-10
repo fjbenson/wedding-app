@@ -175,11 +175,29 @@ Next.js scaffold. Built so far, against the plan's tabs:
   move them in, leaving any household they were in). "Remove this
   household" is the old edit page. The
   separate dietary box is gone.
-- **Plan** (`/plan`): the **Agenda** (screens 16–17, `agenda.tsx`) — to-dos,
-  **appointments** (`0007_appointments.sql`, screen 21, `/plan/appointments/…`)
-  and payments due on one month-by-month timeline, the wedding day as the
-  final entry, filters `?show=todos|appointments|payments`, and a "Done and
-  been" section — or **By area**
+- **Plan** (`/plan`): **design settled 10 Oct 2026** (canvas "Plan ·
+  Rounds 1–4", B with option A's pill). A corner switch **By date | By
+  area** (`CornerSwitch`, shared with People), the title, then two big
+  buttons side by side: **Add a to-do** · **Add an appointment**. **By
+  date** (screens 16–17, `agenda.tsx`): this month on a glass card — big
+  "4 still to do, 1 done", a progress bar, the rows, and anything "still
+  open from September" in a fold inside it — then **the road to the day**:
+  a line down the left with a dot per month ("November *2026*", year in
+  gold italic), each month folding open to its rows, closed showing a
+  one-line summary and a pill ("3 items"); runs of empty months say
+  "Nothing planned. Enjoy it."; "Open all / Close all"; the wedding at the
+  end (links to The Day). Then "No date yet" and "Done and been" folds.
+  What's open is remembered in the browser (`fold.tsx`). No dividers
+  between months — the line does that. Rows: to-dos (plain circle),
+  **nudges** (dashed gold circle, italic: "Start looking at
+  photographers · START NOW"), **appointments** (`0007_appointments.sql`,
+  screen 21, `/plan/appointments/…`; calendar on champagne) and payments
+  due (£ on champagne, tap to mark paid). A **nudge** is a to-do with
+  `remind_at` and no `due_date` (`src/lib/plan.ts`: `isNudge`,
+  `planDate`) — the to-do form's "Done by / Start around" switch — so no
+  migration; its date passing means "start now", never overdue. The
+  starter list now includes nudges. The old `?show=` filters are gone —
+  or **By area**
   (`?view=area`, screen 18) — every area of the wedding in its own order,
   empty ones with an "Add a to-do" that pre-picks the area. Tick off, add,
   edit, remove. The to-do form offers the wedding's own areas.
@@ -395,8 +413,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    order; People's other screens are still to do); a shared **type system** taken from the
    home screen (`docs/DESIGN.md`, "Type system" — use its classes on every
    screen); Fraunces now loads with its optical-size axis, as the canvas
-   does; the Hub menu button is a **house** (owner's pick of twelve). **Next
-   up: Plan.** Open idea: a new home-screen app icon (offered options on
+   does; the Hub menu button is a **house** (owner's pick of twelve). **Plan**
+   (10 Oct, By date view; By area not restyled yet). **Next up: Plan's
+   By area view, then People's other screens.** Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

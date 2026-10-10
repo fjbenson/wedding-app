@@ -6,22 +6,19 @@ import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
-import type { AgendaFilter } from "./agenda";
 import TimelineView from "./timeline-view";
 
 export const metadata = { title: "Plan — Wedding App" };
 
-const FILTERS: AgendaFilter[] = ["todos", "appointments", "payments"];
-
 export default async function PlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; show?: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const { view, show } = await searchParams;
+  const { view } = await searchParams;
   const [milestones, areas, appointments, payments, suppliers] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
@@ -42,7 +39,6 @@ export default async function PlanPage({
       weddingDate={wedding.wedding_date}
       areas={areaOptions(areas)}
       view={view === "area" ? "area" : "agenda"}
-      show={FILTERS.includes(show as AgendaFilter) ? (show as AgendaFilter) : "all"}
     />
   );
 }

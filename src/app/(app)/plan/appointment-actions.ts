@@ -54,7 +54,7 @@ export async function saveAppointmentAction(appointmentId: string | null, formDa
   }
 
   refresh();
-  redirect("/plan?show=appointments");
+  redirect("/plan");
 }
 
 export async function deleteAppointmentAction(appointmentId: string) {
@@ -64,5 +64,5 @@ export async function deleteAppointmentAction(appointmentId: string) {
     failed(`/plan/appointments/${appointmentId}`, "That didn't remove it.", error);
   }
   refresh();
-  redirect("/plan?show=appointments");
+  redirect("/plan");
 }

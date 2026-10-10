@@ -14,6 +14,7 @@ import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
 import { markPaidAction } from "../money/actions";
 import { MilestoneRow } from "../plan/milestone-row";
+import { planDate } from "@/lib/plan";
 import {
   addAreaNoteAction,
   deleteAreaNoteAction,
@@ -354,7 +355,7 @@ export default function AreaView({
   const folded = sorted.filter((s) => !shown.includes(s));
   const lead = booked[0];
 
-  const openTodos = milestones.filter(isOpen).sort((a, b) => byDate(a.due_date, b.due_date));
+  const openTodos = milestones.filter(isOpen).sort((a, b) => byDate(planDate(a), planDate(b)));
   const doneTodos = milestones.filter((m) => !isOpen(m));
 
   const upcoming = appointments.filter((a) => a.on_date >= today);

@@ -1,24 +1,19 @@
 import Link from "next/link";
 import { CalendarClock, Plus } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
-import ViewTabs from "@/components/view-tabs";
+import CornerSwitch from "@/components/corner-switch";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { todayISO } from "@/lib/dates";
 import type { Appointment, Milestone, Payment } from "@/types/db";
-import Agenda, { type AgendaFilter } from "./agenda";
+import Agenda from "./agenda";
 import { MilestoneRow, isOpen } from "./milestone-row";
-
-function plural(count: number, one: string, many = `${one}s`) {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
 
 /**
  * The Plan tab (docs/information-architecture.md): two views of the run-up.
  *
- * - Agenda (screens 16, 17): every dated thing on one timeline — to-dos,
- *   appointments, payments due — with the wedding day as the final entry,
- *   filterable to one kind. Lives in agenda.tsx.
+ * - By date (screens 16, 17): this month on a card, then every later month
+ *   on "the road to the day", the wedding at the end. To-dos (and "start
+ *   around" nudges), appointments and payments due together. agenda.tsx.
  * - By area (screen 18): to-dos grouped under each of the wedding's areas.
  */
 export default function TimelineView({
@@ -29,7 +24,6 @@ export default function TimelineView({
   weddingDate,
   areas,
   view,
-  show,
 }: {
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
@@ -39,63 +33,49 @@ export default function TimelineView({
   weddingDate: string | null;
   areas: AreaOption[];
   view: "agenda" | "area";
-  show: AgendaFilter;
 }) {
   const today = todayISO();
-  const open = milestones.filter(isOpen);
-  const done = milestones.length - open.length;
-  const overdue = open.filter((m) => m.due_date && m.due_date < today).length;
   const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
   const due = payments.filter((p) => !p.paid_on).length;
   const nothing = milestones.length === 0 && upcoming === 0 && due === 0;
 
   return (
     <main className="page pb-28 lg:pb-16">
-      <p className="label">Plan</p>
-      <ViewTabs
+      <CornerSwitch
         label="Show the plan"
         tabs={[
-          { label: "Agenda", href: "/plan", active: view === "agenda" },
+          { label: "By date", href: "/plan", active: view === "agenda" },
           { label: "By area", href: "/plan?view=area", active: view === "area" },
         ]}
       />
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
         {nothing ? "Nothing planned yet." : "The plan"}
       </h1>
-      <p className="mt-2 text-sm text-stone">
-        {nothing
-          ? "Whatever you add here shows on your home screen too."
-          : [
-              plural(open.length, "to-do"),
-              done > 0 && `${done} done`,
-              upcoming > 0 && plural(upcoming, "appointment"),
-              due > 0 && plural(due, "payment") + " due",
-              overdue > 0 && `${overdue} overdue`,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-      </p>
+      {nothing && (
+        <p className="mt-2 text-sm text-stone">Whatever you add here shows on your home screen too.</p>
+      )}
 
-      {milestones.length === 0 ? (
+      {/* The two ways in, side by side (owner's ask, Plan round 3). */}
+      <div className="mt-5 grid grid-cols-2 gap-2.5 lg:max-w-md">
+        <Link
+          href="/plan/new"
+          className="flex h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] bg-ink px-2 text-sm text-ivory transition hover:bg-ink/90"
+        >
+          <Plus className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+          Add a to-do
+        </Link>
+        <Link
+          href="/plan/appointments/new"
+          className="flex h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-champagne-400/70 bg-white px-2 text-sm text-ink transition hover:bg-champagne-100"
+        >
+          <CalendarClock className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
+          Add an appointment
+        </Link>
+      </div>
+
+      {milestones.length === 0 && (
         <div className="mt-8">
           <StarterPlanCard returnTo="/plan" hasDate={weddingDate !== null} />
-        </div>
-      ) : (
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <Link
-            href="/plan/new"
-            className="flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 sm:px-6"
-          >
-            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Add a to-do
-          </Link>
-          <Link
-            href="/plan/appointments/new"
-            className="flex items-center justify-center gap-2 rounded-xl border border-champagne-400 px-4 py-3 text-ink transition hover:bg-champagne-100 sm:px-6"
-          >
-            <CalendarClock className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Add an appointment
-          </Link>
         </div>
       )}
 
@@ -109,7 +89,6 @@ export default function TimelineView({
           suppliers={suppliers}
           areas={areas}
           weddingDate={weddingDate}
-          show={show}
           today={today}
         />
       )}

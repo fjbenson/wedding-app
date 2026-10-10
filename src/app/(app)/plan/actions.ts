@@ -40,9 +40,14 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
     redirect(`${back}?error=${encodeURIComponent("Please say what needs doing.")}`);
   }
 
+  // One date box: "Done by" saves it as the due date, "Start around" as a
+  // nudge's start (src/lib/plan.ts).
+  const when = text(formData, "when");
+  const start = formData.get("when_kind") === "start";
   const fields = {
     title,
-    due_date: text(formData, "due_date"),
+    due_date: start ? null : when,
+    remind_at: start ? when : null,
     category: text(formData, "category"),
     description: text(formData, "description"),
   };
@@ -55,7 +60,6 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
         wedding_id: wedding.id,
         ...fields,
         status: "todo",
-        remind_at: null,
         assigned_to: null,
       });
   } catch (error) {
@@ -117,7 +121,6 @@ export async function addStarterPlanAction(returnTo: "/" | "/plan") {
           ...item,
           description: null,
           status: "todo" as const,
-          remind_at: null,
           assigned_to: null,
         })),
       );

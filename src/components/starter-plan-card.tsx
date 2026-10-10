@@ -28,8 +28,9 @@ export default function StarterPlanCard({
         Begin with the usual to-dos, then make them yours.
       </h3>
       <p className="mt-2 text-sm leading-relaxed text-stone">
-        Fourteen things most weddings need — the venue, the photographer, the invitations
-        {hasDate ? ", each dated back from your day" : ""}. Change or remove anything.
+        The things most weddings need — the venue, the photographer, the invitations
+        {hasDate ? ", each dated back from your day, with nudges for when to start looking" : ""}. Change
+        or remove anything.
       </p>
 
       <form action={addStarterPlanAction.bind(null, returnTo)} className="mt-5">

@@ -26,7 +26,7 @@ export default async function AppointmentPage({
   const { areas, suppliers } = await formOptions(appointment.wedding_id);
 
   return (
-    <FormPage backHref="/plan?show=appointments" backLabel="Plan" title={appointment.title} error={error} detail={detail}>
+    <FormPage backHref="/plan" backLabel="Plan" title={appointment.title} error={error} detail={detail}>
       <AppointmentForm
         action={saveAppointmentAction.bind(null, appointment.id)}
         appointment={appointment}

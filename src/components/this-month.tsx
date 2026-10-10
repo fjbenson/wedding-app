@@ -1,6 +1,7 @@
 import Link from "next/link";
 import StarterPlanCard from "@/components/starter-plan-card";
-import { formatWeekdayDayMonth, isThisMonth } from "@/lib/dates";
+import { formatMonthYear, formatWeekdayDayMonth, isThisMonth, todayISO } from "@/lib/dates";
+import { isNudge, planDate } from "@/lib/plan";
 import type { Milestone } from "@/types/db";
 
 /** How many upcoming milestones the home screen lists. */
@@ -17,11 +18,16 @@ export default function ThisMonth({
   milestones: Milestone[];
   hasDate: boolean;
 }) {
-  const open = milestones.filter((m) => m.status === "todo" || m.status === "in_progress");
+  // In plan order: a nudge ("start around") sits on its start date.
+  const open = milestones
+    .filter((m) => m.status === "todo" || m.status === "in_progress")
+    .sort((a, b) => (planDate(a) ?? "9999").localeCompare(planDate(b) ?? "9999"));
   const upcoming = open.slice(0, LIST_LENGTH);
   const next = upcoming[0];
 
-  const label = next?.due_date && !isThisMonth(next.due_date) ? "Coming up" : "This month";
+  const nextDate = next && planDate(next);
+  const label = nextDate && !isThisMonth(nextDate) ? "Coming up" : "This month";
+  const thisMonth = todayISO().slice(0, 7);
 
   return (
     <section className="relative px-5 lg:px-0">
@@ -34,21 +40,28 @@ export default function ThisMonth({
 
       {upcoming.length > 0 ? (
         <ol className="glass-card mt-2.5 rounded-[22px] px-[18px] py-1.5">
-          {upcoming.map((m) => (
+          {upcoming.map((m) => {
+            const date = planDate(m);
+            return (
             <li key={m.id} className="flex items-center gap-3.5 border-t border-linen py-3.5 first:border-t-0">
               <span className="w-[34px] shrink-0 font-display text-[22px] font-light text-champagne-600">
-                {m.due_date ? m.due_date.slice(8) : "—"}
+                {date ? date.slice(8) : "—"}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="type-item block">{m.title}</span>
-                {m.due_date && (
+                <span className={`type-item block ${isNudge(m) ? "italic" : ""}`}>{m.title}</span>
+                {date && (
                   <span className="type-meta mt-1 block">
-                    Due {formatWeekdayDayMonth(m.due_date)}
+                    {!isNudge(m)
+                      ? `Due ${formatWeekdayDayMonth(date)}`
+                      : date.slice(0, 7) <= thisMonth
+                        ? "Start now"
+                        : `Start ${formatMonthYear(date).split(" ")[0]}`}
                   </span>
                 )}
               </span>
             </li>
-          ))}
+            );
+          })}
         </ol>
       ) : milestones.length === 0 ? (
         <div className="mt-2.5">

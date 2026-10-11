@@ -202,7 +202,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   open from earlier folds in above the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
   today softly circled, the wedding in a gold ring; tap a day and its rows
-  show under the grid. Undated things are in a "No date yet" fold at the
+  show under the grid. The month in view and the tapped day are kept for 30
+  minutes (sessionStorage), so opening a to-do and coming back lands on the
+  same month — the guest list's rule for a task in hand. Undated things are in a "No date yet" fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
   **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no

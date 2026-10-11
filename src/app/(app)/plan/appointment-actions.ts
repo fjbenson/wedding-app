@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createAppointment, deleteAppointment, updateAppointment } from "@/lib/db/appointments";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { returnTo } from "@/lib/return-to";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -54,15 +55,15 @@ export async function saveAppointmentAction(appointmentId: string | null, formDa
   }
 
   refresh();
-  redirect("/plan");
+  redirect(returnTo(formData, "/plan"));
 }
 
-export async function deleteAppointmentAction(appointmentId: string) {
+export async function deleteAppointmentAction(appointmentId: string, formData?: FormData) {
   try {
     await deleteAppointment(appointmentId);
   } catch (error) {
     failed(`/plan/appointments/${appointmentId}`, "That didn't remove it.", error);
   }
   refresh();
-  redirect("/plan");
+  redirect(returnTo(formData, "/plan"));
 }

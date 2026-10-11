@@ -37,6 +37,7 @@ export default async function AppointmentPage({
         <RemoveButton
           action={deleteAppointmentAction.bind(null, appointment.id)}
           label="Remove this appointment"
+          returnTo="/plan"
           question={`Remove "${appointment.title}"?`}
         />
       </div>

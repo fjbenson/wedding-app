@@ -14,6 +14,7 @@ import {
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
+import { returnTo } from "@/lib/return-to";
 import { starterPlan } from "@/lib/starter-plan";
 
 function text(formData: FormData, key: string): string | null {
@@ -74,7 +75,7 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
   }
 
   refresh();
-  redirect("/plan");
+  redirect(returnTo(formData, "/plan"));
 }
 
 /** The tick box: done ↔ not done. Stays on the page. */
@@ -84,7 +85,7 @@ export async function toggleMilestoneAction(milestoneId: string, done: boolean) 
   refresh();
 }
 
-export async function deleteMilestoneAction(milestoneId: string) {
+export async function deleteMilestoneAction(milestoneId: string, formData?: FormData) {
   let detail = "";
   try {
     await deleteMilestone(milestoneId);
@@ -100,7 +101,7 @@ export async function deleteMilestoneAction(milestoneId: string) {
   }
 
   refresh();
-  redirect("/plan");
+  redirect(returnTo(formData, "/plan"));
 }
 
 /**

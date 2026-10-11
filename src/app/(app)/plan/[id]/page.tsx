@@ -40,6 +40,7 @@ export default async function EditMilestonePage({
         <RemoveButton
           action={deleteMilestoneAction.bind(null, milestone.id)}
           label="Remove from the plan"
+          returnTo="/plan"
           question={`Remove "${milestone.title}" from the plan?`}
         />
       </div>

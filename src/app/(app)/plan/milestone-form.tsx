@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ReturnTo } from "@/components/back-link";
 import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { WHEN_TITLE, isNudge, planDate } from "@/lib/plan";
@@ -32,6 +33,7 @@ export default function MilestoneForm({
 
   return (
     <form action={action} className="space-y-5">
+      <ReturnTo href="/plan" />
       <Field label="What needs doing?">
         <input
           name="title"

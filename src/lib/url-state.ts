@@ -1,3 +1,5 @@
+import { rememberView } from "./last-view";
+
 /**
  * Keeping a screen's view in its web address (owner's call, 11 Oct 2026):
  * the calendar's month, the guest list's search and filters. Each change
@@ -14,4 +16,5 @@ export function replaceQuery(changes: Record<string, string | null>) {
     else url.searchParams.delete(key);
   }
   window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  rememberView(`${url.pathname}${url.search}`);
 }

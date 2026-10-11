@@ -1,5 +1,6 @@
 "use client";
 
+import { ReturnTo } from "@/components/back-link";
 import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import type { AreaOption } from "@/lib/areas";
 import type { Appointment } from "@/types/db";
@@ -20,6 +21,7 @@ export default function AppointmentForm({
 }) {
   return (
     <form action={action} className="space-y-5">
+      <ReturnTo href="/plan" />
       <Field label="What is it?">
         <input
           name="title"

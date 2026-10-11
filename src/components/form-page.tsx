@@ -1,7 +1,10 @@
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import BackLink from "./back-link";
 
-/** The frame around the add and edit forms: a way back, a title, any error. */
+/**
+ * The frame around the add and edit forms: a way back (to the view you came
+ * from, `BackLink`), a title, any error.
+ */
 export default function FormPage({
   backHref,
   backLabel,
@@ -19,13 +22,13 @@ export default function FormPage({
 }) {
   return (
     <main className="page pb-16">
-      <Link
+      <BackLink
         href={backHref}
         className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-stone hover:text-ink"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         {backLabel}
-      </Link>
+      </BackLink>
 
       <h1 className="mt-4 text-[30px] leading-tight tracking-[-0.02em] text-ink">{title}</h1>
 

@@ -453,6 +453,12 @@ access control is RLS. No column-level encryption is planned.
   Back goes to the previous screen and returning from an item restores the
   view; tapping the tab starts fresh. Choices you'd want every time (the
   guest list's sort) go in localStorage until changed.
+  **The way back keeps the view too** (11 Oct 2026): `ViewMemory` (in the
+  `(app)` layout) and `replaceQuery()` note each screen's last view for the
+  visit (`src/lib/last-view.ts`), so a form's "‹ Plan" (`FormPage` →
+  `BackLink`) returns to it. Plan's to-do and appointment forms also send a
+  hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
+  `src/lib/return-to.ts`); other screens' saves can opt in the same way.
 - **Server actions called from client code must not be able to throw into
   React** (9 Oct 2026): after a deploy, a page left open calls the old
   action, which no longer exists, and an uncaught error blanks the screen.

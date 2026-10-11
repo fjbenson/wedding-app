@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
+import { ReturnTo } from "./back-link";
 import { useFormStatus } from "react-dom";
 
 /** Shared pieces for the add/edit forms. */
@@ -43,10 +44,13 @@ export function RemoveButton({
   action,
   label,
   question,
+  returnTo,
 }: {
-  action: () => void | Promise<void>;
+  action: (formData: FormData) => void | Promise<void>;
   label: string;
   question: string;
+  /** Go back to the view you came from on this screen afterwards (`ReturnTo`). */
+  returnTo?: string;
 }) {
   return (
     <form
@@ -55,6 +59,7 @@ export function RemoveButton({
         if (!confirm(question)) event.preventDefault();
       }}
     >
+      {returnTo && <ReturnTo href={returnTo} />}
       <button
         type="submit"
         className="w-full py-3 text-sm text-stone underline underline-offset-4 hover:text-ink"

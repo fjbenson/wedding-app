@@ -1,5 +1,6 @@
 import AppShell from "@/components/app-shell";
 import UndoToast from "@/components/undo-toast";
+import ViewMemory from "@/components/view-memory";
 import { listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -21,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <AppShell wedding={wedding} inboxCount={unfiled?.filter(toSort).length ?? 0}>
       {children}
       <UndoToast />
+      <ViewMemory />
     </AppShell>
   );
 }

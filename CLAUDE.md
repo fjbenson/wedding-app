@@ -230,7 +230,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   migration; its date passing means "start now", never overdue. The
   starter list now includes nudges. The old `?show=` filters are gone —
   or **By area**
-  (`?view=area`, screen 18; restyled 10 Oct 2026 to match) — every area
+  (`?view=area`, screen 18; restyled 10 Oct 2026 to match) — or **To-dos**
+  (`?view=todos`, `todo-list.tsx`, owner's ask 11 Oct 2026): just the
+  to-dos as a checklist, no appointments or payments — Overdue · This month
+  · Later · No date yet (`#no-date`), done folded at the foot. The corner
+  switch has three: By date | By area | To-dos. The calendar shows "N to-dos
+  with no date yet ›" above the grid, linking there. By area — every area
   of the wedding in its own order as a fold: the name, a pill ("3 items" /
   "1 of 3 done" / "All done"), a one-line summary while closed; open, its
   to-dos (done ones crossed out below), "+ Add a to-do" and "Open the
@@ -259,7 +264,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   "File it" opens that note's panel (`/inbox?note=<id>`). **Filing only tags
   a note** (owner, 11 Oct 2026): it stays on the wall with a gold area tag
   and shows in that area's Notes block too; its panel says "Filed under" and
-  can change it or set it back to Not filed. No "Filed lately" list any more. Images aren't in yet:
+  can change it or set it back to Not filed. No "Filed lately" list any more.
+  **Make it a to-do** asks when (Done by · Start around · No date), keeps the
+  note with a dark "To-do" tag (`notes.milestone_id`, `0014_note_todo.sql`;
+  until that's run the note is removed as before) whose panel row opens the
+  to-do, and shows "Added to your plan · See it". A note still **to sort**
+  = no area and not a to-do (`toSort()` in `src/lib/notes.ts`) — the Hub
+  card, sidebar count and wall count use that. Images aren't in yet:
   they need Supabase Storage (a bucket plus storage policies).
 - **Settings** (`/settings`, screen 37; a gear on the hub cover, and the
   foot of the desktop sidebar): the couple's names and date; every area
@@ -354,7 +365,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0013_to_invite.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0014_note_todo.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role

@@ -288,8 +288,23 @@ export default function Agenda({
     const firstMonth = [thisMonth, ...dated].sort()[0];
     const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
 
+    // Undated to-dos have no day on the grid, so say so up top (owner, 11 Oct
+    // 2026) rather than leaving them in a fold at the foot of the page.
+    const undatedTodos = undated.filter((e) => e.kind === "todo").length;
+
     return (
       <FoldGroup initiallyOpen={[]}>
+        {undatedTodos > 0 && (
+          <Link
+            href="/plan?view=todos#no-date"
+            className="mt-6 flex items-center justify-between gap-3 rounded-2xl bg-cream px-4 py-3 text-sm text-ink hover:bg-champagne-100"
+          >
+            <span>
+              {undatedTodos} {undatedTodos === 1 ? "to-do" : "to-dos"} with no date yet
+            </span>
+            <span className="text-champagne-600">See {undatedTodos === 1 ? "it" : "them"} ›</span>
+          </Link>
+        )}
         <PlanCalendar
           today={today}
           weddingDate={weddingDate}

@@ -8,6 +8,7 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
 import { listNotes } from "@/lib/db/notes";
+import { toSort } from "@/lib/notes";
 import { STARTER_AREAS } from "@/lib/areas";
 import { todayISO } from "@/lib/dates";
 import Cover from "@/components/cover";
@@ -63,7 +64,7 @@ export default async function HomePage() {
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
           <div className="mb-7">
-            <HomeNotes unfiled={unfiled} today={todayISO()} />
+            <HomeNotes unfiled={unfiled.filter(toSort)} today={todayISO()} />
           </div>
         )}
         <ThisMonth

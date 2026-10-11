@@ -38,7 +38,7 @@ export default async function PlanPage({
       }))}
       weddingDate={wedding.wedding_date}
       areas={areaOptions(areas)}
-      view={view === "area" ? "area" : "agenda"}
+      view={view === "area" ? "area" : view === "todos" ? "todos" : "agenda"}
       as={as === "list" ? "list" : "calendar"}
     />
   );

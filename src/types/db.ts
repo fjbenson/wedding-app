@@ -182,6 +182,8 @@ export interface Note {
   area_key: string | null;
   body: string | null;
   url: string | null;
+  /** The to-do it was made into (0014_note_todo.sql); missing until that's run. */
+  milestone_id?: string | null;
   created_at: string;
 }
 

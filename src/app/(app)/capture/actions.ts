@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createMilestone } from "@/lib/db/milestones";
-import { createNote, deleteNote, fileNote, getNote, updateNote } from "@/lib/db/notes";
+import { createNote, deleteNote, fileNote, getNote, linkNoteToMilestone, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
@@ -123,26 +123,42 @@ export async function fileInboxNoteAction(noteId: string, areaKey: string): Prom
   return attempt("That didn't file it. Try again.", () => fileNote(noteId, areaKey || null));
 }
 
-export async function inboxNoteToTodoAction(noteId: string): Promise<Result> {
+/**
+ * Makes a note into a to-do: "Done by" a date, "Start around" one (a nudge,
+ * src/lib/plan.ts), or no date yet. The note stays on the wall with a "To-do"
+ * tag that opens it (owner, 11 Oct 2026) — or, until 0014_note_todo.sql is
+ * run, is removed as before. Returns the new to-do's id so the wall can say
+ * where it went.
+ */
+export async function inboxNoteToTodoAction(
+  noteId: string,
+  when: { kind: "due" | "start" | "none"; date: string | null },
+): Promise<Result & { milestoneId?: string }> {
   const wedding = await getCurrentWedding();
   if (!wedding) return { error: "Couldn't find your wedding. Reload the page." };
+  const date = when.kind !== "none" && when.date && /^\d{4}-\d{2}-\d{2}$/.test(when.date) ? when.date : null;
+  if (when.kind !== "none" && !date) return { error: "Pick a date, or choose No date." };
+
+  let milestoneId: string | undefined;
   const result = await attempt("That didn't make a to-do. Try again.", async () => {
     const note = await getNote(noteId);
     if (!note) return;
-    await createMilestone({
+    const milestone = await createMilestone({
       wedding_id: wedding.id,
       title: (note.body ?? note.url ?? "").split("\n")[0].slice(0, 120),
       description: [note.body, note.url].filter(Boolean).join("\n\n") || null,
       category: note.area_key,
-      due_date: null,
+      due_date: when.kind === "due" ? date : null,
       status: "todo",
-      remind_at: null,
+      remind_at: when.kind === "start" ? date : null,
       assigned_to: null,
     });
-    await deleteNote(noteId);
+    milestoneId = milestone.id;
+    if (!(await linkNoteToMilestone(noteId, milestone.id))) await deleteNote(noteId);
   });
-  if (!result.error) revalidatePath("/plan");
-  return result;
+  if (result.error) return result;
+  revalidatePath("/plan");
+  return { milestoneId };
 }
 
 /** Changes a note's words; a link it was captured with stays. Emptying both removes it. */

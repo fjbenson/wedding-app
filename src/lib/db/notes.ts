@@ -49,3 +49,16 @@ export async function deleteNote(noteId: string): Promise<void> {
   const { error } = await supabase.from("notes").delete().eq("id", noteId);
   if (error) throw error;
 }
+
+/**
+ * Remembers which to-do a note became, so it can stay on the wall with a
+ * "To-do" tag. Returns false (rather than throwing) if 0014_note_todo.sql
+ * hasn't been run yet, so the caller can fall back.
+ */
+export async function linkNoteToMilestone(noteId: string, milestoneId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("notes").update({ milestone_id: milestoneId }).eq("id", noteId);
+  if (!error) return true;
+  if (error.code === "PGRST204" || error.code === "42703") return false;
+  throw error;
+}

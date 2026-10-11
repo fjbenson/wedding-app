@@ -3,6 +3,7 @@ import { ChevronLeft, Plus } from "lucide-react";
 import type { AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Note } from "@/types/db";
+import { toSort } from "@/lib/notes";
 import { InspoTile } from "../inspo/inspo-view";
 import NoteWall from "./note-wall";
 
@@ -33,7 +34,7 @@ export default function InboxView({
   error?: string;
   detail?: string;
 }) {
-  const unfiled = (notes ?? []).filter((n) => !n.area_key);
+  const unfiled = (notes ?? []).filter(toSort);
 
   return (
     <main className="page pb-28 lg:pb-16">
@@ -45,7 +46,7 @@ export default function InboxView({
       <p className="mt-2 text-sm text-stone">
         {(notes ?? []).length === 0
           ? "Jot something down and it waits here, until you file it under an area or make it a to-do."
-          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} not filed yet` : ", all filed"}. Tap one to file it under an area, or make it a to-do.`}
+          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} to sort` : ", all sorted"}. Tap one to file it under an area, or make it a to-do.`}
       </p>
 
       {error && (

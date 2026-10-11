@@ -1,6 +1,7 @@
 import AppShell from "@/components/app-shell";
 import UndoToast from "@/components/undo-toast";
 import { listNotes } from "@/lib/db/notes";
+import { toSort } from "@/lib/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 
 /**
@@ -17,7 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const unfiled = await listNotes(wedding.id, { area: null });
 
   return (
-    <AppShell wedding={wedding} inboxCount={unfiled?.length ?? 0}>
+    <AppShell wedding={wedding} inboxCount={unfiled?.filter(toSort).length ?? 0}>
       {children}
       <UndoToast />
     </AppShell>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
@@ -40,7 +40,9 @@ async function safely(work: () => Promise<Result>): Promise<Result> {
  * laptop, each slightly turned with a strip of tape. Tap one and a panel
  * comes up to file it under an area, make it a to-do, edit or remove it.
  * Filing only tags a note (owner, 11 Oct 2026): it stays on the wall with
- * its area's name, and shows on that area's page as well.
+ * its area's name, and shows on that area's page as well. Making it a to-do
+ * asks when, keeps the note with a "To-do" tag that opens it, and says
+ * "Added to your plan · See it".
  */
 export default function NoteWall({
   notes,
@@ -56,6 +58,13 @@ export default function NoteWall({
 }) {
   const [openId, setOpenId] = useState<string | null>(notes.some((n) => n.id === initialOpen) ? initialOpen! : null);
   const open = notes.find((n) => n.id === openId);
+  // After "Make it a to-do": say where it went, with a way there.
+  const [added, setAdded] = useState<string | null>(null);
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(null), 8000);
+    return () => clearTimeout(timer);
+  }, [added]);
 
   return (
     <>
@@ -87,9 +96,20 @@ export default function NoteWall({
               <span className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
                 <span className="type-meta">{formatAgo(note.created_at, today)}</span>
                 {/* Filed: tagged with its area, and on that area's page too — it stays here as well. */}
-                {note.area_key && (
-                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[12px] font-medium text-champagne-600 shadow-[inset_0_0_0_1px_rgb(205_183_142/0.6)]">
-                    {areaName(note.area_key, areas)}
+                {(note.area_key || note.milestone_id) && (
+                  <span className="flex flex-wrap gap-1">
+                    {note.area_key && (
+                      <span className="rounded-full bg-white/75 px-2 py-0.5 text-[12px] font-medium text-champagne-600 shadow-[inset_0_0_0_1px_rgb(205_183_142/0.6)]">
+                        {areaName(note.area_key, areas)}
+                      </span>
+                    )}
+                    {/* Made into a to-do: it stays here too, and the panel opens it. */}
+                    {note.milestone_id && (
+                      <span className="flex items-center gap-1 rounded-full bg-ink/85 px-2 py-0.5 text-[12px] font-medium text-ivory">
+                        <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />
+                        To-do
+                      </span>
+                    )}
                   </span>
                 )}
               </span>
@@ -117,7 +137,22 @@ export default function NoteWall({
         })}
       </ul>
 
-      {open && <NotePanel key={open.id} note={open} areas={areas} today={today} onClose={() => setOpenId(null)} />}
+      {open && (
+        <NotePanel key={open.id} note={open} areas={areas} today={today} onClose={() => setOpenId(null)} onAdded={setAdded} />
+      )}
+
+      {added && (
+        <div
+          role="status"
+          className="fixed inset-x-4 bottom-[calc(max(12px,env(safe-area-inset-bottom))+76px)] z-30 mx-auto flex max-w-sm items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm text-ivory shadow-lg lg:bottom-8"
+        >
+          <Check className="h-4 w-4 shrink-0" strokeWidth={2.2} aria-hidden />
+          <span className="flex-1">Added to your plan.</span>
+          <Link href={`/plan/${added}`} className="font-medium underline underline-offset-4">
+            See it
+          </Link>
+        </div>
+      )}
     </>
   );
 }
@@ -125,12 +160,28 @@ export default function NoteWall({
 const ROW = "flex min-h-14 w-full items-center gap-3 border-t border-linen px-1 text-left text-base text-ink disabled:opacity-60";
 
 /** The panel a tapped note opens: a sheet from the bottom on a phone, a card in the middle on a laptop. */
-function NotePanel({ note, areas, today, onClose }: { note: Note; areas: AreaOption[]; today: string; onClose: () => void }) {
+function NotePanel({
+  note,
+  areas,
+  today,
+  onClose,
+  onAdded,
+}: {
+  note: Note;
+  areas: AreaOption[];
+  today: string;
+  onClose: () => void;
+  onAdded: (milestoneId: string) => void;
+}) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [area, setArea] = useState(note.area_key ?? "");
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.body ?? "");
+  // Making it a to-do asks when, like the to-do form: done by, start around, or no date yet.
+  const [asking, setAsking] = useState(false);
+  const [whenKind, setWhenKind] = useState<"due" | "start" | "none">("due");
+  const [whenDate, setWhenDate] = useState("");
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
@@ -218,10 +269,85 @@ function NotePanel({ note, areas, today, onClose }: { note: Note; areas: AreaOpt
             </button>
           )}
         </form>
-        <button type="button" disabled={pending} onClick={() => run(() => inboxNoteToTodoAction(note.id))} className={ROW}>
-          <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-          Make it a to-do
-        </button>
+        {note.milestone_id ? (
+          <Link href={`/plan/${note.milestone_id}`} className={ROW}>
+            <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
+            <span className="flex-1">On your plan as a to-do</span>
+            <span className="flex items-center text-sm text-champagne-600">
+              See it
+              <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            </span>
+          </Link>
+        ) : !asking ? (
+          <button type="button" disabled={pending} onClick={() => setAsking(true)} className={ROW}>
+            <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
+            Make it a to-do
+          </button>
+        ) : (
+          <form
+            className="border-t border-linen px-1 py-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              start(async () => {
+                const result = await safely(() => inboxNoteToTodoAction(note.id, { kind: whenKind, date: whenDate || null }));
+                setError(result.error);
+                const id = (result as { milestoneId?: string }).milestoneId;
+                if (!result.error && id) {
+                  onAdded(id);
+                  onClose();
+                }
+              });
+            }}
+          >
+            <p className="flex items-center gap-3 text-base text-ink">
+              <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
+              Make it a to-do — when?
+            </p>
+            <div role="radiogroup" aria-label="When" className="mt-3 grid grid-cols-3 rounded-full bg-cream p-[3px]">
+              {(
+                [
+                  ["due", "Done by"],
+                  ["start", "Start around"],
+                  ["none", "No date"],
+                ] as const
+              ).map(([kind, label]) => (
+                <button
+                  key={kind}
+                  type="button"
+                  role="radio"
+                  aria-checked={whenKind === kind}
+                  onClick={() => setWhenKind(kind)}
+                  className={`h-9 rounded-full text-sm transition ${
+                    whenKind === kind ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {whenKind !== "none" && (
+              <input
+                type="date"
+                aria-label="Date"
+                value={whenDate}
+                onChange={(event) => setWhenDate(event.target.value)}
+                className="mt-2.5 block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
+              />
+            )}
+            <div className="mt-3 flex justify-end gap-2">
+              <button type="button" onClick={() => setAsking(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={pending || (whenKind !== "none" && !whenDate)}
+                className="h-11 rounded-xl bg-ink px-5 text-sm text-ivory disabled:opacity-50"
+              >
+                {pending ? "Adding…" : "Add to the plan"}
+              </button>
+            </div>
+          </form>
+        )}
         {!editing && (
           <button type="button" disabled={pending} onClick={() => setEditing(true)} className={ROW}>
             <PenLine className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />

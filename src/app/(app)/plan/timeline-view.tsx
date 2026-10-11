@@ -8,6 +8,7 @@ import { todayISO } from "@/lib/dates";
 import { planDate } from "@/lib/plan";
 import type { Appointment, Milestone, Payment } from "@/types/db";
 import Agenda from "./agenda";
+import TodoList from "./todo-list";
 import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
 
@@ -18,6 +19,7 @@ import { MilestoneRow, isOpen } from "./milestone-row";
  *   on "the road to the day", the wedding at the end. To-dos (and "start
  *   around" nudges), appointments and payments due together. agenda.tsx.
  * - By area (screen 18): to-dos grouped under each of the wedding's areas.
+ * - To-dos (`?view=todos`): just the to-dos, as a plain checklist. todo-list.tsx.
  */
 export default function TimelineView({
   milestones,
@@ -36,7 +38,7 @@ export default function TimelineView({
   suppliers: { id: string; name: string }[];
   weddingDate: string | null;
   areas: AreaOption[];
-  view: "agenda" | "area";
+  view: "agenda" | "area" | "todos";
   /** By date opens on the calendar; `?as=list` shows the list. */
   as: "calendar" | "list";
 }) {
@@ -52,6 +54,7 @@ export default function TimelineView({
         tabs={[
           { label: "By date", href: "/plan", active: view === "agenda" },
           { label: "By area", href: "/plan?view=area", active: view === "area" },
+          { label: "To-dos", href: "/plan?view=todos", active: view === "todos" },
         ]}
       />
       <PageTitle drawing="plan" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
@@ -87,6 +90,8 @@ export default function TimelineView({
 
       {view === "area" ? (
         <ByArea milestones={milestones} areas={areas} today={today} />
+      ) : view === "todos" ? (
+        <TodoList milestones={milestones} areas={areas} today={today} />
       ) : (
         <Agenda
           milestones={milestones}

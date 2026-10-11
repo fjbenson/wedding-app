@@ -72,6 +72,27 @@ export function formatTime(time: string): string {
   return m ? `${hour}:${String(m).padStart(2, "0")}${suffix}` : `${hour}${suffix}`;
 }
 
+/** "14:30:00" → "14:30", "09:00" → "9:00" — the run sheet's clock. */
+export function formatClock(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  return `${h}:${String(m || 0).padStart(2, "0")}`;
+}
+
+/** Today's date and the time ("2027-06-12", "14:52") in the UK, wherever the server is. */
+export function nowInLondon(): { date: string; time: string } {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, time: `${get("hour")}:${get("minute")}` };
+}
+
 /** "Sat 3 Oct" */
 export function formatWeekdayDayMonth(date: string): string {
   const [year, month, day] = date.split("-").map(Number);

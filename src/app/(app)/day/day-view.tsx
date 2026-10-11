@@ -1,9 +1,11 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import { ChevronRight, Plus, X } from "lucide-react";
+import CornerSwitch from "@/components/corner-switch";
 import ViewTabs from "@/components/view-tabs";
 import { InlineSubmit } from "@/components/form-bits";
-import { formatLongDate, formatTime } from "@/lib/dates";
+import { coupleName as setCoupleName } from "@/lib/couple-name";
+import { formatClock, formatLongDate, formatTime, nowInLondon } from "@/lib/dates";
 import type { Contact, Rsvp, RunSheetItem, Seat, SeatingTable, TransportPassenger, TransportRun } from "@/types/db";
 import {
   addPassengerAction,
@@ -44,6 +46,7 @@ const pill =
 export default function DayView({
   tab,
   seatingView,
+  coupleName,
   weddingDate,
   day,
   guests,
@@ -53,6 +56,7 @@ export default function DayView({
 }: {
   tab: DayTab;
   seatingView: "plan" | "list";
+  coupleName: string;
   weddingDate: string | null;
   /** null until 0009_the_day.sql has been run. */
   day: DayData | null;
@@ -65,9 +69,8 @@ export default function DayView({
 
   return (
     <main className="page pb-28 lg:pb-16 print:p-0">
-      <p className="label">The Day</p>
       <div className="print:hidden">
-        <ViewTabs
+        <CornerSwitch
           label="The Day"
           tabs={[
             { label: "Run sheet", href: "/day", active: tab === "run-sheet" },
@@ -95,28 +98,51 @@ export default function DayView({
       ) : tab === "transport" ? (
         <Transport data={data} guests={guests} />
       ) : (
-        <RunSheet items={data.runSheet} weddingDate={weddingDate} />
+        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} />
       )}
     </main>
   );
 }
 
-function RunSheet({ items, weddingDate }: { items: RunSheetItem[]; weddingDate: string | null }) {
+/** The parts of the day the run sheet is set under, by the clock. */
+const PARTS = [
+  { name: "The morning", until: "12:00" },
+  { name: "The afternoon", until: "18:00" },
+  { name: "The evening", until: "24:00" },
+];
+
+/**
+ * The run sheet (canvas 2, "The Day · Signature look", option D, owner's
+ * pick 11 Oct 2026): set like the order of service — a white card with a gold
+ * border, the couple and the date at the top, the day in parts — but read
+ * like a timetable: the time on the left, a gold thread with a dot per
+ * moment, the moment on the right. On the day itself, the moment under way
+ * is marked Now.
+ */
+function RunSheet({ items, coupleName, weddingDate }: { items: RunSheetItem[]; coupleName: string; weddingDate: string | null }) {
+  const now = nowInLondon();
+  const isTheDay = weddingDate === now.date;
+  const nowId = isTheDay ? items.filter((i) => i.at_time.slice(0, 5) <= now.time).at(-1)?.id : undefined;
+  let from = "00:00";
+  const parts = PARTS.map((p) => {
+    const theirs = items.filter((i) => i.at_time.slice(0, 5) >= from && i.at_time.slice(0, 5) < p.until);
+    from = p.until;
+    return { name: p.name, items: theirs };
+  }).filter((p) => p.items.length > 0);
+
   return (
     <>
-      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
-        {weddingDate ? formatLongDate(weddingDate) : "The order of the day"}
+      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+        The day
       </PageTitle>
-      <p className="mt-2 text-sm text-stone">
-        {items.length === 0
-          ? "Hour by hour — who needs to be where, and when. It gets printed and handed round."
-          : `${items.length} ${items.length === 1 ? "moment" : "moments"}, ${formatTime(items[0].at_time)} to ${formatTime(items[items.length - 1].at_time)}`}
-      </p>
+      {items.length === 0 && (
+        <p className="mt-2 text-sm text-stone">Hour by hour — who needs to be where, and when. It gets printed and handed round.</p>
+      )}
 
-      <div className="mt-6 flex flex-col gap-2 sm:flex-row print:hidden">
+      <div className="mt-5 flex gap-2.5 print:hidden">
         <Link
           href="/day/run-sheet/new"
-          className="flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 sm:px-6"
+          className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-sm text-ivory transition hover:bg-ink/90 sm:flex-none sm:px-6"
         >
           <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
           Add a moment
@@ -125,27 +151,81 @@ function RunSheet({ items, weddingDate }: { items: RunSheetItem[]; weddingDate: 
       </div>
 
       {items.length > 0 && (
-        <ol className="mt-10 border-t border-champagne-400">
-          {items.map((item) => (
-            <li key={item.id} className="border-b border-linen">
-              <Link href={`/day/run-sheet/${item.id}`} className="flex gap-4 py-4 hover:bg-cream/60">
-                <span className="w-20 shrink-0 font-display text-2xl leading-tight text-champagne-600">
-                  {formatTime(item.at_time)}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] text-ink">{item.title}</span>
-                  {(item.location || item.who) && (
-                    <span className="mt-0.5 block text-sm text-stone">{[item.location, item.who].filter(Boolean).join(" · ")}</span>
-                  )}
-                  {item.notes && <span className="mt-1 block whitespace-pre-wrap text-sm text-stone">{item.notes}</span>}
-                </span>
-                <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-stone print:hidden" strokeWidth={1.8} aria-hidden />
-              </Link>
-            </li>
-          ))}
-        </ol>
+        <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:max-w-xl print:shadow-none">
+          <div className="border border-champagne-400 px-[18px] pb-3 pt-7 outline outline-1 -outline-offset-[5px] outline-champagne-100">
+            <header className="text-center">
+              <p className="label">The order of the day</p>
+              <p className="type-display mt-2 text-[30px] leading-[1.05]">{setCoupleName(coupleName)}</p>
+              {weddingDate && <p className="type-meta mt-2">{formatLongDate(weddingDate)}</p>}
+              <Flourish />
+            </header>
+
+            {parts.map((part, i) => (
+              <section key={part.name}>
+                <h2 className="type-display mb-2.5 mt-6 text-center text-[26px]">{part.name}</h2>
+                <ol className="relative">
+                  <span className="absolute bottom-0 left-[65px] top-0 w-px bg-champagne-100" aria-hidden />
+                  {part.items.map((item) => {
+                    const isNow = item.id === nowId;
+                    return (
+                      <li key={item.id}>
+                        <Link
+                          href={`/day/run-sheet/${item.id}`}
+                          aria-current={isNow ? "time" : undefined}
+                          className="relative grid grid-cols-[52px_1fr] gap-x-[26px] pb-[18px] hover:opacity-80"
+                        >
+                          <span className="type-figure text-right text-[20px] leading-[1.15] text-champagne-600">
+                            {formatClock(item.at_time)}
+                          </span>
+                          <span className="min-w-0">
+                            <span className={`block font-display leading-[1.25] text-ink ${isNow ? "text-[21px] italic" : "text-[19px]"}`}>
+                              {item.title}
+                            </span>
+                            {(item.location || item.who) && (
+                              <span className="mt-0.5 block font-display text-[15px] italic text-stone">
+                                {[item.location, item.who].filter(Boolean).join(" · ")}
+                              </span>
+                            )}
+                            {item.notes && <span className="mt-1 block whitespace-pre-wrap text-sm text-stone">{item.notes}</span>}
+                            {isNow && (
+                              <span className="mt-1.5 inline-block rounded-full bg-ink px-2.5 py-[3px] text-xs font-medium uppercase tracking-[0.2em] text-ivory">
+                                Now
+                              </span>
+                            )}
+                          </span>
+                          <span
+                            aria-hidden
+                            className={`absolute rounded-full ${
+                              isNow
+                                ? "left-[58px] top-1 h-[15px] w-[15px] border-[3px] border-champagne-100 bg-ink shadow-[0_0_0_1px_#B8914F]"
+                                : "left-[61px] top-[7px] h-[9px] w-[9px] border-[1.5px] border-champagne-400 bg-white"
+                            }`}
+                          />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+                {i < parts.length - 1 && (
+                  <svg viewBox="0 0 40 10" width="40" height="10" className="mx-auto mt-1 block" fill="none" stroke="#B8914F" strokeOpacity="0.6" aria-hidden>
+                    <path d="M20 1l4 4-4 4-4-4z" />
+                  </svg>
+                )}
+              </section>
+            ))}
+          </div>
+        </article>
       )}
     </>
+  );
+}
+
+/** The little gold flourish under the names, as on a printed order of service. */
+function Flourish() {
+  return (
+    <svg viewBox="0 0 120 20" width="120" height="20" className="mx-auto mt-2.5 block" fill="none" stroke="#B8914F" strokeWidth="1" strokeLinecap="round" aria-hidden>
+      <path d="M0 10h44M76 10h44M60 3c-6 0-9 7-3 7s3-7-3-7M60 17c6 0 9-7 3-7s-3 7 3 7M50 10h-3M70 10h3" />
+    </svg>
   );
 }
 
@@ -162,7 +242,7 @@ function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact
 
   return (
     <>
-      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         Seating
       </PageTitle>
       <p className="mt-2 text-sm text-stone">
@@ -292,7 +372,7 @@ function SeatingList({
 function Transport({ data, guests }: { data: DayData; guests: Contact[] }) {
   return (
     <>
-      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         Transport
       </PageTitle>
       <p className="mt-2 text-sm text-stone">

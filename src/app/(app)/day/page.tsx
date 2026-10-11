@@ -21,6 +21,7 @@ export default async function DayPage({
     <DayView
       tab={tab === "seating" || tab === "transport" ? (tab as DayTab) : "run-sheet"}
       seatingView={view === "list" ? "list" : "plan"}
+      coupleName={wedding.name}
       weddingDate={wedding.wedding_date}
       day={day}
       guests={guests}

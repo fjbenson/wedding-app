@@ -447,7 +447,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
    **Later (owner's to-do, 11 Oct 2026): vector versions of the title
    drawings** — get the full-size original from Canva (the app has a
    ~200px preview, enlarged), trace it into a vector (SVG) in the app's
-   gold, swap it in, and keep the set in Figma. Open idea: a new home-screen app icon (offered options on
+   gold, swap it in, and keep the set in Figma.
+   **Idea agreed (11 Oct 2026): a dancing couple on the home screen** —
+   our own couple (not anyone's characters), faint gold line art either
+   side of the hub ring, hands joined above it, showing softly through
+   the glass; later a gentle draw-itself-in then sway, off for "reduce
+   motion" (needs the vector version). **The couple choose the two
+   dancers** — each picked separately by what they wear (suit, dress,
+   trouser suit, jumpsuit…), never by gender labels, so same-sex, mixed
+   and non-binary couples all see themselves; chosen in Setup and
+   Settings (a new column on `weddings`). First step: two or three
+   versions mocked behind the ring on canvas 2, no animation. Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

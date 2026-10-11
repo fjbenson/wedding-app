@@ -3,7 +3,7 @@ import RichText from "@/components/rich-text";
 import type { Note } from "@/types/db";
 
 /** "pinterest.co.uk/pin/123…" → "pinterest.co.uk" */
-function host(url: string) {
+export function host(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
@@ -12,10 +12,11 @@ function host(url: string) {
 }
 
 /** A captured thought or link, as it reads in the inbox or on an area page. */
-export default function NoteText({ note }: { note: Note }) {
+/** `className` styles the words — e.g. larger, in the display face, on the inbox panel. */
+export default function NoteText({ note, className }: { note: Note; className?: string }) {
   return (
     <>
-      {note.body && <RichText text={note.body} />}
+      {note.body && <RichText text={note.body} className={className} />}
       {note.url && (
         <a
           href={note.url}

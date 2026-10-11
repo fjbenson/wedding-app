@@ -248,8 +248,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   menu bar (not on the Hub, which has its own jot box), a button in the
   desktop sidebar, the Hub's "Your notes" card — at
   `/capture?from=…`. Unfiled captures wait in `/inbox` (count in the
-  sidebar) to be filed under an area, turned into a to-do, or removed;
-  filed ones show in the area page's Notes block. Images aren't in yet:
+  sidebar), titled **Your notes** and shown as a **wall of paper notes**
+  (canvas 2, "Inbox · Sticky-note wall", option A, owner's pick 11 Oct
+  2026; `note-wall.tsx`): two columns on a phone, three on a laptop, soft
+  papers (ivory, champagne, blush, sage), a slight tilt and a strip of tape.
+  Tap one and a panel comes up — File under an area, Make it a to-do, Edit,
+  Remove (actions that return a message, `capture/actions.ts`). The Hub's
+  "File it" opens that note's panel (`/inbox?note=<id>`). Filed ones show in the area page's Notes block. Images aren't in yet:
   they need Supabase Storage (a bucket plus storage policies).
 - **Settings** (`/settings`, screen 37; a gear on the hub cover, and the
   foot of the desktop sidebar): the couple's names and date; every area

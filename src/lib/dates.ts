@@ -82,3 +82,13 @@ export function formatWeekdayDayMonth(date: string): string {
     timeZone: "UTC",
   });
 }
+
+/** "Today", "Yesterday", "3 days ago", then "12 Oct" — when a note was jotted. */
+export function formatAgo(timestamp: string, today: string): string {
+  const day = timestamp.slice(0, 10);
+  const days = Math.round((Date.parse(today) - Date.parse(day)) / 86_400_000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return formatDayMonth(day);
+}

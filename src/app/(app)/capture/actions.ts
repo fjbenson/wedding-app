@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createMilestone } from "@/lib/db/milestones";
-import { createNote, deleteNote, fileNote, getNote } from "@/lib/db/notes";
+import { createNote, deleteNote, fileNote, getNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
@@ -97,4 +97,62 @@ export async function deleteNoteAction(noteId: string) {
     failed("/inbox", "That didn't remove it.", error);
   }
   refresh();
+}
+
+/*
+ * The inbox's note wall (canvas 2, "Inbox · Sticky-note wall", option A):
+ * a tapped note opens a panel, and these are called straight from it. They
+ * return a message rather than redirecting or throwing, so a failure shows
+ * on the panel instead of blanking the screen.
+ */
+type Result = { error?: string };
+
+async function attempt(message: string, work: () => Promise<unknown>): Promise<Result> {
+  try {
+    await work();
+  } catch (error) {
+    console.error(message, error);
+    return { error: message };
+  }
+  refresh();
+  return {};
+}
+
+export async function fileInboxNoteAction(noteId: string, areaKey: string): Promise<Result> {
+  if (!areaKey) return { error: "Pick an area first." };
+  return attempt("That didn't file it. Try again.", () => fileNote(noteId, areaKey));
+}
+
+export async function inboxNoteToTodoAction(noteId: string): Promise<Result> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "Couldn't find your wedding. Reload the page." };
+  const result = await attempt("That didn't make a to-do. Try again.", async () => {
+    const note = await getNote(noteId);
+    if (!note) return;
+    await createMilestone({
+      wedding_id: wedding.id,
+      title: (note.body ?? note.url ?? "").split("\n")[0].slice(0, 120),
+      description: [note.body, note.url].filter(Boolean).join("\n\n") || null,
+      category: note.area_key,
+      due_date: null,
+      status: "todo",
+      remind_at: null,
+      assigned_to: null,
+    });
+    await deleteNote(noteId);
+  });
+  if (!result.error) revalidatePath("/plan");
+  return result;
+}
+
+/** Changes a note's words; a link it was captured with stays. Emptying both removes it. */
+export async function saveInboxNoteAction(noteId: string, body: string, url: string | null): Promise<Result> {
+  const text = body.trim() || null;
+  return attempt("That didn't save. Try again.", () =>
+    text || url ? updateNote(noteId, { body: text, url }) : deleteNote(noteId),
+  );
+}
+
+export async function removeInboxNoteAction(noteId: string): Promise<Result> {
+  return attempt("That wasn't removed. Try again.", () => deleteNote(noteId));
 }

@@ -1,21 +1,11 @@
 import Link from "next/link";
 import JotForm from "@/components/jot-form";
 import NoteText from "@/components/note-text";
-import { formatDayMonth } from "@/lib/dates";
+import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
 
 /** How many unsorted notes the home screen shows. */
 const LIST_LENGTH = 3;
-
-/** "Today", "Yesterday", "3 days ago", then "12 Oct". */
-function when(createdAt: string, today: string): string {
-  const day = createdAt.slice(0, 10);
-  const days = Math.round((Date.parse(today) - Date.parse(day)) / 86_400_000);
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days} days ago`;
-  return formatDayMonth(day);
-}
 
 /**
  * "Your notes", straight under the ring (design canvas 2, "Home · Under the
@@ -46,10 +36,10 @@ export default function HomeNotes({ unfiled, today }: { unfiled: Note[]; today: 
                 <li key={note.id} className="flex items-start gap-3 border-t border-linen py-3.5 first:border-t-0">
                   <div className="min-w-0 flex-1">
                     <NoteText note={note} />
-                    <p className="type-meta mt-1.5">{when(note.created_at, today)}</p>
+                    <p className="type-meta mt-1.5">{formatAgo(note.created_at, today)}</p>
                   </div>
                   <Link
-                    href={`/inbox#note-${note.id}`}
+                    href={`/inbox?note=${note.id}`}
                     className="flex h-9 shrink-0 items-center rounded-full border border-champagne-400 bg-white/70 px-3 text-[13px] text-champagne-600 hover:text-ink"
                   >
                     File it

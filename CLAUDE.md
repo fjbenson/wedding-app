@@ -251,7 +251,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   sidebar), titled **Your notes** and shown as a **wall of paper notes**
   (canvas 2, "Inbox · Sticky-note wall", option A, owner's pick 11 Oct
   2026; `note-wall.tsx`): two columns on a phone, three on a laptop, soft
-  papers (ivory, champagne, blush, sage), a slight tilt and a strip of tape.
+  papers (ivory, champagne, blush, sage), a slight tilt and a strip of tape. Until there are four, faded blank notes
+  fill the gaps ("+ A thought for later … Tap to jot", never saved; they open
+  capture).
   Tap one and a panel comes up — File under an area, Make it a to-do, Edit,
   Remove (actions that return a message, `capture/actions.ts`). The Hub's
   "File it" opens that note's panel (`/inbox?note=<id>`). Filed ones show in the area page's Notes block. Images aren't in yet:

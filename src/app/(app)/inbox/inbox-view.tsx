@@ -72,7 +72,7 @@ export default function InboxView({
         Jot something down
       </Link>
 
-      {unfiled.length > 0 && (
+      {notes !== null && (
         <div className="mt-8">
           <NoteWall notes={unfiled} areas={areas} today={today} initialOpen={openNote} />
         </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { CircleCheck, Link2, PenLine, Trash2 } from "lucide-react";
+import { CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import NoteText, { host } from "@/components/note-text";
 import type { AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
@@ -12,6 +13,14 @@ import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, save
 const PAPERS = ["#FFFDF8", "#F6EEDD", "#F3E6E1", "#EEF0E6"];
 /** A slight, uneven tilt, in degrees — the canvas's "slight". */
 const TURNS = [-1, 0.8, -0.4, 1, 0.5, -0.9];
+
+/**
+ * Until there are four real notes, faded blank notes fill the wall so it
+ * reads as a wall of sticky notes from day one (owner, 11 Oct 2026). Never
+ * saved — each is an invitation, and tapping one opens Jot something down.
+ */
+const WALL_MIN = 4;
+const BLANKS = ["A thought for later", "Something to ask", "A link to keep", "A name to remember"];
 
 type Result = { error?: string };
 
@@ -77,6 +86,25 @@ export default function NoteWall({
             </button>
           </li>
         ))}
+        {BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length)).map((prompt, i) => {
+          const index = notes.length + i;
+          return (
+            <li key={prompt} className="mb-6 break-inside-avoid pt-2">
+              <Link
+                href="/capture?from=/inbox"
+                className="relative block rounded-[4px] px-4 pb-3.5 pt-[22px] opacity-60 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_10px_22px_-16px_rgb(60_45_20/0.3)] transition hover:opacity-90"
+                style={{ background: PAPERS[index % PAPERS.length], transform: `rotate(${TURNS[index % TURNS.length]}deg)` }}
+              >
+                <span aria-hidden className="absolute -top-2 left-1/2 h-4 w-[54px] -translate-x-1/2 border-x border-dashed border-white/60 bg-[rgb(225_205_165/0.55)]" />
+                <span className="flex items-start gap-2 font-display text-[17px] italic leading-snug text-stone">
+                  <Plus className="mt-1 h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
+                  {prompt}
+                </span>
+                <span className="type-meta mt-3 block">Tap to jot</span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
       {open && <NotePanel key={open.id} note={open} areas={areas} today={today} onClose={() => setOpenId(null)} />}

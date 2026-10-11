@@ -100,7 +100,7 @@ export default function TodoList({
               {card.items.length}
             </span>
           </div>
-          <ul className="glass-card mt-2.5 rounded-[22px] px-[18px] py-1">
+          <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-[18px] py-1 [--row-bleed:18px]">
             {card.items.map((m) => (
               <MilestoneRow
                 key={m.id}

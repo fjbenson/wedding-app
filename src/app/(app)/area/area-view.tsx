@@ -230,7 +230,7 @@ function Section({
           </Link>
         )}
       </div>
-      <div className="glass-card relative rounded-[22px] px-[18px] py-0.5">{children}</div>
+      <div className="glass-card relative overflow-hidden rounded-[22px] px-[18px] py-0.5 [--row-bleed:18px]">{children}</div>
     </section>
   );
 }

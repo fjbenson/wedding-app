@@ -56,12 +56,27 @@ body::before {
 
 @layer components {
   /* A list row you tap to open: the whole row shades softly while a finger
-     is on it (and under the mouse on a laptop), tick circle included. */
+     is on it (and under the mouse on a laptop), tick circle included. The
+     shade reaches out sideways past the row into the page's margins (a
+     shadow, clipped top and bottom, so nothing moves); inside a card,
+     --row-bleed is set to the card's own padding so it stops at its edge. */
   .row-press {
-    @apply transition-colors duration-150 hover:bg-cream/60;
+    --row-shade: transparent;
+    --row-reach: var(--row-bleed, max(1.25rem, env(safe-area-inset-left)));
+    background-color: var(--row-shade);
+    box-shadow: 0 0 0 var(--row-reach) var(--row-shade);
+    clip-path: inset(0 calc(-1 * var(--row-reach)));
+    transition:
+      background-color 150ms,
+      box-shadow 150ms;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .row-press:hover {
+      --row-shade: rgb(244 239 231 / 0.6);
+    }
   }
   .row-press:has(a:active) {
-    @apply bg-cream;
+    --row-shade: theme(colors.cream);
   }
 
   /*

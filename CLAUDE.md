@@ -262,8 +262,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   foot of the desktop sidebar): the couple's names and date; every area
   with the plan's two switches (Planning / On the hub — turning planning
   off also hides the dot), rename, and up/down order; and who has a login,
-  with a plain warning that the wedding lives in this browser until proper
-  sign-in.
+  and "Your login" (who's signed in, Sign out).
 - **Inspo** (`/inspo`, screens 29–33; `0010_inspo.sql`): the picture grid,
   folders = areas (`?folder=<key>` / `?folder=unsorted`), save a photo or a
   link (`/inspo/new`), one idea large (`/inspo/[id]`). Photos upload
@@ -274,8 +273,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   picture and title (`src/lib/link-preview.ts`: public web addresses only,
   4s, 600 KB). Area pages show their folder; the inbox shows unsorted
   pictures; reached from the Hub card, the sidebar and the capture page.
-- **The Day** (`/day`, screens 25, 27, 28; `0009_the_day.sql`): **Run
-  sheet** (hour by hour, with a Print button — menus hide when printing),
+- **The Day** (`/day`, screens 25, 27, 28; `0009_the_day.sql`): the view
+  switch is a `CornerSwitch` (Run sheet · Seating · Transport). **Run
+  sheet** = canvas 2 "The Day · Signature look", **option D** (owner's
+  pick 11 Oct 2026): the order of service's white card with a gold border,
+  the couple and the date at the top, the day in parts — split by the clock
+  for now (morning < 12:00, afternoon < 18:00, evening), since nothing marks
+  which moment is the ceremony; own part names would be a new column — and
+  inside, the time on the left (`formatClock`, 24-hour), a gold thread with
+  a dot per moment, the moment on the right. On the wedding day (UK time,
+  `nowInLondon()`) the moment under way is marked **Now**. Print button kept
+  (menus hide when printing); option B, the centred order of service, is
+  earmarked for the printed copy and for guests later.
   **Seating** (`?tab=seating`: tables with seat counts, sit guests from an
   unseated list, "over" flagged; guests who declined everything are left
   out) and **Transport** (`?tab=transport`: each car/coach run and who's in
@@ -375,27 +384,61 @@ Decisions worth preserving:
   used to create a wedding owned by someone else. Anything else that has to
   write its own way in will need the same treatment.
 
-## Sign-in (temporary)
+## Sign-in (email first, 11 Oct 2026)
 
-Email sign-in kept getting stuck (Supabase's built-in email sends only ~2 an
-hour), so since 29 Sep 2026 **visitors are signed in anonymously** by
-`src/lib/supabase/middleware.ts` — no sign-in screen. RLS still applies: an
-anonymous user is a real `auth.uid()`. The catch: a wedding lives in the one
-browser that made it. Needs "Allow anonymous sign-ins" on in Supabase.
-Sign-out is hidden for anonymous users (it would lose the wedding). To bring
-email sign-in back: set up custom SMTP (e.g. Resend), then link the anonymous
-user to an email with `updateUser({ email })` so the wedding carries over.
+**Every wedding belongs to an email login from its first minute.** The front
+door (`/sign-in`, "Welcome") is one box for the email, then a code from the
+email (`src/components/email-code-form.tsx`, `src/app/sign-in/actions.ts`,
+queries in `src/lib/db/auth.ts`). A new email gets an account
+(`signInWithOtp`, `shouldCreateUser: true`) and goes on to setup; a known
+one opens its wedding — nobody picks "log in" or "sign up". Codes, not
+links: a link opens in Safari, not the home-screen app. You stay signed in on
+a device until Sign out (Settings, and the foot of the Hub). The email box is
+`type="text"` with the email keyboard, so iPhone text shortcuts work.
+
+- **Emails go through Resend** (custom SMTP in Supabase: Authentication ›
+  Emails › SMTP, host `smtp.resend.com`, port 465, user `resend`, password =
+  the Resend key, which only the owner holds). Sender is Resend's test
+  address `onboarding@resend.dev`, which **only delivers to the owner's own
+  email** — nobody else (a partner, other couples) can sign in until the app
+  has its **own web address** (domain), verified in Resend and set as the
+  sender. Choosing the app's name/domain is the owner's open decision.
+- Supabase templates **Magic Link**, **Confirm signup** and **Change Email
+  Address** show `{{ .Token }}` (the code). Code length is Supabase's
+  "Email OTP Length" (6 is the minimum).
+- **The middleware** (`src/lib/supabase/middleware.ts`) sends anyone not
+  signed in — anonymous sessions included — to `/sign-in`, and signed-in
+  people away from it. Anonymous logins are no longer made; "Allow anonymous
+  sign-ins" can be switched off in Supabase.
+- **Why it changed (11 Oct 2026):** from 29 Sep visitors were signed in
+  anonymously. One login failed to refresh, the middleware quietly made a new
+  one, and the owner's wedding vanished from their phone (still in the
+  database). It was relinked by hand in SQL (a `wedding_members` row), then
+  every other test wedding and login was wiped, leaving one wedding and the
+  owner's login. The 30 Sep rule "sign-in is the very last thing built" is
+  retired — the owner chose to build it now.
 
 **Home-screen app (7 Oct 2026).** `src/app/manifest.ts` and `appleWebApp` in
 `layout.tsx` let it be added to a phone's home screen and open full screen.
 On an iPhone the home-screen app keeps its own cookies, separate from the
-browser, so it starts as a new anonymous visitor with no wedding — the
-browser's wedding doesn't carry over until proper sign-in. Icons: the hub
-ring on satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
+browser, so it asks you to sign in once there too. Icons: the hub ring on
+satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
 
-**The owner's call (30 Sep 2026): proper sign-in is the very last thing
-built.** Don't propose it as a next step before everything else is done;
-Settings already warns that the wedding lives in one browser.
+### Before real couples use it (owner's checklist, 11 Oct 2026)
+
+Not legal advice — the UK list raised with the owner:
+1. Own web address + Resend domain (so anyone can get a code).
+2. Privacy policy and terms (couples enter their *guests'* details too).
+3. Register with the ICO (data protection fee, about £50 a year).
+4. Sign Supabase's and Vercel's data processing agreements (DPAs).
+5. Allergies are health data (special category): keep them for catering only.
+6. Let a couple export or delete their wedding.
+7. Supabase paid plan (~$25/month): the free plan has no proper backups and
+   pauses quiet projects.
+8. Two-step login on the owner's Supabase, Vercel and GitHub accounts.
+
+Data is in Supabase Postgres in Ireland, encrypted at rest and in transit;
+access control is RLS. No column-level encryption is planned.
 
 ## Conventions
 
@@ -477,6 +520,20 @@ additive — new tables hanging off `weddings`. None require changing the above.
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (to design) · The Day hour-by-hour line. **Next
    up: Money's signature on the canvas, then People's other screens.**
+   **11 Oct 2026:** The Day's run sheet settled and built (option D, see
+   "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
+   look": A ledger, B menu card, C champagne glass — owner loved all three)
+   and **round 2** ("Money · Round 2 · Simple first, detail on tap", the
+   owner's rule: it's the screen with the most numbers, but not everyone
+   likes numbers — a calm top layer, everything else one tap away): A the
+   glass and one sentence + menu-card full numbers, B the sentence first +
+   an area in full, C two glasses (booked, paid) + still to pay by month.
+   **Waiting on the owner's pick.** **Laptop design has begun:** phone and
+   laptop are designed separately but share colours, type and each tab's
+   signature (owner, 11 Oct 2026). Canvas 2 "Laptop · The Hub": A centre
+   stage, **B magazine spread** (top menu bar, huge names, an "At a glance"
+   row of every tab's signature in miniature — the owner's favourite, not
+   locked; would mean a top bar on every laptop screen), C planning desk.
    **Later (owner's to-do, 11 Oct 2026): vector versions of the title
    drawings** — get the full-size original from Canva (the app has a
    ~200px preview, enlarged), trace it into a vector (SVG) in the app's

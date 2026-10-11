@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Logging in with an emailed code (11 Oct 2026). Everyone starts with an
- * anonymous login (see src/lib/supabase/middleware.ts); "Save your wedding"
- * adds an email to that same login, so the wedding carries over, and from
- * then on a code sent to that email signs in on any phone. Codes rather than
- * links, because a link opens in Safari, not the home-screen app.
+ * Logging in with an emailed code, email first (11 Oct 2026). One box: the
+ * email. A new email gets an account and goes on to setup; a known one opens
+ * its wedding — nobody chooses between "log in" and "sign up". Codes rather
+ * than links, because a link opens in Safari, not the home-screen app. You
+ * stay signed in on that device until you sign out (Settings).
  *
- * Supabase sends the emails through Resend (Authentication › Emails › SMTP),
- * and its "Magic Link" and "Change Email Address" templates show the code.
+ * Supabase sends the emails through Resend (Authentication › Emails › SMTP);
+ * its "Confirm signup" (new emails) and "Magic Link" (known ones) templates
+ * show the code.
  */
 
 export interface Login {
@@ -32,38 +33,20 @@ export async function getLogin(): Promise<Login | null> {
 /** Supabase's messages are written for developers; say it plainly. */
 function plain(message: string): string {
   if (/rate limit|too many/i.test(message)) return "Too many codes asked for just now. Wait a few minutes and try again.";
-  if (/already (been )?registered|already exists/i.test(message)) {
-    return "That email already has a login. Sign in with it instead.";
-  }
   if (/expired|invalid|otp/i.test(message)) return "That code didn't work. Check it, or ask for a new one.";
-  if (/signups? not allowed|user not found/i.test(message)) return "There's no wedding saved to that email yet.";
   return message;
 }
 
 type Result = { error?: string };
 
-/** Save your wedding, step 1: email a code to the address being added. */
-export async function sendSaveCode(email: string): Promise<Result> {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ email });
-  return error ? { error: plain(error.message) } : {};
-}
-
-/** Save your wedding, step 2: the code proves the email is theirs. */
-export async function confirmSaveCode(email: string, token: string): Promise<Result> {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({ email, token, type: "email_change" });
-  return error ? { error: plain(error.message) } : {};
-}
-
-/** Signing in on another phone, step 1. Never makes a new login. */
+/** Step 1: email a code — making the account if the email is new. */
 export async function sendSignInCode(email: string): Promise<Result> {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+  const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
   return error ? { error: plain(error.message) } : {};
 }
 
-/** Signing in on another phone, step 2. */
+/** Step 2: the code from the email signs them in. */
 export async function confirmSignInCode(email: string, token: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });

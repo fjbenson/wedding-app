@@ -84,13 +84,3 @@ export async function updateWedding(
   if (error) throw error;
 }
 
-/**
- * The first eight characters of this browser's login, shown on the setup
- * screen so a wedding that went missing can be linked back to it by hand
- * (in Supabase) until there's proper sign-in.
- */
-export async function getLoginCode(): Promise<string | null> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  return data?.claims?.sub ? String(data.claims.sub).slice(0, 8) : null;
-}

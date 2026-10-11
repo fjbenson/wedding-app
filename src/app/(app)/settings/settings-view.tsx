@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Check, Plus } from "lucide-react";
 import { Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
-import EmailCodeForm from "@/components/email-code-form";
 import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
 import type { Login } from "@/lib/db/auth";
@@ -65,7 +64,7 @@ export default function SettingsView({
         </p>
       )}
 
-      <YourLogin login={login} saved={saved === "login"} />
+      <YourLogin login={login} />
 
       <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
@@ -179,47 +178,21 @@ export default function SettingsView({
   );
 }
 
-/**
- * Save your wedding (11 Oct 2026): until an email is added, the wedding lives
- * in this browser only. Once it is, a code sent to that email opens it on any
- * phone, and signing out is safe.
- */
-function YourLogin({ login, saved }: { login: Login | null; saved: boolean }) {
-  if (login && !login.anonymous && login.email) {
-    return (
-      <section className="glass-card mt-8 rounded-[22px] p-5">
-        <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your login</h2>
-        {saved && <p className="mt-4 text-sm text-ink">Saved. Your wedding is safe.</p>}
-        <p className="mt-4 text-sm leading-relaxed text-stone">
-          Saved to <span className="text-ink">{login.email}</span>. To open it on another phone or a laptop, sign in there
-          with this email and the code we send.
-        </p>
-        <form action="/auth/sign-out" method="post" className="mt-4">
-          <button type="submit" className="h-11 rounded-full border border-linen px-5 text-sm text-ink hover:bg-cream">
-            Sign out
-          </button>
-        </form>
-      </section>
-    );
-  }
-
+/** Who's signed in, and the way out. */
+function YourLogin({ login }: { login: Login | null }) {
+  if (!login?.email) return null;
   return (
     <section className="glass-card mt-8 rounded-[22px] p-5">
-      <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Save your wedding</h2>
-      <p className="mt-4 text-sm leading-relaxed text-ink">
-        Right now your wedding lives in this browser only. Add your email and it&apos;s kept safe — you can open it on
-        any phone or laptop, and it can&apos;t go missing.
+      <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your login</h2>
+      <p className="mt-4 text-sm leading-relaxed text-stone">
+        Signed in as <span className="text-ink">{login.email}</span>. To open your wedding on another phone or a laptop,
+        sign in there with this email.
       </p>
-      <div className="mt-4">
-        <EmailCodeForm mode="save" />
-      </div>
-      <p className="mt-4 text-xs text-stone">
-        Already saved a wedding with your email on another phone?{" "}
-        <Link href="/sign-in" className="text-champagne-600 underline underline-offset-4">
-          Sign in to it
-        </Link>
-        .
-      </p>
+      <form action="/auth/sign-out" method="post" className="mt-4">
+        <button type="submit" className="h-11 rounded-full border border-linen px-5 text-sm text-ink hover:bg-cream">
+          Sign out
+        </button>
+      </form>
     </section>
   );
 }

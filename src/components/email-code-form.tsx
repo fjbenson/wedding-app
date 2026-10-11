@@ -7,11 +7,10 @@ import { confirmCodeAction, sendCodeAction } from "@/app/sign-in/actions";
 import { INPUT } from "@/components/form-styles";
 
 /**
- * Email, then the code from the email. `save` adds the email to this
- * phone's login (Settings › Save your wedding); `sign-in` opens a wedding
- * already saved to an email (the sign-in page).
+ * Email, then the code from the email (the sign-in page). New emails go on
+ * to setup from the home page; known ones open their wedding.
  */
-export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
+export default function EmailCodeForm() {
   const router = useRouter();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
@@ -42,7 +41,7 @@ export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          run(() => sendCodeAction(mode, email), () => setStep("code"));
+          run(() => sendCodeAction(email), () => setStep("code"));
         }}
         className="space-y-3"
       >
@@ -71,7 +70,7 @@ export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
         )}
         <button type="submit" disabled={busy} className={button}>
           {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-          {busy ? "Sending…" : "Email me a code"}
+          {busy ? "Sending…" : "Continue"}
         </button>
       </form>
     );
@@ -82,9 +81,9 @@ export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
       onSubmit={(e) => {
         e.preventDefault();
         run(
-          () => confirmCodeAction(mode, email, token),
+          () => confirmCodeAction(email, token),
           () => {
-            router.push(mode === "save" ? "/settings?saved=login" : "/");
+            router.push("/");
             router.refresh();
           },
         );
@@ -113,7 +112,7 @@ export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
       )}
       <button type="submit" disabled={busy} className={button}>
         {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-        {busy ? "Checking…" : mode === "save" ? "Save my wedding" : "Sign in"}
+        {busy ? "Checking…" : "Continue"}
       </button>
       <button
         type="button"

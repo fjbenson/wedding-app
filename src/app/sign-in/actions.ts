@@ -1,12 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { confirmSaveCode, confirmSignInCode, sendSaveCode, sendSignInCode } from "@/lib/db/auth";
+import { confirmSignInCode, sendSignInCode } from "@/lib/db/auth";
 
 /**
- * The code steps, for "Save your wedding" (Settings) and signing in on
- * another phone (/sign-in). They return a message rather than throw, so a
- * page left open across a deploy can't blank the screen.
+ * The two steps of signing in (/sign-in). They return a message rather than
+ * throw, so a page left open across a deploy can't blank the screen.
  */
 
 function tidy(email: unknown): string {
@@ -26,17 +25,17 @@ async function safely(run: () => Promise<{ error?: string }>): Promise<{ error?:
   }
 }
 
-export async function sendCodeAction(mode: "save" | "sign-in", email: string) {
+export async function sendCodeAction(email: string) {
   const address = tidy(email);
   if (!/^\S+@\S+\.\S+$/.test(address)) return { error: "That doesn't look like an email address." };
-  return safely(() => (mode === "save" ? sendSaveCode(address) : sendSignInCode(address)));
+  return safely(() => sendSignInCode(address));
 }
 
-export async function confirmCodeAction(mode: "save" | "sign-in", email: string, token: string) {
+export async function confirmCodeAction(email: string, token: string) {
   const address = tidy(email);
   const digits = code(token);
   if (!/^\d{6,10}$/.test(digits)) return { error: "The code is the number in the email." };
-  const result = await safely(() => (mode === "save" ? confirmSaveCode(address, digits) : confirmSignInCode(address, digits)));
+  const result = await safely(() => confirmSignInCode(address, digits));
   if (!result.error) revalidatePath("/", "layout");
   return result;
 }

@@ -85,7 +85,6 @@ export default async function HomePage() {
           </span>
           <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
         </Link>
-        {/* No sign out while visitors are anonymous — signing out would lose the wedding. */}
         {email && <SignedIn email={email} />}
       </div>
     </main>

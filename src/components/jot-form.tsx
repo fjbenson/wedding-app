@@ -6,15 +6,15 @@ import { useFormStatus } from "react-dom";
 import { Camera, Link2 } from "lucide-react";
 import { captureAction } from "@/app/(app)/capture/actions";
 
-const CHIP =
-  "inline-flex h-11 items-center gap-1.5 rounded-xl border border-linen bg-white/70 px-3.5 text-sm text-ink transition hover:border-champagne-400";
+const BUTTON = "inline-flex h-11 items-center gap-1.5 rounded-xl border text-sm transition";
+const CHIP = `${BUTTON} px-3.5 border-linen bg-white/70 text-ink hover:border-champagne-400`;
 const FIELD =
   "block w-full rounded-xl border border-linen bg-white/60 px-4 text-ink placeholder:text-stone focus:border-champagne-400 focus:outline-none";
 
 function Save() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={`${CHIP} ml-auto border-ink bg-ink text-ivory hover:bg-ink/90 disabled:opacity-60`}>
+    <button type="submit" disabled={pending} className={`${BUTTON} ml-auto border-ink bg-ink px-5 text-ivory hover:bg-ink/90 disabled:opacity-60`}>
       {pending ? "Saving…" : "Save"}
     </button>
   );

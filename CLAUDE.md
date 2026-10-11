@@ -571,13 +571,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 ### Open issues
 
-- **Phone menu bar drifts while scrolling** (reported 11 Oct 2026): on the
-  owner's iPhone the bottom menu bar moves up the screen mid-scroll, then
-  snaps back after a few seconds. Not yet reproduced: the notes wall isn't
-  wider than the screen, and nothing near the menu bar changed. Waiting on
-  the owner — which screen(s), and Safari or the home-screen app. Likely an
-  iPhone repaint lag behind heavy glass/blur; fix is to lighten that screen
-  or change how the bar is pinned.
+- **Phone menu bar drift while scrolling** (reported 11 Oct 2026):
+  **closed** — the owner says it no longer happens. No code change was
+  made for it (none found in the history), so if it comes back: likely an
+  iPhone repaint lag behind the glass blur; try giving the bar its own
+  layer (`transform: translateZ(0)` / `will-change`) in `menu-bar.tsx`.
 
 ### Backlog (ideas parked by the owner)
 

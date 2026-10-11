@@ -48,8 +48,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Setup** (`/setup`, screen 2): the couple's names and the date, then which
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
-- **Hub** (`/`): names, hub ring, "coming up" on a glass card (design settled
-  7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the
+- **Hub** (`/`): names, hub ring, then under the ring (canvas 2, "Home ·
+  Under the ring", option B, owner's pick 11 Oct 2026): **Your notes** — a
+  jot box (with Link / Photo) that saves straight to the inbox, and the first
+  three notes still to sort, each with "File it" (`home-notes.tsx`,
+  `jot-form.tsx`) — then **coming up**: the next three to-dos, appointments
+  and payments (`this-month.tsx`), then Inspo. All on glass cards (design
+  settled 7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the
   wedding's own **areas** (`areas` table, `0003_areas.sql`). Each dot opens
   its **area page** (`/area/[key]`, screens 5–6): key facts
   (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
@@ -240,7 +245,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   not for a supplier; paid = supplier deposits + payments marked paid.
 - **Quick capture and inbox** (screens 35–36, `0008_notes.sql`): jot a
   thought and/or a link from anywhere — a glass pen button above the phone
-  menu bar, a button in the desktop sidebar, the pen on the hub cover — at
+  menu bar (not on the Hub, which has its own jot box), a button in the
+  desktop sidebar, the Hub's "Your notes" card — at
   `/capture?from=…`. Unfiled captures wait in `/inbox` (count in the
   sidebar) to be filed under an area, turned into a to-do, or removed;
   filed ones show in the area page's Notes block. Images aren't in yet:
@@ -481,6 +487,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
      5.5. Needs an `ANTHROPIC_API_KEY` in Vercel (owner to set up).
    - Costs a few pence per conversation; a per-wedding monthly cap is needed
      before other couples use it.
+   - **Where it lives (owner's idea, 11 Oct 2026):** maybe on the home
+     screen, near the "Your notes" card under the ring. Not decided.
 
 ### Design work so far (links)
 

@@ -11,7 +11,8 @@ import { NAV } from "@/lib/nav";
  */
 export default function CaptureButton() {
   const pathname = usePathname();
-  if (!NAV.some((tab) => tab.href === pathname)) return null;
+  // The home screen has its own jot box, just under the ring.
+  if (pathname === "/" || !NAV.some((tab) => tab.href === pathname)) return null;
 
   return (
     <Link

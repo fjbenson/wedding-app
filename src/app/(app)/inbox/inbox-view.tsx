@@ -13,7 +13,7 @@ export const metadata = { title: "Inbox — Wedding App" };
 
 function InboxItem({ note, areas }: { note: Note; areas: AreaOption[] }) {
   return (
-    <li className="rounded-2xl border border-linen bg-white p-4">
+    <li id={`note-${note.id}`} className="scroll-mt-6 rounded-2xl border border-linen bg-white p-4 target:border-champagne-400">
       <NoteText note={note} />
       <p className="mt-2 text-xs text-stone">{formatDayMonth(note.created_at.slice(0, 10))}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-linen pt-3">

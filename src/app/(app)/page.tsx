@@ -2,11 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronRight, Images } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { listAppointments } from "@/lib/db/appointments";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
+import { listPayments } from "@/lib/db/money";
+import { listNotes } from "@/lib/db/notes";
 import { STARTER_AREAS } from "@/lib/areas";
+import { todayISO } from "@/lib/dates";
 import Cover from "@/components/cover";
+import HomeNotes from "@/components/home-notes";
 import ThisMonth from "@/components/this-month";
 
 export default async function HomePage() {
@@ -22,17 +27,22 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas] = await Promise.all([
+  const [milestones, areas, appointments, payments, unfiled] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
+    listAppointments(wedding.id),
+    listPayments(wedding.id),
+    listNotes(wedding.id, { area: null }),
   ]);
   // Empty: made before setup had an areas step, so send them to finish it.
   // null: the database hasn't got the areas table yet, so show the starter set.
   if (areas && areas.length === 0) redirect("/setup");
   const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS;
 
-  // Phone: the names and ring, then the list under them.
-  // Desktop: the ring fills the left, with the list in a column beside it.
+  // Under the ring (canvas 2, "Home · Under the ring", option B): your
+  // notes, then what's coming up, then Inspo.
+  // Phone: the names and ring, then those under them.
+  // Desktop: the ring fills the left, with those in a column beside it.
   return (
     <main className="relative min-h-dvh overflow-hidden pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
       {/* The satin is behind every screen (globals.css); these soft glows
@@ -50,7 +60,18 @@ export default async function HomePage() {
           <div className="absolute -left-[70px] -top-6 h-64 w-64 rounded-full bg-[#E2C9A0] blur-[50px]" />
           <div className="absolute -right-[60px] top-16 h-60 w-60 rounded-full bg-[#EED8C0] blur-[50px]" />
         </div>
-        <ThisMonth milestones={milestones} hasDate={wedding.wedding_date !== null} />
+        {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
+        {unfiled && (
+          <div className="mb-7">
+            <HomeNotes unfiled={unfiled} today={todayISO()} />
+          </div>
+        )}
+        <ThisMonth
+          milestones={milestones}
+          appointments={appointments ?? []}
+          payments={payments ?? []}
+          hasDate={wedding.wedding_date !== null}
+        />
         {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
         <Link
           href="/inspo"

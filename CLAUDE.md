@@ -79,8 +79,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   scroll** sits at the end of the title row (`public/illustrations/
   quill-and-scroll.png`, made with Canva's image tool and cut out to the
   app's gold; canvas 2 "Guest list · Title drawing 2", option E, 11 Oct
-  2026; hidden below 370px wide). The plan is a matching set for every
-  tab's title; for the finished app, a sharper or bought set. **Guest list
+  2026; hidden below 370px wide). **Every tab's title now has one**
+  (canvas 2 "Tab titles · The set", 11 Oct 2026), through one shared
+  piece, `src/components/page-title.tsx` (`<PageTitle drawing=…>`):
+  Guests quill and scroll · Suppliers cards tied with a bow · Plan diary
+  with a ribbon bookmark · Money coin purse (Budget and Payments) · The
+  Day pocket watch (run sheet, Seating, Transport). The Hub has none — the
+  ring is its picture. Sharp vector versions are a to-do. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big dark **All**

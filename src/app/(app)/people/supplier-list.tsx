@@ -1,3 +1,4 @@
+import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { areaName, type AreaOption } from "@/lib/areas";
@@ -30,9 +31,9 @@ export default function SupplierList({ suppliers, areas }: { suppliers: Supplier
 
   return (
     <>
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="suppliers" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         {suppliers.length === 0 ? "No suppliers yet." : "Suppliers"}
-      </h1>
+      </PageTitle>
       <p className="mt-2 text-sm text-stone">
         {suppliers.length === 0
           ? "The venue, the photographer, the florist — everyone you're booking, and what they cost."

@@ -1,3 +1,4 @@
+import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import { Check, ChevronRight, Plus } from "lucide-react";
 import ViewTabs from "@/components/view-tabs";
@@ -89,7 +90,9 @@ function Budget({ total, byArea }: { total: Money; byArea: (AreaOption & Money)[
 
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">The budget</h1>
+      <PageTitle drawing="money" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+        The budget
+      </PageTitle>
 
       <dl className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map(([label, value, tone]) => (
@@ -223,9 +226,9 @@ function Payments({
 
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <PageTitle drawing="money" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {due.length > 0 ? "Payments due" : "Nothing owed right now."}
-      </h1>
+      </PageTitle>
       <p className="mt-2 text-sm text-stone">
         {due.length > 0
           ? [`${formatMoney(owed)} to pay`, overdue > 0 && `${overdue} overdue`].filter(Boolean).join(" · ")

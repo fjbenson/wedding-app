@@ -1,3 +1,4 @@
+import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import { CalendarClock, Plus } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
@@ -53,9 +54,9 @@ export default function TimelineView({
           { label: "By area", href: "/plan?view=area", active: view === "area" },
         ]}
       />
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="plan" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         {nothing ? "Nothing planned yet." : "The plan"}
-      </h1>
+      </PageTitle>
       {nothing && (
         <p className="mt-2 text-sm text-stone">Whatever you add here shows on your home screen too.</p>
       )}

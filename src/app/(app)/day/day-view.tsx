@@ -1,3 +1,4 @@
+import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import { ChevronRight, Plus, X } from "lucide-react";
 import ViewTabs from "@/components/view-tabs";
@@ -103,9 +104,9 @@ export default function DayView({
 function RunSheet({ items, weddingDate }: { items: RunSheetItem[]; weddingDate: string | null }) {
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
         {weddingDate ? formatLongDate(weddingDate) : "The order of the day"}
-      </h1>
+      </PageTitle>
       <p className="mt-2 text-sm text-stone">
         {items.length === 0
           ? "Hour by hour — who needs to be where, and when. It gets printed and handed round."
@@ -161,7 +162,9 @@ function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact
 
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">Seating</h1>
+      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+        Seating
+      </PageTitle>
       <p className="mt-2 text-sm text-stone">
         {data.tables.length === 0
           ? "Add your tables, then sit people at them."
@@ -289,7 +292,9 @@ function SeatingList({
 function Transport({ data, guests }: { data: DayData; guests: Contact[] }) {
   return (
     <>
-      <h1 className="mt-8 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">Transport</h1>
+      <PageTitle drawing="day" spacing="mt-8" className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">
+        Transport
+      </PageTitle>
       <p className="mt-2 text-sm text-stone">
         {data.runs.length === 0 ? "Cars, the coach, pickups — and who travels with whom." : `${data.runs.length} ${data.runs.length === 1 ? "run" : "runs"} on the day`}
       </p>

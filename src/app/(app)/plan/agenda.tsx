@@ -198,41 +198,22 @@ export default function Agenda({
     </Fold>
   );
 
-  // Nudges have a month, not a day, so each month's sit above its grid
-  // ("Start this month"); everything else is a dot on its day.
+  // Nudges ("start around") have a month, not a day, so they aren't on the
+  // grid; they're on the List's month cards. A "Start this month" box above
+  // the grid was tried and put in the backlog (owner, 11 Oct 2026).
   const nudge = (e: Entry) => e.kind === "todo" && isNudge(e.milestone);
   const dots: Record<string, Dot[]> = {};
   const byDay: Record<string, Entry[]> = {};
-  const nudgesByMonth: Record<string, Entry[]> = {};
   for (const e of all) {
     if (!e.date) continue;
-    if (nudge(e)) {
-      // An open nudge from a month gone by belongs to now: "start now".
-      const key = !isDone(e) && monthOf(e)! < thisMonth ? thisMonth : monthOf(e)!;
-      (nudgesByMonth[key] ??= []).push(e);
-      continue;
-    }
+    if (nudge(e)) continue;
     (byDay[e.date] ??= []).push(e);
     (dots[e.date] ??= []).push(isDone(e) ? "done" : e.kind);
   }
   const dayPanels = Object.fromEntries(
     Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
   );
-  const months = Object.keys(nudgesByMonth).concat(thisMonth);
-  const monthTops = Object.fromEntries(
-    [...new Set(months)].map((key) => [
-      key,
-      <div key={key}>
-        {key === thisMonth && earlierFold}
-        {nudgesByMonth[key] && (
-          <div className="mt-3 rounded-2xl bg-cream px-4 pb-1 pt-3">
-            <p className="label">Start this month</p>
-            <ul>{inOrder(nudgesByMonth[key]).map((e) => row(e))}</ul>
-          </div>
-        )}
-      </div>,
-    ]),
-  );
+  const monthTops = { [thisMonth]: <div key={thisMonth}>{earlierFold}</div> };
   const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
   const firstMonth = [thisMonth, ...dated].sort()[0];
   const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;

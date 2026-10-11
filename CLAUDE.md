@@ -198,9 +198,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   switch **Calendar | List** (`CornerSwitch`, shared with People), the
   title, then two big buttons side by side: **Add a to-do** · **Add an
   appointment**. **Calendar** (the default; canvas "Plan · Calendar · Round
-  1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month ›, that month's
-  nudges in a "Start this month" box (plus anything still open from
-  earlier, on the current month), a Monday-first grid with a dot per thing
+  1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
+  open from earlier folds in above the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
   today softly circled, the wedding in a gold ring; tap a day and its rows
   show under the grid. Undated things are in a "No date yet" fold at the
@@ -502,6 +501,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
      before other couples use it.
    - **Where it lives (owner's idea, 11 Oct 2026):** maybe on the home
      screen, near the "Your notes" card under the ring. Not decided.
+
+### Backlog (ideas parked by the owner)
+
+- **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box
+  above the grid listing that month's "start around" nudges, to help
+  couples along. The owner likes the idea but not yet the look; it was
+  taken out. Nudges still show on the List's month cards.
 
 ### Design work so far (links)
 

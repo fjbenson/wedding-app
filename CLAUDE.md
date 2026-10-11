@@ -75,7 +75,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
   rounded switch in the top-right corner above the title ("The guest list"
   / "Suppliers"); no PEOPLE label (canvas "Guest list · Round 13", C with
-  a corner switch, 9 Oct 2026). **Guest list
+  a corner switch, 9 Oct 2026). A **gold line drawing of a quill on a
+  scroll** sits at the end of the title row (`public/illustrations/
+  quill-and-scroll.png`, made with Canva's image tool and cut out to the
+  app's gold; canvas 2 "Guest list · Title drawing 2", option E, 11 Oct
+  2026; hidden below 370px wide). The plan is a matching set for every
+  tab's title; for the finished app, a sharper or bought set. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big dark **All**

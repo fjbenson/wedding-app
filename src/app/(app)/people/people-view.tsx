@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
@@ -32,9 +33,25 @@ export default function PeopleView({
 }) {
   return (
     <>
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">
-        {guests.length === 0 ? "No one on the list yet." : "The guest list"}
-      </h1>
+      {/* The title with its drawing beside it: a quill on a scroll, in the
+          app's gold (owner's pick, canvas 2 "Guest list · Title drawing 2",
+          option E, 11 Oct 2026). Decoration only, so screen readers skip it;
+          hidden on the narrowest phones, where it would push the title onto
+          two lines. */}
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h1 className="type-display min-w-0 text-[40px] leading-[1.05] tracking-[-0.02em]">
+          {guests.length === 0 ? "No one on the list yet." : "The guest list"}
+        </h1>
+        <Image
+          src="/illustrations/quill-and-scroll.png"
+          alt=""
+          aria-hidden
+          width={622}
+          height={512}
+          priority
+          className="-my-4 hidden h-auto w-[92px] shrink-0 min-[370px]:block sm:w-[120px]"
+        />
+      </div>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">

@@ -512,6 +512,16 @@ additive — new tables hanging off `weddings`. None require changing the above.
    - **Where it lives (owner's idea, 11 Oct 2026):** maybe on the home
      screen, near the "Your notes" card under the ring. Not decided.
 
+### Open issues
+
+- **Phone menu bar drifts while scrolling** (reported 11 Oct 2026): on the
+  owner's iPhone the bottom menu bar moves up the screen mid-scroll, then
+  snaps back after a few seconds. Not yet reproduced: the notes wall isn't
+  wider than the screen, and nothing near the menu bar changed. Waiting on
+  the owner — which screen(s), and Safari or the home-screen app. Likely an
+  iPhone repaint lag behind heavy glass/blur; fix is to lighten that screen
+  or change how the bar is pinned.
+
 ### Backlog (ideas parked by the owner)
 
 - **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box

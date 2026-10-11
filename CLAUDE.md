@@ -303,6 +303,13 @@ calls the anon key the *publishable* key — same thing).
 build that fails there leaves the last good version live. Tell the owner in
 plain words what changed once it's pushed.
 
+**Start and end of a chat (11 Oct 2026).** Every cloud chat runs
+`.claude/hooks/session-start.sh` first: it brings the copy up to date with
+`main` (a chat can start from an old side branch — one did, 10 days behind),
+installs packages, and has Claude open with a short catch-up
+(`.claude/catch-up.md`). At the end the owner types **`/banana`** (or
+`/wrapup`, the same thing): save, push, update these notes, report back.
+
 This exists so design can be looked at rather than described: push a change, get
 a link the owner can open on their phone.
 

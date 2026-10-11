@@ -247,7 +247,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   thought and/or a link from anywhere — a glass pen button above the phone
   menu bar (not on the Hub, which has its own jot box), a button in the
   desktop sidebar, the Hub's "Your notes" card — at
-  `/capture?from=…`. Unfiled captures wait in `/inbox` (count in the
+  `/capture?from=…`. Every note lives on `/inbox` (unfiled count in the
   sidebar), titled **Your notes** and shown as a **wall of paper notes**
   (canvas 2, "Inbox · Sticky-note wall", option A, owner's pick 11 Oct
   2026; `note-wall.tsx`): two columns on a phone, three on a laptop, soft
@@ -256,7 +256,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   capture).
   Tap one and a panel comes up — File under an area, Make it a to-do, Edit,
   Remove (actions that return a message, `capture/actions.ts`). The Hub's
-  "File it" opens that note's panel (`/inbox?note=<id>`). Filed ones show in the area page's Notes block. Images aren't in yet:
+  "File it" opens that note's panel (`/inbox?note=<id>`). **Filing only tags
+  a note** (owner, 11 Oct 2026): it stays on the wall with a gold area tag
+  and shows in that area's Notes block too; its panel says "Filed under" and
+  can change it or set it back to Not filed. No "Filed lately" list any more. Images aren't in yet:
   they need Supabase Storage (a bucket plus storage policies).
 - **Settings** (`/settings`, screen 37; a gear on the hub cover, and the
   foot of the desktop sidebar): the couple's names and date; every area

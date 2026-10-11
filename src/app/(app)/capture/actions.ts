@@ -118,9 +118,9 @@ async function attempt(message: string, work: () => Promise<unknown>): Promise<R
   return {};
 }
 
+/** Tags a note with an area (it stays on the wall too); an empty area un-files it. */
 export async function fileInboxNoteAction(noteId: string, areaKey: string): Promise<Result> {
-  if (!areaKey) return { error: "Pick an area first." };
-  return attempt("That didn't file it. Try again.", () => fileNote(noteId, areaKey));
+  return attempt("That didn't file it. Try again.", () => fileNote(noteId, areaKey || null));
 }
 
 export async function inboxNoteToTodoAction(noteId: string): Promise<Result> {

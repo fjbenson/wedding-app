@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import NoteText, { host } from "@/components/note-text";
-import type { AreaOption } from "@/lib/areas";
+import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
@@ -39,6 +39,8 @@ async function safely(work: () => Promise<Result>): Promise<Result> {
  * option A, owner's pick 11 Oct 2026): two columns on a phone, three on a
  * laptop, each slightly turned with a strip of tape. Tap one and a panel
  * comes up to file it under an area, make it a to-do, edit or remove it.
+ * Filing only tags a note (owner, 11 Oct 2026): it stays on the wall with
+ * its area's name, and shows on that area's page as well.
  */
 export default function NoteWall({
   notes,
@@ -82,7 +84,15 @@ export default function NoteWall({
                   <span className="truncate">{host(note.url)}</span>
                 </span>
               )}
-              <span className="type-meta mt-3 block">{formatAgo(note.created_at, today)}</span>
+              <span className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                <span className="type-meta">{formatAgo(note.created_at, today)}</span>
+                {/* Filed: tagged with its area, and on that area's page too — it stays here as well. */}
+                {note.area_key && (
+                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[12px] font-medium text-champagne-600 shadow-[inset_0_0_0_1px_rgb(205_183_142/0.6)]">
+                    {areaName(note.area_key, areas)}
+                  </span>
+                )}
+              </span>
             </button>
           </li>
         ))}
@@ -118,7 +128,7 @@ const ROW = "flex min-h-14 w-full items-center gap-3 border-t border-linen px-1 
 function NotePanel({ note, areas, today, onClose }: { note: Note; areas: AreaOption[]; today: string; onClose: () => void }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
-  const [area, setArea] = useState("");
+  const [area, setArea] = useState(note.area_key ?? "");
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.body ?? "");
 
@@ -187,7 +197,7 @@ function NotePanel({ note, areas, today, onClose }: { note: Note; areas: AreaOpt
           }}
         >
           <label htmlFor="file-under" className="flex-1 text-base text-ink">
-            File under
+            {note.area_key ? "Filed under" : "File under"}
           </label>
           <select
             id="file-under"
@@ -195,16 +205,16 @@ function NotePanel({ note, areas, today, onClose }: { note: Note; areas: AreaOpt
             onChange={(event) => setArea(event.target.value)}
             className="h-10 max-w-[45%] rounded-full border border-[#E0D3BC] bg-white px-3 text-[15px] text-ink focus:border-champagne-400 focus:outline-none"
           >
-            <option value="">Choose an area</option>
+            <option value="">{note.area_key ? "Not filed" : "Choose an area"}</option>
             {areas.map((a) => (
               <option key={a.key} value={a.key}>
                 {a.label}
               </option>
             ))}
           </select>
-          {area && (
+          {area !== (note.area_key ?? "") && (
             <button type="submit" disabled={pending} className="h-10 rounded-full bg-ink px-4 text-sm text-ivory disabled:opacity-60">
-              File
+              {area ? "File" : "Save"}
             </button>
           )}
         </form>

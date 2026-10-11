@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Plus } from "lucide-react";
-import NoteText from "@/components/note-text";
-import { areaName, type AreaOption } from "@/lib/areas";
-import { formatDayMonth } from "@/lib/dates";
+import type { AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Note } from "@/types/db";
 import { InspoTile } from "../inspo/inspo-view";
@@ -11,9 +9,9 @@ import NoteWall from "./note-wall";
 export const metadata = { title: "Your notes — Wedding App" };
 
 /**
- * The capture inbox (screen 36), shown as "Your notes": everything not yet
- * filed as a wall of paper notes (`note-wall.tsx`), unsorted Inspo pictures,
- * then what was filed lately.
+ * The capture inbox (screen 36), shown as "Your notes": every note as a wall
+ * of paper notes (`note-wall.tsx`) — filed ones carry their area's name and
+ * stay here too — then unsorted Inspo pictures.
  */
 export default function InboxView({
   notes,
@@ -36,7 +34,6 @@ export default function InboxView({
   detail?: string;
 }) {
   const unfiled = (notes ?? []).filter((n) => !n.area_key);
-  const filed = (notes ?? []).filter((n) => n.area_key).slice(0, 12);
 
   return (
     <main className="page pb-28 lg:pb-16">
@@ -46,9 +43,9 @@ export default function InboxView({
       </Link>
       <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">Your notes</h1>
       <p className="mt-2 text-sm text-stone">
-        {unfiled.length + pictures.length === 0
-          ? "All sorted. Jot something down and it waits here."
-          : `${unfiled.length + pictures.length} to sort. Tap one to file it, or turn it into a to-do.`}
+        {(notes ?? []).length === 0
+          ? "Jot something down and it waits here, until you file it under an area or make it a to-do."
+          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} not filed yet` : ", all filed"}. Tap one to file it under an area, or make it a to-do.`}
       </p>
 
       {error && (
@@ -74,7 +71,7 @@ export default function InboxView({
 
       {notes !== null && (
         <div className="mt-8">
-          <NoteWall notes={unfiled} areas={areas} today={today} initialOpen={openNote} />
+          <NoteWall notes={notes ?? []} areas={areas} today={today} initialOpen={openNote} />
         </div>
       )}
 
@@ -94,24 +91,6 @@ export default function InboxView({
         </section>
       )}
 
-      {filed.length > 0 && (
-        <section className="mt-12">
-          <h2 className="section-label px-1">Filed lately</h2>
-          <ul>
-            {filed.map((n) => (
-              <li key={n.id} className="border-b border-linen px-1 py-3 last:border-b-0">
-                <NoteText note={n} />
-                <p className="mt-1 text-xs text-stone">
-                  <Link href={`/area/${encodeURIComponent(n.area_key!)}`} className="underline underline-offset-4 hover:text-ink">
-                    {areaName(n.area_key, areas)}
-                  </Link>{" "}
-                  · {formatDayMonth(n.created_at.slice(0, 10))}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </main>
   );
 }

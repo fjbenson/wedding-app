@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SignInForm from "./sign-in-form";
+import EmailCodeForm from "@/components/email-code-form";
 
 export const metadata: Metadata = {
   title: "Sign in — Wedding App",
@@ -17,9 +17,9 @@ export default async function SignInPage({
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
         <div className="text-center">
-          <h1 className="text-4xl text-ink">Wedding App</h1>
+          <h1 className="type-display text-[40px] leading-[1.05] text-ink">Open your wedding</h1>
           <p className="mt-3 text-sm text-stone">
-            Everything for the day, in one place.
+            Saved your wedding with your email? Sign in with it here.
           </p>
         </div>
 
@@ -48,11 +48,14 @@ export default async function SignInPage({
         )}
 
         <div className="mt-10 rounded-3xl border border-linen bg-white p-7 shadow-sm">
-          <SignInForm />
+          <EmailCodeForm mode="sign-in" />
         </div>
 
         <p className="mt-6 text-center text-xs text-stone">
-          No password to remember — we email you a link that signs you straight in.
+          No password to remember — we email you a code.{" "}
+          <Link href="/" className="text-champagne-600 underline underline-offset-4">
+            Back to the app
+          </Link>
         </p>
       </div>
     </main>

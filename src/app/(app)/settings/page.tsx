@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getLogin } from "@/lib/db/auth";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding, listMembers } from "@/lib/db/weddings";
 import SettingsView from "./settings-view";
@@ -16,9 +16,8 @@ export default async function SettingsPage({
   if (!wedding) redirect("/");
   const { saved, error, detail } = await searchParams;
 
-  const supabase = await createClient();
-  const [{ data: auth }, areas, members] = await Promise.all([
-    supabase.auth.getClaims(),
+  const [login, areas, members] = await Promise.all([
+    getLogin(),
     listAreas(wedding.id),
     listMembers(wedding.id),
   ]);
@@ -28,7 +27,7 @@ export default async function SettingsPage({
       wedding={wedding}
       areas={areas ?? []}
       members={members}
-      currentUserId={auth?.claims?.sub ?? null}
+      login={login}
       saved={saved}
       error={error}
       detail={detail}

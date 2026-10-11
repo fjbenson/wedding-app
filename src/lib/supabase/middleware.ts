@@ -43,7 +43,9 @@ export async function updateSession(request: NextRequest) {
   // needs refreshing, or if the project still uses the older shared-secret
   // keys), which is most of the wait when moving between screens.
   const { data: auth } = await supabase.auth.getClaims();
-  let user: { id: string } | null = auth?.claims ? { id: auth.claims.sub } : null;
+  let user: { id: string; anonymous?: boolean } | null = auth?.claims
+    ? { id: auth.claims.sub, anonymous: auth.claims.is_anonymous === true }
+    : null;
 
   // A browser that already has a login must never be quietly handed a new
   // one (11 Oct 2026: a refresh that failed did exactly that, and the
@@ -55,7 +57,7 @@ export async function updateSession(request: NextRequest) {
   const startFresh = pathname === "/sign-in" && searchParams.has("fresh");
   if (!user && hadLogin && !startFresh) {
     const { data: again } = await supabase.auth.getClaims();
-    user = again?.claims ? { id: again.claims.sub } : null;
+    user = again?.claims ? { id: again.claims.sub, anonymous: again.claims.is_anonymous === true } : null;
     if (!user && !isPublic(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/sign-in";
@@ -64,10 +66,11 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // For now there's no sign-in step: a visitor without a session is quietly
-  // given an anonymous one, which is still a real user as far as row-level
+  // No sign-in step to start: a visitor without a session is quietly given
+  // an anonymous one, which is still a real user as far as row-level
   // security is concerned, so every wedding stays private to its creator.
-  // The catch is that it lives in this browser only. Needs "Allow anonymous
+  // It lives in this browser only until Settings › Save your wedding adds an
+  // email (src/lib/db/auth.ts). Needs "Allow anonymous
   // sign-ins" switched on in Supabase; if it's off, this fails and the
   // visitor falls through to the email sign-in page as before.
   // Runs on the sign-in page too, so an old bookmark to it still gets you in.
@@ -79,7 +82,7 @@ export async function updateSession(request: NextRequest) {
       console.error("anonymous sign-in failed", error.message);
       anonymousError = error.message;
     } else {
-      user = data.user;
+      user = data.user ? { id: data.user.id, anonymous: true } : null;
     }
   }
 
@@ -106,11 +109,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname === "/sign-in") {
+  // Anonymous visitors may use the sign-in page: it's how a phone opens a
+  // wedding already saved to an email. Only a saved login is sent home.
+  if (user && ((!user.anonymous && pathname === "/sign-in") || startFresh)) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.search = "";
-    return NextResponse.redirect(url);
+    // Carry over any login cookies just set, or the new login is lost.
+    const redirect = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
   }
 
   return response;

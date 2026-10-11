@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Check } from "lucide-react";
 import { Field, SubmitButton } from "@/components/form-bits";
@@ -49,6 +50,11 @@ export default async function SetupPage({
           <p className="mt-10 rounded-xl border border-dashed border-champagne-400 px-4 py-3 text-xs leading-relaxed text-stone">
             Already planning a wedding here, and it&apos;s gone missing? Don&apos;t start again — it&apos;s safe. Your
             login code is <span className="font-mono text-ink">{code}</span>; with it, the wedding can be linked back.
+            Saved it with your email?{" "}
+            <Link href="/sign-in" className="text-champagne-600 underline underline-offset-4">
+              Sign in to it
+            </Link>
+            .
           </p>
         )}
       </div>

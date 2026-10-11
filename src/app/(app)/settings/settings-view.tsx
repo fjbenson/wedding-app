@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Check, Plus } from "lucide-react";
 import { Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
+import EmailCodeForm from "@/components/email-code-form";
 import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
+import type { Login } from "@/lib/db/auth";
 import type { AreaRow, MemberRole, Wedding, WeddingMember } from "@/types/db";
 import { moveAreaAction, renameAreaAction, saveWeddingAction, toggleAreaAction } from "./actions";
 
@@ -35,7 +37,7 @@ export default function SettingsView({
   wedding,
   areas,
   members,
-  currentUserId,
+  login,
   saved,
   error,
   detail,
@@ -43,11 +45,12 @@ export default function SettingsView({
   wedding: Wedding;
   areas: AreaRow[];
   members: WeddingMember[];
-  currentUserId: string | null;
+  login: Login | null;
   saved?: string;
   error?: string;
   detail?: string;
 }) {
+  const currentUserId = login?.id ?? null;
   const move = "flex h-8 w-8 items-center justify-center rounded-full text-stone hover:bg-cream disabled:opacity-30";
 
   return (
@@ -62,7 +65,9 @@ export default function SettingsView({
         </p>
       )}
 
-      <section className="glass-card mt-8 rounded-[22px] p-5">
+      <YourLogin login={login} saved={saved === "login"} />
+
+      <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
         <form action={saveWeddingAction} className="mt-5 space-y-5">
           <Field label="Whose wedding?">
@@ -168,11 +173,53 @@ export default function SettingsView({
             </li>
           ))}
         </ul>
-        <p className="mt-4 rounded-xl border border-dashed border-champagne-400 px-4 py-3 text-sm leading-relaxed text-ink">
-          For now your wedding lives in this browser, on this device — there&apos;s no email sign-in yet, so it
-          can&apos;t be opened anywhere else or shared with a partner or planner. That comes with proper sign-in.
-        </p>
+
       </section>
     </main>
+  );
+}
+
+/**
+ * Save your wedding (11 Oct 2026): until an email is added, the wedding lives
+ * in this browser only. Once it is, a code sent to that email opens it on any
+ * phone, and signing out is safe.
+ */
+function YourLogin({ login, saved }: { login: Login | null; saved: boolean }) {
+  if (login && !login.anonymous && login.email) {
+    return (
+      <section className="glass-card mt-8 rounded-[22px] p-5">
+        <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your login</h2>
+        {saved && <p className="mt-4 text-sm text-ink">Saved. Your wedding is safe.</p>}
+        <p className="mt-4 text-sm leading-relaxed text-stone">
+          Saved to <span className="text-ink">{login.email}</span>. To open it on another phone or a laptop, sign in there
+          with this email and the code we send.
+        </p>
+        <form action="/auth/sign-out" method="post" className="mt-4">
+          <button type="submit" className="h-11 rounded-full border border-linen px-5 text-sm text-ink hover:bg-cream">
+            Sign out
+          </button>
+        </form>
+      </section>
+    );
+  }
+
+  return (
+    <section className="glass-card mt-8 rounded-[22px] p-5">
+      <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Save your wedding</h2>
+      <p className="mt-4 text-sm leading-relaxed text-ink">
+        Right now your wedding lives in this browser only. Add your email and it&apos;s kept safe — you can open it on
+        any phone or laptop, and it can&apos;t go missing.
+      </p>
+      <div className="mt-4">
+        <EmailCodeForm mode="save" />
+      </div>
+      <p className="mt-4 text-xs text-stone">
+        Already saved a wedding with your email on another phone?{" "}
+        <Link href="/sign-in" className="text-champagne-600 underline underline-offset-4">
+          Sign in to it
+        </Link>
+        .
+      </p>
+    </section>
   );
 }

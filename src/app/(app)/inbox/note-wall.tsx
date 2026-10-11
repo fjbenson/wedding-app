@@ -7,6 +7,7 @@ import { DateInput } from "@/components/form-bits";
 import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
+import { WHEN_TITLE } from "@/lib/plan";
 import type { Note } from "@/types/db";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
@@ -327,12 +328,14 @@ function NotePanel({
               ))}
             </div>
             {whenKind !== "none" && (
-              <DateInput
-                aria-label="Date"
-                value={whenDate}
-                onChange={(event) => setWhenDate(event.target.value)}
-                className="mt-2.5 block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
-              />
+              <label className="mt-3.5 block text-sm text-ink">
+                {WHEN_TITLE[whenKind]}
+                <DateInput
+                  value={whenDate}
+                  onChange={(event) => setWhenDate(event.target.value)}
+                  className="mt-2 block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
+                />
+              </label>
             )}
             <div className="mt-3 flex justify-end gap-2">
               <button type="button" onClick={() => setAsking(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">

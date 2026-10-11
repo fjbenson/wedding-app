@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CalendarDays } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
 /** Shared pieces for the add/edit forms. */
@@ -95,6 +96,8 @@ export function InlineSubmit({
  * empty date box as a blank strip with no hint, and a laptop shows
  * "dd/mm/yyyy"; this gives both the same faint hint as the other boxes'
  * placeholders. The laptop's own letters are hidden until the box is in use.
+ * A small calendar sits on the right on every device (globals.css hides the
+ * laptop's own, but leaves it stretched over the box so a click opens it).
  */
 export function DateInput({
   placeholder = "Pick a date",
@@ -112,7 +115,12 @@ export function DateInput({
           setFilled(!!event.target.value);
           props.onChange?.(event);
         }}
-        className={`peer ${className} ${empty ? "!text-transparent focus:!text-ink" : ""}`}
+        className={`peer relative ${className} !pr-11 ${empty ? "!text-transparent focus:!text-ink" : ""}`}
+      />
+      <CalendarDays
+        aria-hidden
+        strokeWidth={1.6}
+        className="pointer-events-none absolute bottom-[15px] right-4 h-5 w-5 text-stone/70"
       />
       {empty && (
         <span

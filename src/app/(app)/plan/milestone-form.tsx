@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { isNudge, planDate } from "@/lib/plan";
+import { WHEN_TITLE, isNudge, planDate } from "@/lib/plan";
 import type { Milestone } from "@/types/db";
 
 /** Add or edit one to-do. `milestone` is missing when adding. */
@@ -23,6 +24,7 @@ export default function MilestoneForm({
   // "Guests" tag) keeps it as an option, so saving doesn't quietly drop it.
   const current = milestone?.category;
   const nudge = !!milestone && isNudge(milestone);
+  const [whenKind, setWhenKind] = useState<"due" | "start">(nudge ? "start" : "due");
   const options =
     current && !areas.some((a) => a.key === current)
       ? [...areas, { key: current, label: areaName(current, areas) ?? current }]
@@ -46,16 +48,19 @@ export default function MilestoneForm({
           When <span className="text-stone">(optional)</span>
         </legend>
         <div className="mb-2.5 grid grid-cols-2 rounded-full bg-cream p-[3px]">
-          {[
-            { value: "due", label: "Done by" },
-            { value: "start", label: "Start around" },
-          ].map((option) => (
+          {(
+            [
+              { value: "due", label: "Done by" },
+              { value: "start", label: "Start around" },
+            ] as const
+          ).map((option) => (
             <label key={option.value} className="cursor-pointer">
               <input
                 type="radio"
                 name="when_kind"
                 value={option.value}
-                defaultChecked={option.value === (nudge ? "start" : "due")}
+                checked={option.value === whenKind}
+                onChange={() => setWhenKind(option.value)}
                 className="peer sr-only"
               />
               <span className="flex h-9 items-center justify-center rounded-full text-sm text-stone transition peer-checked:bg-white peer-checked:text-ink peer-checked:shadow-[0_1px_4px_rgb(60_50_40/0.12)] peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400">
@@ -64,12 +69,14 @@ export default function MilestoneForm({
             </label>
           ))}
         </div>
-        <DateInput
-          name="when"
-          aria-label="Date"
-          defaultValue={milestone ? (planDate(milestone) ?? "") : ""}
-          className={INPUT}
-        />
+        <label className="mt-4 block text-sm text-ink">
+          {WHEN_TITLE[whenKind]}
+          <DateInput
+            name="when"
+            defaultValue={milestone ? (planDate(milestone) ?? "") : ""}
+            className={INPUT}
+          />
+        </label>
       </fieldset>
 
       <Field label="Area" hint="optional">

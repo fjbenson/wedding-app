@@ -27,6 +27,16 @@
     max-width: 100%;
     min-height: 3.125rem;
   }
+  /* The laptop's own calendar button: invisible, but covering the whole box,
+     so clicking anywhere opens the picker. DateInput draws its own icon. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    opacity: 0;
+    cursor: pointer;
+  }
   input[type="date"]::-webkit-date-and-time-value,
   input[type="time"]::-webkit-date-and-time-value {
     text-align: left;

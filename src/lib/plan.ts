@@ -15,3 +15,6 @@ export function isNudge(m: Milestone): boolean {
 export function planDate(m: Milestone): string | null {
   return m.due_date ?? m.remind_at?.slice(0, 10) ?? null;
 }
+
+/** The date box's title under the to-do forms' "Done by / Start around" switch. */
+export const WHEN_TITLE = { due: "The date it's due", start: "Roughly when to start" } as const;

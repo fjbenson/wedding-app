@@ -12,12 +12,15 @@ export default function AppointmentForm({
   suppliers,
   areas,
   defaultArea,
+  defaultDate,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   appointment?: Appointment;
   suppliers: { id: string; name: string }[];
   areas: AreaOption[];
   defaultArea?: string;
+  /** Adding from a day on the calendar: start with that date. */
+  defaultDate?: string;
 }) {
   return (
     <form action={action} className="space-y-5">
@@ -34,7 +37,7 @@ export default function AppointmentForm({
 
       <div className="grid grid-cols-2 items-end gap-3">
         <Field label="Date">
-          <DateInput name="on_date" required defaultValue={appointment?.on_date ?? ""} className={INPUT} />
+          <DateInput name="on_date" required defaultValue={appointment?.on_date ?? defaultDate ?? ""} className={INPUT} />
         </Field>
         <Field label="Time" hint="optional">
           <input name="at_time" type="time" defaultValue={appointment?.at_time?.slice(0, 5) ?? ""} className={INPUT} />

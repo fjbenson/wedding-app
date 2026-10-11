@@ -11,9 +11,9 @@ export const metadata = { title: "Add a to-do — Wedding App" };
 export default async function NewMilestonePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string; area?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; area?: string; date?: string }>;
 }) {
-  const { error, detail, area } = await searchParams;
+  const { error, detail, area, date } = await searchParams;
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const areas = areaOptions(await listAreas(wedding.id));
@@ -27,7 +27,12 @@ export default async function NewMilestonePage({
       error={error}
       detail={detail}
     >
-      <MilestoneForm action={saveMilestoneAction.bind(null, null)} areas={areas} defaultArea={fromArea} />
+      <MilestoneForm
+        action={saveMilestoneAction.bind(null, null)}
+        areas={areas}
+        defaultArea={fromArea}
+        defaultDate={date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined}
+      />
     </FormPage>
   );
 }

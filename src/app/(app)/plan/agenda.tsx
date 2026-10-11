@@ -30,14 +30,10 @@ const byDate = (a: Entry, b: Entry) => {
 const monthName = (key: string) => formatMonthYear(`${key}-01`).split(" ")[0];
 
 /**
- * The agenda (screens 16 and 17), as settled on the canvas ("Plan · Round
- * 4", option A, 10 Oct 2026): this month on a card — what's left, what's
- * done, a bar — then "the road to the day", a line down the left with a dot
- * per month, each opening to show what's in it (a pill says how many), and
- * the wedding at the end. Quiet months say so. Done things stay in their
- * month, crossed out, until the month is over; then "Looking back" has them. To-dos, appointments and
- * payments due share the one timeline because they all answer "what's
- * coming up"; their marks tell them apart.
+ * The agenda (screens 16 and 17): the calendar, with the month in view
+ * listed under it and a card per tapped day (`calendar.tsx`), then the
+ * things with no date yet. To-dos, appointments and payments due share it
+ * because they all answer "what's coming up"; their marks tell them apart.
  */
 export default function Agenda({
   milestones,
@@ -213,6 +209,15 @@ export default function Agenda({
   const dayPanels = Object.fromEntries(
     Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
   );
+  // The list under the grid: everything with a date in the month, nudges
+  // included, in date order — done things stay where they were, crossed out.
+  // No day headings (owner, 11 Oct 2026): each row carries its own date.
+  const byMonth: Record<string, Entry[]> = {};
+  for (const e of all) if (e.date) (byMonth[monthOf(e)!] ??= []).push(e);
+  const monthLists = Object.fromEntries(
+    Object.entries(byMonth).map(([key, entries]) => [key, <ul key={key} className="mt-1">{entries.map((e) => row(e))}</ul>]),
+  );
+  const monthCounts = Object.fromEntries(Object.entries(byMonth).map(([key, entries]) => [key, entries.length]));
   const monthTops = { [thisMonth]: <div key={thisMonth}>{earlierFold}</div> };
   const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
   const firstMonth = [thisMonth, ...dated].sort()[0];
@@ -227,6 +232,8 @@ export default function Agenda({
         lastMonth={lastMonth}
         dots={dots}
         dayPanels={dayPanels}
+        monthLists={monthLists}
+        monthCounts={monthCounts}
         monthTops={monthTops}
         toggle={null}
         weddingPanel={

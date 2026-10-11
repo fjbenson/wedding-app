@@ -201,20 +201,22 @@ Next.js scaffold. Built so far, against the plan's tabs:
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
-  today softly circled, the wedding in a gold ring; tap a day and its rows
+  today softly circled, the wedding in a gold ring; tap a day for its card (below)
   show under the grid. The month in view and the tapped day live in the
   address (`?month=`, `?day=`), so Back from a to-do lands on the same
   month and tapping Plan starts on today. Undated things are in a "No date yet" fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
-  **Calendar round 2 on canvas 2** (11 Oct 2026, page "Plan · Calendar ·
-  Round 2 · The month underneath"): the owner feels the calendar isn't
-  right (under the grid you only ever see one day, often empty). All three
-  options list the **whole month under the grid**; tapping a day then
-  A jumps the list to it and lights it up, B pops up a card with that day
-  plus "Add on this day" (to-do / appointment, date filled in — Claude's
-  pick), C shows only that day until "Show the whole month". **Waiting on
-  the owner's pick.**
+  **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
+  month underneath", option B, owner's pick 11 Oct 2026): under the grid,
+  **everything in the month** as one list in date order — no day headings,
+  each row carries its date (owner's change to the mock). Tapping a day
+  opens a **day card** (`DayCard` in `calendar.tsx`; a sheet on phones,
+  pull down to close, a right-hand panel on laptops, like the guest card —
+  `usePullToClose` is now shared in `src/components/`) with that day's
+  things and **Add on this day**: a to-do or an appointment with the date
+  filled in (`/plan/new?date=`, `/plan/appointments/new?date=`). No day is
+  picked on arrival; `?day=` keeps the card open across Back.
   **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
   appointments or payments, which live on the Calendar — as a **glass card
   per month** ("October *2026*", "This month · 2"): Overdue first, then

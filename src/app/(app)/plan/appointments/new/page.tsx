@@ -10,11 +10,11 @@ export const metadata = { title: "Add an appointment — Wedding App" };
 export default async function NewAppointmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string; area?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; area?: string; date?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { error, detail, area } = await searchParams;
+  const { error, detail, area, date } = await searchParams;
   const { areas, suppliers } = await formOptions(wedding.id);
 
   return (
@@ -24,6 +24,7 @@ export default async function NewAppointmentPage({
         suppliers={suppliers}
         areas={areas}
         defaultArea={areas.some((a) => a.key === area) ? area : undefined}
+        defaultDate={date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined}
       />
     </FormPage>
   );

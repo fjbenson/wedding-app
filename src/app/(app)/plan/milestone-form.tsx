@@ -13,6 +13,7 @@ export default function MilestoneForm({
   milestone,
   areas,
   defaultArea,
+  defaultDate,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   milestone?: Milestone;
@@ -20,6 +21,8 @@ export default function MilestoneForm({
   areas: AreaOption[];
   /** Adding from an area's group in "By area": start with that area picked. */
   defaultArea?: string;
+  /** Adding from a day on the calendar: start with that date. */
+  defaultDate?: string;
 }) {
   // A to-do tagged with an area that's since been switched off (or an older
   // "Guests" tag) keeps it as an option, so saving doesn't quietly drop it.
@@ -75,7 +78,7 @@ export default function MilestoneForm({
           {WHEN_TITLE[whenKind]}
           <DateInput
             name="when"
-            defaultValue={milestone ? (planDate(milestone) ?? "") : ""}
+            defaultValue={milestone ? (planDate(milestone) ?? "") : (defaultDate ?? "")}
             className={INPUT}
           />
         </label>

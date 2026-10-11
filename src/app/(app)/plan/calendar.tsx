@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { usePullToClose } from "@/components/use-pull-to-close";
 
 export type Dot = "todo" | "appointment" | "payment" | "done";
 
@@ -26,12 +27,14 @@ const DOT: Record<Dot, string> = {
 };
 
 /**
- * The plan as a month calendar (canvas "Plan · Calendar · Round 1", option
- * A, 10 Oct 2026) — what Plan opens on. ‹ › move between months; each
- * day shows a dot per thing on it, in the list's marks; tap a day and its
- * rows appear under the grid. Today has a soft circle, the wedding a gold
- * ring. The rows, and each month's "start this month" nudges, are drawn on
- * the server and handed in by date, so ticking off works as in the list.
+ * The plan as a month calendar — what Plan opens on. ‹ › move between
+ * months; each day shows a dot per thing on it, in the list's marks. Under
+ * the grid, everything in the month in view, one list in date order with the
+ * date on each row (canvas 2 "Plan · Calendar · Round 2", option B, owner's
+ * pick 11 Oct 2026, without the day headings). Tap a day and a card comes up
+ * with that day's things and "Add on this day". Today has a soft circle, the
+ * wedding a gold ring. The rows are drawn on the server and handed in, so
+ * ticking off works as in the list.
  */
 export default function PlanCalendar({
   today,
@@ -40,6 +43,8 @@ export default function PlanCalendar({
   lastMonth,
   dots,
   dayPanels,
+  monthLists,
+  monthCounts,
   monthTops,
   toggle,
   weddingPanel,
@@ -50,13 +55,17 @@ export default function PlanCalendar({
   lastMonth: string;
   dots: Record<string, Dot[]>;
   dayPanels: Record<string, ReactNode>;
+  /** Everything in each month, for the list under the grid. */
+  monthLists: Record<string, ReactNode>;
+  monthCounts: Record<string, number>;
   monthTops: Record<string, ReactNode>;
   toggle: ReactNode;
   weddingPanel: ReactNode;
 }) {
   // The month in view and the day tapped live in the address (?month=,
-  // ?day=; src/lib/url-state.ts), so opening a to-do and going back lands on
-  // the same month, and tapping Plan in the menu starts on today.
+  // ?day=; src/lib/url-state.ts), so opening a to-do from the day's card and
+  // going back lands on the same month with the card open again, and tapping
+  // Plan in the menu starts on today with no card.
   const params = useSearchParams();
   const asked = params.get("month");
   const [month, setMonth] = useState(
@@ -64,15 +73,12 @@ export default function PlanCalendar({
   );
   const askedDay = params.get("day");
   const [selected, setSelected] = useState<string | null>(
-    askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)
-      ? askedDay
-      : today.startsWith(month)
-        ? today
-        : null,
+    askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month) ? askedDay : null,
   );
   useEffect(() => {
-    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected === today ? null : selected });
+    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected });
   }, [month, selected, today]);
+  const close = useCallback(() => setSelected(null), []);
 
 
   const [year, monthNumber] = month.split("-").map(Number);
@@ -84,9 +90,7 @@ export default function PlanCalendar({
   const go = (by: 1 | -1) => {
     const next = shiftMonth(month, by);
     setMonth(next);
-    // Keep today picked if it's in view, else the first day with something on.
-    const days = Object.keys(dots).filter((d) => d.startsWith(next)).sort();
-    setSelected(today.startsWith(next) ? today : (days[0] ?? null));
+    setSelected(null);
   };
 
   const longDate = (date: string) => {
@@ -177,29 +181,6 @@ export default function PlanCalendar({
         })}
       </div>
 
-      <div className="mt-4 border-t border-linen pt-4">
-        {selected && selected.startsWith(month) ? (
-          <>
-            <p className="label">
-              {selected === today && "Today · "}
-              {longDate(selected)}
-            </p>
-            {selected === weddingDate && weddingPanel}
-            {dayPanels[selected] ??
-              (selected !== weddingDate && (
-                <p className="mt-2.5 text-[15px] text-stone">
-                  Nothing on this day.{" "}
-                  <Link href="/plan/new" className="text-champagne-600 underline underline-offset-4 hover:text-ink">
-                    Add a to-do
-                  </Link>
-                </p>
-              ))}
-          </>
-        ) : (
-          <p className="text-[15px] text-stone">Tap a day to see what&apos;s on.</p>
-        )}
-      </div>
-
       <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-stone" aria-hidden>
         {(
           [
@@ -215,6 +196,139 @@ export default function PlanCalendar({
           </span>
         ))}
       </div>
+
+      <div className="mt-6 border-t border-champagne-400 pt-4">
+        <p className="flex items-baseline justify-between gap-3">
+          <span className="section-label">All of {name}</span>
+          {!!monthCounts[month] && (
+            <span className="type-meta">
+              {monthCounts[month]} {monthCounts[month] === 1 ? "thing" : "things"}
+            </span>
+          )}
+        </p>
+        {monthLists[month] ?? (
+          <p className="mt-2.5 text-[15px] text-stone">
+            Nothing planned in {name} yet.{" "}
+            <Link href="/plan/new" className="text-champagne-600 underline underline-offset-4 hover:text-ink">
+              Add a to-do
+            </Link>
+          </p>
+        )}
+      </div>
+
+      {selected && (
+        <DayCard
+          date={selected}
+          title={longDate(selected)}
+          isToday={selected === today}
+          onClose={close}
+        >
+          {selected === weddingDate && weddingPanel}
+          {dayPanels[selected] ??
+            (selected !== weddingDate && <p className="py-4 text-[15px] text-stone">Nothing on this day yet.</p>)}
+        </DayCard>
+      )}
     </section>
+  );
+}
+
+/**
+ * One day, over the calendar: a card that slides up on a phone (pull it
+ * down, tap outside or ✕ to close), a panel on the right on a laptop — like
+ * the guest card. Its things, then "Add on this day": a to-do or an
+ * appointment with the date already filled in.
+ */
+function DayCard({
+  date,
+  title,
+  isToday,
+  onClose,
+  children,
+}: {
+  date: string;
+  title: string;
+  isToday: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  // Escape closes it, and the page behind doesn't scroll while it's open.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
+  const drag = usePullToClose(onClose);
+
+  // "Saturday 17 October" → "Saturday" over "17 October".
+  const [weekday, ...rest] = title.split(" ");
+  const [day, ...month] = rest;
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+        className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+      />
+      <div
+        style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+        className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
+          drag.dragging ? "" : "transition-transform duration-200 ease-out"
+        }`}
+      >
+        <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center lg:hidden">
+          <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
+        </div>
+        <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] lg:pt-8">
+          <div onPointerDown={drag.start} className="flex touch-none items-start gap-3 lg:touch-auto">
+            <div className="min-w-0 flex-1">
+              <p className="label">
+                {isToday && "Today · "}
+                {weekday}
+              </p>
+              <h2 className="mt-1 font-display text-[32px] font-light leading-[1.05] tracking-[-0.02em] text-ink">
+                {day} <span className="italic">{month.join(" ")}</span>
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
+            >
+              <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+            </button>
+          </div>
+
+          <div className="mt-3 border-t border-linen [--row-bleed:22px]">{children}</div>
+
+          <p className="section-label mt-6">Add on this day</p>
+          <div className="mt-2.5 flex gap-2.5">
+            {(
+              [
+                ["A to-do", `/plan/new?date=${date}`],
+                ["An appointment", `/plan/appointments/new?date=${date}`],
+              ] as const
+            ).map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl border border-champagne-400 bg-white text-[15px] text-ink hover:bg-cream"
+              >
+                <Plus className="h-4 w-4 text-champagne-600" strokeWidth={1.8} aria-hidden />
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

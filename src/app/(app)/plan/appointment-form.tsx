@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import type { AreaOption } from "@/lib/areas";
 import type { Appointment } from "@/types/db";
 
@@ -32,7 +32,7 @@ export default function AppointmentForm({
 
       <div className="grid grid-cols-2 items-end gap-3">
         <Field label="Date">
-          <input name="on_date" type="date" required defaultValue={appointment?.on_date ?? ""} className={INPUT} />
+          <DateInput name="on_date" required defaultValue={appointment?.on_date ?? ""} className={INPUT} />
         </Field>
         <Field label="Time" hint="optional">
           <input name="at_time" type="time" defaultValue={appointment?.at_time?.slice(0, 5) ?? ""} className={INPUT} />

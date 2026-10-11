@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Check, Plus } from "lucide-react";
-import { Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
 import type { Login } from "@/lib/db/auth";
@@ -73,7 +73,7 @@ export default function SettingsView({
             <input name="name" required defaultValue={wedding.name} className={INPUT} />
           </Field>
           <Field label="The date" hint="if you have one">
-            <input name="wedding_date" type="date" defaultValue={wedding.wedding_date ?? ""} className={INPUT} />
+            <DateInput name="wedding_date" defaultValue={wedding.wedding_date ?? ""} className={INPUT} />
           </Field>
           <div className="flex items-center gap-4">
             <div className="flex-1 sm:max-w-xs">

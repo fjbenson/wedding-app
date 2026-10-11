@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import type { AreaOption } from "@/lib/areas";
 import type { Payment } from "@/types/db";
 
@@ -56,7 +56,7 @@ export default function PaymentForm({
           <MoneyInput name="amount" required value={payment?.amount ?? prefill?.amount} />
         </Field>
         <Field label="Due" hint="optional">
-          <input name="due_date" type="date" defaultValue={payment?.due_date ?? ""} className={INPUT} />
+          <DateInput name="due_date" defaultValue={payment?.due_date ?? ""} className={INPUT} />
         </Field>
       </div>
 
@@ -94,7 +94,7 @@ export default function PaymentForm({
       </label>
       {paid && (
         <Field label="Paid on">
-          <input name="paid_on" type="date" defaultValue={payment?.paid_on ?? ""} className={INPUT} />
+          <DateInput name="paid_on" defaultValue={payment?.paid_on ?? ""} className={INPUT} />
         </Field>
       )}
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { Check, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
+import { DateInput } from "@/components/form-bits";
 import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
@@ -326,8 +327,7 @@ function NotePanel({
               ))}
             </div>
             {whenKind !== "none" && (
-              <input
-                type="date"
+              <DateInput
                 aria-label="Date"
                 value={whenDate}
                 onChange={(event) => setWhenDate(event.target.value)}

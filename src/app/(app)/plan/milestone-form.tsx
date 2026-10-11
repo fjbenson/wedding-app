@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Milestone } from "@/types/db";
@@ -64,9 +64,8 @@ export default function MilestoneForm({
             </label>
           ))}
         </div>
-        <input
+        <DateInput
           name="when"
-          type="date"
           aria-label="Date"
           defaultValue={milestone ? (planDate(milestone) ?? "") : ""}
           className={INPUT}

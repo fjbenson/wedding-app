@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Check } from "lucide-react";
-import { Field, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, SubmitButton } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
 import { STARTER_AREAS } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
@@ -70,7 +70,7 @@ function TheCouple() {
         </div>
 
         <Field label="The date" hint="if you have one">
-          <input name="wedding_date" type="date" className={INPUT} />
+          <DateInput name="wedding_date" className={INPUT} />
         </Field>
 
         <SubmitButton label="Next" />

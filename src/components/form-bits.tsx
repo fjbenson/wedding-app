@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
 /** Shared pieces for the add/edit forms. */
@@ -86,5 +87,41 @@ export function InlineSubmit({
     >
       {pending ? pendingLabel : label}
     </button>
+  );
+}
+
+/**
+ * A date box that says "Pick a date" while it's empty. An iPhone shows an
+ * empty date box as a blank strip with no hint, and a laptop shows
+ * "dd/mm/yyyy"; this gives both the same faint hint as the other boxes'
+ * placeholders. The laptop's own letters are hidden until the box is in use.
+ */
+export function DateInput({
+  placeholder = "Pick a date",
+  className = "",
+  ...props
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [filled, setFilled] = useState(!!(props.value ?? props.defaultValue));
+  const empty = props.value !== undefined ? !props.value : !filled;
+  return (
+    <span className="relative block">
+      <input
+        {...props}
+        type="date"
+        onChange={(event) => {
+          setFilled(!!event.target.value);
+          props.onChange?.(event);
+        }}
+        className={`peer ${className} ${empty ? "!text-transparent focus:!text-ink" : ""}`}
+      />
+      {empty && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-[17px] flex h-[3.125rem] items-center text-base text-stone/60 peer-focus:hidden"
+        >
+          {placeholder}
+        </span>
+      )}
+    </span>
   );
 }

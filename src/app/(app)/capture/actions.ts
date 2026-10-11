@@ -54,51 +54,6 @@ export async function captureAction(formData: FormData) {
   redirect(`${back}${back.includes("?") ? "&" : "?"}captured=1`);
 }
 
-/** Files an inbox item under an area. */
-export async function fileNoteAction(noteId: string, formData: FormData) {
-  try {
-    await fileNote(noteId, text(formData, "area"));
-  } catch (error) {
-    failed("/inbox", "That didn't file it.", error);
-  }
-  refresh();
-}
-
-/** Turns a capture into a to-do (the brief: "sorted into areas or turned into tasks"). */
-export async function noteToTodoAction(noteId: string) {
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-  try {
-    const note = await getNote(noteId);
-    if (!note) return;
-    const title = (note.body ?? note.url ?? "").split("\n")[0].slice(0, 120);
-    await createMilestone({
-      wedding_id: wedding.id,
-      title,
-      description: [note.body, note.url].filter(Boolean).join("\n\n") || null,
-      category: note.area_key,
-      due_date: null,
-      status: "todo",
-      remind_at: null,
-      assigned_to: null,
-    });
-    await deleteNote(noteId);
-  } catch (error) {
-    failed("/inbox", "That didn't make a to-do.", error);
-  }
-  refresh();
-  revalidatePath("/plan");
-}
-
-export async function deleteNoteAction(noteId: string) {
-  try {
-    await deleteNote(noteId);
-  } catch (error) {
-    failed("/inbox", "That didn't remove it.", error);
-  }
-  refresh();
-}
-
 /*
  * The inbox's note wall (canvas 2, "Inbox · Sticky-note wall", option A):
  * a tapped note opens a panel, and these are called straight from it. They
@@ -126,9 +81,9 @@ export async function fileInboxNoteAction(noteId: string, areaKey: string): Prom
 /**
  * Makes a note into a to-do: "Done by" a date, "Start around" one (a nudge,
  * src/lib/plan.ts), or no date yet. The note stays on the wall with a "To-do"
- * tag that opens it (owner, 11 Oct 2026) — or, until 0014_note_todo.sql is
- * run, is removed as before. Returns the new to-do's id so the wall can say
- * where it went.
+ * tag that opens it (owner, 11 Oct 2026); until 0014_note_todo.sql is run
+ * it stays without the tag. Never removed. Returns the new to-do's id so
+ * the wall can say where it went.
  */
 export async function inboxNoteToTodoAction(
   noteId: string,
@@ -154,7 +109,9 @@ export async function inboxNoteToTodoAction(
       assigned_to: null,
     });
     milestoneId = milestone.id;
-    if (!(await linkNoteToMilestone(noteId, milestone.id))) await deleteNote(noteId);
+    // Before 0014_note_todo.sql the link can't be kept, but the note still
+    // stays on the wall (owner, 11 Oct 2026) — it just has no To-do tag yet.
+    await linkNoteToMilestone(noteId, milestone.id);
   });
   if (result.error) return result;
   revalidatePath("/plan");

@@ -6,3 +6,6 @@
 
 alter table notes
   add column if not exists milestone_id uuid references milestones (id) on delete set null;
+
+-- Tell Supabase's API about the new column straight away.
+notify pgrst, 'reload schema';

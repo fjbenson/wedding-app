@@ -267,7 +267,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   can change it or set it back to Not filed. No "Filed lately" list any more.
   **Make it a to-do** asks when (Done by · Start around · No date), keeps the
   note with a dark "To-do" tag (`notes.milestone_id`, `0014_note_todo.sql`;
-  until that's run the note is removed as before) whose panel row opens the
+  until that's run the note stays without the tag — never removed) whose panel row opens the
   to-do, and shows "Added to your plan · See it". A note still **to sort**
   = no area and not a to-do (`toSort()` in `src/lib/notes.ts`) — the Hub
   card, sidebar count and wall count use that. Images aren't in yet:

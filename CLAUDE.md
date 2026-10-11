@@ -151,7 +151,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   rows; household defaults to "Not in a household", "+ New household…"
   last (same order on the card). Search, filters and
   the open card are client state, not in the address; links can still use
-  `?event=`, `?guest=`, `?view=households`. **A guest can have several
+  `?event=`, `?guest=`, `?view=households`. **What's remembered** (owner's
+  call, 11 Oct 2026): the **sort** is a preference, kept on that phone until
+  changed (localStorage); **search, filters and the numbers card** are a
+  task, kept for 30 minutes (sessionStorage) so going into a household and
+  back doesn't lose them, then the list opens clean. **A guest can have several
   roles**: stored in the one `role_on_the_day` column joined with " · "
   (`rolesOf()` / `joinRoles()` in `src/lib/guest-roles.ts`), so no
   migration was needed; any role makes them `bridal_party`. RSVPs are

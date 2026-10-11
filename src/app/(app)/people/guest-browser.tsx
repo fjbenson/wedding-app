@@ -16,6 +16,12 @@ type SortBy = "first" | "last" | "household" | "type";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
+/** Where the guest list keeps its sort (until changed) and the task in hand (for a while). */
+const SORT_KEY = "guest-list-sort";
+const TASK_KEY = "guest-list-task";
+const TASK_MINUTES = 30;
+type SavedTask = { query: string; showing: Showing; filters: GuestFilter[]; guestOf: string[]; at: number };
+
 export interface HouseholdSummary {
   id: string;
   name: string;
@@ -101,6 +107,41 @@ export default function GuestBrowser({
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
+
+  // What's remembered (owner's call, 11 Oct 2026): the sort order is a
+  // preference, kept on this phone until it's changed; search, filters and
+  // the numbers card are part of a task, kept for a short while so a trip
+  // into a household and back doesn't lose them, then cleared. Read after
+  // the first draw so the server's page and the phone's agree.
+  const [remembered, setRemembered] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SORT_KEY) as SortBy | null;
+      if (saved && SORTS.some((o) => o.key === saved) && initialView !== "households") setSort(saved);
+      const task = JSON.parse(window.sessionStorage.getItem(TASK_KEY) ?? "null") as SavedTask | null;
+      if (task && Date.now() - task.at < TASK_MINUTES * 60_000 && !initialFilter) {
+        setQuery(task.query);
+        setShowing(task.showing);
+        setFilters(task.filters);
+        setGuestOf(task.guestOf);
+      }
+    } catch {
+      // Private browsing or blocked storage: start from the defaults.
+    }
+    setRemembered(true);
+    // Only on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!remembered) return;
+    try {
+      window.localStorage.setItem(SORT_KEY, sort);
+      const task: SavedTask = { query, showing, filters, guestOf, at: Date.now() };
+      window.sessionStorage.setItem(TASK_KEY, JSON.stringify(task));
+    } catch {
+      // Not remembered, but still works.
+    }
+  }, [remembered, sort, query, showing, filters, guestOf]);
 
   const data = useMemo(() => {
     const answers = new Map<string, Rsvp[]>();

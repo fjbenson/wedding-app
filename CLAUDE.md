@@ -544,7 +544,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    likes numbers — a calm top layer, everything else one tap away): A the
    glass and one sentence + menu-card full numbers, B the sentence first +
    an area in full, C two glasses (booked, paid) + still to pay by month.
-   **Waiting on the owner's pick.** **Laptop design has begun:** phone and
+   The owner didn't love any (B closest; the glasses "a little too silly").
+   **Round 3** ("Money · Round 3 · Calm, built on B", 11 Oct 2026): 1 B
+   quieter (sentence, one thin line, plain rows with hairline bars), 2 one
+   big number ("£6,750 left to spend", sentence under it), 3 three plain
+   figures (Budget · Booked · Paid) then each area with a word ("On
+   track", "Nearly full"…). **Waiting on the owner's pick.** **Laptop design has begun:** phone and
    laptop are designed separately but share colours, type and each tab's
    signature (owner, 11 Oct 2026). Canvas 2 "Laptop · The Hub": A centre
    stage, **B magazine spread** (top menu bar, huge names, an "At a glance"

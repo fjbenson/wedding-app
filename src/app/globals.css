@@ -8,6 +8,23 @@
   h3 {
     @apply font-display font-light tracking-tight;
   }
+
+  /* iPhone Safari gives date and time boxes their own minimum width, so they
+     poke out past their card; this keeps them inside it. It also stops an
+     empty box collapsing shorter than the others, and keeps the date
+     left-aligned like the other boxes' text. */
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 3.125rem;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
 }
 
 /*

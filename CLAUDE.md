@@ -458,9 +458,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 All private to the owner; open with the Artifact tool's `read` action.
 
-- **Design canvas** — every home-screen round, then the area page
-  (rounds 1–4, the stages) and the Hub button icons, each on its own page:
-  https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
+- **Design canvas 2** — **use this one for new work** (from 11 Oct 2026;
+  the first canvas reached its 40-page limit): starts with the guest
+  list's title drawings: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
+- **Design canvas (the first, full)** — every home-screen round, the area
+  page, Hub icons, guest list rounds 1–15, household, Plan rounds 1–4 and
+  the calendar: https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
 - **Glass Lab** — glass settings; the owner's saves are in its `glass`
   collection: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq
 - **Taste Lab** — this-or-that picks (`results`, `saved` collections):

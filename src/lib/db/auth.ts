@@ -33,7 +33,7 @@ export async function getLogin(): Promise<Login | null> {
 function plain(message: string): string {
   if (/rate limit|too many/i.test(message)) return "Too many codes asked for just now. Wait a few minutes and try again.";
   if (/already (been )?registered|already exists/i.test(message)) {
-    return "That email already has a wedding saved to it. Sign in with it instead.";
+    return "That email already has a login. Sign in with it instead.";
   }
   if (/expired|invalid|otp/i.test(message)) return "That code didn't work. Check it, or ask for a new one.";
   if (/signups? not allowed|user not found/i.test(message)) return "There's no wedding saved to that email yet.";

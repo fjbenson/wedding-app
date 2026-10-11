@@ -48,11 +48,16 @@ export default function EmailCodeForm({ mode }: { mode: "save" | "sign-in" }) {
       >
         <label className="block">
           <span className="text-sm text-ink">Your email</span>
+          {/* A plain text box with the email keyboard, not type="email": iPhones
+              switch off text replacement (the owner's "le" shortcut) in email boxes. */}
           <input
-            type="email"
+            type="text"
             required
             autoComplete="email"
             inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="on"
+            spellCheck={false}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"

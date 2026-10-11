@@ -190,57 +190,37 @@ Next.js scaffold. Built so far, against the plan's tabs:
   move them in, leaving any household they were in). "Remove this
   household" is the old edit page. The
   separate dietary box is gone.
-- **Plan** (`/plan`): **design settled 10 Oct 2026** (canvas "Plan ·
-  Rounds 1–4", B with option A's pill). A corner switch **By date | By
-  area** (`CornerSwitch`, shared with People), the title, then two big
-  buttons side by side: **Add a to-do** · **Add an appointment**. **By
-  date opens on a month calendar** (owner's call, 10 Oct 2026; canvas
-  "Plan · Calendar · Round 1", option A; `calendar.tsx`): ‹ month › with a
-  list/calendar switch on the right (`?as=list` for the list), that
-  month's nudges in a "Start this month" box (plus anything still open
-  from earlier, on the current month), a Monday-first grid with a dot per
-  thing on each day (to-do ring, appointment gold, payment pale gold,
-  done grey), today softly circled, the wedding in a gold ring; tap a day
-  and its rows show under the grid. The rows are drawn on the server and
-  handed in by date. Not tried: C, every month at a glance — a possible
-  zoomed-out view later. **The list** (`?as=list`, `agenda.tsx`): this
-  month on a glass card — big
-  "4 still to do, 1 done", a progress bar, the rows, and anything "still
-  open from September" in a fold inside it — then **the road to the day**:
-  a line down the left with a dot per month ("November *2026*", year in
-  gold italic), each month folding open to its rows, closed showing a
-  one-line summary and a pill ("3 items"); runs of empty months say
-  "Nothing planned. Enjoy it."; "Open all / Close all"; the wedding at the
-  end (links to The Day). Then a "No date yet" fold. **Done things stay
-  in their month** (10 Oct 2026), faded and crossed out at the bottom of
-  it; the pill becomes "1 of 3 done", then "All done" with a gold ticked
-  dot; the card says "All done this month". When a month is over, its
-  done things move to a folded **Looking back** at the top, month by
-  month. Ticking off (or marking paid) shows an **Undo** note for 5s
-  (`undo-toast.tsx`, raised by `tick-form.tsx`, mounted once in the
-  `(app)` layout).
-  What's open is remembered in the browser (`fold.tsx`). No dividers
-  between months — the line does that. Rows: to-dos (plain circle),
-  **nudges** (dashed gold circle, italic: "Start looking at
-  photographers · START NOW"), **appointments** (`0007_appointments.sql`,
-  screen 21, `/plan/appointments/…`; calendar on champagne) and payments
-  due (£ on champagne, tap to mark paid). A **nudge** is a to-do with
-  `remind_at` and no `due_date` (`src/lib/plan.ts`: `isNudge`,
-  `planDate`) — the to-do form's "Done by / Start around" switch — so no
-  migration; its date passing means "start now", never overdue. The
-  starter list now includes nudges. The old `?show=` filters are gone —
-  or **By area**
-  (`?view=area`, screen 18; restyled 10 Oct 2026 to match) — or **To-dos**
-  (`?view=todos`, `todo-list.tsx`, owner's ask 11 Oct 2026): just the
-  to-dos as a checklist, no appointments or payments — Overdue · This month
-  · Later · No date yet (`#no-date`), done folded at the foot. The corner
-  switch has three: By date | By area | To-dos. The calendar shows "N to-dos
-  with no date yet ›" above the grid, linking there. By area — every area
-  of the wedding in its own order as a fold: the name, a pill ("3 items" /
-  "1 of 3 done" / "All done"), a one-line summary while closed; open, its
-  to-dos (done ones crossed out below), "+ Add a to-do" and "Open the
-  Flowers page ›". Empty areas show "+ Add a to-do" that pre-picks the
-  area. Tick off, add, edit, remove. The to-do form offers the wedding's own areas.
+- **Plan** (`/plan`): **two views, owner's call 11 Oct 2026** — a corner
+  switch **Calendar | List** (`CornerSwitch`, shared with People), the
+  title, then two big buttons side by side: **Add a to-do** · **Add an
+  appointment**. **Calendar** (the default; canvas "Plan · Calendar · Round
+  1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month ›, that month's
+  nudges in a "Start this month" box (plus anything still open from
+  earlier, on the current month), a Monday-first grid with a dot per thing
+  on each day (to-do ring, appointment gold, payment pale gold, done grey),
+  today softly circled, the wedding in a gold ring; tap a day and its rows
+  show under the grid. "N to-dos with no date yet ›" sits above the grid
+  and links to the List's No date card; a "No date yet" fold is at the foot.
+  **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
+  appointments or payments, which live on the Calendar — as a **glass card
+  per month** ("October *2026*", "This month · 2"): Overdue first, then
+  each month, then No date yet (`#no-date`), done folded at the foot; tick
+  off in place. **By area is now a filter** on the List ("All areas ▾",
+  `area-filter.tsx`, `&area=<key>` or `none`), not a view. Old links
+  (`?as=list`, `?view=area`, `?view=todos`) land on the List. The old
+  timeline list ("the road to the day": a gold line with a dot per month)
+  was retired from Plan — kept in mind for The Day's run sheet
+  (`docs/DESIGN.md`). Ticking off (or marking paid) shows an **Undo** note
+  for 5s (`undo-toast.tsx`, raised by `tick-form.tsx`, mounted once in the
+  `(app)` layout). Rows: to-dos (plain circle), **nudges** (dashed gold
+  circle, italic: "Start looking at photographers · START NOW"),
+  **appointments** (`0007_appointments.sql`, screen 21,
+  `/plan/appointments/…`; calendar on champagne) and payments due (£ on
+  champagne, tap to mark paid). A **nudge** is a to-do with `remind_at` and
+  no `due_date` (`src/lib/plan.ts`: `isNudge`, `planDate`) — the to-do
+  form's "Done by / Start around" switch — so no migration; its date
+  passing means "start now", never overdue. The starter list includes
+  nudges. The to-do form offers the wedding's own areas.
 - **Money** (`/money`, screens 22–24; `0006_money.sql`): **Budget** — the
   wedding's budget and each area's share against committed and paid, by
   area — and **Payments** (`?tab=payments`): due and paid, tick to mark paid,

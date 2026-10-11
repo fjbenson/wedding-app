@@ -27,15 +27,6 @@ const byDate = (a: Entry, b: Entry) => {
   return KIND_ORDER[a.kind] - KIND_ORDER[b.kind];
 };
 
-const titleOf = (e: Entry) =>
-  e.kind === "todo" ? e.milestone.title : e.kind === "appointment" ? e.appointment.title : e.payment.description;
-
-/** "2026-10" → "2026-11" */
-function nextMonth(key: string): string {
-  const [year, month] = key.split("-").map(Number);
-  return month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
-}
-
 const monthName = (key: string) => formatMonthYear(`${key}-01`).split(" ")[0];
 
 /**
@@ -56,7 +47,6 @@ export default function Agenda({
   areas,
   weddingDate,
   today,
-  as,
 }: {
   milestones: Milestone[];
   appointments: Appointment[] | null;
@@ -65,8 +55,6 @@ export default function Agenda({
   areas: AreaOption[];
   weddingDate: string | null;
   today: string;
-  /** The calendar is what By date opens on; the list is `?as=list`. */
-  as: "calendar" | "list";
 }) {
   const thisMonth = today.slice(0, 7);
 
@@ -95,42 +83,14 @@ export default function Agenda({
   const fromEarlier = all.filter(
     (e) => !isDone(e) && monthOf(e) && monthOf(e)! < thisMonth && !(e.kind === "todo" && isNudge(e.milestone)),
   );
-  const now = inOrder(
-    all.filter(
-      (e) =>
-        monthOf(e) === thisMonth ||
-        (!isDone(e) && monthOf(e) && monthOf(e)! < thisMonth && !fromEarlier.includes(e)),
-    ),
-  );
   const later = all.filter((e) => monthOf(e) && monthOf(e)! > thisMonth);
   const undated = all.filter((e) => !isDone(e) && !e.date);
 
-  // Once a month is over, what was done in it moves to "Looking back".
-  const back: { key: string; entries: Entry[] }[] = [];
-  for (const e of all.filter((e) => isDone(e) && monthOf(e) && monthOf(e)! < thisMonth).reverse()) {
-    const key = monthOf(e)!;
-    const group = back.find((g) => g.key === key);
-    if (group) group.entries.push(e);
-    else back.push({ key, entries: [e] });
-  }
-
-  // Every month from next month to the wedding (or the last thing planned),
-  // with runs of empty months folded into one quiet line.
+  // The calendar runs as far as the wedding, or the last thing planned.
   const lastKey = [weddingDate?.slice(0, 7), ...later.map((e) => monthOf(e)!)]
     .filter((k): k is string => !!k)
     .sort()
     .pop();
-  type Stop = { key: string; until: string; entries: Entry[] };
-  const road: Stop[] = [];
-  if (lastKey) {
-    for (let key = nextMonth(thisMonth); key <= lastKey; key = nextMonth(key)) {
-      const entries = inOrder(later.filter((e) => monthOf(e) === key));
-      const previous = road[road.length - 1];
-      if (entries.length === 0 && previous && previous.entries.length === 0) previous.until = key;
-      else road.push({ key, until: key, entries });
-    }
-  }
-  const roadFolds = road.filter((s) => s.entries.length > 0).map((s) => `m-${s.key}`);
 
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name;
 
@@ -205,19 +165,9 @@ export default function Agenda({
     );
   };
 
-  const summary = (all: Entry[]) => {
-    const entries = all.filter((e) => !isDone(e));
-    if (entries.length === 0) return "All done.";
-    return entries.slice(0, 3).map(titleOf).join(" · ") + (entries.length > 3 ? ` and ${entries.length - 3} more` : "");
-  };
-
-  const left = now.filter((e) => !isDone(e)).length;
-  const done = now.length - left;
   const earlierMonth = fromEarlier[0]?.date?.slice(0, 7);
   const earlierWhen =
     earlierMonth && fromEarlier.every((e) => e.date!.startsWith(earlierMonth)) ? `from ${monthName(earlierMonth)}` : "from before";
-
-  const toggle = <ShowAs current={as} />;
 
   const earlierFold = fromEarlier.length > 0 && (
     <Fold
@@ -248,265 +198,78 @@ export default function Agenda({
     </Fold>
   );
 
-  if (as === "calendar") {
-    // Nudges have a month, not a day, so each month's sit above its grid
-    // ("Start this month"); everything else is a dot on its day.
-    const nudge = (e: Entry) => e.kind === "todo" && isNudge(e.milestone);
-    const dots: Record<string, Dot[]> = {};
-    const byDay: Record<string, Entry[]> = {};
-    const nudgesByMonth: Record<string, Entry[]> = {};
-    for (const e of all) {
-      if (!e.date) continue;
-      if (nudge(e)) {
-        // An open nudge from a month gone by belongs to now: "start now".
-        const key = !isDone(e) && monthOf(e)! < thisMonth ? thisMonth : monthOf(e)!;
-        (nudgesByMonth[key] ??= []).push(e);
-        continue;
-      }
-      (byDay[e.date] ??= []).push(e);
-      (dots[e.date] ??= []).push(isDone(e) ? "done" : e.kind);
+  // Nudges have a month, not a day, so each month's sit above its grid
+  // ("Start this month"); everything else is a dot on its day.
+  const nudge = (e: Entry) => e.kind === "todo" && isNudge(e.milestone);
+  const dots: Record<string, Dot[]> = {};
+  const byDay: Record<string, Entry[]> = {};
+  const nudgesByMonth: Record<string, Entry[]> = {};
+  for (const e of all) {
+    if (!e.date) continue;
+    if (nudge(e)) {
+      // An open nudge from a month gone by belongs to now: "start now".
+      const key = !isDone(e) && monthOf(e)! < thisMonth ? thisMonth : monthOf(e)!;
+      (nudgesByMonth[key] ??= []).push(e);
+      continue;
     }
-    const dayPanels = Object.fromEntries(
-      Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
-    );
-    const months = Object.keys(nudgesByMonth).concat(thisMonth);
-    const monthTops = Object.fromEntries(
-      [...new Set(months)].map((key) => [
-        key,
-        <div key={key}>
-          {key === thisMonth && earlierFold}
-          {nudgesByMonth[key] && (
-            <div className="mt-3 rounded-2xl bg-cream px-4 pb-1 pt-3">
-              <p className="label">Start this month</p>
-              <ul>{inOrder(nudgesByMonth[key]).map((e) => row(e))}</ul>
-            </div>
-          )}
-        </div>,
-      ]),
-    );
-    const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
-    const firstMonth = [thisMonth, ...dated].sort()[0];
-    const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
-
-    // Undated to-dos have no day on the grid, so say so up top (owner, 11 Oct
-    // 2026) rather than leaving them in a fold at the foot of the page.
-    const undatedTodos = undated.filter((e) => e.kind === "todo").length;
-
-    return (
-      <FoldGroup initiallyOpen={[]}>
-        {undatedTodos > 0 && (
-          <Link
-            href="/plan?view=todos#no-date"
-            className="mt-6 flex items-center justify-between gap-3 rounded-2xl bg-cream px-4 py-3 text-sm text-ink hover:bg-champagne-100"
-          >
-            <span>
-              {undatedTodos} {undatedTodos === 1 ? "to-do" : "to-dos"} with no date yet
-            </span>
-            <span className="text-champagne-600">See {undatedTodos === 1 ? "it" : "them"} ›</span>
-          </Link>
-        )}
-        <PlanCalendar
-          today={today}
-          weddingDate={weddingDate}
-          firstMonth={firstMonth}
-          lastMonth={lastMonth}
-          dots={dots}
-          dayPanels={dayPanels}
-          monthTops={monthTops}
-          toggle={toggle}
-          weddingPanel={
-            <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">
-              The wedding — open The Day ›
-            </Link>
-          }
-        />
-        {undatedFold}
-      </FoldGroup>
-    );
+    (byDay[e.date] ??= []).push(e);
+    (dots[e.date] ??= []).push(isDone(e) ? "done" : e.kind);
   }
+  const dayPanels = Object.fromEntries(
+    Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
+  );
+  const months = Object.keys(nudgesByMonth).concat(thisMonth);
+  const monthTops = Object.fromEntries(
+    [...new Set(months)].map((key) => [
+      key,
+      <div key={key}>
+        {key === thisMonth && earlierFold}
+        {nudgesByMonth[key] && (
+          <div className="mt-3 rounded-2xl bg-cream px-4 pb-1 pt-3">
+            <p className="label">Start this month</p>
+            <ul>{inOrder(nudgesByMonth[key]).map((e) => row(e))}</ul>
+          </div>
+        )}
+      </div>,
+    ]),
+  );
+  const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
+  const firstMonth = [thisMonth, ...dated].sort()[0];
+  const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
+
+  // Undated to-dos have no day on the grid, so say so up top (owner, 11 Oct
+  // 2026) rather than leaving them in a fold at the foot of the page.
+  const undatedTodos = undated.filter((e) => e.kind === "todo").length;
 
   return (
-    <FoldGroup initiallyOpen={["month", ...roadFolds.slice(0, 1)]}>
-      <div className="mt-6 flex justify-end">{toggle}</div>
-
-      {/* Past months: what got done in them, out of the way but not lost. */}
-      {back.length > 0 && (
-        <Fold
-          id="back"
-          className="mt-4"
-          header={
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="section-label">Looking back</span>
-              <span className="type-meta">{back.reduce((n, g) => n + g.entries.length, 0)} done</span>
-            </span>
-          }
+    <FoldGroup initiallyOpen={[]}>
+      {undatedTodos > 0 && (
+        <Link
+          href="/plan?view=list#no-date"
+          className="mt-6 flex items-center justify-between gap-3 rounded-2xl bg-cream px-4 py-3 text-sm text-ink hover:bg-champagne-100"
         >
-          <div className="mt-2 space-y-1">
-            {back.map((group) => (
-              <Fold
-                key={group.key}
-                id={`b-${group.key}`}
-                className="border-b border-linen py-2.5 last:border-b-0"
-                header={
-                  <span className="flex items-baseline justify-between gap-3">
-                    <span>
-                      <span className="font-display text-lg text-ink">{monthName(group.key)}</span>{" "}
-                      <span className="font-display text-lg font-light italic text-champagne-600">{group.key.slice(0, 4)}</span>
-                    </span>
-                    <span className="type-meta">{group.entries.length} done</span>
-                  </span>
-                }
-              >
-                <ul className="mt-1">{group.entries.map((e) => row(e))}</ul>
-              </Fold>
-            ))}
-          </div>
-        </Fold>
+          <span>
+            {undatedTodos} {undatedTodos === 1 ? "to-do" : "to-dos"} with no date yet
+          </span>
+          <span className="text-champagne-600">See {undatedTodos === 1 ? "it" : "them"} ›</span>
+        </Link>
       )}
-
-      {/* This month: the one to look at. */}
-      <Fold
-        id="month"
-        className="glass-card mt-4 rounded-3xl p-5"
-        chevronClassName="text-champagne-600"
-        header={
-          <>
-            <span className="label block">This month · {formatMonthYear(`${thisMonth}-01`)}</span>
-            <span className="mt-2.5 flex items-baseline gap-2.5">
-              {left === 0 && done > 0 ? (
-                <span className="font-display text-[30px] font-light italic leading-tight text-ink">
-                  All done this month
-                </span>
-              ) : (
-                <>
-                  <span className="type-figure text-[56px] leading-none">{left}</span>
-                  <span className="font-display text-[19px] italic text-ink/80">
-                    {left === 0 ? "due this month" : `still to do${done > 0 ? `, ${done} done` : ""}`}
-                  </span>
-                </>
-              )}
-            </span>
-            {left + done > 0 && (
-              <span className="mt-3.5 block h-1 rounded-full bg-linen" aria-hidden>
-                <span className="block h-1 rounded-full bg-champagne-400" style={{ width: `${(done / (left + done)) * 100}%` }} />
-              </span>
-            )}
-          </>
+      <PlanCalendar
+        today={today}
+        weddingDate={weddingDate}
+        firstMonth={firstMonth}
+        lastMonth={lastMonth}
+        dots={dots}
+        dayPanels={dayPanels}
+        monthTops={monthTops}
+        toggle={null}
+        weddingPanel={
+          <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">
+            The wedding — open The Day ›
+          </Link>
         }
-      >
-        {now.length > 0 && <ul className="mt-2">{now.map((e) => row(e))}</ul>}
-        {earlierFold}
-      </Fold>
-
-      {/* The road to the day. */}
-      {(road.length > 0 || weddingDate) && (
-        <section className="mt-9">
-          <div className="flex items-baseline justify-between">
-            <h2 className="section-label">The road to the day</h2>
-            <FoldAll ids={roadFolds} />
-          </div>
-          <ol className="relative mt-2">
-            <span aria-hidden className="absolute bottom-8 left-[6px] top-5 w-px bg-champagne-400/40" />
-            {road.map((stop) => {
-              const n = stop.entries.length;
-              const nDone = stop.entries.filter(isDone).length;
-              const allDone = n > 0 && nDone === n;
-              const year = stop.until.slice(0, 4);
-              const name =
-                stop.until === stop.key
-                  ? monthName(stop.key)
-                  : `${monthName(stop.key)}${stop.key.slice(0, 4) !== year ? ` ${stop.key.slice(0, 4)}` : ""} – ${monthName(stop.until)}`;
-              const heading = (
-                <span className="block">
-                  <span className={`font-display text-xl ${n ? "text-ink" : "text-stone"}`}>{name}</span>{" "}
-                  <span className={`font-display text-xl font-light italic ${n ? "text-champagne-600" : "text-stone"}`}>{year}</span>
-                </span>
-              );
-              return (
-                <li key={stop.key} className="relative pb-[18px] pl-8 pt-3">
-                  {allDone ? (
-                    // A month with everything done earns a gold dot with a tick.
-                    <span
-                      aria-hidden
-                      className="absolute -left-[3px] top-[16px] flex h-[19px] w-[19px] items-center justify-center rounded-full bg-champagne-400 text-ivory"
-                    >
-                      <Check className="h-3 w-3" strokeWidth={2.6} />
-                    </span>
-                  ) : (
-                    <span
-                      aria-hidden
-                      className={`absolute left-0 top-[19px] h-[13px] w-[13px] rounded-full border-[1.5px] bg-ivory ${
-                        n ? "border-champagne-400" : "border-linen"
-                      }`}
-                    />
-                  )}
-                  {n === 0 ? (
-                    <>
-                      {heading}
-                      <span className="mt-1 block text-sm text-stone">Nothing planned. Enjoy it.</span>
-                    </>
-                  ) : (
-                    <Fold
-                      id={`m-${stop.key}`}
-                      header={
-                        <span className="flex items-start justify-between gap-3">
-                          {heading}
-                          <span className="mt-0.5 inline-flex h-[26px] shrink-0 items-center rounded-full bg-champagne-100 px-3 text-[13px] font-medium text-champagne-600">
-                            {allDone ? "All done" : nDone > 0 ? `${nDone} of ${n} done` : `${n} ${n === 1 ? "item" : "items"}`}
-                          </span>
-                        </span>
-                      }
-                      closed={<span className="mt-1 block text-sm leading-relaxed text-stone">{summary(stop.entries)}</span>}
-                    >
-                      <ul className="mt-1">{stop.entries.map((e) => row(e))}</ul>
-                    </Fold>
-                  )}
-                </li>
-              );
-            })}
-            {weddingDate && (
-              <li className="relative pl-8 pt-3">
-                {/* The run-up ends where The Day begins: one tap across. */}
-                <Link href="/day" className="group block">
-                  <span aria-hidden className="absolute -left-1 top-[15px] h-[21px] w-[21px] rounded-full border-[5px] border-champagne-400 bg-ivory" />
-                  <span className="font-display text-xl italic text-ink">{formatLongDate(weddingDate).replace(/ \d{4}$/, "")}</span>{" "}
-                  <span className="font-display text-xl font-light italic text-champagne-600">{weddingDate.slice(0, 4)}</span>
-                  <span className="mt-1 block text-sm text-stone group-hover:text-ink">
-                    The day{daysUntil(weddingDate) > 0 ? ` · ${daysUntil(weddingDate)} days to go` : ""} ›
-                  </span>
-                </Link>
-              </li>
-            )}
-          </ol>
-        </section>
-      )}
-
+      />
       {undatedFold}
     </FoldGroup>
-  );
-}
-
-/** List or calendar: two small links in a rounded switch, like the corner one. */
-function ShowAs({ current }: { current: "calendar" | "list" }) {
-  const options = [
-    { as: "list", href: "/plan?as=list", label: "Show as a list", Icon: List },
-    { as: "calendar", href: "/plan", label: "Show as a calendar", Icon: CalendarDays },
-  ] as const;
-  return (
-    <nav aria-label="Show the plan as" className="flex shrink-0 rounded-full bg-cream p-[3px]">
-      {options.map(({ as, href, label, Icon }) => (
-        <Link
-          key={as}
-          href={href}
-          aria-label={label}
-          aria-current={current === as ? "page" : undefined}
-          className={`flex h-9 w-11 items-center justify-center rounded-full transition ${
-            current === as ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone hover:text-ink"
-          }`}
-        >
-          <Icon className="h-[17px] w-[17px]" strokeWidth={1.8} aria-hidden />
-        </Link>
-      ))}
-    </nav>
   );
 }

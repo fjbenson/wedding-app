@@ -68,9 +68,9 @@ like one thing while each screen has its own face.
 |---|---|---|
 | Hub | The ring of areas | Done (7 Oct) |
 | People | The big dark count card, and initials on every row | Done for the guest list (8–9 Oct) |
-| Plan | The month calendar (what By date opens on) | Done (10 Oct) |
+| Plan | The month calendar (what Plan opens on; the other view is a List of to-dos, a glass card per month) | Done (10–11 Oct) |
 | Money | One big shape for spent against the budget — a ring or a filling bar, each area a slice | To design: options on the canvas first |
-| The Day | An hour-by-hour line down the page, like an order of service; the floor plan for seating | Partly there |
+| The Day | An hour-by-hour line down the page, like an order of service; the floor plan for seating. For the run sheet, reuse Plan's old "road to the day" look — a gold line down the left with a dot per step (owner, 11 Oct 2026; it left Plan when Plan became Calendar \| List) | Partly there |
 
 When designing a screen: find its tab's signature and make it the first
 big thing on the screen. Don't borrow another tab's (no calendar on

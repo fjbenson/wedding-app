@@ -21,7 +21,7 @@ export default async function NewMilestonePage({
 
   return (
     <FormPage
-      backHref={fromArea ? "/plan?view=area" : "/plan"}
+      backHref={fromArea ? `/plan?view=list&area=${encodeURIComponent(fromArea)}` : "/plan"}
       backLabel="Plan"
       title="Add a to-do"
       error={error}

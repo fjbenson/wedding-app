@@ -207,6 +207,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   month and tapping Plan starts on today. Undated things are in a "No date yet" fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
+  **Calendar round 2 on canvas 2** (11 Oct 2026, page "Plan · Calendar ·
+  Round 2 · The month underneath"): the owner feels the calendar isn't
+  right (under the grid you only ever see one day, often empty). All three
+  options list the **whole month under the grid**; tapping a day then
+  A jumps the list to it and lights it up, B pops up a card with that day
+  plus "Add on this day" (to-do / appointment, date filled in — Claude's
+  pick), C shows only that day until "Show the whole month". **Waiting on
+  the owner's pick.**
   **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
   appointments or payments, which live on the Calendar — as a **glass card
   per month** ("October *2026*", "This month · 2"): Overdue first, then

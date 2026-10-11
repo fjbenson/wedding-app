@@ -201,8 +201,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
-  today softly circled, the wedding in a gold ring; tap a day for its card (below)
-  show under the grid. The month in view and the tapped day live in the
+  today softly circled, the wedding in a gold ring; tap a day for its card (below).
+  The month in view and the tapped day live in the
   address (`?month=`, `?day=`), so Back from a to-do lands on the same
   month and tapping Plan starts on today. Undated things are in a "No date yet" fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);

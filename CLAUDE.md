@@ -443,7 +443,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (to design) · The Day hour-by-hour line. **Next
-   up: Money's signature on the canvas, then People's other screens.** Open idea: a new home-screen app icon (offered options on
+   up: Money's signature on the canvas, then People's other screens.**
+   **Later (owner's to-do, 11 Oct 2026): vector versions of the title
+   drawings** — get the full-size original from Canva (the app has a
+   ~200px preview, enlarged), trace it into a vector (SVG) in the app's
+   gold, swap it in, and keep the set in Figma. Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

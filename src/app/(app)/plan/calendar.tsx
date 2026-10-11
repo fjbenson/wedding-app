@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -15,13 +17,6 @@ function shiftMonth(key: string, by: 1 | -1): string {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/**
- * The month in view and the day tapped are a task in hand, like the guest
- * list's filters (owner, 11 Oct 2026): kept for a while so opening a to-do
- * and coming back lands on the same month, then the calendar opens on today.
- */
-const TASK_KEY = "plan-calendar";
-const TASK_MINUTES = 30;
 
 const DOT: Record<Dot, string> = {
   todo: "border-[1.5px] border-stone/60",
@@ -59,35 +54,26 @@ export default function PlanCalendar({
   toggle: ReactNode;
   weddingPanel: ReactNode;
 }) {
-  const [month, setMonth] = useState(today.slice(0, 7));
-  const [selected, setSelected] = useState<string | null>(today);
+  // The month in view and the day tapped live in the address (?month=,
+  // ?day=; src/lib/url-state.ts), so opening a to-do and going back lands on
+  // the same month, and tapping Plan in the menu starts on today.
+  const params = useSearchParams();
+  const asked = params.get("month");
+  const [month, setMonth] = useState(
+    asked && /^\d{4}-\d{2}$/.test(asked) && asked >= firstMonth && asked <= lastMonth ? asked : today.slice(0, 7),
+  );
+  const askedDay = params.get("day");
+  const [selected, setSelected] = useState<string | null>(
+    askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)
+      ? askedDay
+      : today.startsWith(month)
+        ? today
+        : null,
+  );
+  useEffect(() => {
+    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected === today ? null : selected });
+  }, [month, selected, today]);
 
-  // Read after the first draw so the server's page and the phone's agree.
-  const [remembered, setRemembered] = useState(false);
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(window.sessionStorage.getItem(TASK_KEY) ?? "null") as
-        | { month: string; selected: string | null; at: number }
-        | null;
-      if (saved && Date.now() - saved.at < TASK_MINUTES * 60_000 && saved.month >= firstMonth && saved.month <= lastMonth) {
-        setMonth(saved.month);
-        setSelected(saved.selected);
-      }
-    } catch {
-      // Private browsing or blocked storage: open on today.
-    }
-    setRemembered(true);
-    // Only on arrival.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    if (!remembered) return;
-    try {
-      window.sessionStorage.setItem(TASK_KEY, JSON.stringify({ month, selected, at: Date.now() }));
-    } catch {
-      // Not remembered, but still works.
-    }
-  }, [remembered, month, selected]);
 
   const [year, monthNumber] = month.split("-").map(Number);
   const first = new Date(Date.UTC(year, monthNumber - 1, 1));

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, Mail, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
+import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
@@ -16,11 +18,8 @@ type SortBy = "first" | "last" | "household" | "type";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
-/** Where the guest list keeps its sort (until changed) and the task in hand (for a while). */
+/** Where the guest list keeps its sort, on this phone, until it's changed. */
 const SORT_KEY = "guest-list-sort";
-const TASK_KEY = "guest-list-task";
-const TASK_MINUTES = 30;
-type SavedTask = { query: string; showing: Showing; filters: GuestFilter[]; guestOf: string[]; at: number };
 
 export interface HouseholdSummary {
   id: string;
@@ -99,34 +98,46 @@ export default function GuestBrowser({
   initialFilter?: GuestFilter;
   initialView?: GuestView;
 }) {
-  const [query, setQuery] = useState("");
-  const [showing, setShowing] = useState<Showing>("all");
-  const [filters, setFilters] = useState<GuestFilter[]>(initialFilter ? [initialFilter] : []);
+  // Search, filters and the numbers card are the task in hand, so they live
+  // in the address (?q=, ?f=, ?show=, ?of=; src/lib/url-state.ts): going
+  // into a household and back keeps them, tapping People starts fresh.
+  const params = useSearchParams();
+  const list = (key: string) => (params.get(key) ?? "").split(",").filter(Boolean);
+  const [query, setQuery] = useState(params.get("q") ?? "");
+  const [showing, setShowing] = useState<Showing>((params.get("show") as Showing | null) ?? "all");
+  const [filters, setFilters] = useState<GuestFilter[]>(() => {
+    const asked = list("f").filter((f): f is GuestFilter => FILTERS.some((o) => o.key === f));
+    return asked.length ? asked : initialFilter ? [initialFilter] : [];
+  });
   /** "Day guests" / "Evening guests" in the Filter menu: event ids, any of. */
-  const [guestOf, setGuestOf] = useState<string[]>([]);
+  const [guestOf, setGuestOf] = useState<string[]>(() => list("of").filter((id) => events.some((e) => e.id === id)));
+  useEffect(() => {
+    replaceQuery({
+      q: query.trim() || null,
+      show: showing === "all" ? null : showing,
+      f: filters.length ? filters.join(",") : null,
+      of: guestOf.length ? guestOf.join(",") : null,
+      tab: null,
+    });
+  }, [query, showing, filters, guestOf]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
+  // An open card too, so coming back reopens it — and closing it clears it.
+  useEffect(() => {
+    replaceQuery({ guest: openId ?? null });
+  }, [openId]);
 
-  // What's remembered (owner's call, 11 Oct 2026): the sort order is a
-  // preference, kept on this phone until it's changed; search, filters and
-  // the numbers card are part of a task, kept for a short while so a trip
-  // into a household and back doesn't lose them, then cleared. Read after
-  // the first draw so the server's page and the phone's agree.
+  // The sort is a preference (owner's call, 11 Oct 2026): kept on this phone
+  // until it's changed. Read after the first draw so the server's page and
+  // the phone's agree; a link asking for households wins.
   const [remembered, setRemembered] = useState(false);
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(SORT_KEY) as SortBy | null;
       if (saved && SORTS.some((o) => o.key === saved) && initialView !== "households") setSort(saved);
-      const task = JSON.parse(window.sessionStorage.getItem(TASK_KEY) ?? "null") as SavedTask | null;
-      if (task && Date.now() - task.at < TASK_MINUTES * 60_000 && !initialFilter) {
-        setQuery(task.query);
-        setShowing(task.showing);
-        setFilters(task.filters);
-        setGuestOf(task.guestOf);
-      }
     } catch {
-      // Private browsing or blocked storage: start from the defaults.
+      // Private browsing or blocked storage: start from the default.
     }
     setRemembered(true);
     // Only on arrival.
@@ -136,12 +147,10 @@ export default function GuestBrowser({
     if (!remembered) return;
     try {
       window.localStorage.setItem(SORT_KEY, sort);
-      const task: SavedTask = { query, showing, filters, guestOf, at: Date.now() };
-      window.sessionStorage.setItem(TASK_KEY, JSON.stringify(task));
     } catch {
       // Not remembered, but still works.
     }
-  }, [remembered, sort, query, showing, filters, guestOf]);
+  }, [remembered, sort]);
 
   const data = useMemo(() => {
     const answers = new Map<string, Rsvp[]>();

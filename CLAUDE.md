@@ -153,9 +153,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the open card are client state, not in the address; links can still use
   `?event=`, `?guest=`, `?view=households`. **What's remembered** (owner's
   call, 11 Oct 2026): the **sort** is a preference, kept on that phone until
-  changed (localStorage); **search, filters and the numbers card** are a
-  task, kept for 30 minutes (sessionStorage) so going into a household and
-  back doesn't lose them, then the list opens clean. **A guest can have several
+  changed (localStorage); **search, filters, the numbers card and an open
+  card** live in the address (`?q=`, `?f=`, `?show=`, `?of=`, `?guest=`),
+  so Back from a household returns to them and tapping People starts fresh. **A guest can have several
   roles**: stored in the one `role_on_the_day` column joined with " · "
   (`rolesOf()` / `joinRoles()` in `src/lib/guest-roles.ts`), so no
   migration was needed; any role makes them `bridal_party`. RSVPs are
@@ -202,9 +202,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   open from earlier folds in above the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
   today softly circled, the wedding in a gold ring; tap a day and its rows
-  show under the grid. The month in view and the tapped day are kept for 30
-  minutes (sessionStorage), so opening a to-do and coming back lands on the
-  same month — the guest list's rule for a task in hand. Undated things are in a "No date yet" fold at the
+  show under the grid. The month in view and the tapped day live in the
+  address (`?month=`, `?day=`), so Back from a to-do lands on the same
+  month and tapping Plan starts on today. Undated things are in a "No date yet" fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
   **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
@@ -402,6 +402,14 @@ Settings already warns that the wedding lives in one browser.
 - **All database queries live in `src/lib/db/`.** Nothing else imports the
   Supabase client. This is what keeps a future backend split mechanical — don't
   scatter queries into components.
+- **A screen's view lives in its web address; preferences in the browser**
+  (owner's call, 11 Oct 2026, after a 30-minute timer was tried and
+  dropped as non-standard). Things you're in the middle of — the calendar's
+  month, search, filters, an open card — go in the address with
+  `replaceQuery()` (`src/lib/url-state.ts`): it *replaces* the address, so
+  Back goes to the previous screen and returning from an item restores the
+  view; tapping the tab starts fresh. Choices you'd want every time (the
+  guest list's sort) go in localStorage until changed.
 - **Server actions called from client code must not be able to throw into
   React** (9 Oct 2026): after a deploy, a page left open calls the old
   action, which no longer exists, and an uncaught error blanks the screen.
@@ -537,6 +545,9 @@ hub ring, "coming up" list and menu bar. Keep new screens simple in style.
 Every screen is phone-first and responsive: other screens sit in the `.page`
 frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
 is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
+
+**Phone first (owner, 11 Oct 2026):** the design work so far is for the
+phone app; laptop/desktop ("web") design has barely started and comes later.
 
 **Phone and desktop are designed separately (30 Sep 2026).** Below 1024px:
 floating glass menu bar at the bottom (every screen except forms —

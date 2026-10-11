@@ -203,8 +203,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   earlier, on the current month), a Monday-first grid with a dot per thing
   on each day (to-do ring, appointment gold, payment pale gold, done grey),
   today softly circled, the wedding in a gold ring; tap a day and its rows
-  show under the grid. "N to-dos with no date yet ›" sits above the grid
-  and links to the List's No date card; a "No date yet" fold is at the foot.
+  show under the grid. Undated things are in a "No date yet" fold at the
+  foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
+  the List has them on their own card.
   **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
   appointments or payments, which live on the Calendar — as a **glass card
   per month** ("October *2026*", "This month · 2"): Overdue first, then

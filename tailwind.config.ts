@@ -11,6 +11,9 @@ import type { Config } from "tailwindcss";
  */
 export default {
   content: ["./src/**/*.{ts,tsx}"],
+  // Hover looks only on devices with a mouse: on a phone a tap left them
+  // stuck on until you tapped somewhere else.
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     colors: {
       transparent: "transparent",

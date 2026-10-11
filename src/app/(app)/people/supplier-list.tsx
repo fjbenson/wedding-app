@@ -56,8 +56,8 @@ export default function SupplierList({ suppliers, areas }: { suppliers: Supplier
             const d = s.supplier_details;
             const cancelled = d?.status === "cancelled";
             return (
-              <li key={s.id} className="border-b border-linen">
-                <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3 hover:bg-cream/60">
+              <li key={s.id} className="row-press border-b border-linen">
+                <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3">
                   <span className="min-w-0 flex-1">
                     <span className={`block truncate text-[15px] ${cancelled ? "text-stone line-through" : "text-ink"}`}>
                       {name(s)}

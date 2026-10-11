@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  /* No grey box when a link is tapped on an iPhone: it only covered the
+     link itself, a rectangle short of the row. Rows use .row-press. */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   h1,
   h2,
   h3 {
@@ -49,6 +55,15 @@ body::before {
 }
 
 @layer components {
+  /* A list row you tap to open: the whole row shades softly while a finger
+     is on it (and under the mouse on a laptop), tick circle included. */
+  .row-press {
+    @apply transition-colors duration-150 hover:bg-cream/60;
+  }
+  .row-press:has(a:active) {
+    @apply bg-cream;
+  }
+
   /*
    * The frame every screen sits in: one readable column, centred, that grows
    * a little on wider screens. Fills the visible screen (dvh, not vh, so

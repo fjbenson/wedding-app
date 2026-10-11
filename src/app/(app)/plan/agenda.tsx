@@ -116,11 +116,11 @@ export default function Agenda({
         supplierName(a.contact_id) && !a.location?.includes(supplierName(a.contact_id)!) && `with ${supplierName(a.contact_id)}`,
       ].filter(Boolean);
       return (
-        <li key={`a-${a.id}`} className={`flex items-center gap-3.5 border-b border-linen last:border-b-0 ${faded ? "opacity-60" : ""}`}>
+        <li key={`a-${a.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${faded ? "opacity-60" : ""}`}>
           <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
             {faded ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
           </span>
-          <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3 hover:bg-cream/60">
+          <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
             <span className="min-w-0 flex-1">
               <span className={`type-item block ${faded ? "!text-stone" : ""}`}>{a.title}</span>
               <span className="type-meta mt-1 block">{details.join(" · ")}</span>
@@ -134,7 +134,7 @@ export default function Agenda({
     const paid = !!p.paid_on;
     const late = !paid && p.due_date && p.due_date < today;
     return (
-      <li key={`p-${p.id}`} className={`flex items-center gap-3.5 border-b border-linen last:border-b-0 ${paid ? "opacity-60" : ""}`}>
+      <li key={`p-${p.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${paid ? "opacity-60" : ""}`}>
         <TickForm
           action={markPaidAction.bind(null, p.id, !paid)}
           undo={markPaidAction.bind(null, p.id, paid)}
@@ -145,7 +145,7 @@ export default function Agenda({
         >
           {paid ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden /> : "£"}
         </TickForm>
-        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3 hover:bg-cream/60">
+        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
           <span className="min-w-0 flex-1">
             <span className={`type-item block ${paid ? "!text-stone" : ""}`}>{p.description}</span>
             <span className="type-meta mt-1 block">

@@ -197,7 +197,7 @@ function Payments({
     const late = !p.paid_on && p.due_date && p.due_date < today;
     const when = p.paid_on ? `Paid ${formatDayMonth(p.paid_on)}` : p.due_date ? `Due ${formatDayMonth(p.due_date)}` : "No date";
     return (
-      <li key={p.id} className="flex items-center gap-3 border-b border-linen last:border-b-0">
+      <li key={p.id} className="row-press flex items-center gap-3 border-b border-linen last:border-b-0">
         <form action={markPaidAction.bind(null, p.id, !p.paid_on)}>
           <button
             type="submit"
@@ -209,7 +209,7 @@ function Payments({
             {p.paid_on && <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden />}
           </button>
         </form>
-        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3 hover:bg-cream/60">
+        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
           <span className="min-w-0 flex-1">
             <span className={`block truncate text-[15px] ${p.paid_on ? "text-stone" : "text-ink"}`}>{p.description}</span>
             <span className="mt-0.5 block text-xs text-stone">

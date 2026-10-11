@@ -34,7 +34,7 @@ export function MilestoneRow({
   const details = [when, area].filter(Boolean);
 
   return (
-    <li className="flex items-center gap-3.5 border-b border-linen last:border-b-0">
+    <li className="row-press flex items-center gap-3.5 border-b border-linen last:border-b-0">
       <TickForm
         action={toggleMilestoneAction.bind(null, m.id, !done)}
         undo={toggleMilestoneAction.bind(null, m.id, done)}
@@ -52,7 +52,7 @@ export function MilestoneRow({
         {done && <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden />}
       </TickForm>
 
-      <Link href={`/plan/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3 hover:bg-cream/60">
+      <Link href={`/plan/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>
             {m.title}

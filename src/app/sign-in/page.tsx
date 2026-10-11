@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SignInForm from "./sign-in-form";
 
 export const metadata: Metadata = {
@@ -22,7 +23,21 @@ export default async function SignInPage({
           </p>
         </div>
 
-        {why && (
+        {why === "lost" && (
+          <div role="alert" className="mt-8 rounded-xl border border-champagne-400 bg-cream px-4 py-4 text-sm text-ink">
+            <p>
+              This phone couldn&apos;t reach your wedding just now. It&apos;s still safe — nothing has been deleted.
+            </p>
+            <Link href="/" className="mt-3 flex h-11 items-center justify-center rounded-xl bg-ink text-ivory">
+              Try again
+            </Link>
+            <Link href="/sign-in?fresh=1" className="mt-2 block text-center text-xs text-stone underline">
+              Start a new wedding instead
+            </Link>
+          </div>
+        )}
+
+        {why && why !== "lost" && (
           <p
             role="alert"
             className="mt-8 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink"

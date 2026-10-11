@@ -4,7 +4,7 @@ import { Field, SubmitButton } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
 import { STARTER_AREAS } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
-import { getCurrentWedding } from "@/lib/db/weddings";
+import { getCurrentWedding, getLoginCode } from "@/lib/db/weddings";
 import { createWeddingAction, saveAreasAction } from "./actions";
 
 export const metadata = { title: "Set up your wedding — Wedding App" };
@@ -22,6 +22,7 @@ export default async function SetupPage({
   const { error, detail } = await searchParams;
   const wedding = await getCurrentWedding();
 
+  const code = wedding ? null : await getLoginCode();
   let step: 1 | 2 = 1;
   if (wedding) {
     const areas = await listAreas(wedding.id);
@@ -43,6 +44,13 @@ export default async function SetupPage({
         )}
 
         {step === 1 ? <TheCouple /> : <TheAreas />}
+
+        {code && (
+          <p className="mt-10 rounded-xl border border-dashed border-champagne-400 px-4 py-3 text-xs leading-relaxed text-stone">
+            Already planning a wedding here, and it&apos;s gone missing? Don&apos;t start again — it&apos;s safe. Your
+            login code is <span className="font-mono text-ink">{code}</span>; with it, the wedding can be linked back.
+          </p>
+        )}
       </div>
     </main>
   );

@@ -45,6 +45,25 @@ export async function updateSession(request: NextRequest) {
   const { data: auth } = await supabase.auth.getClaims();
   let user: { id: string } | null = auth?.claims ? { id: auth.claims.sub } : null;
 
+  // A browser that already has a login must never be quietly handed a new
+  // one (11 Oct 2026: a refresh that failed did exactly that, and the
+  // owner's wedding vanished from their phone — still in the database, but
+  // out of reach). Try once more; if it still can't be read, say so rather
+  // than start a new wedding. "?fresh" on the sign-in page is the way out.
+  const { pathname, searchParams } = request.nextUrl;
+  const hadLogin = request.cookies.getAll().some((c) => /^sb-.+-auth-token/.test(c.name));
+  const startFresh = pathname === "/sign-in" && searchParams.has("fresh");
+  if (!user && hadLogin && !startFresh) {
+    const { data: again } = await supabase.auth.getClaims();
+    user = again?.claims ? { id: again.claims.sub } : null;
+    if (!user && !isPublic(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/sign-in";
+      url.search = "?why=lost";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // For now there's no sign-in step: a visitor without a session is quietly
   // given an anonymous one, which is still a real user as far as row-level
   // security is concerned, so every wedding stays private to its creator.
@@ -53,9 +72,8 @@ export async function updateSession(request: NextRequest) {
   // visitor falls through to the email sign-in page as before.
   // Runs on the sign-in page too, so an old bookmark to it still gets you in.
   // Skipped on /auth routes and when an emailed link has landed with its code.
-  const { pathname, searchParams } = request.nextUrl;
   let anonymousError = "";
-  if (!user && !pathname.startsWith("/auth") && !searchParams.has("code")) {
+  if (!user && (!hadLogin || startFresh) && !pathname.startsWith("/auth") && !searchParams.has("code")) {
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error) {
       console.error("anonymous sign-in failed", error.message);
@@ -66,7 +84,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // If that failed, say why on the sign-in page instead of failing silently.
-  if (anonymousError && pathname === "/sign-in" && !searchParams.has("why")) {
+  if (anonymousError && pathname === "/sign-in" && !searchParams.has("why") && !startFresh) {
     const url = request.nextUrl.clone();
     url.search = `?why=${encodeURIComponent(anonymousError)}`;
     return NextResponse.redirect(url);

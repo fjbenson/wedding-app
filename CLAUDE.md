@@ -456,8 +456,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    dancers** — each picked separately by what they wear (suit, dress,
    trouser suit, jumpsuit…), never by gender labels, so same-sex, mixed
    and non-binary couples all see themselves; chosen in Setup and
-   Settings (a new column on `weddings`). First step: two or three
-   versions mocked behind the ring on canvas 2, no animation. Open idea: a new home-screen app icon (offered options on
+   Settings (a new column on `weddings`). Mocked on canvas 2 ("Home ·
+   Dancing couple": suit and dress, two dresses, two suits) at **50%
+   strength**. **Animation: properly or not at all** (owner, 11 Oct
+   2026) — a whole-picture sway was tried and rejected. The couple stay
+   still until they can draw themselves in line by line (needs the vector
+   version) or truly dance (an animator, in Rive). Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
 8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",

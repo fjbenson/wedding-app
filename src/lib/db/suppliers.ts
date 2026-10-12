@@ -76,3 +76,25 @@ export async function updateSupplier(
     .upsert({ contact_id: contactId, ...details }, { onConflict: "contact_id" });
   if (detailsError) throw detailsError;
 }
+
+/**
+ * Changes a few things about a supplier — whatever the card was tapped to
+ * change — leaving the rest alone.
+ */
+export async function updateSupplierParts(
+  contactId: string,
+  contact: Partial<ContactFields>,
+  details: Partial<DetailFields>,
+): Promise<void> {
+  const supabase = await createClient();
+  if (Object.keys(contact).length > 0) {
+    const { error } = await supabase.from("contacts").update(contact).eq("id", contactId);
+    if (error) throw error;
+  }
+  if (Object.keys(details).length > 0) {
+    const { error } = await supabase
+      .from("supplier_details")
+      .upsert({ contact_id: contactId, ...details }, { onConflict: "contact_id" });
+    if (error) throw error;
+  }
+}

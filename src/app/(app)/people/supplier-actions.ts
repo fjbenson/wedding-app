@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteContact } from "@/lib/db/contacts";
-import { createSupplier, updateSupplier } from "@/lib/db/suppliers";
+import { createSupplier, getSupplier, updateSupplier, updateSupplierParts } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { parseMoney } from "@/lib/money";
 import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
+import { splitName } from "@/lib/names";
 import type { SupplierStatus } from "@/types/db";
 
 function text(formData: FormData, key: string): string | null {
@@ -91,4 +92,53 @@ export async function deleteSupplierAction(supplierId: string) {
   revalidatePath("/people");
   revalidatePath("/area/[key]", "page");
   redirect(LIST);
+}
+
+/** One thing changed on the supplier card (a tap, then Save). */
+export type SupplierEdit =
+  | { field: "company_name" | "category" | "contract_url" | "phone" | "email" | "notes" | "contact_name"; value: string }
+  | { field: "quoted_cost" | "deposit_paid"; value: string }
+  | { field: "status"; value: SupplierStatus };
+
+/**
+ * Saves one change from the supplier card and returns a message rather than
+ * redirecting, so the card stays open (like the guest card).
+ */
+export async function updateSupplierAction(supplierId: string, edit: SupplierEdit): Promise<{ error?: string }> {
+  const value = String(edit.value).trim();
+  try {
+    if (edit.field === "contact_name") {
+      // A contact needs a first name: with no person named, the business's
+      // own name stands in, as when adding.
+      const supplier = await getSupplier(supplierId);
+      if (!supplier) return { error: "That supplier isn't there any more." };
+      const { first, last } = splitName(value || supplier.supplier_details?.company_name || supplier.first_name);
+      await updateSupplierParts(supplierId, { first_name: first, last_name: last }, {});
+    } else if (edit.field === "phone" || edit.field === "email" || edit.field === "notes") {
+      await updateSupplierParts(supplierId, { [edit.field]: value || null }, {});
+    } else if (edit.field === "company_name") {
+      if (!value) return { error: "Please give the business a name." };
+      await updateSupplierParts(supplierId, {}, { company_name: value });
+    } else if (edit.field === "quoted_cost" || edit.field === "deposit_paid") {
+      const amount = parseMoney(value);
+      if (value && amount === null) return { error: "That doesn't look like an amount — try 1800 or £1,800." };
+      await updateSupplierParts(supplierId, {}, { [edit.field]: amount });
+    } else if (edit.field === "status") {
+      if (!SUPPLIER_STATUSES.some((s) => s.status === value)) return { error: "That isn't a stage we know." };
+      await updateSupplierParts(supplierId, {}, { status: value as SupplierStatus });
+    } else {
+      await updateSupplierParts(supplierId, {}, { [edit.field]: value || null });
+    }
+  } catch (error) {
+    console.error("saving supplier failed", error);
+    const detail = describe(error);
+    if (edit.field === "status" && edit.value === "quoted" && /supplier_status/.test(detail)) {
+      return { error: "\"Quote in\" needs one database step: run supabase/migrations/0012_area_stages.sql in Supabase." };
+    }
+    return { error: "That didn't save." };
+  }
+  revalidatePath("/people");
+  revalidatePath("/money");
+  revalidatePath("/area/[key]", "page");
+  return {};
 }

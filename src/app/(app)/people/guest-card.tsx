@@ -23,7 +23,7 @@ type Saver = () => Promise<{ error?: string } | void>;
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
 /** Runs a save, turning any failure into a message rather than a crash. */
-async function safely(saver: Saver): Promise<{ error?: string }> {
+export async function safely(saver: Saver): Promise<{ error?: string }> {
   try {
     return (await saver()) ?? {};
   } catch (error) {
@@ -33,10 +33,10 @@ async function safely(saver: Saver): Promise<{ error?: string }> {
 }
 
 /** A small down-arrow for the household picker, drawn in stone. */
-const CHEVRON =
+export const CHEVRON =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B655E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")";
 
-const FIELD =
+export const FIELD =
   "w-full rounded-xl border border-linen bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
 
 /**
@@ -177,7 +177,7 @@ export default function GuestCard({
 }
 
 /** Runs a save, holding on to any problem so it can be shown in place. */
-function useSaver() {
+export function useSaver() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
   const run = (saver: Saver, after?: () => void) =>
@@ -190,7 +190,7 @@ function useSaver() {
 }
 
 /** Keys inside an editor: Enter saves (not in a note), Escape backs out without closing the card. */
-function editorKeys(onSave: () => void, onCancel: () => void, multiline = false) {
+export function editorKeys(onSave: () => void, onCancel: () => void, multiline = false) {
   return (event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
       event.stopPropagation();
@@ -203,7 +203,7 @@ function editorKeys(onSave: () => void, onCancel: () => void, multiline = false)
   };
 }
 
-function SaveCancel({ pending, onCancel }: { pending: boolean; onCancel: () => void }) {
+export function SaveCancel({ pending, onCancel }: { pending: boolean; onCancel: () => void }) {
   return (
     <span className="mt-2 flex items-center gap-2">
       <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90 disabled:opacity-60">
@@ -258,7 +258,7 @@ function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdi
 }
 
 /** A label and its value; tap to change it there and then. */
-function TextRow({
+export function TextRow({
   label,
   value,
   type = "text",

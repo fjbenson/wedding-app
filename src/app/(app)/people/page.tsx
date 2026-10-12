@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { listSuppliers } from "@/lib/db/suppliers";
+import { listPayments } from "@/lib/db/money";
 import { listAreas } from "@/lib/db/areas";
 import { areaOptions } from "@/lib/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -13,8 +14,8 @@ export const metadata = { title: "People — Wedding App" };
 
 /**
  * People (docs/information-architecture.md): the guest list with RSVPs and
- * the bridal party folded in (screens 8 and 11), and the suppliers (screen
- * 12) via ?tab=suppliers.
+ * the bridal party folded in (screens 8 and 11), and the suppliers (screens
+ * 12 and 13) via ?tab=suppliers — ?supplier= opens one's card.
  *
  * Links can open the guest list a particular way: ?guest= opens someone's
  * card, ?view=households groups it, and ?tab=party (the old Bridal party
@@ -38,12 +39,15 @@ export default async function PeoplePage({
     listAreas(wedding.id),
   ]);
   const current = tab === "suppliers" ? "suppliers" : "guests";
+  // The supplier card shows each one's payments (null until 0006 is run).
+  const payments = current === "suppliers" ? ((await listPayments(wedding.id)) ?? []) : [];
+  const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
 
   return (
     <main className="page pb-28 lg:max-w-6xl lg:pb-16">
       <PeopleTabs current={current} />
       {current === "suppliers" ? (
-        <SupplierList suppliers={suppliers} areas={areaOptions(areaRows)} />
+        <SupplierList suppliers={suppliers} areas={areas} payments={payments} />
       ) : (
         <PeopleView
           guests={guests}

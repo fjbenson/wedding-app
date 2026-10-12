@@ -160,11 +160,31 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`rolesOf()` / `joinRoles()` in `src/lib/guest-roles.ts`), so no
   migration was needed; any role makes them `bridal_party`. RSVPs are
   recorded by the couple; guests answering via their own link is "guest
-  access", still deliberately not built. A **Suppliers** tab
-  (`?tab=suppliers`, screens 12 and 13): business, category, status, quote,
-  deposit, contract link, contact details. Queries in `src/lib/db/suppliers.ts`;
-  categories in `src/lib/areas.ts` use the plan's starter-area ids so they line
-  up when areas become rows. `/people/[id]` edits a guest or a supplier.
+  access", still deliberately not built. **Suppliers** (`?tab=suppliers`,
+  screens 12 and 13) — **rebuilt 12 Oct 2026** to canvas 2 "Suppliers ·
+  Round 1", A + B (owner's pick), **shaped like the guest list**
+  (`supplier-list.tsx`): a count card (All · Booked · Quote in · Asked,
+  each shows just those), search and a Filter by area, "+ Add a supplier",
+  then everyone **grouped by area** in the wedding's order (heading note
+  "Booked" or "2 quotes · 1 asked"; within a group booked → quotes → asked →
+  not taken). Rows: initials, business, contact person, quote, a stage icon
+  (✓ ink booked · £ champagne quote in · dashed ? asked · ✕ grey not taken)
+  and a key under the list. Tapping one opens the **supplier card**
+  (`supplier-card.tsx`, a sheet / right panel like the guest card),
+  **edited in place**: area link, business name (tap to rename), Call ·
+  Email, **Where you're up to** slider, Money (Quote and Deposit paid tap
+  to edit, the area's budget, this supplier's payments, "+ Add a payment"),
+  Details (Area picker, Contact, Phone, Email, Contract link, Notes —
+  `TextRow` and friends are now exported from `guest-card.tsx`), "Open the
+  … page ›", Remove (asks first; their payments stay in Money). Saves go
+  through `updateSupplierAction` (one field at a time, returns a message;
+  `updateSupplierParts()` in `src/lib/db/suppliers.ts`). Search, card
+  choice, area filter and open card live in the address (`?q=`, `?show=`,
+  `?area=`, `?supplier=`). **`/people/[id]` is now only a redirect** to the
+  right card (guest or supplier); the area page's supplier links use it.
+  Adding a supplier still uses the form (`/people/suppliers/new`). No
+  **website** field yet — it would need a new column (a small migration).
+  Categories in `src/lib/areas.ts` use the plan's starter-area ids.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that
   area and its "Send the invitations" to-do already exist), not tracking
@@ -559,8 +579,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    Not taken, Money: quote, deposit, area budget, payments; Details;
    "Open the Photos page ›") — would replace the supplier form page; C the
    alternative: a glass card per area still being decided with quotes side
-   by side (under / ▲ over budget), then a plain Booked list. **Waiting on
-   the owner's pick.**
+   by side (under / ▲ over budget), then a plain Booked list. **Picked and
+   built 12 Oct 2026: A + B** (see "Current state"). Next on People: the
+   household page and the add-a-guest / add-a-supplier forms.
    **11 Oct 2026:** The Day's run sheet settled and built (option D, see
    "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
    look": A ledger, B menu card, C champagne glass — owner loved all three)

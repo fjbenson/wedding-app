@@ -410,18 +410,30 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Agreed and Paid are never typed: they add up from suppliers and payments), then
   straight into **By area** (the "Next to pay" row was taken out, owner, 12
   Oct 2026), headed like By month's "What's due" with the same round black +
-  (add a payment), then each area menu-card style (name, dotted line, agreed "of
-  £budget", one bar; no divider lines between rows, so bars aren't mistaken
-  for rules; no bar at all when there's no budget or spend) with a short tag: "▲
-  Over by £…" (agreed bar runs past the budget in rose stripes — never colour
-  alone), "✓ All paid", "Not booked yet"; areas with nothing show "Nothing
-  yet". **By month** ("Payments"; **Round 6, option D, owner's pick 12 Oct
+  (add a payment), then **each area as a little glass card, two to a row**
+  (owner, 12 Oct 2026 evening, "fab-u-lous"; `area-cards.tsx`): its ring icon
+  and name, agreed large, "of £budget", one bar (none when there's no budget
+  or spend) and a short tag: "▲ Over by £…" (agreed bar runs past the budget
+  in rose stripes — never colour alone), "✓ All paid", "£… to go", "Not
+  booked yet"; Other with nothing shows "Nothing yet". **Tapping a card brings
+  up that area's money from the bottom** (a right panel on laptops; `?open=`;
+  owner: simple first, detail on tap — it no longer leaves for the area
+  page): the same figures as the top card (`MoneyFigures`,
+  `money-figures.tsx`), its suppliers with stage badges and quotes, To pay
+  (soonest first, undated balances faded), + Add a payment for that area,
+  Paid, then "Open the … page ›" and "Change the budget ›". **Laptop idea
+  (owner, agreed):** the phone stays high level; the laptop's budget can go to
+  town — a spreadsheet-like table (Budget · Quotes · Agreed · Paid · To pay ·
+  Over/under, sortable, budgets typed in cells, export). For the laptop pass. **By month** ("Payments"; **Round 6, option D, owner's pick 12 Oct
   2026**): a glass card with Still to pay (large) · Paid so far and the
   **column per month** from now to the wedding inside it (first column =
   paid so far, dark; due months light; overdue counts in this month;
   scrolls sideways if long); then "What's due" with a round black + (add a
   payment); then a **glass card per month** ("October *2026*", total, "2
-  payments") listing its payments (tick £ to mark paid); **The payment form** (`payment-form.tsx`) was made visual
+  payments") listing its payments (tick £ to mark paid). **Tap a column to
+  see just that month** (12 Oct 2026; `?month=2026-10`, or `paid` for the
+  Paid column): other columns fade, a "Just October 2026 ✕" pill clears it,
+  as does tapping the column again; **The payment form** (`payment-form.tsx`) was made visual
   too (12 Oct 2026, same pieces): what it's for, large, with one-tap names
   (Deposit · Instalment · Balance take the supplier's name in front, then
   Wedding rings, Giving notice…); the amount as one big £ figure; **Still to
@@ -494,6 +506,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (screen 26, `floor-plan.tsx`, `0011_floor_plan.sql`): drag tables about a
   room (positions are % of the room, so it scales; never-moved tables sit in
   a grid), round or long, and seat people by tapping a name then a table.
+  Adding a table has a **Round | Long** choice, Round to start (12 Oct 2026).
+  A "top table" is just a long table by that name (the demo's); a real top
+  table option (seats on one side, at the head) was offered, not built.
   On a phone the room scrolls sideways rather than shrinking. The old cards
   are the **List** view (`?view=list`), where tables are renamed or removed.
 
@@ -719,7 +734,9 @@ access control is RLS. No column-level encryption is planned.
   the list is shown: **Filter** (plain words; champagne pill "Filter · 2"
   when on, menu opens to the left) on the left, **Sort** on the right
   (canvas 2 "People · Fewer boxes" led here: too many boxed things). The
-  count cards' big **All** tile is champagne, not black, when picked.
+  count cards' big **All** tile is champagne, not black, when picked — as
+  **champagne glass** since 12 Oct 2026 (`.glass-tile-on` / `.glass-tile` in
+  `globals.css`; owner: the gold outline felt clunky).
 - **A form's Save stays in reach** (owner, 12 Oct 2026: a date was
   changed and never saved because Save was below the fold): `SubmitBar` in
   `form-bits.tsx` keeps the main button at the foot of the screen while the
@@ -847,11 +864,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 12 Oct 2026 evening chat):** **the Money
-   budget, again** — the owner, seeing it full of the demo wedding's data:
-   "biggest downfall right now is budget… STILL". Start next chat by opening
-   the demo (Settings › Your weddings) and asking what feels off with real
-   numbers in it; options on canvas 2 before building. After that: the forms still
+   `calendar.tsx`). **Next up (end of the 12 Oct 2026 late chat):** the Money
+   budget's turn is done for now — area cards two to a row, an area's money
+   card from the bottom, tappable month columns; the owner loves them. Next:
+   the forms still
    in the older plain style (car or coach, day/evening event, Inspo save,
    jot a note; household edit) — bring them into line with the visual forms;
    then The Day's Seating, then Journeys (backlog) and capture. Ideas waiting:

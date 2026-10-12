@@ -293,6 +293,18 @@ function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact
           <input name="capacity" type="number" min={1} max={40} defaultValue={8} aria-label="Seats" className={`${pill} w-16`} />
           seats
         </label>
+        {/* Round to start with (most tables are); tap Long to change it. */}
+        <div role="radiogroup" aria-label="Table shape" className="inline-grid grid-cols-2 rounded-full border border-linen bg-cream/60 p-1">
+          {(["round", "long"] as const).map((shape) => (
+            <label
+              key={shape}
+              className="cursor-pointer rounded-full px-3.5 py-1.5 text-sm capitalize text-stone has-[:checked]:bg-white has-[:checked]:text-ink has-[:checked]:shadow-[0_1px_2px_rgb(30_27_24/0.08)] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-champagne-400"
+            >
+              <input type="radio" name="shape" value={shape} defaultChecked={shape === "round"} className="sr-only" />
+              {shape}
+            </label>
+          ))}
+        </div>
         <InlineSubmit label="Add table" pendingLabel="Adding…" />
       </form>
 

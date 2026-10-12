@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { RunSheetItem, Seat, SeatingTable, TransportPassenger, TransportRun } from "@/types/db";
+import type { RunSheetItem, Seat, SeatingTable, TransportPassenger, TransportRun, TableShape } from "@/types/db";
 
 /** Everything the Day tab shows. `null` means 0009_the_day.sql hasn't been run. */
 export async function getDay(weddingId: string): Promise<{
@@ -67,9 +67,17 @@ export async function deleteRunSheetItem(id: string): Promise<void> {
 
 // Seating --------------------------------------------------------------------
 
-export async function addTable(weddingId: string, name: string, capacity: number, sortOrder: number): Promise<void> {
+export async function addTable(
+  weddingId: string,
+  name: string,
+  capacity: number,
+  sortOrder: number,
+  shape: TableShape = "round",
+): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from("seating_tables").insert({ wedding_id: weddingId, name, capacity, sort_order: sortOrder });
+  const { error } = await supabase
+    .from("seating_tables")
+    .insert({ wedding_id: weddingId, name, capacity, sort_order: sortOrder, shape });
   if (error) throw error;
 }
 

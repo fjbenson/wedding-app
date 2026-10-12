@@ -93,7 +93,8 @@ export async function addTableAction(formData: FormData) {
   try {
     const day = await getDay(wid);
     const count = day?.tables.length ?? 0;
-    await addTable(wid, text(formData, "name") ?? `Table ${count + 1}`, capacity, count);
+    const shape = text(formData, "shape") === "long" ? "long" : "round";
+    await addTable(wid, text(formData, "name") ?? `Table ${count + 1}`, capacity, count, shape);
   } catch (error) {
     failed(SEATING, "That didn't add the table.", error);
   }

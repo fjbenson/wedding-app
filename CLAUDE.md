@@ -277,8 +277,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   title, then two big buttons side by side: **Add a to-do** · **Add an
   appointment**. **Calendar** (the default; canvas "Plan · Calendar · Round
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
-  open from earlier folds in above the current month), a Monday-first grid with a dot per thing
-  on each day (to-do ring, appointment gold, done grey; **no payments** —
+  open from earlier folds in above the current month), a Monday-first grid with a mark per thing
+  on each day (to-do a solid white circle, appointment a little gold
+  calendar, done grey; up to two then "+1"; **no payments** —
   owner, 12 Oct 2026: Plan is what you do or go to, Money is what you pay,
   and Money's By month is the payments' calendar),
   today softly circled, the wedding in a gold ring; tap a day for its card (below).
@@ -729,12 +730,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (10 Oct: calendar, list and By area). **Each tab gets its
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
-   spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
-   up (12 Oct 2026): the owner's pick of calendar icons** (simpler now
-   payments are off the calendar: just to-dos and appointments) (canvas 2 "Plan ·
-   Calendar · Icons instead of dots": A the list's marks — ring, tiny
-   calendar, £; B money bag and clock; C tiny round badges; D dots with only
-   payments as £; up to two per day plus "+1"), **then The Day's Seating
+   spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Calendar marks picked and built
+   (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
+   solid white circle (the list's tick circle, filled), an appointment a
+   little gold calendar, done a grey dot; two per day then "+1" (`Mark` in
+   `calendar.tsx`). Next up: **The Day's Seating
    and Transport, then capture.** Plan, People, Money (rounds 5 and 6), The
    Day's run sheet and the to-do / appointment / payment forms are settled.
    **Suppliers round 1 on canvas 2** (12 Oct 2026, page "Suppliers · Round

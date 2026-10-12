@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
 export type Dot = "todo" | "appointment" | "done";
@@ -19,15 +19,27 @@ function shiftMonth(key: string, by: 1 | -1): string {
 const pad = (n: number) => String(n).padStart(2, "0");
 
 
-const DOT: Record<Dot, string> = {
-  todo: "border-[1.5px] border-stone/60",
-  appointment: "bg-champagne-400",
-  done: "bg-linen",
-};
+/**
+ * A day's marks (owner's pick, 12 Oct 2026, canvas 2 "Plan · Calendar · The
+ * to-do mark"): a to-do is a solid white circle — the list's tick circle,
+ * filled — an appointment the little gold calendar, done a grey dot.
+ */
+function Mark({ kind }: { kind: Dot }) {
+  if (kind === "appointment") {
+    return <Calendar className="h-3 w-3 text-champagne-600" strokeWidth={2.2} />;
+  }
+  return (
+    <span
+      className={`h-2.5 w-2.5 rounded-full ${
+        kind === "todo" ? "border border-stone/50 bg-white" : "bg-linen"
+      }`}
+    />
+  );
+}
 
 /**
  * The plan as a month calendar — what Plan opens on. ‹ › move between
- * months; each day shows a dot per thing on it, in the list's marks. Under
+ * months; each day shows a mark per thing on it (up to two, then "+1"). Under
  * the grid, everything in the month in view, one list in date order with the
  * date on each row (canvas 2 "Plan · Calendar · Round 2", option B, owner's
  * pick 11 Oct 2026, without the day headings). Tap a day and a card comes up
@@ -170,10 +182,13 @@ export default function PlanCalendar({
               <span className={`flex h-8 w-8 items-center justify-center rounded-full font-display text-base ${circle}`}>
                 {i + 1}
               </span>
-              <span className="flex h-1.5 gap-[3px]" aria-hidden>
-                {marks.slice(0, 3).map((m, j) => (
-                  <span key={j} className={`h-1.5 w-1.5 rounded-full ${DOT[m]}`} />
+              <span className="flex h-3 items-center gap-[3px]" aria-hidden>
+                {marks.slice(0, 2).map((m, j) => (
+                  <Mark key={j} kind={m} />
                 ))}
+                {marks.length > 2 && (
+                  <span className="text-[10px] leading-none tabular-nums text-stone">+{marks.length - 2}</span>
+                )}
               </span>
             </button>
           );
@@ -189,7 +204,7 @@ export default function PlanCalendar({
           ] as const
         ).map(([dot, label]) => (
           <span key={dot} className="flex items-center gap-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${DOT[dot]}`} />
+            <Mark kind={dot} />
             {label}
           </span>
         ))}

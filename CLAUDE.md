@@ -319,10 +319,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `/plan/appointments/…`; calendar on champagne). Payments were on the
   calendar too until 12 Oct 2026; now only in Money and the Hub's coming up. A **nudge** is a to-do with `remind_at` and
   no `due_date` (`src/lib/plan.ts`: `isNudge`, `planDate`) — the to-do
-  form's old "Done by / Start around" switch (taken out 12 Oct 2026; new
-  to-dos just have a date, and existing nudges stay nudges) — so no migration; its date
-  passing means "start now", never overdue. The starter list includes
-  nudges. **The to-do and appointment forms were made visual** (12 Oct 2026,
+  form's old "Done by / Start around" switch (taken out 12 Oct 2026, owner: one kind of
+  to-do — every to-do just has a date, the starter list's "Start looking
+  at…" ones included, and saving an old nudge makes it ordinary; the nudge
+  display stays only for any old rows, and there are none in the live
+  database) — so no migration; its date passing meant "start now", never
+  overdue. **The to-do and appointment forms were made visual** (12 Oct 2026,
   owner: "like add a supplier… super satisfying to fill in"), built from
   shared pieces in `src/components/visual-form.tsx` (`TITLE_INPUT`, `Tiles`,
   `areaTiles`, `DateCard`, `Line`, `CARD`, `Folded`): the name large (24px,

@@ -6,7 +6,7 @@ import { ReturnTo } from "@/components/back-link";
 import { SubmitButton } from "@/components/form-bits";
 import { BARE, CARD, DateCard, Line, Part, TITLE_INPUT, Tiles, areaTiles } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { isNudge, planDate } from "@/lib/plan";
+import { planDate } from "@/lib/plan";
 import type { Milestone } from "@/types/db";
 
 /**
@@ -14,9 +14,9 @@ import type { Milestone } from "@/types/db";
  * like the add-a-supplier form, then simplified (owner, 12 Oct 2026): what
  * needs doing, a date (optional — the card with quick picks, ✕ to take it
  * off), the area as picture tiles, and notes, always open. No "Done by /
- * Start around" choice any more: "Start thinking about flowers" says it in
- * the name. A to-do that's already a nudge (src/lib/plan.ts, e.g. from the
- * starter list) stays one when edited.
+ * Start around" choice any more, and no nudges (src/lib/plan.ts): "Start
+ * thinking about flowers" says it in the name; saving an old nudge makes it
+ * an ordinary to-do.
  */
 export default function MilestoneForm({
   action,
@@ -38,7 +38,6 @@ export default function MilestoneForm({
   weddingDate?: string | null;
 }) {
   const startDate = milestone ? (planDate(milestone) ?? "") : (defaultDate ?? "");
-  const nudge = !!milestone && isNudge(milestone);
   const [date, setDate] = useState(startDate);
 
   // A to-do tagged with an area that's since been switched off (or an older
@@ -64,7 +63,6 @@ export default function MilestoneForm({
       />
 
       <Part label="When">
-        {nudge && <input type="hidden" name="when_kind" value="start" />}
         <DateCard name="when" value={date} onChange={setDate} weddingDate={weddingDate} clearable />
       </Part>
 

@@ -4,10 +4,11 @@
  * page. Everything added is an ordinary to-do they can change or remove.
  *
  * `area` is a starter-area key (src/lib/areas.ts). Guest-list jobs have none:
- * the guest list is the People tab, not an area. `start` marks a nudge —
- * "start around" then rather than "done by" (src/lib/plan.ts) — so the plan
- * says when to begin thinking about something, not only when it's due
- * (owner's ask, 10 Oct 2026).
+ * the guest list is the People tab, not an area. `start` marks a "Start
+ * looking at…" to-do, so the plan says when to begin thinking about
+ * something, not only when it's due (owner's ask, 10 Oct 2026). Since 12 Oct
+ * 2026 they're ordinary to-dos dated then (owner: one kind of to-do; the
+ * name says it's a start).
  */
 const STARTER_PLAN: { title: string; daysBefore: number; area: string | null; start?: true }[] = [
   { title: "Start looking at venues", daysBefore: 480, area: "venue", start: true },
@@ -37,8 +38,8 @@ const STARTER_PLAN: { title: string; daysBefore: number; area: string | null; st
  * The starter to-dos for a wedding on `weddingDate` (or undated if there's
  * no date). A to-do whose ideal date has already passed gets no date rather
  * than piling up as overdue — the couple may well have done it already. A
- * nudge whose moment has passed is left out for the same reason, and so is
- * every nudge when there's no date to hang it on.
+ * "start" to-do whose moment has passed is left out for the same reason, and
+ * so is every one when there's no date to hang it on.
  */
 export function starterPlan(weddingDate: string | null, today: string) {
   return STARTER_PLAN.flatMap((item) => {
@@ -53,8 +54,8 @@ export function starterPlan(weddingDate: string | null, today: string) {
       {
         title: item.title,
         category: item.area,
-        due_date: item.start ? null : date,
-        remind_at: item.start ? date : null,
+        due_date: date,
+        remind_at: null,
       },
     ];
   });

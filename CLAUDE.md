@@ -423,7 +423,14 @@ a *third* piece. Don't restructure the other two.
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
 plus `0002_create_wedding.sql` to `0015_supplier_website.sql`. **New migrations are run
-by hand** in the Supabase SQL editor — the owner has to paste them in. Until
+by hand** in the Supabase SQL editor — the owner has to paste them in.
+**Since 12 Oct 2026 the Supabase connector is set up** (project
+**wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
+and apply migrations itself — **but always says in plain words what a
+database change does and waits for the owner's OK before running it, and
+never deletes data unless the owner asks for exactly that.** Looking (read-
+only queries) needs no OK. Checked 12 Oct: 0001–0010 and 0012–0015 are in;
+**0011 (floor plan) was missing**. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
 quietly isn't saved (`saveGuestAction` retries without it).

@@ -10,6 +10,8 @@ export async function formOptions(weddingId: string) {
     suppliers: suppliers.map((s) => ({
       id: s.id,
       name: s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" "),
+      /** Their area, so picking a supplier can pick the area too. */
+      area: s.supplier_details?.category ?? null,
     })),
   };
 }

@@ -32,6 +32,7 @@ export default async function NewMilestonePage({
         areas={areas}
         defaultArea={fromArea}
         defaultDate={date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined}
+        weddingDate={wedding.wedding_date}
       />
     </FormPage>
   );

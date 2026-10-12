@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { RemoveButton } from "@/components/form-bits";
 import { getAppointment } from "@/lib/db/appointments";
+import { getCurrentWedding } from "@/lib/db/weddings";
 import { formOptions } from "@/lib/form-options";
 import { deleteAppointmentAction, saveAppointmentAction } from "../../appointment-actions";
 import AppointmentForm from "../../appointment-form";
@@ -23,7 +24,7 @@ export default async function AppointmentPage({
   // Row-level security returns nothing for an appointment from another wedding.
   const appointment = await getAppointment(id);
   if (!appointment) notFound();
-  const { areas, suppliers } = await formOptions(appointment.wedding_id);
+  const [{ areas, suppliers }, wedding] = await Promise.all([formOptions(appointment.wedding_id), getCurrentWedding()]);
 
   return (
     <FormPage backHref="/plan" backLabel="Plan" title={appointment.title} error={error} detail={detail}>
@@ -32,6 +33,7 @@ export default async function AppointmentPage({
         appointment={appointment}
         suppliers={suppliers}
         areas={areas}
+        weddingDate={wedding?.wedding_date}
       />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton

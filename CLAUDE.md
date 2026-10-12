@@ -293,7 +293,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   no `due_date` (`src/lib/plan.ts`: `isNudge`, `planDate`) — the to-do
   form's "Done by / Start around" switch — so no migration; its date
   passing means "start now", never overdue. The starter list includes
-  nudges. The to-do form offers the wedding's own areas.
+  nudges. **The to-do and appointment forms were made visual** (12 Oct 2026,
+  owner: "like add a supplier… super satisfying to fill in"), built from
+  shared pieces in `src/components/visual-form.tsx` (`TITLE_INPUT`, `Tiles`,
+  `areaTiles`, `DateCard`, `Line`, `CARD`, `Folded`): the name large like a
+  title; to-dos pick **When** as three tiles (Done by · Start around · No
+  date) then a **date card** (the day written out large, quick picks: next
+  week, next month, in 3 months, 6 months / a month / the week before the
+  day); appointments offer one-tap name ideas (Venue visit, Dress
+  fitting…), the date card, a time card with quick taps (10:00…18:00), a
+  Where and who card (picking a supplier picks their area), then the area as
+  picture tiles ending in Other; notes folded under "Add notes".
 - **Money** (`/money`, screens 22–24; `0006_money.sql`): **rebuilt 12 Oct
   2026** to canvas 2 "Money · Round 4" (owner's pick: B for the budget, C
   for the schedule). Money moves **Budget → Agreed → Paid**, and the rest

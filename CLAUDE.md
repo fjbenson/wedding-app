@@ -646,6 +646,24 @@ additive — new tables hanging off `weddings`. None require changing the above.
   above the grid listing that month's "start around" nudges, to help
   couples along. The owner likes the idea but not yet the look; it was
   taken out. Nudges still show on the List's month cards.
+- **Show the work: portfolio and case study** (parked 12 Oct 2026). The
+  dream is the App Store with a subscription; meanwhile the owner wants the
+  app to open UX/UI opportunities. Agreed it's a good bet, not a
+  guarantee. The plan when picked up:
+  - **A case study is worth more than the app link**: the problem, rounds
+    on the canvases (e.g. Money rounds 1–4), what was picked and why, the
+    owner's rules ("simple first, detail on tap", overspend never by colour
+    alone, dancers chosen by clothes not gender).
+  - **Where:** own portfolio site (ideally on the app's own web address),
+    LinkedIn posts as it goes (where chances usually come from), Behance /
+    Dribbble for polished screens.
+  - **Demo mode needed first:** a "look around" button into a made-up
+    wedding with fake guests, since only the owner can sign in, and real
+    guest details must never be public (fake names in screenshots too).
+  - **Test with 3–5 real couples** and write it up. The biggest gap a UX
+    reviewer will spot is that the only user so far is the owner.
+  - Say openly it was designed by the owner and built with AI; that's a
+    strength if the decisions can be explained.
 
 ### Design work so far (links)
 

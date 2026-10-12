@@ -44,13 +44,15 @@
 }
 
 /*
- * Paper behind every screen (canvas 2, "Background · Instead of the satin",
- * option 1, 12 Oct 2026; replaced the satin stripes, which looked cheap):
- * warm ivory with a very fine grain and faint fibres, like heavy cotton
- * invitation card. The grain is a small SVG tile drawn once and repeated,
- * so it costs nothing while scrolling. It sits on a fixed layer so it stays
- * put while the page scrolls (iPhones ignore a fixed body background). Left
- * off when printing.
+ * Paper under a lamp behind every screen (canvas 2, "Background · Round 2",
+ * option A, 12 Oct 2026). One light source: near-white at the top of the
+ * screen, warming to a deeper ivory below and at the edges, with a fine
+ * grain and faint fibres you can see, like cotton invitation card. It
+ * replaced the satin stripes (cheap-looking) and then plain paper (too
+ * flat). The grain is a small SVG tile drawn once and repeated, so it costs
+ * nothing while scrolling. It sits on a fixed layer so the light stays at
+ * the top of the screen while the page scrolls (iPhones ignore a fixed body
+ * background). Left off when printing.
  */
 body::before {
   content: "";
@@ -58,8 +60,10 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-color: #f8f3ea;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.34 0 0 0 0 0.22 0 0 0 0.55 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0 0.3 0 0 0 0.35 -0.08'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.16'/%3E%3Crect width='240' height='240' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+  background-color: #efe5d5;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.34 0 0 0 0 0.22 0 0 0 0.55 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0 0.3 0 0 0 0.35 -0.08'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.32'/%3E%3Crect width='240' height='240' filter='url(%23f)' opacity='0.19'/%3E%3C/svg%3E"),
+    radial-gradient(130% 75% at 50% -8%, #fffcf6 0%, #fbf5eb 38%, rgb(246 238 225 / 0.6) 70%, rgb(239 229 213 / 0) 100%);
 }
 
 @media print {

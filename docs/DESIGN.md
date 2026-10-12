@@ -29,13 +29,16 @@ ring on a champagne cover described further down:
   day number in `champagne-600`.
 - **Glass cards below** (`.glass-card`): "coming up" and Inspo, straight on the paper
   (the soft glows behind them were taken out 12 Oct 2026 with the satin).
-- **Background: paper** (canvas 2, "Background · Instead of the satin",
-  option 1, owner's pick 12 Oct 2026) — warm ivory (`#F8F3EA`) with a very
-  fine grain and faint fibres, like cotton invitation card: a small SVG tile
-  repeated behind every screen (`body::before` in `globals.css`). It
-  replaced round 14's champagne satin (diagonal stripes), which the owner
-  found cheap-looking. Options 2 (soft light, warm glows) and 3 (paper and
-  light) are still on the canvas. Round 15's plain ivory looked flat.
+- **Background: paper under a lamp** (canvas 2, "Background · Round 2 ·
+  Not boring, not amateur", option A, owner's pick 12 Oct 2026) — one light
+  source: near-white at the top of the screen warming to a deeper ivory
+  (`#EFE5D5`) below and at the edges, with a visible fine grain and faint
+  fibres (`body::before` in `globals.css`). History: round 14's champagne
+  satin (diagonal stripes) looked cheap; plain paper with a faint grain
+  (round 1, option 1) looked like a white background; round 15's plain
+  ivory looked flat. Rule from this: **light should look like it has one
+  source** — no stripes, no blobs placed at random. Still on the canvas:
+  B a warm oat ground with ivory cards, C a real photographed texture.
 - What the owner rejected on the way: blue; stacking several "grounding"
   ideas at once (card + dark centre + ring line); solid white cards.
 - Area names show under the buttons from tablet width up. On phones it's

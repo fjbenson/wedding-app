@@ -11,9 +11,11 @@ export const metadata = { title: "Add a supplier — Wedding App" };
 export default async function NewSupplierPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string; category?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; category?: string; from?: string }>;
 }) {
-  const { error, detail, category } = await searchParams;
+  const { error, detail, category, from } = await searchParams;
+  // From an empty area's row on the Suppliers list: go back there, not to the area page.
+  const fromList = from === "suppliers";
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const categories = supplierCategories(areaOptions(await listAreas(wedding.id)));
@@ -21,8 +23,8 @@ export default async function NewSupplierPage({
 
   return (
     <FormPage
-      backHref={fromArea ? `/area/${fromArea}` : "/people?tab=suppliers"}
-      backLabel={fromArea ? (categories.find((c) => c.key === fromArea)?.label ?? "Back") : "Suppliers"}
+      backHref={fromArea && !fromList ? `/area/${fromArea}` : "/people?tab=suppliers"}
+      backLabel={fromArea && !fromList ? (categories.find((c) => c.key === fromArea)?.label ?? "Back") : "Suppliers"}
       title="Add a supplier"
       error={error}
       detail={detail}

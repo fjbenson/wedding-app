@@ -182,7 +182,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   choice, area filter and open card live in the address (`?q=`, `?show=`,
   `?area=`, `?supplier=`). **`/people/[id]` is now only a redirect** to the
   right card (guest or supplier); the area page's supplier links use it.
-  Adding a supplier still uses the form (`/people/suppliers/new`). No
+  Adding a supplier still uses the form (`/people/suppliers/new`). With
+  nothing narrowing the list, **every area shows**, an empty one as a faded
+  "Add a supplier" row (see Conventions, "An empty screen still shows its
+  shape"). No
   **website** field yet — it would need a new column (a small migration).
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
@@ -502,6 +505,16 @@ access control is RLS. No column-level encryption is planned.
   `BackLink`) returns to it. Plan's to-do and appointment forms also send a
   hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
   `src/lib/return-to.ts`); other screens' saves can opt in the same way.
+- **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
+  just doesn't show the structure of the page"). Never fill a screen with
+  made-up data the couple has to delete; instead draw the real structure
+  from what the wedding already has (its **areas**, the ring's dots) with
+  faded **ghost rows** you tap to fill in — dashed circle with +, italic
+  faded text, opening the add form already pointed at that area. Done on
+  Suppliers (every area shows; an empty one says "To find" with an "Add a
+  supplier" row, `/people/suppliers/new?category=…&from=suppliers`), and
+  the notes wall's faded blank notes work the same way. Use it on any new
+  screen, and fix older empty screens to match as they come up.
 - **Server actions called from client code must not be able to throw into
   React** (9 Oct 2026): after a deploy, a page left open calls the old
   action, which no longer exists, and an uncaught error blanks the screen.

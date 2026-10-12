@@ -60,6 +60,7 @@ export default function SupplierList({
   }
 
   const needle = query.trim().toLowerCase();
+  const narrowed = show !== "all" || !!area || !!needle;
   const shown = suppliers.filter((s) => {
     if (show !== "all" && stage(s) !== show) return false;
     if (area && (s.supplier_details?.category ?? "") !== area) return false;
@@ -80,30 +81,28 @@ export default function SupplierList({
         // Booked first, then quotes, then asked; not taken last.
         .sort((a, b) => ORDER[stage(a)] - ORDER[stage(b)]),
     }))
-    .filter((g) => g.rows.length > 0);
+    // With nothing narrowing the list, every area shows — an empty one as a
+    // faded row to fill in — so the page has its shape from day one (owner,
+    // 12 Oct 2026: "an empty page should still show its structure").
+    .filter((g) => g.rows.length > 0 || (!narrowed && !!g.key));
   const usedAreas = areas.filter((a) => suppliers.some((s) => s.supplier_details?.category === a.key));
   const open = suppliers.find((s) => s.id === openId);
 
   return (
     <>
       <PageTitle drawing="suppliers" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
-        {suppliers.length === 0 ? "No suppliers yet." : "Suppliers"}
+        Suppliers
       </PageTitle>
 
-      {suppliers.length === 0 ? (
-        <>
-          <p className="mt-2 text-sm text-stone">The venue, the photographer, the florist — everyone you&apos;re asking, and what they cost.</p>
-          <Link
-            href="/people/suppliers/new"
-            className="mt-6 flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-sm text-ivory hover:bg-ink/90 lg:w-fit lg:px-6"
-          >
-            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Add a supplier
-          </Link>
-        </>
-      ) : (
         <div className="lg:max-w-xl">
-          <CountCard total={suppliers.length} areas={new Set(suppliers.map((s) => s.supplier_details?.category ?? "")).size} counts={counts} show={show} onShow={setShow} />
+          <CountCard
+            total={suppliers.length}
+            areasWith={areas.filter((a) => suppliers.some((s) => s.supplier_details?.category === a.key)).length}
+            areas={areas.length}
+            counts={counts}
+            show={show}
+            onShow={setShow}
+          />
 
           <div className="mt-5 flex items-center gap-2">
             <label className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -153,14 +152,25 @@ export default function SupplierList({
             </div>
           )}
 
-          {groups.length === 0 && <p className="mt-6 px-1 text-sm text-stone">No one matches that.</p>}
+          {groups.length === 0 && <p className="mt-6 px-1 text-sm text-stone">{narrowed ? "No one matches that." : "Add your first supplier above."}</p>}
           {groups.map((g) => (
             <section key={g.key || "none"} aria-label={g.label}>
               <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
                 <span className="label">{g.label}</span>
-                <span className="text-xs text-stone">{groupNote(g.rows)}</span>
+                <span className="text-xs text-stone">{g.rows.length ? groupNote(g.rows) : "To find"}</span>
               </p>
               <ul>
+                {g.rows.length === 0 && (
+                  <li className="row-press border-b-[0.5px] border-champagne-400">
+                    <Link href={`/people/suppliers/new?category=${encodeURIComponent(g.key)}&from=suppliers`} className="flex min-h-[58px] items-center gap-3 py-1.5">
+                      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600 max-[359px]:hidden">
+                        <Plus className="h-4 w-4" strokeWidth={1.8} />
+                      </span>
+                      <span className="min-w-0 flex-1 font-display text-lg italic text-stone/70">Add a supplier</span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-stone/60" strokeWidth={1.8} aria-hidden />
+                    </Link>
+                  </li>
+                )}
                 {g.rows.map((s) => (
                   <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
                     <SupplierRow supplier={s} onOpen={() => setOpenId(s.id)} />
@@ -172,7 +182,6 @@ export default function SupplierList({
 
           <Key />
         </div>
-      )}
 
       {open && (
         <SupplierCard
@@ -199,12 +208,15 @@ function groupNote(rows: Supplier[]) {
 
 function CountCard({
   total,
+  areasWith,
   areas,
   counts,
   show,
   onShow,
 }: {
   total: number;
+  /** Areas with anyone in them, of the wedding's areas. */
+  areasWith: number;
   areas: number;
   counts: Record<"booked" | "quoted" | "enquired", number>;
   show: Show;
@@ -231,7 +243,7 @@ function CountCard({
         <span>
           <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-ivory" : ""}`}>{total}</span>
           <span className={`mt-1.5 block text-xs ${all ? "text-ivory/75" : "text-stone"}`}>
-            in {areas} {areas === 1 ? "area" : "areas"}
+            {areasWith} of {areas} {areas === 1 ? "area" : "areas"}
           </span>
         </span>
       </button>

@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { coupleName } from "@/lib/couple-name";
 import { listAreas, setAreaOrder, updateArea } from "@/lib/db/areas";
-import { getCurrentWedding, updateWedding } from "@/lib/db/weddings";
+import { WEDDING_COOKIE, getCurrentWedding, listWeddings, updateWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
 function failed(message: string, error: unknown): never {
@@ -82,4 +83,18 @@ export async function renameAreaAction(areaId: string, formData: FormData) {
     failed("That didn't rename it.", error);
   }
   refresh();
+}
+
+/**
+ * Opens another wedding this login belongs to (Settings › Your weddings),
+ * remembered on this device. Only weddings the database lets you see can be
+ * picked, so this can't open anyone else's.
+ */
+export async function switchWeddingAction(formData: FormData) {
+  const id = String(formData.get("wedding_id") ?? "");
+  const weddings = await listWeddings();
+  if (!weddings.some((w) => w.id === id)) redirect("/settings");
+  (await cookies()).set(WEDDING_COOKIE, id, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: true });
+  refresh();
+  redirect("/");
 }

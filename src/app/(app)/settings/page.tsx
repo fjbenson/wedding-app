@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getLogin } from "@/lib/db/auth";
 import { listAreas } from "@/lib/db/areas";
-import { getCurrentWedding, listMembers } from "@/lib/db/weddings";
+import { getCurrentWedding, listMembers, listWeddings } from "@/lib/db/weddings";
 import SettingsView from "./settings-view";
 
 export const metadata = { title: "Settings — Wedding App" };
@@ -16,7 +16,8 @@ export default async function SettingsPage({
   if (!wedding) redirect("/");
   const { saved, error, detail } = await searchParams;
 
-  const [login, areas, members] = await Promise.all([
+  const [weddings, login, areas, members] = await Promise.all([
+    listWeddings(),
     getLogin(),
     listAreas(wedding.id),
     listMembers(wedding.id),
@@ -25,6 +26,7 @@ export default async function SettingsPage({
   return (
     <SettingsView
       wedding={wedding}
+      weddings={weddings}
       areas={areas ?? []}
       members={members}
       login={login}

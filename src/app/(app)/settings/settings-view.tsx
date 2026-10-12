@@ -5,7 +5,7 @@ import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
 import type { Login } from "@/lib/db/auth";
 import type { AreaRow, MemberRole, Wedding, WeddingMember } from "@/types/db";
-import { moveAreaAction, renameAreaAction, saveWeddingAction, toggleAreaAction } from "./actions";
+import { moveAreaAction, renameAreaAction, saveWeddingAction, switchWeddingAction, toggleAreaAction } from "./actions";
 
 const ROLE: Record<MemberRole, string> = { owner: "Owner", planner: "Planner", guest: "Guest" };
 
@@ -34,6 +34,7 @@ function Switch({ on, label, action }: { on: boolean; label: string; action: () 
  */
 export default function SettingsView({
   wedding,
+  weddings,
   areas,
   members,
   login,
@@ -42,6 +43,7 @@ export default function SettingsView({
   detail,
 }: {
   wedding: Wedding;
+  weddings: Wedding[];
   areas: AreaRow[];
   members: WeddingMember[];
   login: Login | null;
@@ -65,6 +67,7 @@ export default function SettingsView({
       )}
 
       <YourLogin login={login} />
+      <YourWeddings weddings={weddings} openId={wedding.id} />
 
       <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
@@ -175,6 +178,39 @@ export default function SettingsView({
 
       </section>
     </main>
+  );
+}
+
+/**
+ * Only shown when this login belongs to more than one wedding (the demo,
+ * 12 Oct 2026): tap one to open it on this device.
+ */
+function YourWeddings({ weddings, openId }: { weddings: Wedding[]; openId: string }) {
+  if (weddings.length < 2) return null;
+  return (
+    <section className="glass-card mt-6 rounded-[22px] p-5">
+      <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your weddings</h2>
+      <ul className="mt-2">
+        {weddings.map((w) => (
+          <li key={w.id} className="flex items-center justify-between gap-3 border-b border-linen py-3 last:border-b-0">
+            <span className="min-w-0 truncate font-display text-lg text-ink">{w.name}</span>
+            {w.id === openId ? (
+              <span className="flex shrink-0 items-center gap-1 text-xs uppercase tracking-[0.14em] text-champagne-600">
+                <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                Open
+              </span>
+            ) : (
+              <form action={switchWeddingAction}>
+                <input type="hidden" name="wedding_id" value={w.id} />
+                <button type="submit" className="h-10 shrink-0 rounded-full border border-linen px-4 text-sm text-ink hover:bg-cream">
+                  Open this one
+                </button>
+              </form>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

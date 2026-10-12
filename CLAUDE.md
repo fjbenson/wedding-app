@@ -177,9 +177,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   2026): initials with the **stage as a badge** on them (✓ ink booked · £
   champagne quote in · dashed ? asked · ✕ grey not taken — `StageIcon`
   with `badge`, like a guest's role star), the business and the contact
-  person, then round **Call** and **Email** buttons on the right (an empty
-  space when missing, so they line up); no quote on the row. A key under
-  the list. Tapping one opens the **supplier card**
+  person, then round **Call** and **Email** buttons on the right; no quote
+  on the row. A missing phone or email shows as a **faded dashed button**
+  that opens the card with that box ready to type in (`editField` →
+  `TextRow startEditing`). A key under the list. **Sort** (like the guest
+  list, on the "+ Add a supplier" line): By area (default) or Name, A–Z
+  (letter groups, a leading "The" ignored); kept on the phone
+  (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card),
   **edited in place**: area link, business name (tap to rename), Call ·
   Email, **Where you're up to** slider, Money (Quote and Deposit paid tap

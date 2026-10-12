@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronRight, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import PageTitle from "@/components/page-title";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
@@ -14,6 +14,12 @@ import type { Payment, SupplierStatus } from "@/types/db";
 import SupplierCard, { supplierContact, supplierName } from "./supplier-card";
 
 type Show = "all" | "booked" | "quoted" | "enquired";
+type SortBy = "area" | "name";
+const SORT_KEY = "supplier-list-sort";
+const SORTS: { key: SortBy; label: string; short: string }[] = [
+  { key: "area", label: "Area", short: "by area" },
+  { key: "name", label: "Name, A–Z", short: "A to Z" },
+];
 /** "Looking" was folded into "In touch" (0012_area_stages.sql). */
 const stage = (s: Supplier): SupplierStatus => {
   const status = s.supplier_details?.status ?? "enquired";
@@ -59,7 +65,34 @@ export default function SupplierList({
     replaceQuery({ q: query.trim() || null, show: show === "all" ? null : show, f: filters.length ? filters.join(",") : null, area: null, supplier: openId });
   }, [query, show, filters, openId]);
   const toggle = (key: string) => setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
-  const close = useCallback(() => setOpenId(null), []);
+  const [editField, setEditField] = useState<"phone" | "email">();
+  const close = useCallback(() => {
+    setOpenId(null);
+    setEditField(undefined);
+  }, []);
+
+  // By area, or A to Z by business name — a preference kept on this phone
+  // until it's changed, like the guest list's sort. Read after the first
+  // draw so the server's page and the phone's agree.
+  const [sort, setSort] = useState<SortBy>("area");
+  const [remembered, setRemembered] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SORT_KEY);
+      if (saved === "area" || saved === "name") setSort(saved);
+    } catch {
+      // Private browsing or blocked storage: start from the default.
+    }
+    setRemembered(true);
+  }, []);
+  useEffect(() => {
+    if (!remembered) return;
+    try {
+      window.localStorage.setItem(SORT_KEY, sort);
+    } catch {
+      // Not remembered, but still works.
+    }
+  }, [sort, remembered]);
 
   const counts = { booked: 0, quoted: 0, enquired: 0 };
   for (const s of suppliers) {
@@ -105,19 +138,30 @@ export default function SupplierList({
   // Grouped by area in the wedding's own order, anything else after.
   const cat = (s: Supplier) => s.supplier_details?.category || "other";
   const keys = [...areas.map((a) => a.key), ...new Set(shown.map(cat))];
-  const groups = [...new Set(keys)]
+  const byArea = [...new Set(keys)]
     .map((key) => ({
       key,
       label: areaName(key, areas) ?? key,
+      href: areas.some((x) => x.key === key) ? `/area/${encodeURIComponent(key)}` : null,
       rows: shown
         .filter((s) => cat(s) === key)
-        // Booked first, then quotes, then asked; not taken last.
+        // Booked first, then quotes, then in touch; not taken last.
         .sort((a, b) => ORDER[stage(a)] - ORDER[stage(b)]),
     }))
     // With nothing narrowing the list, every area shows — an empty one as a
     // faded row to fill in — so the page has its shape from day one (owner,
     // 12 Oct 2026: "an empty page should still show its structure").
-    .filter((g) => g.rows.length > 0 || (!narrowed && !!g.key));
+    .filter((g) => g.rows.length > 0 || (!narrowed && areas.some((x) => x.key === g.key)));
+  // Or A to Z by business name, under a letter each ("The" doesn't count).
+  const sortName = (s: Supplier) => supplierName(s).replace(/^the\s+/i, "");
+  const letter = (s: Supplier) => (/^[a-z]/i.test(sortName(s)) ? sortName(s)[0].toUpperCase() : "#");
+  const byName = [...new Set([...shown].sort((a, b) => sortName(a).localeCompare(sortName(b))).map(letter))].map((l) => ({
+    key: `letter-${l}`,
+    label: l,
+    href: null as string | null,
+    rows: shown.filter((s) => letter(s) === l).sort((a, b) => sortName(a).localeCompare(sortName(b))),
+  }));
+  const groups = sort === "name" ? byName : byArea;
   const open = suppliers.find((s) => s.id === openId);
 
   return (
@@ -156,19 +200,7 @@ export default function SupplierList({
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Add a supplier
             </Link>
-            {(show !== "all" || filters.length > 0 || needle) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setShow("all");
-                  setFilters([]);
-                  setQuery("");
-                }}
-                className="h-9 text-[13px] text-stone underline underline-offset-4 hover:text-ink"
-              >
-                Show everyone
-              </button>
-            )}
+            <SortMenu sort={sort} onSort={setSort} />
           </div>
           {filters.length > 0 && (
             <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
@@ -190,13 +222,30 @@ export default function SupplierList({
             </div>
           )}
 
-          {groups.length === 0 && <p className="mt-6 px-1 text-sm text-stone">{narrowed ? "No one matches that." : "Add your first supplier above."}</p>}
+          {groups.length === 0 && (
+            <p className="mt-6 px-1 text-sm text-stone">
+              {narrowed ? "No one matches that. " : "Add your first supplier above."}
+              {narrowed && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShow("all");
+                    setFilters([]);
+                    setQuery("");
+                  }}
+                  className="text-champagne-600 underline underline-offset-4 hover:text-ink"
+                >
+                  Show everyone
+                </button>
+              )}
+            </p>
+          )}
           {groups.map((g) => (
             <section key={g.key || "none"} aria-label={g.label}>
               <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-                {/* The heading opens the area page: where the choosing happens. */}
-                {areas.some((x) => x.key === g.key) ? (
-                  <Link href={`/area/${encodeURIComponent(g.key)}`} className="label hover:text-ink">
+                {/* An area's heading opens its page: where the choosing happens. */}
+                {g.href ? (
+                  <Link href={g.href} className="label hover:text-ink">
                     {g.label} ›
                   </Link>
                 ) : (
@@ -218,7 +267,13 @@ export default function SupplierList({
                 )}
                 {g.rows.map((s) => (
                   <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
-                    <SupplierRow supplier={s} onOpen={() => setOpenId(s.id)} />
+                    <SupplierRow
+                      supplier={s}
+                      onOpen={(field) => {
+                        setEditField(field);
+                        setOpenId(s.id);
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
@@ -234,6 +289,7 @@ export default function SupplierList({
           supplier={open}
           areas={areas}
           payments={payments.filter((p) => p.contact_id === open.id)}
+          editField={editField}
           onClose={close}
         />
       )}
@@ -422,6 +478,66 @@ function FilterMenu({
   );
 }
 
+/** "BY AREA ⌄" on the line above the list — the guest list's Sort, for suppliers. */
+function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  const current = SORTS.find((o) => o.key === sort)!;
+
+  return (
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={`Sort: ${current.label}`}
+        onClick={() => setOpen((o) => !o)}
+        className="type-meta flex h-9 items-center gap-1 hover:text-ink"
+      >
+        {current.short}
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[14rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <span className="section-label block py-1">Sort by</span>
+          <ul>
+            {SORTS.map((o) => (
+              <li key={o.key} className="border-t border-linen first:border-t-0">
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={sort === o.key}
+                  onClick={() => {
+                    onSort(o.key);
+                    setOpen(false);
+                  }}
+                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                >
+                  <span className="flex-1">{o.label}</span>
+                  {sort === o.key && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const initials = (name: string) =>
   name
     .replace(/[^\p{L} ]/gu, "")
@@ -436,18 +552,20 @@ const initials = (name: string) =>
  * owner's pick 12 Oct 2026): initials with the stage as a badge on them
  * (as a guest's role star sits on theirs), the business and who to ask
  * for, then round Call and Email buttons — the quote and the rest are one
- * tap away on the card. A missing number or email leaves its space empty,
- * so the buttons line up down the list.
+ * tap away on the card. A missing number or email shows greyed out, and
+ * tapping it opens the card ready to type it in.
  */
-function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: () => void }) {
+function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?: "phone" | "email") => void }) {
   const st = stage(supplier);
   const name = supplierName(supplier);
   const phone = supplier.phone?.replace(/\s+/g, "");
   const notTaken = st === "cancelled";
   const action = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
+  // Not added yet: greyed out with a dashed edge; a tap opens the card ready to fill it in.
+  const missing = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40 hover:border-champagne-400 hover:text-champagne-600";
   return (
     <div className="flex min-h-[62px] items-center gap-2">
-      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left">
+      <button type="button" onClick={() => onOpen()} className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left">
         <span aria-hidden className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
           {initials(name)}
           <span className="absolute -bottom-1 -right-1.5">
@@ -465,14 +583,18 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: () => v
           <Phone className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
         </a>
       ) : (
-        <span className="w-11 shrink-0" aria-hidden />
+        <button type="button" onClick={() => onOpen("phone")} aria-label={`Add a phone number for ${name}`} className={missing}>
+          <Phone className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
+        </button>
       )}
       {supplier.email ? (
         <a href={`mailto:${supplier.email}`} aria-label={`Email ${name}`} className={action}>
           <Mail className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
         </a>
       ) : (
-        <span className="w-11 shrink-0" aria-hidden />
+        <button type="button" onClick={() => onOpen("email")} aria-label={`Add an email for ${name}`} className={missing}>
+          <Mail className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
+        </button>
       )}
     </div>
   );

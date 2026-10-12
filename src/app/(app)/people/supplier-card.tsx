@@ -34,9 +34,12 @@ export default function SupplierCard({
   supplier,
   areas,
   payments,
+  editField,
   onClose,
 }: {
   supplier: Supplier;
+  /** Open with this detail ready to fill in (the list's greyed-out buttons). */
+  editField?: "phone" | "email";
   /** The wedding's areas, with each one's budget if set. */
   areas: (AreaOption & { budget?: number | null })[];
   /** Payments recorded for this supplier. */
@@ -166,8 +169,8 @@ export default function SupplierCard({
             <dl className="mt-1">
               <AreaRow value={d?.category ?? null} areas={areas} onSave={(v) => save({ field: "category", value: v })} />
               <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
-              <TextRow label="Phone" value={supplier.phone} type="tel" onSave={(v) => save({ field: "phone", value: v })} />
-              <TextRow label="Email" value={supplier.email} type="email" onSave={(v) => save({ field: "email", value: v })} />
+              <TextRow label="Phone" value={supplier.phone} type="tel" startEditing={editField === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+              <TextRow label="Email" value={supplier.email} type="email" startEditing={editField === "email"} onSave={(v) => save({ field: "email", value: v })} />
               <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
               <TextRow label="Contract" value={d?.contract_url ?? null} type="url" onSave={(v) => save({ field: "contract_url", value: v })} />
               <TextRow label="Notes" value={supplier.notes} multiline onSave={(v) => save({ field: "notes", value: v })} />

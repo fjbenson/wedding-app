@@ -152,15 +152,17 @@ export default function SupplierList({
     // faded row to fill in — so the page has its shape from day one (owner,
     // 12 Oct 2026: "an empty page should still show its structure").
     .filter((g) => g.rows.length > 0 || (!narrowed && areas.some((x) => x.key === g.key)));
-  // Or A to Z by business name, under a letter each ("The" doesn't count).
+  // Or A to Z by business name, one plain list like the guest list's — no
+  // letter dividers (owner, 12 Oct 2026). "The" doesn't count.
   const sortName = (s: Supplier) => supplierName(s).replace(/^the\s+/i, "");
-  const letter = (s: Supplier) => (/^[a-z]/i.test(sortName(s)) ? sortName(s)[0].toUpperCase() : "#");
-  const byName = [...new Set([...shown].sort((a, b) => sortName(a).localeCompare(sortName(b))).map(letter))].map((l) => ({
-    key: `letter-${l}`,
-    label: l,
-    href: null as string | null,
-    rows: shown.filter((s) => letter(s) === l).sort((a, b) => sortName(a).localeCompare(sortName(b))),
-  }));
+  const byName = [
+    {
+      key: "a-to-z",
+      label: "",
+      href: null as string | null,
+      rows: [...shown].sort((a, b) => sortName(a).localeCompare(sortName(b))),
+    },
+  ].filter((g) => g.rows.length > 0);
   const groups = sort === "name" ? byName : byArea;
   const open = suppliers.find((s) => s.id === openId);
 
@@ -244,18 +246,22 @@ export default function SupplierList({
             </p>
           )}
           {groups.map((g) => (
-            <section key={g.key || "none"} aria-label={g.label}>
-              <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-                {/* An area's heading opens its page: where the choosing happens. */}
-                {g.href ? (
-                  <Link href={g.href} className="label hover:text-ink">
-                    {g.label} ›
-                  </Link>
-                ) : (
-                  <span className="label">{g.label}</span>
-                )}
-                <span className="text-xs text-stone">{supplierCount(g.rows.length)}</span>
-              </p>
+            <section key={g.key || "none"} aria-label={g.label || "A to Z"}>
+              {g.label ? (
+                <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
+                  {/* An area's heading opens its page: where the choosing happens. */}
+                  {g.href ? (
+                    <Link href={g.href} className="label hover:text-ink">
+                      {g.label} ›
+                    </Link>
+                  ) : (
+                    <span className="label">{g.label}</span>
+                  )}
+                  <span className="text-xs text-stone">{supplierCount(g.rows.length)}</span>
+                </p>
+              ) : (
+                <div aria-hidden className="mt-4 border-b border-champagne-400" />
+              )}
               <ul>
                 {g.rows.length === 0 && (
                   <li className="row-press border-b-[0.5px] border-champagne-400">

@@ -181,7 +181,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   that opens the card with that box ready to type in (`editField` →
   `TextRow startEditing`). A key under the list. **Sort** (like the guest
   list, on the "+ Add a supplier" line): By area (default) or Name, A–Z
-  (letter groups, a leading "The" ignored); kept on the phone
+  (one plain list like the guest list, no letter dividers; a leading "The" ignored); kept on the phone
   (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card),
   **edited in place**: area link, business name (tap to rename), Call ·

@@ -14,8 +14,8 @@ import { markPaidAction } from "./actions";
  * pick 12 Oct 2026): money moves Budget → Agreed → Paid, and the rest has a
  * schedule. Two views, by the two questions a couple brings here:
  *
- * - By area (the default): where is the money going? Three thin bars per
- *   area — budget, agreed, paid — with the whole wedding at the top.
+ * - By area (the default): where is the money going? The whole wedding on a
+ *   glass card, then each area menu-card style with one slim bar (Round 5).
  * - By month: when do we pay? A column per month to the wedding, then the
  *   payments grouped by month, ticked off in place.
  *
@@ -91,81 +91,94 @@ export default function MoneyView({
 
 /* ------------------------------------------------------------- By area */
 
-/** Three labelled bars on one scale: budget, agreed (striped past the budget), paid. */
-function ThreeBars({ money, big = false }: { money: Money; big?: boolean }) {
+/*
+ * Canvas 2 "Money · Round 5" (owner's pick 12 Oct 2026): the top of option 3
+ * (a glass card — agreed of budget, one thick bar, Paid · To pay · Still
+ * free) and the list of option 4 (a menu card: name, dotted line, figure,
+ * one slim bar underneath).
+ */
+
+const pct = (x: number, of: number) => `${Math.min((x / of) * 100, 100)}%`;
+
+/** One bar on the budget's scale: agreed inside, paid inside that, stripes past a tick when over. */
+function BudgetBar({ money, thick = false }: { money: Money; thick?: boolean }) {
   const budget = money.budget ?? 0;
   const scale = Math.max(budget, money.committed, money.paid, 1);
-  const pct = (x: number) => `${Math.min((x / scale) * 100, 100)}%`;
   const over = money.budget !== null && money.committed > budget;
-  const height = big ? "h-2.5" : "h-1.5";
-  const value = big ? "text-[19px]" : "text-[15px]";
-  const line = (label: string, bar: React.ReactNode, amount: string, gold = false) => (
-    <div className={`grid items-center gap-2.5 ${big ? "mt-2 grid-cols-[58px_1fr_84px]" : "mt-1.5 grid-cols-[58px_1fr_68px]"}`}>
-      <span className={`text-xs ${gold ? "text-champagne-600" : "text-stone"}`}>{label}</span>
-      <span className={`relative ${height}`} aria-hidden>
-        {bar}
-      </span>
-      <span className={`type-figure text-right !font-light tabular-nums ${value} ${gold ? "text-champagne-600" : "text-ink"}`}>
-        {amount}
-      </span>
-    </div>
-  );
-
   return (
-    <div>
-      {line(
-        "Budget",
-        money.budget !== null && <span className={`absolute inset-y-0 left-0 rounded-full ${BUDGET_BAR}`} style={{ width: pct(budget) }} />,
-        money.budget !== null ? formatMoney(budget) : "—",
-      )}
-      {line(
-        "Agreed",
+    <span
+      aria-hidden
+      className={`relative block rounded-full ${thick ? "h-3.5 overflow-hidden" : "h-[5px]"} ${
+        money.budget === null && !thick ? "rounded-none border-b border-dashed border-stone/40" : "bg-linen/80"
+      }`}
+    >
+      <span
+        className={`absolute inset-y-0 left-0 ${over ? "rounded-l-full" : "rounded-full"} ${AGREED_BAR}`}
+        style={{ width: pct(over ? budget : money.committed, scale) }}
+      />
+      <span className={`absolute inset-y-0 left-0 rounded-full ${PAID_BAR}`} style={{ width: pct(money.paid, scale) }} />
+      {over && (
         <>
           <span
-            className={`absolute inset-y-0 left-0 ${over ? "rounded-l-full" : "rounded-full"} ${AGREED_BAR}`}
-            style={{ width: pct(over ? budget : money.committed) }}
+            className="absolute -inset-y-0.5 rounded-r-full"
+            style={{ left: pct(budget, scale), width: pct(money.committed - budget, scale), ...OVER_STRIPES }}
           />
-          {over && (
-            <span
-              className="absolute inset-y-0 rounded-r-full"
-              style={{ left: pct(budget), width: pct(money.committed - budget), ...OVER_STRIPES }}
-            />
-          )}
-        </>,
-        money.committed ? formatMoney(money.committed) : "—",
+          <span className="absolute -inset-y-1 w-[1.5px] bg-ink" style={{ left: pct(budget, scale) }} />
+        </>
       )}
-      {line(
-        "Paid",
-        <span className={`absolute inset-y-0 left-0 rounded-full ${PAID_BAR}`} style={{ width: pct(money.paid) }} />,
-        money.paid ? formatMoney(money.paid) : "—",
-        true,
-      )}
-    </div>
+    </span>
   );
 }
 
-/** The short word on an area's row: over, all paid, not booked yet. */
-function flag(m: Money): { text: string; tone: string } | null {
+/** The short word under an area's bar. */
+function flag(m: Money): { text: string; tone: string } {
   if (m.budget !== null && m.committed > m.budget) {
     return { text: `▲ Over by ${formatMoney(m.committed - m.budget)}`, tone: "text-[#9A3F2B]" };
   }
   if (m.committed > 0 && m.paid >= m.committed) return { text: "✓ All paid", tone: "text-ink" };
-  if (m.committed === 0 && m.budget !== null) return { text: "Not booked yet", tone: "text-stone" };
-  return null;
+  if (m.committed > 0) {
+    return { text: `${formatMoney(m.paid)} paid · ${formatMoney(m.committed - m.paid)} to go`, tone: "text-stone" };
+  }
+  if (m.budget !== null) return { text: "Not booked yet", tone: "text-stone" };
+  return { text: "No budget yet", tone: "text-champagne-600" };
 }
 
 function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption & Money)[]; payments: Payment[] }) {
   const next = payments
     .filter((p) => !p.paid_on && p.due_date)
     .sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0];
+  const toPay = Math.max(total.committed - total.paid, 0);
+  const free = total.budget !== null ? total.budget - total.committed : null;
 
   return (
     <>
-      <section className="mt-6">
-        <p className="section-label">The whole wedding</p>
-        <div className="mt-1">
-          <ThreeBars money={total} big />
+      <section className="glass-card mt-6 rounded-[26px] p-5">
+        <p className="type-meta">The whole wedding</p>
+        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+          <span className="type-figure text-[44px] leading-none !font-light">{formatMoney(total.committed)}</span>
+          <span className="text-sm text-stone">
+            {total.budget !== null ? `of ${formatMoney(total.budget)} agreed` : "agreed"}
+          </span>
+        </p>
+        <div className="mt-4">
+          <BudgetBar money={total} thick />
         </div>
+        <dl className="mt-3.5 grid grid-cols-3 gap-2">
+          <div>
+            <dt className="text-xs text-champagne-600">Paid</dt>
+            <dd className="type-figure text-xl !font-light !text-champagne-600">{formatMoney(total.paid)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-stone">To pay</dt>
+            <dd className="type-figure text-xl !font-light">{formatMoney(toPay)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-stone">{free !== null && free < 0 ? "Over" : "Still free"}</dt>
+            <dd className={`type-figure text-xl !font-light ${free !== null && free < 0 ? "!text-[#9A3F2B]" : ""}`}>
+              {free === null ? "—" : free < 0 ? `▲ ${formatMoney(-free)}` : formatMoney(free)}
+            </dd>
+          </div>
+        </dl>
         {total.budget === null && (
           <Link href="/money/budget" className="mt-3 inline-block text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
             Set your budget
@@ -176,11 +189,11 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
       {next && (
         <Link
           href={`/money/payments/${next.id}`}
-          className="row-press mt-6 flex items-center gap-3 border-y border-linen py-3.5"
+          className="glass-card row-press mt-3 flex items-center gap-3 overflow-hidden rounded-[18px] px-4 py-3 [--row-bleed:16px]"
         >
           <span className="min-w-0 flex-1">
             <span className="type-meta block">Next to pay · {formatWeekdayDayMonth(next.due_date!)}</span>
-            <span className="type-item mt-1 block truncate">{next.description}</span>
+            <span className="type-item mt-0.5 block truncate">{next.description}</span>
           </span>
           <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(next.amount)}</span>
           <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
@@ -188,31 +201,27 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
       )}
 
       <section className="mt-9">
-        <div className="flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-2">
+        <div className="text-center">
           <h2 className="section-label">By area</h2>
-          <Link href="/money/budget" className="type-meta !text-champagne-600 hover:!text-ink">
-            {total.budget === null ? "Set budgets ›" : "Change budgets ›"}
-          </Link>
+          <span aria-hidden className="mx-auto mt-2.5 block h-px w-[60px] bg-champagne-400" />
         </div>
-        <ul>
+        <ul className="mt-1">
           {byArea.map((a) => {
-            const empty = a.committed === 0 && a.paid === 0 && a.budget === null;
-            const note = flag(a);
+            const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
+            const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";
+            const ofBudget = a.committed > 0 ? (a.budget !== null ? `of ${formatMoney(a.budget)}` : "") : a.budget !== null ? "budget" : "";
             const body = (
               <>
-                <span className="flex items-baseline justify-between gap-3">
-                  <span className="type-item">{a.label}</span>
-                  {empty ? (
-                    <span className="type-meta">Nothing yet</span>
-                  ) : (
-                    note && <span className={`shrink-0 text-xs font-semibold uppercase tracking-[0.1em] ${note.tone}`}>{note.text}</span>
-                  )}
+                <span className="flex items-baseline">
+                  <span className="type-item min-w-0 truncate">{a.label}</span>
+                  <span aria-hidden className="mx-2 min-w-4 flex-1 -translate-y-[5px] border-b-[1.5px] border-dotted border-stone/35" />
+                  <span className="type-figure shrink-0 text-lg !font-light">{figure}</span>
+                  {ofBudget && <span className="ml-1.5 shrink-0 text-xs text-stone">{ofBudget}</span>}
                 </span>
-                {!empty && (
-                  <span className="mt-1.5 block">
-                    <ThreeBars money={a} />
-                  </span>
-                )}
+                <span className="mt-2.5 block">
+                  <BudgetBar money={a} />
+                </span>
+                <span className={`mt-2 block text-xs font-semibold uppercase tracking-[0.1em] ${note.tone}`}>{note.text}</span>
               </>
             );
             return (
@@ -228,6 +237,11 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
             );
           })}
         </ul>
+        <p className="mt-4 text-center">
+          <Link href="/money/budget" className="type-meta !text-champagne-600 hover:!text-ink">
+            {total.budget === null ? "Set budgets ›" : "Change budgets ›"}
+          </Link>
+        </p>
         <p className="mt-6 text-xs leading-relaxed text-stone">
           Agreed is what you&apos;ve signed up to: booked suppliers&apos; quotes, plus payments that aren&apos;t for a
           supplier. Paid counts deposits recorded on a supplier and payments marked paid — so record a deposit in one

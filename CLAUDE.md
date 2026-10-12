@@ -299,9 +299,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   for the schedule). Money moves **Budget → Agreed → Paid**, and the rest
   has a schedule. A corner switch **By area | By month** (`money-view.tsx`;
   `?view=month`, old `?tab=payments` links still land there). No sentences,
-  figures and bars. **By area** (default, "The budget"): the whole wedding
-  as three thin labelled bars (Budget, Agreed, Paid — `ThreeBars`), the next
-  payment due, then each area with its own three bars and a short tag: "▲
+  figures and bars. **By area** (default, "The budget"; **Round 5, 12 Oct
+  2026**: owner picked the top of option 3 and the list of option 4): the
+  whole wedding on a glass card (agreed of budget large, one thick bar —
+  `BudgetBar` — then Paid · To pay · Still free), the next payment due on a
+  glass row, then each area menu-card style (name, dotted line, agreed "of
+  £budget", one slim bar) with a short tag: "▲
   Over by £…" (agreed bar runs past the budget in rose stripes — never colour
   alone), "✓ All paid", "Not booked yet"; areas with nothing show "Nothing
   yet". **By month** ("Payments"): Paid so far · Still to pay (agreed −

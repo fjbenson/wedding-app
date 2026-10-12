@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronRight, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import PageTitle from "@/components/page-title";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
@@ -430,43 +430,66 @@ const initials = (name: string) =>
     .map((w) => w[0]!.toUpperCase())
     .join("");
 
+/**
+ * One supplier, like a phone book entry (canvas 2 "Suppliers · Round 2", A,
+ * owner's pick 12 Oct 2026): initials with the stage as a badge on them
+ * (as a guest's role star sits on theirs), the business and who to ask
+ * for, then round Call and Email buttons — the quote and the rest are one
+ * tap away on the card. A missing number or email leaves its space empty,
+ * so the buttons line up down the list.
+ */
 function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: () => void }) {
   const st = stage(supplier);
   const name = supplierName(supplier);
-  const quote = supplier.supplier_details?.quoted_cost;
+  const phone = supplier.phone?.replace(/\s+/g, "");
   const notTaken = st === "cancelled";
+  const action = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
   return (
-    <button type="button" onClick={onOpen} className="flex min-h-[58px] w-full items-center gap-3 py-1.5 text-left">
-      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
-        {initials(name)}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className={`type-item block break-words text-lg ${notTaken ? "!text-stone line-through" : ""}`}>{name}</span>
-        {supplierContact(supplier) && <span className="mt-0.5 block truncate text-[13px] text-stone">{supplierContact(supplier)}</span>}
-      </span>
-      {quote != null && (
-        <span className={`type-figure shrink-0 text-[17px] !font-light ${notTaken ? "!text-stone" : st === "booked" ? "" : "!text-champagne-600"}`}>
-          {formatMoney(quote)}
+    <div className="flex min-h-[62px] items-center gap-2">
+      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left">
+        <span aria-hidden className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
+          {initials(name)}
+          <span className="absolute -bottom-1 -right-1.5">
+            <StageIcon status={st} badge />
+          </span>
         </span>
+        <span className="min-w-0 flex-1">
+          <span className={`type-item block break-words text-lg ${notTaken ? "!text-stone line-through" : ""}`}>{name}</span>
+          {supplierContact(supplier) && <span className="mt-0.5 block truncate text-[13px] text-stone">{supplierContact(supplier)}</span>}
+          <span className="sr-only">, {supplierStatusLabel(st)}</span>
+        </span>
+      </button>
+      {phone ? (
+        <a href={`tel:${phone}`} aria-label={`Call ${name}`} className={action}>
+          <Phone className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
+        </a>
+      ) : (
+        <span className="w-11 shrink-0" aria-hidden />
       )}
-      <StageIcon status={st} />
-      <span className="sr-only">{supplierStatusLabel(st)}</span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-    </button>
+      {supplier.email ? (
+        <a href={`mailto:${supplier.email}`} aria-label={`Email ${name}`} className={action}>
+          <Mail className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
+        </a>
+      ) : (
+        <span className="w-11 shrink-0" aria-hidden />
+      )}
+    </div>
   );
 }
 
 /** Booked ✓ on ink · Quote in £ on champagne · Asked a dashed ? · Not taken ✕ on grey. */
-export function StageIcon({ status, small = false }: { status: SupplierStatus; small?: boolean }) {
+export function StageIcon({ status, small = false, badge = false }: { status: SupplierStatus; small?: boolean; badge?: boolean }) {
   const look: Record<string, { ring: string; mark: React.ReactNode }> = {
     booked: { ring: "bg-ink text-ivory", mark: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
     quoted: { ring: "bg-champagne-100 text-champagne-600 font-display", mark: "£" },
-    enquired: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-600 font-display", mark: "?" },
+    enquired: { ring: "border-[1.5px] border-dashed border-champagne-400 bg-ivory text-champagne-600 font-display", mark: "?" },
     cancelled: { ring: "bg-[#EEE9E1] text-[#8A837B]", mark: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
   };
   const l = look[status] ?? look.enquired;
   return (
-    <span aria-hidden className={`flex shrink-0 items-center justify-center rounded-full leading-none ${l.ring} ${small ? "h-5 w-5 text-[12px]" : "h-[30px] w-[30px] text-[16px]"}`}>
+    <span aria-hidden className={`flex shrink-0 items-center justify-center rounded-full leading-none ${l.ring} ${
+        badge ? "h-[19px] w-[19px] text-[10px] shadow-[0_0_0_2px_#FBF9F5]" : small ? "h-5 w-5 text-[12px]" : "h-[30px] w-[30px] text-[16px]"
+      }`}>
       {l.mark}
     </span>
   );

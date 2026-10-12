@@ -170,9 +170,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Booked stays on the count card), "+ Add a supplier",
   then everyone **grouped by area** in the wedding's order (heading shows a
   count, "1 supplier" / "0 suppliers", like the guest list; within a group booked → quotes → asked →
-  not taken). Rows: initials, business, contact person, quote, a stage icon
-  (✓ ink booked · £ champagne quote in · dashed ? asked · ✕ grey not taken)
-  and a key under the list. Tapping one opens the **supplier card**
+  not taken). **Rows are phone-book entries** (Suppliers round 2, A, 12 Oct
+  2026): initials with the **stage as a badge** on them (✓ ink booked · £
+  champagne quote in · dashed ? asked · ✕ grey not taken — `StageIcon`
+  with `badge`, like a guest's role star), the business and the contact
+  person, then round **Call** and **Email** buttons on the right (an empty
+  space when missing, so they line up); no quote on the row. A key under
+  the list. Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card),
   **edited in place**: area link, business name (tap to rename), Call ·
   Email, **Where you're up to** slider, Money (Quote and Deposit paid tap
@@ -641,8 +645,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    badge on the initials (like the guests' role star), round Call and Email
    buttons on every row (hidden when missing), key underneath; B A to Z with
    letter headings, the area in gold italic beside each name and a letter
-   index; C like A but the stage as a word under the name. **Waiting on the
-   owner's pick.**
+   index; C like A but the stage as a word under the name. **Picked and
+   built 12 Oct 2026: A, trimmed** — owner: the list needn't show the quote
+   or number, just quick Call / Email and the stage.
    **11 Oct 2026:** The Day's run sheet settled and built (option D, see
    "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
    look": A ledger, B menu card, C champagne glass — owner loved all three)

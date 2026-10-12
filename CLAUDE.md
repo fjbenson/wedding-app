@@ -313,12 +313,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   for rules; no bar at all when there's no budget or spend) with a short tag: "▲
   Over by £…" (agreed bar runs past the budget in rose stripes — never colour
   alone), "✓ All paid", "Not booked yet"; areas with nothing show "Nothing
-  yet". **By month** ("Payments"): Paid so far · Still to pay (agreed −
-  paid), Add a payment, a **column per month** from now to the wedding
-  (first column = paid so far, dark; due months light; overdue counts in
-  this month; scrolls sideways if long), then "Not scheduled yet" balances,
-  the payments grouped by month with totals (tick £ to mark paid), No date
-  yet, and Paid folded at the foot. "Agreed" is the UI word for what
+  yet". **By month** ("Payments"; **Round 6, option D, owner's pick 12 Oct
+  2026**): a glass card with Still to pay (large) · Paid so far and the
+  **column per month** from now to the wedding inside it (first column =
+  paid so far, dark; due months light; overdue counts in this month;
+  scrolls sideways if long); then "What's due" with a round black + (add a
+  payment); then a **glass card per month** ("October *2026*", total, "2
+  payments") listing its payments (tick £ to mark paid); then a dashed **No
+  date yet** card holding undated payments and unscheduled supplier
+  balances (faded rows, tap to add with a date); Paid folded at the foot. "Agreed" is the UI word for what
   `src/lib/budget.ts` calls committed (committed = booked suppliers' quotes
   + payments not for a supplier; paid = supplier deposits + payments marked
   paid; area pages use it too). A laptop table view is for the laptop

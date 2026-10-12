@@ -16,8 +16,8 @@ import { markPaidAction } from "./actions";
  *
  * - By area (the default): where is the money going? The whole wedding on a
  *   glass card, then each area menu-card style with one slim bar (Round 5).
- * - By month: when do we pay? A column per month to the wedding, then the
- *   payments grouped by month, ticked off in place.
+ * - By month: when do we pay? A column per month to the wedding on a glass
+ *   card, then a glass card per month listing its payments (Round 6, D).
  *
  * No sentences — figures and bars. "Agreed" is what src/lib/budget.ts calls
  * committed. Going over budget is never shown by colour alone: the bar runs
@@ -344,75 +344,109 @@ function ByMonth({
     );
   };
 
+  const count = (n: number) => (n === 1 ? "1 payment" : `${n} payments`);
+  const cardTitle = (key: string) => {
+    const [month, year] = formatMonthYear(`${key}-01`).split(" ");
+    return (
+      <>
+        {month} <span className="italic text-champagne-600">{year}</span>
+      </>
+    );
+  };
+  const noDateTotal = sum(undated) + balances.reduce((s, b) => s + b.balance, 0);
+
   return (
     <>
-      <dl className="mt-6 grid grid-cols-2 gap-3">
-        <div>
-          <dt className="type-meta !text-champagne-600">Paid so far</dt>
-          <dd className="type-figure mt-1 text-[28px] !font-light text-champagne-600">{formatMoney(total.paid)}</dd>
+      {/* Canvas 2 "Money · Round 6", option D (owner's pick 12 Oct 2026): the
+          chart on a glass card, then a glass card per month listing its payments. */}
+      <section className="glass-card mt-6 rounded-[26px] px-[18px] pb-4 pt-5" aria-label="Month by month">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="type-meta">Still to pay</p>
+            <p className="type-figure mt-1.5 text-[40px] leading-none !font-light">{formatMoney(stillToPay)}</p>
+          </div>
+          <div className="text-right">
+            <p className="type-meta !text-champagne-600">Paid so far</p>
+            <p className="type-figure mt-1.5 text-[22px] !font-light !text-champagne-600">{formatMoney(total.paid)}</p>
+          </div>
         </div>
-        <div>
-          <dt className="type-meta">Still to pay</dt>
-          <dd className="type-figure mt-1 text-[28px] !font-light">{formatMoney(stillToPay)}</dd>
-        </div>
-      </dl>
-
-      <Link
-        href="/money/payments/new"
-        className="mt-5 flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-sm text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Add a payment
-      </Link>
-
-      <section className="mt-8" aria-label="Month by month">
-        <p className="flex items-baseline justify-between gap-3">
-          <span className="section-label">Month by month</span>
-          {weddingMonth && <span className="text-xs text-stone">to the wedding, {formatMonthYear(`${weddingMonth}-01`)}</span>}
-        </p>
-        <div className="mt-3 overflow-x-auto pb-1">
-          <div className="flex h-[170px] min-w-full items-end gap-1 border-b border-stone/30" style={{ width: `max(100%, ${columns.length * 34}px)` }}>
+        <div className="mt-5 overflow-x-auto pb-1">
+          <div className="flex h-[140px] min-w-full items-end gap-1 border-b border-stone/30" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
             {columns.map((c) => (
-              <div key={c.key} title={c.title} aria-label={c.title} role="img" className="flex h-full min-w-[30px] flex-1 flex-col items-center justify-end">
-                {c.amount > 0 && <span className="mb-1 whitespace-nowrap text-xs tabular-nums text-ink/80">{shortMoney(c.amount)}</span>}
+              <div key={c.key} title={c.title} aria-label={c.title} role="img" className="flex h-full min-w-[26px] flex-1 flex-col items-center justify-end">
+                {c.amount > 0 && <span className="mb-1 whitespace-nowrap text-[11px] tabular-nums text-ink/80">{shortMoney(c.amount)}</span>}
                 <span
-                  className={`w-full max-w-[26px] rounded-t ${c.paid ? PAID_BAR : AGREED_BAR}`}
-                  style={{ height: c.amount ? `${Math.max(4, Math.round((c.amount / peak) * 130))}px` : 0 }}
+                  className={`w-full max-w-[20px] rounded-t ${c.paid ? PAID_BAR : AGREED_BAR}`}
+                  style={{ height: c.amount ? `${Math.max(4, Math.round((c.amount / peak) * 108))}px` : 0 }}
                 />
               </div>
             ))}
           </div>
-          <div className="mt-1.5 flex gap-1" style={{ width: `max(100%, ${columns.length * 34}px)` }}>
+          <div className="mt-1.5 flex gap-1" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
             {columns.map((c) => (
               <span
                 key={c.key}
-                className={`min-w-[30px] flex-1 text-center text-xs ${c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"}`}
+                className={`min-w-[26px] flex-1 text-center text-[11px] ${
+                  c.paid || c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"
+                }`}
               >
                 {c.label}
               </span>
             ))}
           </div>
         </div>
-        <p className="mt-3 flex gap-4 text-xs text-stone" aria-hidden>
-          <span className="flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-sm ${PAID_BAR}`} />Paid</span>
-          <span className="flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-sm ${AGREED_BAR}`} />Due</span>
+        <p className="mt-3 flex items-center gap-4 text-xs text-stone">
+          <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${PAID_BAR}`} />Paid</span>
+          <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${AGREED_BAR}`} />Due</span>
+          {weddingMonth && <span className="ml-auto text-champagne-600">Wedding · {shortMonth(weddingMonth)}</span>}
         </p>
       </section>
 
-      {balances.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-dashed border-champagne-400 p-5">
-          <h2 className="section-label">Not scheduled yet</h2>
-          <ul className="mt-2">
+      <div className="mt-8 flex items-center justify-between gap-3">
+        <h2 className="section-label">What&apos;s due</h2>
+        <Link
+          href="/money/payments/new"
+          aria-label="Add a payment"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-ivory transition hover:bg-ink/90"
+        >
+          <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        </Link>
+      </div>
+
+      {[...byMonth.entries()].map(([key, list]) => (
+        <section key={key} className="glass-card mt-3 overflow-hidden rounded-[22px] px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="font-display text-[22px] font-light leading-tight text-ink">{cardTitle(key)}</h3>
+            <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(sum(list))}</span>
+          </div>
+          <p className="type-meta mt-0.5">{count(list.length)}</p>
+          <ul className="mt-1 border-t border-linen/80">{list.map(row)}</ul>
+        </section>
+      ))}
+
+      {(undated.length > 0 || balances.length > 0) && (
+        <section className="mt-3 overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-stone/30 px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="font-display text-[22px] font-light italic leading-tight text-ink/80">No date yet</h3>
+            <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(noDateTotal)}</span>
+          </div>
+          <p className="type-meta mt-0.5">Tap one to pick a date</p>
+          <ul className="mt-1 border-t border-linen/80">
+            {undated.map(row)}
             {balances.map((b) => (
-              <li key={b.supplierId} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
-                <span className="text-[15px] text-ink">
-                  {b.name} <span className="text-stone">· {formatMoney(b.balance)} balance</span>
-                </span>
+              <li key={b.supplierId} className="row-press border-b border-linen last:border-b-0">
                 <Link
                   href={`/money/payments/new?supplier=${b.supplierId}&amount=${b.balance}`}
-                  className="text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
+                  className="flex items-center gap-3.5 py-3"
                 >
-                  Add as a payment
+                  <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-dashed border-champagne-400 text-champagne-600">
+                    <Plus className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="type-item block truncate italic !text-stone">{b.name}</span>
+                    <span className="type-meta mt-1 block">Balance · pick a date</span>
+                  </span>
+                  <span className="type-figure shrink-0 text-lg !font-light !text-stone">{formatMoney(b.balance)}</span>
                 </Link>
               </li>
             ))}
@@ -420,37 +454,18 @@ function ByMonth({
         </section>
       )}
 
-      {[...byMonth.entries()].map(([key, list]) => (
-        <section key={key} className="mt-7">
-          <p className="flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-            <span className="section-label">{formatMonthYear(`${key}-01`)}</span>
-            <span className="type-figure text-base !font-light">{formatMoney(sum(list))}</span>
-          </p>
-          <ul>{list.map(row)}</ul>
-        </section>
-      ))}
-
-      {undated.length > 0 && (
-        <section className="mt-7">
-          <p className="flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-            <span className="section-label">No date yet</span>
-            <span className="type-figure text-base !font-light">{formatMoney(sum(undated))}</span>
-          </p>
-          <ul>{undated.map(row)}</ul>
-        </section>
-      )}
-
       {due.length === 0 && balances.length === 0 && (
-        <p className="mt-8 text-[15px] text-stone">Nothing to pay right now. Balances, the rings, the licence — anything with a due date shows here.</p>
+        <p className="mt-4 text-[15px] text-stone">Nothing to pay right now. Balances, the rings, the licence — anything with a due date shows here.</p>
       )}
 
       {paid.length > 0 && (
-        <details className="mt-9 border-t border-linen pt-3">
-          <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 py-1">
+        <details className="mt-7 px-1">
+          <summary className="flex cursor-pointer list-none items-baseline gap-2 py-1">
             <span className="section-label !text-stone">Paid · {paid.length}</span>
-            <span className="type-figure text-base !font-light">{formatMoney(sum(paid))}</span>
+            <span aria-hidden className="min-w-4 flex-1 -translate-y-[4px] border-b-[1.5px] border-dotted border-stone/35" />
+            <span className="type-figure text-base !font-light !text-stone">{formatMoney(sum(paid))}</span>
           </summary>
-          <ul className="mt-1">{paid.map(row)}</ul>
+          <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-[18px] [--row-bleed:18px]">{paid.map(row)}</ul>
         </details>
       )}
     </>

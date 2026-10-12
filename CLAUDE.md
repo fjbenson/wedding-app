@@ -547,8 +547,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (10 Oct: calendar, list and By area). **Each tab gets its
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
-   spent-vs-budget shape (to design) · The Day hour-by-hour line. **Next
-   up: Money's signature on the canvas, then People's other screens.**
+   spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
+   up (12 Oct 2026): People's other screens** (suppliers, household, add a
+   guest) — Plan, Money and The Day's run sheet are now settled.
    **11 Oct 2026:** The Day's run sheet settled and built (option D, see
    "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
    look": A ledger, B menu card, C champagne glass — owner loved all three)
@@ -620,6 +621,24 @@ additive — new tables hanging off `weddings`. None require changing the above.
   made for it (none found in the history), so if it comes back: likely an
   iPhone repaint lag behind the glass blur; try giving the bar its own
   layer (`transform: translateZ(0)` / `will-change`) in `menu-bar.tsx`.
+
+### Small fixes, 11–12 Oct 2026 (kept for reference)
+
+- **Date boxes:** iPhone Safari gave them their own minimum width so they
+  poked out of cards — fixed for every date box in `globals.css`. Empty
+  ones say "Pick a date" (`DateInput` in `form-bits.tsx`), every one has a
+  small calendar icon, and the to-do date box has its own title that
+  follows the switch ("The date it's due" / "Roughly when to start",
+  `WHEN_TITLE` in `src/lib/plan.ts`).
+- **Tapping a row:** the iPhone's grey tap box is switched off app-wide;
+  rows you open shade **edge to edge** while pressed (`.row-press` in
+  `globals.css`; inside a card set `[--row-bleed:<card padding>]` and
+  `overflow-hidden`). Hover looks only show on devices with a mouse
+  (`hoverOnlyWhenSupported`), so nothing stays stuck after a tap.
+- **App Store question** (owner asked, 11 Oct): staying a web app is right
+  for now; if it goes to the App Store, wrap it with Capacitor and add
+  phone-only extras (lock-screen reminders, camera) so Apple accepts it.
+  React Native would only be worth it much later.
 
 ### Backlog (ideas parked by the owner)
 

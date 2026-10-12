@@ -69,7 +69,8 @@ like one thing while each screen has its own face.
 | Hub | The ring of areas | Done (7 Oct) |
 | People | The big dark count card, and initials on every row | Done for the guest list (8–9 Oct) |
 | Plan | The month calendar (what Plan opens on; the other view is a List of to-dos, a glass card per month) | Done (10–11 Oct) |
-| Money | Not a picture as such — a signature *look*. Candidates on canvas 2: a champagne glass that fills (paid, booked, still free), a ledger, a menu card with dotted lines; round 2 puts a calm top layer first and every number one tap away | Two rounds on the canvas, waiting on the owner's pick |
+| Money | Three thin bars — **Budget · Agreed · Paid** — for the whole wedding and for each area (By area), and a column per month to the wedding (By month). Figures and bars, no sentences. Over budget = the agreed bar runs on in rose stripes plus "▲ Over by £…", never colour alone. Bars: budget `stone/25`, agreed `champagne-400/50`, paid `champagne-600` (canvas 2 "Money · Round 4", B + C) | Done (12 Oct) |
+| Plan, day card | Tapping a day on the calendar brings up a card (sheet on phones, panel on laptops) with that day and "Add on this day"; the month is listed under the grid, each row carrying its date | Done (11 Oct) |
 | The Day | The run sheet as the order of the day: a white card with a gold border, the couple and date, the day in parts, the time on the left and a gold thread with a dot per moment, Now on the day (canvas 2 option D, 11 Oct 2026); the floor plan for seating | Run sheet done (11 Oct) |
 
 When designing a screen: find its tab's signature and make it the first

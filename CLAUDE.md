@@ -279,7 +279,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a mark per thing
   on each day (to-do a solid white circle, appointment a little gold
-  calendar, done grey; up to two then "+1"; **no payments** —
+  calendar, done things no mark; up to two then "+1"; **no payments** —
   owner, 12 Oct 2026: Plan is what you do or go to, Money is what you pay,
   and Money's By month is the payments' calendar),
   today softly circled, the wedding in a gold ring; tap a day for its card (below).
@@ -733,7 +733,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
    spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Calendar marks picked and built
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
-   little gold calendar, done a grey dot; two per day then "+1" (`Mark` in
+   little gold calendar, done things no mark; two per day then "+1" (`Mark` in
    `calendar.tsx`). Next up: **The Day's Seating
    and Transport, then capture.** Plan, People, Money (rounds 5 and 6), The
    Day's run sheet and the to-do / appointment / payment forms are settled.

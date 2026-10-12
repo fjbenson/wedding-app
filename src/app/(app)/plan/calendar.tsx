@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
-export type Dot = "todo" | "appointment" | "done";
+export type Dot = "todo" | "appointment";
 
 /** "2026-10" → "2026-11" (or back, with -1). */
 function shiftMonth(key: string, by: 1 | -1): string {
@@ -22,18 +22,15 @@ const pad = (n: number) => String(n).padStart(2, "0");
 /**
  * A day's marks (owner's pick, 12 Oct 2026, canvas 2 "Plan · Calendar · The
  * to-do mark"): a to-do is a solid white circle — the list's tick circle,
- * filled — an appointment the little gold calendar, done a grey dot.
+ * filled — an appointment the little gold calendar. Done things get no
+ * mark (owner, 12 Oct 2026).
  */
 function Mark({ kind }: { kind: Dot }) {
   if (kind === "appointment") {
     return <Calendar className="h-3 w-3 text-champagne-600" strokeWidth={2.2} />;
   }
   return (
-    <span
-      className={`h-2.5 w-2.5 rounded-full ${
-        kind === "todo" ? "border border-stone/50 bg-white" : "bg-linen"
-      }`}
-    />
+<span className="h-2.5 w-2.5 rounded-full border border-stone/50 bg-white" />
   );
 }
 
@@ -200,7 +197,6 @@ export default function PlanCalendar({
           [
             ["todo", "To-do"],
             ["appointment", "Appointment"],
-            ["done", "Done"],
           ] as const
         ).map(([dot, label]) => (
           <span key={dot} className="flex items-center gap-1.5">

@@ -142,7 +142,8 @@ export default function Agenda({
     if (!e.date) continue;
     if (nudge(e)) continue;
     (byDay[e.date] ??= []).push(e);
-    (dots[e.date] ??= []).push(isDone(e) ? "done" : e.kind);
+    // Done things stay in the day's card and the list, but get no mark.
+    if (!isDone(e)) (dots[e.date] ??= []).push(e.kind);
   }
   const dayPanels = Object.fromEntries(
     Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),

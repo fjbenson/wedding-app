@@ -38,7 +38,7 @@ export default async function HomePage() {
   // Empty: made before setup had an areas step, so send them to finish it.
   // null: the database hasn't got the areas table yet, so show the starter set.
   if (areas && areas.length === 0) redirect("/setup");
-  const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS;
+  const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
 
   // Under the ring (canvas 2, "Home · Under the ring", option B): your
   // notes, then what's coming up, then Inspo.

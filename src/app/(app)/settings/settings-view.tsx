@@ -102,7 +102,7 @@ export default function SettingsView({
         ) : (
           <ul className="mt-3">
             {areas.map((area, index) => {
-              const Icon = areaIcon(area.key);
+              const Icon = areaIcon(area.key, area.icon);
               return (
                 <li key={area.id} className="border-b border-linen py-3 last:border-b-0">
                   <div className="flex items-center gap-3">

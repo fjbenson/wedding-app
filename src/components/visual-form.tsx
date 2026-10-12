@@ -111,7 +111,7 @@ export function Tiles({
 /** The wedding's areas as tiles, ending with Other (stored as `otherValue`). */
 export function areaTiles(areas: AreaOption[], otherValue: string) {
   return [
-    ...areas.filter((a) => a.key !== "other").map((a) => ({ value: a.key, label: a.label, icon: areaIcon(a.key) })),
+    ...areas.filter((a) => a.key !== "other").map((a) => ({ value: a.key, label: a.label, icon: areaIcon(a.key, a.icon) })),
     { value: otherValue, label: "Other", icon: MoreHorizontal },
   ];
 }

@@ -60,18 +60,28 @@ export async function getArea(weddingId: string, key: string): Promise<AreaRow |
   return data;
 }
 
+/** True when the error means `areas.icon` isn't there yet (0016 not run). */
+export function missingIcon(error: { code?: string; message?: string }) {
+  return (error.code === "PGRST204" || error.code === "42703") && /icon/.test(error.message ?? "");
+}
+
 /** Changes an area's key facts, name, or whether it's planned / on the hub. */
 export async function updateArea(
   areaId: string,
-  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub" | "diy" | "ready">>,
+  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub" | "diy" | "ready" | "icon" | "budget">>,
 ): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("areas").update(fields).eq("id", areaId);
   if (error) throw error;
 }
 
-/** Adds an area of the couple's own at the end of the ring. */
-export async function addArea(weddingId: string, key: string, label: string): Promise<void> {
+/** Adds an area of the couple's own at the end of the ring, with its icon and budget if given. */
+export async function addArea(
+  weddingId: string,
+  key: string,
+  label: string,
+  extra: { icon?: string | null; budget?: number | null } = {},
+): Promise<void> {
   const supabase = await createClient();
   const { data: last } = await supabase
     .from("areas")
@@ -81,15 +91,21 @@ export async function addArea(weddingId: string, key: string, label: string): Pr
     .limit(1)
     .maybeSingle();
 
-  const { error } = await supabase.from("areas").insert({
+  const row: Record<string, unknown> = {
     wedding_id: weddingId,
     key,
     label,
     enabled: true,
     show_on_hub: true,
     sort_order: (last?.sort_order ?? 0) + 1,
-  });
-  if (error) throw error;
+    ...(extra.budget != null ? { budget: extra.budget } : {}),
+  };
+  const { error } = await supabase.from("areas").insert(extra.icon ? { ...row, icon: extra.icon } : row);
+  // Before 0016_area_icon.sql there's no icon column: add it without one.
+  if (error && extra.icon && missingIcon(error)) {
+    const { error: again } = await supabase.from("areas").insert(row);
+    if (again) throw again;
+  } else if (error) throw error;
 }
 
 /** Puts the areas in this order — the order of the ring and every list. */

@@ -5,6 +5,7 @@ import { areaIcon } from "@/lib/areas";
 export interface HubArea {
   key: string;
   label: string;
+  icon?: string | null;
 }
 import { daysUntil } from "@/lib/dates";
 
@@ -77,7 +78,7 @@ export default function Hub({
 
       {/* Each button opens its area's page (screen 5). */}
       {areas.map((area, index) => {
-        const Icon = areaIcon(area.key);
+        const Icon = areaIcon(area.key, area.icon);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label}>
             <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">

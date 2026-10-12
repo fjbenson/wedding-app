@@ -12,19 +12,26 @@ import {
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
+import { iconByName } from "./area-icons";
 
 /** An area as the rest of the app needs it: its stable key and its name. */
 export interface AreaOption {
   key: string;
   label: string;
+  /** Its own icon's name (src/lib/area-icons.ts), if it has one. */
+  icon?: string | null;
 }
 
 /**
  * A wedding's areas to offer and group by: its own switched-on `areas` rows,
  * or the starter set if the database has no areas table yet (listAreas → null).
  */
-export function areaOptions(rows: { key: string; label: string; enabled: boolean }[] | null): AreaOption[] {
-  return rows ? rows.filter((r) => r.enabled) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
+export function areaOptions(
+  rows: { key: string; label: string; enabled: boolean; icon?: string | null }[] | null,
+): AreaOption[] {
+  return rows
+    ? rows.filter((r) => r.enabled).map(({ key, label, icon }) => ({ key, label, icon }))
+    : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
 }
 
 /**
@@ -69,8 +76,9 @@ export const STARTER_AREAS: { key: string; label: string; icon: LucideIcon }[] =
   { key: "transport", label: "Transport", icon: Car },
 ];
 
-export function areaIcon(key: string): LucideIcon {
-  return STARTER_AREAS.find((a) => a.key === key)?.icon ?? Sparkles;
+/** An area's icon: the one it was given, else its starter icon, else a sparkle. */
+export function areaIcon(key: string, icon?: string | null): LucideIcon {
+  return iconByName(icon) ?? STARTER_AREAS.find((a) => a.key === key)?.icon ?? Sparkles;
 }
 
 /** "Fireworks!" → "fireworks", "Hair & makeup" → "hair-makeup". */

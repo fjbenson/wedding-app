@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { guessIcon, iconByName } from "@/lib/area-icons";
 import { areaKey } from "@/lib/areas";
-import { addArea, getArea, updateArea } from "@/lib/db/areas";
+import { addArea, getArea, missingIcon, updateArea } from "@/lib/db/areas";
+import { parseMoney } from "@/lib/money";
 import { createNote, deleteNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
@@ -77,7 +79,8 @@ export async function quickAddAreaAction(name: string): Promise<{ key?: string; 
     if (key === "other") return { error: "Other is already there." };
     const existing = await getArea(wedding.id, key);
     if (existing) await updateArea(existing.id, { enabled: true, show_on_hub: true });
-    else await addArea(wedding.id, key, label);
+    // Its icon is a first guess from the name; it can be changed on its page.
+    else await addArea(wedding.id, key, label, { icon: guessIcon(label) });
     refresh(key);
     return { key, label: existing?.label ?? label };
   } catch (error) {
@@ -86,25 +89,42 @@ export async function quickAddAreaAction(name: string): Promise<{ key?: string; 
   }
 }
 
-/** The + on the ring: a new area of the couple's own, or an old one back. */
+/**
+ * The + on the ring (screen 7), in three steps (owner, 12 Oct 2026): a name,
+ * an icon, a budget (or none). An area with that name already — switched off
+ * or taken off the hub — comes back instead, with the new icon and budget.
+ * Then its own page.
+ */
 export async function addAreaAction(formData: FormData) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const label = String(formData.get("label") ?? "").trim();
+  const label = String(formData.get("label") ?? "").trim().slice(0, 40);
   // "new" is this page's own address, so an area can't be called that.
   const key = areaKey(label) === "new" ? "new-area" : areaKey(label);
-  if (!key) redirect(`/area/new?error=${encodeURIComponent("Please give the area a name.")}`);
+  if (!key || key === "other") {
+    redirect(`/area/new?error=${encodeURIComponent(key ? "Other is already there — pick another name." : "Please give the area a name.")}`);
+  }
+  const chosen = String(formData.get("icon") ?? "");
+  const icon = iconByName(chosen) ? chosen : guessIcon(label);
+  const budget = formData.get("skip") ? null : parseMoney(formData.get("budget"));
 
   try {
     const existing = await getArea(wedding.id, key);
-    if (existing) await updateArea(existing.id, { enabled: true, show_on_hub: true });
-    else await addArea(wedding.id, key, label);
+    if (existing) {
+      await updateArea(existing.id, { enabled: true, show_on_hub: true, ...(budget !== null ? { budget } : {}) });
+      try {
+        await updateArea(existing.id, { icon });
+      } catch (error) {
+        if (!missingIcon(error as { code?: string })) throw error;
+      }
+    } else await addArea(wedding.id, key, label, { icon, budget });
   } catch (error) {
     failed("/area/new", "That didn't add it.", error);
   }
 
   refresh(key);
+  revalidatePath("/money");
   redirect(`/area/${key}`);
 }
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import AddButton from "@/components/add-button";
-import { Check, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import AreaFilter from "../plan/area-filter";
@@ -46,8 +46,11 @@ export default function MoneyView({
   area,
   scope,
   open,
+  month,
 }: {
   view: "area" | "month";
+  /** By month: the bar tapped (`?month=2026-10`, or `paid`), narrowing the list to it. */
+  month: string | null;
   /** The wedding's areas, for the filter. */
   areas: AreaOption[];
   /** The area filter (`?area=`): an area's key, `none` for Other, or null for everything. */
@@ -105,7 +108,15 @@ export default function MoneyView({
       {view === "area" ? (
         <ByArea total={total} byArea={byArea} scope={scope} open={open} />
       ) : (
-        <ByMonth total={total} payments={payments} suppliers={suppliers} balances={balances} weddingDate={weddingDate} />
+        <ByMonth
+          total={total}
+          payments={payments}
+          suppliers={suppliers}
+          balances={balances}
+          weddingDate={weddingDate}
+          picked={month}
+          base={area ? `/money?view=month&area=${encodeURIComponent(area)}` : "/money?view=month"}
+        />
       )}
     </main>
   );
@@ -189,12 +200,17 @@ function ByMonth({
   suppliers,
   balances,
   weddingDate,
+  picked,
+  base,
 }: {
   total: Money;
   payments: Payment[];
   suppliers: { id: string; name: string }[];
   balances: { supplierId: string; name: string; balance: number }[];
   weddingDate: string | null;
+  picked: string | null;
+  /** This view's address without a month, keeping the area filter. */
+  base: string;
 }) {
   const today = todayISO();
   const thisMonth = monthKey(today);
@@ -223,6 +239,10 @@ function ByMonth({
     }),
   ];
   const weddingMonth = weddingDate && monthKey(weddingDate);
+  // Tapping a column narrows the list to it; tapping it again shows everything.
+  const chosen = picked && columns.some((c) => c.key === picked) ? picked : null;
+  const columnHref = (key: string) => (key === chosen ? base : `${base}&month=${key}`);
+  const shownMonths = [...byMonth.entries()].filter(([key]) => !chosen || key === chosen);
 
   const row = (p: Payment) => {
     const who = suppliers.find((s) => s.id === p.contact_id)?.name;
@@ -285,13 +305,24 @@ function ByMonth({
         <div className="mt-5 overflow-x-auto pb-1">
           <div className="flex h-[140px] min-w-full items-end gap-1 border-b border-stone/30" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
             {columns.map((c) => (
-              <div key={c.key} title={c.title} aria-label={c.title} role="img" className="flex h-full min-w-[26px] flex-1 flex-col items-center justify-end">
+              <Link
+                key={c.key}
+                href={columnHref(c.key)}
+                replace
+                scroll={false}
+                title={c.title}
+                aria-label={c.key === chosen ? `${c.title} — show every month` : `${c.title} — show just this`}
+                aria-current={c.key === chosen ? "true" : undefined}
+                className={`flex h-full min-w-[26px] flex-1 flex-col items-center justify-end transition-opacity ${
+                  chosen && c.key !== chosen ? "opacity-35" : ""
+                }`}
+              >
                 {c.amount > 0 && <span className="mb-1 whitespace-nowrap text-[11px] tabular-nums text-ink/80">{shortMoney(c.amount)}</span>}
                 <span
                   className={`w-full max-w-[20px] rounded-t ${c.paid ? PAID_BAR : AGREED_BAR}`}
                   style={{ height: c.amount ? `${Math.max(4, Math.round((c.amount / peak) * 108))}px` : 0 }}
                 />
-              </div>
+              </Link>
             ))}
           </div>
           <div className="mt-1.5 flex gap-1" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
@@ -299,8 +330,9 @@ function ByMonth({
               <span
                 key={c.key}
                 className={`min-w-[26px] flex-1 text-center text-[11px] ${
-                  c.paid || c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"
-                }`}
+                  c.key === chosen ? "font-semibold text-ink underline decoration-champagne-400 decoration-2 underline-offset-4"
+                  : c.paid || c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"
+                } ${chosen && c.key !== chosen ? "opacity-50" : ""}`}
               >
                 {c.label}
               </span>
@@ -315,11 +347,32 @@ function ByMonth({
       </section>
 
       <div className="mt-8 flex items-center justify-between gap-3">
-        <h2 className="section-label">What&apos;s due</h2>
+        <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
         <AddButton href="/money/payments/new" label="Add a payment" />
       </div>
+      {chosen && (
+        <Link
+          href={base}
+          replace
+          scroll={false}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-champagne-100 py-1.5 pl-3.5 pr-2.5 text-sm text-ink"
+        >
+          {chosen === "paid" ? "Just what's paid" : `Just ${formatMonthYear(`${chosen}-01`)}`}
+          <X className="h-3.5 w-3.5 text-stone" strokeWidth={2} aria-label="Show every month" />
+        </Link>
+      )}
 
-      {[...byMonth.entries()].map(([key, list]) => (
+      {chosen === "paid" &&
+        (paid.length > 0 ? (
+          <ul className="glass-card mt-3 overflow-hidden rounded-[22px] px-[18px] [--row-bleed:18px]">{paid.map(row)}</ul>
+        ) : (
+          <p className="mt-4 text-[15px] text-stone">Nothing paid yet.</p>
+        ))}
+      {chosen && chosen !== "paid" && shownMonths.length === 0 && (
+        <p className="mt-4 text-[15px] text-stone">Nothing due in {formatMonthYear(`${chosen}-01`)}.</p>
+      )}
+
+      {shownMonths.map(([key, list]) => (
         <section key={key} className="glass-card mt-3 overflow-hidden rounded-[22px] px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="font-display text-[22px] font-light leading-tight text-ink">{cardTitle(key)}</h3>
@@ -330,7 +383,7 @@ function ByMonth({
         </section>
       ))}
 
-      {(undated.length > 0 || balances.length > 0) && (
+      {!chosen && (undated.length > 0 || balances.length > 0) && (
         <section className="mt-3 overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-stone/30 px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="font-display text-[22px] font-light italic leading-tight text-ink/80">No date yet</h3>
@@ -360,11 +413,11 @@ function ByMonth({
         </section>
       )}
 
-      {due.length === 0 && balances.length === 0 && (
+      {!chosen && due.length === 0 && balances.length === 0 && (
         <p className="mt-4 text-[15px] text-stone">Nothing to pay right now. Balances, the rings, the licence — anything with a due date shows here.</p>
       )}
 
-      {paid.length > 0 && (
+      {!chosen && paid.length > 0 && (
         <details className="mt-7 px-1">
           <summary className="flex cursor-pointer list-none items-baseline gap-2 py-1">
             <span className="section-label !text-stone">Paid · {paid.length}</span>

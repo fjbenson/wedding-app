@@ -16,11 +16,11 @@ export const metadata = { title: "Money — Wedding App" };
 export default async function MoneyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; tab?: string; area?: string; open?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ view?: string; tab?: string; area?: string; open?: string; month?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { view, tab, area, open, error, detail } = await searchParams;
+  const { view, tab, area, open, month, error, detail } = await searchParams;
 
   const [areaRows, allSuppliers, found] = await Promise.all([
     listAreas(wedding.id),
@@ -83,6 +83,7 @@ export default async function MoneyPage({
         .filter((a) => filter === null || (filter === "none" ? a.key === "" : a.key === filter))
         .map((a) => ({ ...a, detail: detailFor(a.key) }))}
       open={open || null}
+      month={month || null}
       payments={payments}
       suppliers={allSuppliers.map((s) => ({ id: s.id, name: name(s) }))}
       areas={areas}

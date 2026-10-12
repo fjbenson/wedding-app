@@ -79,6 +79,7 @@ export default function PaymentForm({
               {a.label}
             </option>
           ))}
+          <option value="other">Other</option>
         </select>
       </Field>
 

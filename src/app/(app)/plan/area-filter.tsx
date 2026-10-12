@@ -28,7 +28,7 @@ export default function AreaFilter({ areas, current }: { areas: AreaOption[]; cu
             {a.label}
           </option>
         ))}
-        <option value="none">No particular area</option>
+        <option value="none">Other</option>
       </select>
       <span aria-hidden className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] ${current ? "text-ivory" : "text-stone"}`}>
         ▼

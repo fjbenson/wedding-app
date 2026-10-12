@@ -62,7 +62,7 @@ export default function InspoView({
   const total = [...counts.values()].reduce((a, b) => a + b, 0);
   const unsorted = counts.get("") ?? 0;
   const current = folder === undefined ? "all" : folder === null ? "unsorted" : folder;
-  const title = folder === undefined ? "Inspo" : folder === null ? "Unsorted" : (areas.find((a) => a.key === folder)?.label ?? folder);
+  const title = folder === undefined ? "Inspo" : folder === null ? "Unsorted" : folder === "other" ? "Other" : (areas.find((a) => a.key === folder)?.label ?? folder);
   const chip = (active: boolean) =>
     `shrink-0 rounded-full border px-4 py-2 text-sm transition ${
       active ? "border-ink bg-ink text-ivory" : "glass-card text-ink hover:border-champagne-400"
@@ -120,6 +120,11 @@ export default function InspoView({
                   {a.label} <span className="opacity-60">{counts.get(a.key)}</span>
                 </Link>
               ))}
+            {(counts.get("other") ?? 0) > 0 && (
+              <Link href="/inspo?folder=other" aria-current={current === "other" ? "page" : undefined} className={chip(current === "other")}>
+                Other <span className="opacity-60">{counts.get("other")}</span>
+              </Link>
+            )}
             {unsorted > 0 && (
               <Link href="/inspo?folder=unsorted" aria-current={current === "unsorted" ? "page" : undefined} className={chip(current === "unsorted")}>
                 Unsorted <span className="opacity-60">{unsorted}</span>

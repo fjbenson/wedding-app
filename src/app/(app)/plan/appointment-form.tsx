@@ -67,6 +67,7 @@ export default function AppointmentForm({
               {a.label}
             </option>
           ))}
+          <option value="other">Other</option>
         </select>
       </Field>
 

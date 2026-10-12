@@ -27,7 +27,7 @@ export default function TodoList({
   today: string;
 }) {
   const thisMonth = today.slice(0, 7);
-  const shown = milestones.filter((m) => (area === null ? true : area === "none" ? !m.category : m.category === area));
+  const shown = milestones.filter((m) => (area === null ? true : area === "none" ? !m.category || m.category === "other" : m.category === area));
   const open = shown.filter(isOpen).sort((a, b) => (planDate(a) ?? "9999").localeCompare(planDate(b) ?? "9999"));
   const done = shown.filter((m) => !isOpen(m)).sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""));
 
@@ -62,7 +62,7 @@ export default function TodoList({
     ...(undated.length ? [{ id: "no-date", title: "No date yet", items: undated }] : []),
   ];
 
-  const areaLabel = area === "none" ? "no particular area" : area ? (areaName(area, areas) ?? area) : null;
+  const areaLabel = area === "none" ? "other" : area ? (areaName(area, areas) ?? area) : null;
 
   return (
     <FoldGroup initiallyOpen={[]}>

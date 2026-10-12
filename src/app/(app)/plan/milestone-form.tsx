@@ -86,12 +86,13 @@ export default function MilestoneForm({
 
       <Field label="Area" hint="optional">
         <select name="category" defaultValue={current ?? defaultArea ?? ""} className={INPUT}>
-          <option value="">No particular area</option>
           {options.map((area) => (
             <option key={area.key} value={area.key}>
               {area.label}
             </option>
           ))}
+          {/* Anything that fits no area (owner, 12 Oct 2026: "always have that other option"). */}
+          <option value="">Other</option>
         </select>
       </Field>
 

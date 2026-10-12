@@ -106,6 +106,7 @@ export default async function InspoItemPage({
                   {a.label}
                 </option>
               ))}
+              <option value="other">Other</option>
             </select>
           </label>
           <label className="block text-sm text-ink">

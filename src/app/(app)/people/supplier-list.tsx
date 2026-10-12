@@ -103,13 +103,14 @@ export default function SupplierList({
   });
 
   // Grouped by area in the wedding's own order, anything else after.
-  const keys = [...areas.map((a) => a.key), ...new Set(shown.map((s) => s.supplier_details?.category ?? ""))];
+  const cat = (s: Supplier) => s.supplier_details?.category || "other";
+  const keys = [...areas.map((a) => a.key), ...new Set(shown.map(cat))];
   const groups = [...new Set(keys)]
     .map((key) => ({
       key,
-      label: key ? (areaName(key, areas) ?? key) : "No area",
+      label: areaName(key, areas) ?? key,
       rows: shown
-        .filter((s) => (s.supplier_details?.category ?? "") === key)
+        .filter((s) => cat(s) === key)
         // Booked first, then quotes, then asked; not taken last.
         .sort((a, b) => ORDER[stage(a)] - ORDER[stage(b)]),
     }))

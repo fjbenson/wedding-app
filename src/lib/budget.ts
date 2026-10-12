@@ -63,7 +63,7 @@ export function moneyByArea(
   const known = new Set(areas.map((a) => a.key));
   const loose = {
     key: "",
-    label: "Not in an area",
+    label: "Other",
     ...moneyFor(null, suppliers, payments, null),
   };
   // Money filed under a switched-off area or "Other" also counts here.

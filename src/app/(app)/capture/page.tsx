@@ -52,6 +52,7 @@ export default async function CapturePage({
                 {a.label}
               </option>
             ))}
+            <option value="other">Other</option>
           </select>
         </Field>
 

@@ -264,6 +264,7 @@ function NotePanel({
                 {a.label}
               </option>
             ))}
+            <option value="other">Other</option>
           </select>
           {area !== (note.area_key ?? "") && (
             <button type="submit" disabled={pending} className="h-10 rounded-full bg-ink px-4 text-sm text-ivory disabled:opacity-60">

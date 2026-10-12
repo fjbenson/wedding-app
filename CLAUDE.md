@@ -554,6 +554,15 @@ access control is RLS. No column-level encryption is planned.
   supplier" row, `/people/suppliers/new?category=…&from=suppliers`), and
   the notes wall's faded blank notes work the same way. Use it on any new
   screen, and fix older empty screens to match as they come up.
+- **Every area picker ends with "Other"** (owner, 12 Oct 2026: "always
+  have that other option"). Stored as the key `other` (`areaName()` names
+  it); for to-dos the old blank "No particular area" is now labelled Other
+  (still null). Pickers: supplier form/card, to-do, appointment and payment
+  (which keep their blank "—", meaning "follow the supplier"), capture,
+  note filing, Inspo folders (an Other chip when it has anything). Lists
+  gather no-area and `other` together as Other: the Plan list's area filter
+  ("Other" = none or other), Money's leftover row, the Suppliers groups.
+  There's no Other **budget** (budgets live on the areas table).
 - **Amounts get a comma every thousand as you type** (owner, 12 Oct
   2026): use `MoneyInput` (`src/components/money-input.tsx`) or
   `withCommas()` (`src/lib/money.ts`) for any money box — supplier form and

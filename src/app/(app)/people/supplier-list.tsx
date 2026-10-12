@@ -24,11 +24,12 @@ const stage = (s: Supplier): SupplierStatus => {
  * The Suppliers tab of People (screen 12), shaped like the guest list
  * (canvas 2 "Suppliers · Round 1", A, owner's pick 12 Oct 2026): a count
  * card (All · Booked · Quote in · Asked, each one shows just those), search
- * and a Filter by area, then everyone grouped by area in the wedding's own
+ * and a Filter (areas, Still to pay, No phone or email, Not taken), then
+ * everyone grouped by area in the wedding's own
  * order — so quotes for the same thing sit together. Each row: initials,
  * the business, who to ask for, the quote and a stage icon. Tapping one
  * opens their card (`supplier-card.tsx`). Search, the card's choice, the
- * area filter and an open card live in the address (?q= ?show= ?area=
+ * area filter and an open card live in the address (?q= ?show= ?f=
  * ?supplier=), like the guest list.
  */
 export default function SupplierList({
@@ -46,11 +47,18 @@ export default function SupplierList({
     const s = params.get("show");
     return s === "booked" || s === "quoted" || s === "enquired" ? s : "all";
   });
-  const [area, setArea] = useState<string | null>(params.get("area"));
+  // Filters: areas ("area:venue", any of), plus "topay", "nocontact" and
+  // "nottaken" (each narrows further). Old ?area= links still work.
+  const [filters, setFilters] = useState<string[]>(() => {
+    const asked = (params.get("f") ?? "").split(",").filter(Boolean);
+    const old = params.get("area");
+    return old ? [...asked, `area:${old}`] : asked;
+  });
   const [openId, setOpenId] = useState<string | null>(params.get("supplier"));
   useEffect(() => {
-    replaceQuery({ q: query.trim() || null, show: show === "all" ? null : show, area, supplier: openId });
-  }, [query, show, area, openId]);
+    replaceQuery({ q: query.trim() || null, show: show === "all" ? null : show, f: filters.length ? filters.join(",") : null, area: null, supplier: openId });
+  }, [query, show, filters, openId]);
+  const toggle = (key: string) => setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
   const close = useCallback(() => setOpenId(null), []);
 
   const counts = { booked: 0, quoted: 0, enquired: 0 };
@@ -60,10 +68,34 @@ export default function SupplierList({
   }
 
   const needle = query.trim().toLowerCase();
-  const narrowed = show !== "all" || !!area || !!needle;
+  const narrowed = show !== "all" || filters.length > 0 || !!needle;
+
+  // What each filter keeps.
+  const owes = (s: Supplier) => {
+    const theirs = payments.filter((p) => p.contact_id === s.id);
+    if (theirs.some((p) => !p.paid_on)) return true;
+    const d = s.supplier_details;
+    const paid = (d?.deposit_paid ?? 0) + theirs.reduce((sum, p) => sum + p.amount, 0);
+    return stage(s) === "booked" && (d?.quoted_cost ?? 0) - paid > 0.005;
+  };
+  const tests: Record<string, (s: Supplier) => boolean> = {
+    topay: owes,
+    nocontact: (s) => !s.phone && !s.email,
+    nottaken: (s) => stage(s) === "cancelled",
+  };
+  const areaOn = filters.filter((f) => f.startsWith("area:")).map((f) => f.slice(5));
+  const otherOn = filters.filter((f) => tests[f]);
+  const passes = (s: Supplier) =>
+    (areaOn.length === 0 || areaOn.includes(s.supplier_details?.category ?? "")) && otherOn.every((f) => tests[f](s));
+  const filterRows = [
+    ...areas.map((a) => ({ key: `area:${a.key}`, label: a.label, count: suppliers.filter((s) => s.supplier_details?.category === a.key).length })),
+    ...OTHER_FILTERS.map((f) => ({ ...f, count: suppliers.filter(tests[f.key]).length })),
+  ];
+  const labelOf = (key: string) => filterRows.find((r) => r.key === key)?.label ?? key;
+
   const shown = suppliers.filter((s) => {
     if (show !== "all" && stage(s) !== show) return false;
-    if (area && (s.supplier_details?.category ?? "") !== area) return false;
+    if (!passes(s)) return false;
     if (!needle) return true;
     return [supplierName(s), supplierContact(s), s.email, s.phone, areaName(s.supplier_details?.category ?? null, areas)]
       .filter(Boolean)
@@ -85,7 +117,6 @@ export default function SupplierList({
     // faded row to fill in — so the page has its shape from day one (owner,
     // 12 Oct 2026: "an empty page should still show its structure").
     .filter((g) => g.rows.length > 0 || (!narrowed && !!g.key));
-  const usedAreas = areas.filter((a) => suppliers.some((s) => s.supplier_details?.category === a.key));
   const open = suppliers.find((s) => s.id === openId);
 
   return (
@@ -116,7 +147,7 @@ export default function SupplierList({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            <AreaFilter areas={usedAreas} value={area} onChange={setArea} />
+            <FilterMenu rows={filterRows} areaCount={areas.length} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
           </div>
 
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
@@ -124,12 +155,12 @@ export default function SupplierList({
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Add a supplier
             </Link>
-            {(show !== "all" || area || needle) && (
+            {(show !== "all" || filters.length > 0 || needle) && (
               <button
                 type="button"
                 onClick={() => {
                   setShow("all");
-                  setArea(null);
+                  setFilters([]);
                   setQuery("");
                 }}
                 className="h-9 text-[13px] text-stone underline underline-offset-4 hover:text-ink"
@@ -138,16 +169,22 @@ export default function SupplierList({
               </button>
             )}
           </div>
-          {area && (
-            <div className="mt-1 flex px-1">
-              <button
-                type="button"
-                onClick={() => setArea(null)}
-                className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
-              >
-                {areaName(area, areas)}
-                <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
-                <span className="sr-only">— take off this filter</span>
+          {filters.length > 0 && (
+            <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
+              {filters.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggle(key)}
+                  aria-label={`Take off ${labelOf(key)}`}
+                  className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                >
+                  {labelOf(key)}
+                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                </button>
+              ))}
+              <button type="button" onClick={() => setFilters([])} className="h-8 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                Clear
               </button>
             </div>
           )}
@@ -279,8 +316,32 @@ function CountCard({
   );
 }
 
-/** A Filter button by the search that drops down the areas in use. */
-function AreaFilter({ areas, value, onChange }: { areas: AreaOption[]; value: string | null; onChange: (key: string | null) => void }) {
+/** Beyond area: the things worth narrowing a list of suppliers to. Booked is the count card's. */
+const OTHER_FILTERS = [
+  { key: "topay", label: "Still to pay" },
+  { key: "nocontact", label: "No phone or email" },
+  { key: "nottaken", label: "Not taken" },
+];
+
+/**
+ * The Filter button and its menu, as on the guest list: a round button that
+ * goes dark with a count when anything's on, and "Show only" — the areas
+ * (any of them), then the rest — ticked as you go, no apply step.
+ */
+function FilterMenu({
+  rows,
+  areaCount,
+  on,
+  onToggle,
+  onClear,
+}: {
+  rows: { key: string; label: string; count: number }[];
+  /** How many of the rows are areas (they come first). */
+  areaCount: number;
+  on: string[];
+  onToggle: (key: string) => void;
+  onClear: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -296,38 +357,69 @@ function AreaFilter({ areas, value, onChange }: { areas: AreaOption[]; value: st
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
-  if (areas.length < 2) return null;
+  const active = on.length;
 
   return (
-    <div ref={box} className="relative">
+    <div ref={box} className="relative shrink-0">
       <button
         type="button"
         aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={active > 0 ? `Filter, ${active} on` : "Filter"}
         onClick={() => setOpen((o) => !o)}
-        className={`flex h-12 items-center gap-1.5 rounded-full border px-4 text-sm transition ${
-          value ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
+        className={`relative flex h-12 w-12 items-center justify-center rounded-full border transition ${
+          active > 0 ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
         }`}
       >
-        <SlidersHorizontal className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Filter{value && " · 1"}
+        <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        {active > 0 && (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400 px-1 text-[11px] font-semibold text-white"
+          >
+            {active}
+          </span>
+        )}
       </button>
+
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-[18px] bg-white p-2 shadow-[0_18px_40px_-16px_rgba(60,50,40,0.45)]">
-          <p className="type-meta px-3 pb-1 pt-2">Area</p>
-          {areas.map((a) => (
-            <button
-              key={a.key}
-              type="button"
-              onClick={() => {
-                onChange(value === a.key ? null : a.key);
-                setOpen(false);
-              }}
-              className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-cream"
-            >
-              {a.label}
-              {value === a.key && <Check className="h-4 w-4 text-champagne-600" strokeWidth={2} aria-hidden />}
-            </button>
-          ))}
+        <div className="absolute right-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <div className="flex items-baseline justify-between py-1">
+            <span className="section-label">Show only</span>
+            {active > 0 && (
+              <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                Clear
+              </button>
+            )}
+          </div>
+          <ul>
+            {rows.map((f, i) => {
+              const ticked = on.includes(f.key);
+              return (
+                // A firmer line between the areas and the rest.
+                <li key={f.key} className={`border-t first:border-t-0 ${i === areaCount && i > 0 ? "border-champagne-400" : "border-linen"}`}>
+                  <button
+                    type="button"
+                    role="menuitemcheckbox"
+                    aria-checked={ticked}
+                    onClick={() => onToggle(f.key)}
+                    className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                  >
+                    <span
+                      aria-hidden
+                      className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                        ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                      }`}
+                    >
+                      {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                    </span>
+                    <span className="flex-1">{f.label}</span>
+                    <span className="text-[13px] text-stone">{f.count}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>

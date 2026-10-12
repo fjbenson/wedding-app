@@ -164,7 +164,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   screens 12 and 13) — **rebuilt 12 Oct 2026** to canvas 2 "Suppliers ·
   Round 1", A + B (owner's pick), **shaped like the guest list**
   (`supplier-list.tsx`): a count card (All · Booked · Quote in · Asked,
-  each shows just those), search and a Filter by area, "+ Add a supplier",
+  each shows just those), search and a **Filter** (always shown, the guest
+  list's round button and "Show only" menu: any of the wedding's areas, then
+  Still to pay · No phone or email · Not taken; pills to take off; `?f=`;
+  Booked stays on the count card), "+ Add a supplier",
   then everyone **grouped by area** in the wedding's order (heading note
   "Booked" or "2 quotes · 1 asked"; within a group booked → quotes → asked →
   not taken). Rows: initials, business, contact person, quote, a stage icon
@@ -179,8 +182,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   … page ›", Remove (asks first; their payments stay in Money). Saves go
   through `updateSupplierAction` (one field at a time, returns a message;
   `updateSupplierParts()` in `src/lib/db/suppliers.ts`). Search, card
-  choice, area filter and open card live in the address (`?q=`, `?show=`,
-  `?area=`, `?supplier=`). **`/people/[id]` is now only a redirect** to the
+  choice, filters and open card live in the address (`?q=`, `?show=`,
+  `?f=`, `?supplier=`; old `?area=` links still work). **`/people/[id]` is now only a redirect** to the
   right card (guest or supplier); the area page's supplier links use it.
   Adding a supplier still uses the form (`/people/suppliers/new`). With
   nothing narrowing the list, **every area shows**, an empty one as a faded

@@ -5,7 +5,9 @@ import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import AreaFilter from "../plan/area-filter";
 import PageTitle from "@/components/page-title";
-import { areaIcon, type AreaOption } from "@/lib/areas";
+import type { AreaOption } from "@/lib/areas";
+import AreaCards, { type AreaCard } from "./area-cards";
+import MoneyFigures from "./money-figures";
 import type { Money } from "@/lib/budget";
 import { formatDayMonth, formatMonthYear, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -43,6 +45,7 @@ export default function MoneyView({
   areas,
   area,
   scope,
+  open,
 }: {
   view: "area" | "month";
   /** The wedding's areas, for the filter. */
@@ -52,7 +55,9 @@ export default function MoneyView({
   /** The filtered area's name, or null when showing everything. */
   scope: string | null;
   total: Money;
-  byArea: (AreaOption & Money)[];
+  byArea: AreaCard[];
+  /** The area whose money card is open (`?open=`). */
+  open: string | null;
   payments: Payment[];
   suppliers: { id: string; name: string }[];
   balances: { supplierId: string; name: string; balance: number }[];
@@ -98,7 +103,7 @@ export default function MoneyView({
       )}
 
       {view === "area" ? (
-        <ByArea total={total} byArea={byArea} scope={scope} />
+        <ByArea total={total} byArea={byArea} scope={scope} open={open} />
       ) : (
         <ByMonth total={total} payments={payments} suppliers={suppliers} balances={balances} weddingDate={weddingDate} />
       )}
@@ -115,31 +120,17 @@ export default function MoneyView({
  * they're little glass cards, two to a row (owner's call).
  */
 
-/** The short word under an area's bar (short enough for a half-width card). */
-function flag(m: Money): { text: string; tone: string } {
-  if (m.budget !== null && m.committed > m.budget) {
-    return { text: `▲ Over by ${formatMoney(m.committed - m.budget)}`, tone: "text-[#9A3F2B]" };
-  }
-  if (m.committed > 0 && m.paid >= m.committed) return { text: "✓ All paid", tone: "text-ink" };
-  if (m.committed > 0) {
-    return { text: `${formatMoney(m.committed - m.paid)} to go`, tone: "text-stone" };
-  }
-  if (m.budget !== null) return { text: "Not booked yet", tone: "text-stone" };
-  return { text: "No budget yet", tone: "text-champagne-600" };
-}
-
 function ByArea({
   total,
   byArea,
   scope,
+  open,
 }: {
   total: Money;
-  byArea: (AreaOption & Money)[];
+  byArea: AreaCard[];
   scope: string | null;
+  open: string | null;
 }) {
-  const toPay = Math.max(total.committed - total.paid, 0);
-  const free = total.budget !== null ? total.budget - total.committed : null;
-
   return (
     <>
       <Link
@@ -154,31 +145,7 @@ function ByArea({
             <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
           </span>
         </p>
-        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
-          <span className="type-figure text-[44px] leading-none !font-light">{formatMoney(total.committed)}</span>
-          <span className="text-sm text-stone">
-            {total.budget !== null ? `of ${formatMoney(total.budget)} agreed` : "agreed"}
-          </span>
-        </p>
-        <div className="mt-4">
-          <BudgetBar money={total} thick />
-        </div>
-        <dl className="mt-3.5 grid grid-cols-3 gap-2">
-          <div>
-            <dt className="text-xs text-champagne-600">Paid</dt>
-            <dd className="type-figure text-xl !font-light !text-champagne-600">{formatMoney(total.paid)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-stone">To pay</dt>
-            <dd className="type-figure text-xl !font-light">{formatMoney(toPay)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-stone">{free !== null && free < 0 ? "Over" : "Still free"}</dt>
-            <dd className={`type-figure text-xl !font-light ${free !== null && free < 0 ? "!text-[#9A3F2B]" : ""}`}>
-              {free === null ? "—" : free < 0 ? `▲ ${formatMoney(-free)}` : formatMoney(free)}
-            </dd>
-          </div>
-        </dl>
+        <MoneyFigures money={total} />
       </Link>
 
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the
@@ -189,44 +156,7 @@ function ByArea({
           <h2 className="section-label">By area</h2>
           <AddButton href="/money/payments/new" label="Add a payment" />
         </div>
-        {/* Little cards, two to a row (owner, 12 Oct 2026: "areas as cards
-            instead of rows"): the area's icon and name, what's agreed large,
-            "of £budget", its bar and the short word. */}
-        <ul className="mt-3 grid grid-cols-2 gap-3">
-          {byArea.map((a) => {
-            const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
-            const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";
-            const ofBudget = a.committed > 0 ? (a.budget !== null ? `of ${formatMoney(a.budget)}` : "agreed") : a.budget !== null ? "budget" : "";
-            const Icon = areaIcon(a.key || "other", a.icon);
-            const body = (
-              <>
-                <span className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
-                  <span className="type-item min-w-0 truncate text-[15px]">{a.label}</span>
-                </span>
-                <span className="mt-3 block type-figure text-[26px] leading-none !font-light">{figure}</span>
-                <span className="mt-1 block h-4 text-xs text-stone">{ofBudget}</span>
-                {/* No budget and nothing agreed: no bar, just the word. */}
-                <span className="mt-2.5 block h-2">{(a.budget !== null || a.committed > 0) && <BudgetBar money={a} />}</span>
-                <span className={`mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] ${note.tone}`}>
-                  {note.text}
-                </span>
-              </>
-            );
-            const card = "glass-card block h-full overflow-hidden rounded-[22px] p-4";
-            return (
-              <li key={a.key || "none"}>
-                {a.key ? (
-                  <Link href={`/area/${encodeURIComponent(a.key)}`} className={`${card} row-press [--row-bleed:16px]`}>
-                    {body}
-                  </Link>
-                ) : (
-                  <div className={card}>{body}</div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <AreaCards areas={byArea} open={open} />
         <p className="mt-4 text-center">
           <Link href="/money/budget" className="type-meta !text-champagne-600 hover:!text-ink">
             {total.budget === null ? "Set budgets ›" : "Change budgets ›"}

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
-export type Dot = "todo" | "appointment" | "payment" | "done";
+export type Dot = "todo" | "appointment" | "done";
 
 /** "2026-10" → "2026-11" (or back, with -1). */
 function shiftMonth(key: string, by: 1 | -1): string {
@@ -22,7 +22,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const DOT: Record<Dot, string> = {
   todo: "border-[1.5px] border-stone/60",
   appointment: "bg-champagne-400",
-  payment: "border-[1.5px] border-champagne-400 bg-champagne-100",
   done: "bg-linen",
 };
 
@@ -186,7 +185,6 @@ export default function PlanCalendar({
           [
             ["todo", "To-do"],
             ["appointment", "Appointment"],
-            ["payment", "Payment"],
             ["done", "Done"],
           ] as const
         ).map(([dot, label]) => (

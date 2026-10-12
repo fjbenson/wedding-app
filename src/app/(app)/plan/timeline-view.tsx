@@ -5,7 +5,7 @@ import StarterPlanCard from "@/components/starter-plan-card";
 import CornerSwitch from "@/components/corner-switch";
 import type { AreaOption } from "@/lib/areas";
 import { todayISO } from "@/lib/dates";
-import type { Appointment, Milestone, Payment } from "@/types/db";
+import type { Appointment, Milestone } from "@/types/db";
 import Agenda from "./agenda";
 import TodoList from "./todo-list";
 
@@ -13,8 +13,8 @@ import TodoList from "./todo-list";
  * The Plan tab (docs/information-architecture.md): two views, owner's call
  * 11 Oct 2026 —
  *
- * - Calendar (the default): to-dos, appointments and payments as dots on
- *   their days. agenda.tsx + calendar.tsx.
+ * - Calendar (the default): to-dos and appointments as dots on their days
+ *   (payments live in Money only, owner, 12 Oct 2026). agenda.tsx + calendar.tsx.
  * - List (`?view=list`): just the to-dos, a glass card per month, with an
  *   area filter (`&area=`) in place of the old "By area" view. todo-list.tsx.
  *
@@ -24,7 +24,6 @@ import TodoList from "./todo-list";
 export default function TimelineView({
   milestones,
   appointments,
-  payments,
   suppliers,
   weddingDate,
   areas,
@@ -34,7 +33,6 @@ export default function TimelineView({
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
   appointments: Appointment[] | null;
-  payments: Payment[];
   suppliers: { id: string; name: string }[];
   weddingDate: string | null;
   areas: AreaOption[];
@@ -44,8 +42,7 @@ export default function TimelineView({
 }) {
   const today = todayISO();
   const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
-  const due = payments.filter((p) => !p.paid_on).length;
-  const nothing = milestones.length === 0 && upcoming === 0 && due === 0;
+  const nothing = milestones.length === 0 && upcoming === 0;
 
   return (
     <main className="page pb-28 lg:pb-16">
@@ -93,7 +90,6 @@ export default function TimelineView({
         <Agenda
           milestones={milestones}
           appointments={appointments}
-          payments={payments}
           suppliers={suppliers}
           areas={areas}
           weddingDate={weddingDate}

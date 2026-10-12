@@ -1,23 +1,19 @@
 import Link from "next/link";
-import { CalendarClock, CalendarDays, Check, ChevronRight, List } from "lucide-react";
+import { CalendarClock, Check, ChevronRight } from "lucide-react";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { daysUntil, formatDayMonth, formatLongDate, formatMonthYear, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
+import { formatMonthYear, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
-import type { Appointment, Milestone, Payment } from "@/types/db";
-import TickForm from "@/components/tick-form";
-import { markPaidAction } from "../money/actions";
+import type { Appointment, Milestone } from "@/types/db";
 import PlanCalendar, { type Dot } from "./calendar";
 import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
 
 type Entry =
   | { kind: "todo"; date: string | null; milestone: Milestone }
-  | { kind: "appointment"; date: string; appointment: Appointment }
-  | { kind: "payment"; date: string | null; payment: Payment };
+  | { kind: "appointment"; date: string; appointment: Appointment };
 
-/** Same day: appointments first (they happen at a time), then payments, then to-dos. */
-const KIND_ORDER = { appointment: 0, payment: 1, todo: 2 };
+/** Same day: appointments first (they happen at a time), then to-dos. */
+const KIND_ORDER = { appointment: 0, todo: 1 };
 
 const byDate = (a: Entry, b: Entry) => {
   if (a.date !== b.date) return !a.date ? 1 : !b.date ? -1 : a.date.localeCompare(b.date);
@@ -32,13 +28,13 @@ const monthName = (key: string) => formatMonthYear(`${key}-01`).split(" ")[0];
 /**
  * The agenda (screens 16 and 17): the calendar, with the month in view
  * listed under it and a card per tapped day (`calendar.tsx`), then the
- * things with no date yet. To-dos, appointments and payments due share it
- * because they all answer "what's coming up"; their marks tell them apart.
+ * things with no date yet. Just to-dos and appointments: what you have to do
+ * or go to. Payments live in Money only (owner, 12 Oct 2026), whose By month
+ * view is their calendar; the Hub's "coming up" still shows the next ones.
  */
 export default function Agenda({
   milestones,
   appointments,
-  payments,
   suppliers,
   areas,
   weddingDate,
@@ -46,7 +42,6 @@ export default function Agenda({
 }: {
   milestones: Milestone[];
   appointments: Appointment[] | null;
-  payments: Payment[];
   suppliers: { id: string; name: string }[];
   areas: AreaOption[];
   weddingDate: string | null;
@@ -54,9 +49,8 @@ export default function Agenda({
 }) {
   const thisMonth = today.slice(0, 7);
 
-  // Done means ticked, been (an appointment's day has passed) or paid.
-  const isDone = (e: Entry) =>
-    e.kind === "todo" ? !isOpen(e.milestone) : e.kind === "appointment" ? e.appointment.on_date < today : !!e.payment.paid_on;
+  // Done means ticked, or been (an appointment's day has passed).
+  const isDone = (e: Entry) => (e.kind === "todo" ? !isOpen(e.milestone) : e.appointment.on_date < today);
   const monthOf = (e: Entry) => e.date?.slice(0, 7) ?? null;
   // Within a month: what's left first, what's done sinks to the bottom.
   const inOrder = (entries: Entry[]) => [...entries.filter((e) => !isDone(e)), ...entries.filter(isDone)];
@@ -71,7 +65,6 @@ export default function Agenda({
       milestone: m,
     })),
     ...(appointments ?? []).map((a) => ({ kind: "appointment" as const, date: a.on_date, appointment: a })),
-    ...payments.map((p) => ({ kind: "payment" as const, date: p.due_date ?? p.paid_on, payment: p })),
   ].sort(byDate);
 
   // A nudge whose month has gone by just means "start now", so it joins this
@@ -103,58 +96,23 @@ export default function Agenda({
         />
       );
     }
-    if (entry.kind === "appointment") {
-      const a = entry.appointment;
-      const details = [
-        `${formatWeekdayDayMonth(a.on_date)}${a.at_time ? ` · ${formatTime(a.at_time)}` : ""}`,
-        a.location,
-        // "at Hazel Gap Barn · with Hazel Gap Barn" says it twice.
-        supplierName(a.contact_id) && !a.location?.includes(supplierName(a.contact_id)!) && `with ${supplierName(a.contact_id)}`,
-      ].filter(Boolean);
-      return (
-        <li key={`a-${a.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${faded ? "opacity-60" : ""}`}>
-          <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
-            {faded ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
-          </span>
-          <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
-            <span className="min-w-0 flex-1">
-              <span className={`type-item block ${faded ? "!text-stone" : ""}`}>{a.title}</span>
-              <span className="type-meta mt-1 block">{details.join(" · ")}</span>
-            </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-          </Link>
-        </li>
-      );
-    }
-    const p = entry.payment;
-    const paid = !!p.paid_on;
-    const late = !paid && p.due_date && p.due_date < today;
+    const a = entry.appointment;
+    const details = [
+      `${formatWeekdayDayMonth(a.on_date)}${a.at_time ? ` · ${formatTime(a.at_time)}` : ""}`,
+      a.location,
+      // "at Hazel Gap Barn · with Hazel Gap Barn" says it twice.
+      supplierName(a.contact_id) && !a.location?.includes(supplierName(a.contact_id)!) && `with ${supplierName(a.contact_id)}`,
+    ].filter(Boolean);
     return (
-      <li key={`p-${p.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${paid ? "opacity-60" : ""}`}>
-        <TickForm
-          action={markPaidAction.bind(null, p.id, !paid)}
-          undo={markPaidAction.bind(null, p.id, paid)}
-          ticking={!paid}
-          label="Marked paid"
-          ariaLabel={paid ? `Mark "${p.description}" as not paid` : `Mark "${p.description}" as paid`}
-          className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-champagne-100 font-display text-sm text-champagne-600 hover:bg-cream"
-        >
-          {paid ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden /> : "£"}
-        </TickForm>
-        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
+      <li key={`a-${a.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${faded ? "opacity-60" : ""}`}>
+        <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
+          {faded ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
+        </span>
+        <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
           <span className="min-w-0 flex-1">
-            <span className={`type-item block ${paid ? "!text-stone" : ""}`}>{p.description}</span>
-            <span className="type-meta mt-1 block">
-              {late && <span className="text-champagne-600">Overdue · </span>}
-              {[
-                paid ? `Paid ${formatDayMonth(p.paid_on!)}` : p.due_date && `Due ${formatWeekdayDayMonth(p.due_date)}`,
-                supplierName(p.contact_id),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
+            <span className={`type-item block ${faded ? "!text-stone" : ""}`}>{a.title}</span>
+            <span className="type-meta mt-1 block">{details.join(" · ")}</span>
           </span>
-          <span className="type-figure shrink-0 text-lg !font-normal">{formatMoney(p.amount)}</span>
           <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
         </Link>
       </li>

@@ -257,7 +257,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   appointment**. **Calendar** (the default; canvas "Plan · Calendar · Round
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a dot per thing
-  on each day (to-do ring, appointment gold, payment pale gold, done grey),
+  on each day (to-do ring, appointment gold, done grey; **no payments** —
+  owner, 12 Oct 2026: Plan is what you do or go to, Money is what you pay,
+  and Money's By month is the payments' calendar),
   today softly circled, the wedding in a gold ring; tap a day for its card (below).
   The month in view and the tapped day live in the
   address (`?month=`, `?day=`), so Back from a to-do lands on the same
@@ -288,8 +290,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `(app)` layout). Rows: to-dos (plain circle), **nudges** (dashed gold
   circle, italic: "Start looking at photographers · START NOW"),
   **appointments** (`0007_appointments.sql`, screen 21,
-  `/plan/appointments/…`; calendar on champagne) and payments due (£ on
-  champagne, tap to mark paid). A **nudge** is a to-do with `remind_at` and
+  `/plan/appointments/…`; calendar on champagne). Payments were on the
+  calendar too until 12 Oct 2026; now only in Money and the Hub's coming up. A **nudge** is a to-do with `remind_at` and
   no `due_date` (`src/lib/plan.ts`: `isNudge`, `planDate`) — the to-do
   form's "Done by / Start around" switch — so no migration; its date
   passing means "start now", never overdue. The starter list includes
@@ -693,7 +695,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
-   up (12 Oct 2026): the owner's pick of calendar icons** (canvas 2 "Plan ·
+   up (12 Oct 2026): the owner's pick of calendar icons** (simpler now
+   payments are off the calendar: just to-dos and appointments) (canvas 2 "Plan ·
    Calendar · Icons instead of dots": A the list's marks — ring, tiny
    calendar, £; B money bag and clock; C tiny round badges; D dots with only
    payments as £; up to two per day plus "+1"), **then The Day's Seating

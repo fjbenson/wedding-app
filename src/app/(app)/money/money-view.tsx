@@ -95,7 +95,9 @@ export default function MoneyView({
  * Canvas 2 "Money · Round 5" (owner's pick 12 Oct 2026): the top of option 3
  * (a glass card — agreed of budget, one thick bar, Paid · To pay · Still
  * free) and the list of option 4 (a menu card: name, dotted line, figure,
- * one slim bar underneath).
+ * one slim bar underneath). No divider lines between areas (owner: they got
+ * mixed up with the bars) — space separates the rows, so the only lines in
+ * the list are the bars, and the dotted line joining name to figure.
  */
 
 const pct = (x: number, of: number) => `${Math.min((x / of) * 100, 100)}%`;
@@ -108,9 +110,7 @@ function BudgetBar({ money, thick = false }: { money: Money; thick?: boolean }) 
   return (
     <span
       aria-hidden
-      className={`relative block rounded-full ${thick ? "h-3.5 overflow-hidden" : "h-[5px]"} ${
-        money.budget === null && !thick ? "rounded-none border-b border-dashed border-stone/40" : "bg-linen/80"
-      }`}
+      className={`relative block rounded-full bg-linen ${thick ? "h-3.5 overflow-hidden" : "h-2"}`}
     >
       <span
         className={`absolute inset-y-0 left-0 ${over ? "rounded-l-full" : "rounded-full"} ${AGREED_BAR}`}
@@ -218,20 +218,23 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
                   <span className="type-figure shrink-0 text-lg !font-light">{figure}</span>
                   {ofBudget && <span className="ml-1.5 shrink-0 text-xs text-stone">{ofBudget}</span>}
                 </span>
-                <span className="mt-2.5 block">
-                  <BudgetBar money={a} />
-                </span>
+                {/* No budget and nothing agreed: no bar at all, just the word under the name. */}
+                {(a.budget !== null || a.committed > 0) && (
+                  <span className="mt-3 block">
+                    <BudgetBar money={a} />
+                  </span>
+                )}
                 <span className={`mt-2 block text-xs font-semibold uppercase tracking-[0.1em] ${note.tone}`}>{note.text}</span>
               </>
             );
             return (
-              <li key={a.key || "none"} className={a.key ? "row-press border-b border-linen" : "border-b border-linen"}>
+              <li key={a.key || "none"} className={a.key ? "row-press" : undefined}>
                 {a.key ? (
-                  <Link href={`/area/${encodeURIComponent(a.key)}`} className="block py-4">
+                  <Link href={`/area/${encodeURIComponent(a.key)}`} className="block py-[18px]">
                     {body}
                   </Link>
                 ) : (
-                  <div className="py-4">{body}</div>
+                  <div className="py-[18px]">{body}</div>
                 )}
               </li>
             );

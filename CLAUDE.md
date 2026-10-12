@@ -304,7 +304,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   whole wedding on a glass card (agreed of budget large, one thick bar —
   `BudgetBar` — then Paid · To pay · Still free), the next payment due on a
   glass row, then each area menu-card style (name, dotted line, agreed "of
-  £budget", one slim bar) with a short tag: "▲
+  £budget", one bar; no divider lines between rows, so bars aren't mistaken
+  for rules; no bar at all when there's no budget or spend) with a short tag: "▲
   Over by £…" (agreed bar runs past the budget in rose stripes — never colour
   alone), "✓ All paid", "Not booked yet"; areas with nothing show "Nothing
   yet". **By month** ("Payments"): Paid so far · Still to pay (agreed −

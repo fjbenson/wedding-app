@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createAppointment, deleteAppointment, updateAppointment } from "@/lib/db/appointments";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
-import { returnTo } from "@/lib/return-to";
+import { returnTo, stayAfterSave } from "@/lib/return-to";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -55,7 +55,7 @@ export async function saveAppointmentAction(appointmentId: string | null, formDa
   }
 
   refresh();
-  redirect(returnTo(formData, "/plan"));
+  redirect(appointmentId ? stayAfterSave(`/plan/appointments/${appointmentId}`) : returnTo(formData, "/plan"));
 }
 
 export async function deleteAppointmentAction(appointmentId: string, formData?: FormData) {

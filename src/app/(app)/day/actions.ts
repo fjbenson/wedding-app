@@ -19,7 +19,7 @@ import {
 } from "@/lib/db/day";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
-import { returnTo } from "@/lib/return-to";
+import { returnTo, stayAfterSave } from "@/lib/return-to";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -70,7 +70,7 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
     revalidatePath(`/area/${fromArea}`);
     redirect(`/area/${fromArea}#day`);
   }
-  redirect(returnTo(formData, "/day"));
+  redirect(id ? stayAfterSave(`/day/run-sheet/${id}`) : returnTo(formData, "/day"));
 }
 
 export async function deleteRunSheetItemAction(id: string) {
@@ -225,7 +225,7 @@ export async function saveTransportRunAction(id: string | null, formData: FormDa
     failed(back, "That didn't save.", error);
   }
   refresh();
-  redirect(TRANSPORT);
+  redirect(id ? stayAfterSave(`/day/transport/${id}`) : TRANSPORT);
 }
 
 export async function deleteTransportRunAction(id: string) {

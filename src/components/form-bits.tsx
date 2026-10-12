@@ -5,6 +5,7 @@ import { CalendarDays } from "lucide-react";
 import { ReturnTo } from "./back-link";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
+import { useFormReset } from "./reset-boundary";
 
 /** Shared pieces for the add/edit forms. */
 
@@ -54,7 +55,7 @@ function snapshot(form: HTMLFormElement) {
  * `whenChanged` (editing): it only rises into view once something on the
  * form is different from how it opened — and goes again if it's put back
  * (owner: just looking at a to-do shouldn't show a big Save) — with a
- * Cancel beside it that leaves without saving, back to where you came from.
+ * Cancel beside it that puts the form back how it opened, staying on it.
  */
 export function SubmitBar({
   label,
@@ -68,6 +69,7 @@ export function SubmitBar({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const reset = useFormReset();
   const [changed, setChanged] = useState(false);
 
   useEffect(() => {
@@ -103,7 +105,8 @@ export function SubmitBar({
         <div className="flex gap-2.5">
           <button
             type="button"
-            onClick={() => (onCancel ? onCancel() : window.history.length > 1 ? router.back() : router.push("/"))}
+            // Puts the form back how it opened, staying on it (owner, 12 Oct 2026).
+            onClick={() => (onCancel ? onCancel() : reset ? reset() : window.history.length > 1 ? router.back() : router.push("/"))}
             className="h-[52px] w-[34%] shrink-0 rounded-2xl border border-champagne-400/70 bg-white text-ink transition hover:bg-cream"
           >
             Cancel

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { stayAfterSave } from "@/lib/return-to";
 import { listAreas } from "@/lib/db/areas";
 import { createPayment, deletePayment, saveBudgets, updatePayment } from "@/lib/db/money";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -48,7 +49,7 @@ export async function saveBudgetsAction(formData: FormData) {
   }
 
   refresh();
-  redirect("/money");
+  redirect(stayAfterSave("/money/budget"));
 }
 
 /** Adds a payment (paymentId null) or saves changes to one. */
@@ -82,7 +83,7 @@ export async function savePaymentAction(paymentId: string | null, formData: Form
   }
 
   refresh();
-  redirect("/money?view=month");
+  redirect(paymentId ? stayAfterSave(`/money/payments/${paymentId}`) : "/money?view=month");
 }
 
 /** The quick "paid" / "not paid after all" tap on a payment row. */

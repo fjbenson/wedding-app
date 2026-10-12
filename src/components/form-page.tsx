@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import BackLink from "./back-link";
+import ResetBoundary from "./reset-boundary";
 
 /**
  * The frame around the add and edit forms: a way back (to the view you came
@@ -44,7 +45,9 @@ export default function FormPage({
         </p>
       )}
 
-      <div className="mt-8">{children}</div>
+      <div className="mt-8">
+        <ResetBoundary>{children}</ResetBoundary>
+      </div>
     </main>
   );
 }

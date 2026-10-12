@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { stayAfterSave } from "@/lib/return-to";
 import { deleteHousehold, updateHousehold } from "@/lib/db/contacts";
 import { describe } from "@/lib/errors";
 
@@ -34,7 +35,7 @@ export async function saveHouseholdAction(householdId: string, formData: FormDat
   }
 
   revalidatePath("/people");
-  redirect(`/people/household/${householdId}`);
+  redirect(stayAfterSave(`/people/household/${householdId}/edit`));
 }
 
 export async function deleteHouseholdAction(householdId: string) {

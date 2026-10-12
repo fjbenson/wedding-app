@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { stayAfterSave } from "@/lib/return-to";
 import { listGuests } from "@/lib/db/contacts";
 import {
   createEvents,
@@ -66,7 +67,7 @@ export async function saveEventAction(eventId: string | null, formData: FormData
   }
 
   revalidatePath("/people");
-  redirect("/people");
+  redirect(eventId ? stayAfterSave(`/people/events/${eventId}`) : "/people");
 }
 
 export async function deleteEventAction(eventId: string) {

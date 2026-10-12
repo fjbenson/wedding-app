@@ -126,7 +126,7 @@ export default function SupplierCard({
             supplier={supplier}
             categories={supplierCategories(areas)}
             focus={editField}
-            onCancel={onClose}
+            onCancel={() => setSaves((n) => n + 1)}
             action={async (formData) => {
               const result = await safely(() => saveSupplierCardAction(supplier.id, formData));
               setError(result.error);

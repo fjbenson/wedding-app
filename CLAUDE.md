@@ -634,6 +634,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
    by side (under / ▲ over budget), then a plain Booked list. **Picked and
    built 12 Oct 2026: A + B** (see "Current state"). Next on People: the
    household page and the add-a-guest / add-a-supplier forms.
+   **Suppliers round 2 on canvas 2** (12 Oct 2026, page "Suppliers · Round
+   2 · A phone book"): the owner sees the list as a phone book — call and
+   email from the row, the stage visible, full details on tap (different
+   from the guest list's job, same building blocks). A by area, stage as a
+   badge on the initials (like the guests' role star), round Call and Email
+   buttons on every row (hidden when missing), key underneath; B A to Z with
+   letter headings, the area in gold italic beside each name and a letter
+   index; C like A but the stage as a word under the name. **Waiting on the
+   owner's pick.**
    **11 Oct 2026:** The Day's run sheet settled and built (option D, see
    "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
    look": A ledger, B menu card, C champagne glass — owner loved all three)

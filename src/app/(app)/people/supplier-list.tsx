@@ -201,7 +201,7 @@ export default function SupplierList({
                 ) : (
                   <span className="label">{g.label}</span>
                 )}
-                <span className="text-xs text-stone">{g.rows.length ? groupNote(g.rows) : "To find"}</span>
+                <span className="text-xs text-stone">{supplierCount(g.rows.length)}</span>
               </p>
               <ul>
                 {g.rows.length === 0 && (
@@ -242,13 +242,8 @@ export default function SupplierList({
 
 const ORDER: Record<SupplierStatus, number> = { booked: 0, quoted: 1, enquired: 2, researching: 2, cancelled: 3 };
 
-/** "Booked", or what's still open: "2 quotes · 1 asked". */
-function groupNote(rows: Supplier[]) {
-  if (rows.some((s) => stage(s) === "booked")) return "Booked";
-  const quotes = rows.filter((s) => stage(s) === "quoted").length;
-  const asked = rows.filter((s) => stage(s) === "enquired").length;
-  return [quotes && `${quotes} ${quotes === 1 ? "quote" : "quotes"}`, asked && `${asked} asked`].filter(Boolean).join(" · ");
-}
+/** "1 supplier", "3 suppliers", "0 suppliers" — like the guest list's counts. */
+const supplierCount = (n: number) => `${n} ${n === 1 ? "supplier" : "suppliers"}`;
 
 function CountCard({
   total,

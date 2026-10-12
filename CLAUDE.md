@@ -168,8 +168,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   list's round button and "Show only" menu: any of the wedding's areas, then
   Still to pay · No phone or email · Not taken; pills to take off; `?f=`;
   Booked stays on the count card), "+ Add a supplier",
-  then everyone **grouped by area** in the wedding's order (heading note
-  "Booked" or "2 quotes · 1 asked"; within a group booked → quotes → asked →
+  then everyone **grouped by area** in the wedding's order (heading shows a
+  count, "1 supplier" / "0 suppliers", like the guest list; within a group booked → quotes → asked →
   not taken). Rows: initials, business, contact person, quote, a stage icon
   (✓ ink booked · £ champagne quote in · dashed ? asked · ✕ grey not taken)
   and a key under the list. Tapping one opens the **supplier card**
@@ -534,7 +534,7 @@ access control is RLS. No column-level encryption is planned.
   from what the wedding already has (its **areas**, the ring's dots) with
   faded **ghost rows** you tap to fill in — dashed circle with +, italic
   faded text, opening the add form already pointed at that area. Done on
-  Suppliers (every area shows; an empty one says "To find" with an "Add a
+  Suppliers (every area shows; an empty one says "0 suppliers" with an "Add a
   supplier" row, `/people/suppliers/new?category=…&from=suppliers`), and
   the notes wall's faded blank notes work the same way. Use it on any new
   screen, and fix older empty screens to match as they come up.

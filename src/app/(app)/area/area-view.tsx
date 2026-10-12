@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
+import CopyText from "@/components/copy-text";
+import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
 import { TabDrawing, type Drawing } from "@/components/page-title";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
@@ -323,6 +325,157 @@ function SupplierRow({ s }: { s: Supplier }) {
   );
 }
 
+/** One big figure with its word, tapping through to the list it counts. */
+function Figure({ value, word, href }: { value: number; word: string; href?: string }) {
+  const inner = (
+    <>
+      <span className="type-figure block text-[34px] leading-none !font-light">{value}</span>
+      <span className="type-meta mt-1 block">{word}</span>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="block hover:opacity-80">
+      {inner}
+    </Link>
+  ) : (
+    <span className="block">{inner}</span>
+  );
+}
+
+/** A row that opens a filtered list: a dashed circle when it's something still to sort. */
+function FactRow({ href, title, line, dashed = false }: { href: string; title: string; line?: string; dashed?: boolean }) {
+  return (
+    <Link href={href} className="row-press flex items-center gap-3 border-t border-linen py-3">
+      {dashed && <span aria-hidden className="h-6 w-6 shrink-0 rounded-full border-[1.5px] border-dashed border-champagne-400" />}
+      <span className="min-w-0 flex-1">
+        <span className="type-item block">{title}</span>
+        {line && <span className="type-meta mt-0.5 block truncate">{line}</span>}
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+    </Link>
+  );
+}
+
+/**
+ * Facts from the guest list, for Food & drink, Stationery and Transport
+ * (canvas 2 "Area page · Facts from the guest list", option B, owner's pick
+ * 12 Oct 2026): headed like People (or The Day, for transport), so the page
+ * stays "the tabs, filtered to this area". Every figure opens the list it
+ * counts.
+ */
+function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; supplier?: string; couple: string }) {
+  const people = "/people";
+  if (facts.kind === "food") {
+    const most = Math.max(1, ...facts.meals.map((m) => m.count), facts.notPicked);
+    const names = facts.dietary.slice(0, 2).map((d) => `${d.name.split(" ")[0]} · ${d.note}`);
+    return (
+      <Section title="Guests" sub="Who you're feeding" drawing="guests" seeHref={people} seeLabel="In People">
+        <div className={`grid gap-2 pb-3.5 pt-3.5 ${facts.eveningEventId ? "grid-cols-3" : "grid-cols-2"}`}>
+          <Figure value={facts.day} word={facts.eveningEventId ? "day, coming" : "coming"} href={`${people}?show=attending${facts.dayEventId ? `&of=${facts.dayEventId}` : ""}`} />
+          {facts.eveningEventId && <Figure value={facts.evening} word="evening" href={`${people}?show=attending&of=${facts.eveningEventId}`} />}
+          <Figure value={facts.children} word={facts.children === 1 ? "child" : "children"} href={`${people}?show=attending&f=children`} />
+        </div>
+        {facts.meals.length + facts.notPicked > 0 && (
+          <div className="border-t border-linen py-3.5">
+            <h3 className="section-label">Meals</h3>
+            <ul className="mt-2.5 grid gap-2 text-[14px]">
+              {facts.meals.map((m) => (
+                <li key={m.name} className="flex items-center gap-3">
+                  <span className="w-[5.5rem] shrink-0 truncate">{m.name}</span>
+                  <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-linen">
+                    <span className="block h-1.5 rounded-full bg-champagne-600" style={{ width: `${(m.count / most) * 100}%` }} />
+                  </span>
+                  <span className="type-figure w-7 shrink-0 text-right text-base">{m.count}</span>
+                </li>
+              ))}
+              {facts.notPicked > 0 && (
+                <li>
+                  <Link href={`${people}?show=attending`} className="flex items-center gap-3 text-champagne-600">
+                    <span className="w-[5.5rem] shrink-0">Not picked</span>
+                    <span aria-hidden className="h-1 flex-1 rounded-full border border-dashed border-champagne-400" />
+                    <span className="type-figure w-7 shrink-0 text-right text-base !text-champagne-600">{facts.notPicked}</span>
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+        {facts.dietary.length > 0 ? (
+          <FactRow
+            href={`${people}?f=dietary`}
+            title={facts.dietary.length === 1 ? "1 dietary need" : `${facts.dietary.length} dietary needs`}
+            line={[...names, facts.dietary.length > 2 ? `+${facts.dietary.length - 2} more` : ""].filter(Boolean).join(", ")}
+          />
+        ) : (
+          <p className="border-t border-linen py-3.5 text-sm text-stone">No dietary needs recorded yet.</p>
+        )}
+        <div className="border-t border-linen">
+          <CopyText text={catererText(facts, couple)} label={supplier ? `Copy the list for ${supplier}` : "Copy the list for the caterer"} />
+        </div>
+      </Section>
+    );
+  }
+  if (facts.kind === "stationery") {
+    return (
+      <Section title="Guests" sub="Who you're sending to" drawing="guests" seeHref={people} seeLabel="In People">
+        <div className="grid grid-cols-3 gap-2 pb-3.5 pt-3.5">
+          <Figure value={facts.households} word={facts.households === 1 ? "household" : "households"} href={`${people}?view=households`} />
+          <Figure value={facts.invited} word="invited" href={`${people}?show=pending`} />
+          <Figure value={facts.toInvite} word="to invite" href={`${people}?show=to_invite`} />
+        </div>
+        {facts.noAddress.length > 0 ? (
+          <FactRow
+            href={`${people}?f=noaddress`}
+            title={`${facts.noAddress.length} with no address yet`}
+            line={[...facts.noAddress.slice(0, 3), facts.noAddress.length > 3 ? `+${facts.noAddress.length - 3}` : ""].filter(Boolean).join(", ")}
+            dashed
+          />
+        ) : (
+          facts.households > 0 && <p className="border-t border-linen py-3.5 text-sm text-stone">Every household has an address.</p>
+        )}
+        {facts.addresses && (
+          <div className="border-t border-linen">
+            <CopyText text={facts.addresses} label="Copy every address for the envelopes" />
+          </div>
+        )}
+      </Section>
+    );
+  }
+  return (
+    <Section title="On the day" sub="Who's travelling, and when" drawing="day" seeHref="/day?tab=transport" seeLabel="In The Day">
+      {facts.runs.length > 0 ? (
+        <ul>
+          {facts.runs.map((r) => (
+            <li key={r.id}>
+              <Link href={`/day/transport/${r.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
+                <span className="type-figure w-12 shrink-0 text-lg">{r.time}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="type-item block truncate">{r.vehicle}</span>
+                  <span className="type-meta mt-0.5 block truncate">
+                    {[r.route, r.people === 1 ? "1 person" : `${r.people} people`].filter(Boolean).join(" · ")}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Empty>No cars or coaches on the day yet.</Empty>
+      )}
+      {facts.withoutLift > 0 && (
+        <FactRow
+          href="/day?tab=transport"
+          title={facts.withoutLift === 1 ? "1 day guest without a lift" : `${facts.withoutLift} day guests without a lift`}
+          line="Tap to put them on a car"
+          dashed
+        />
+      )}
+      <Adds links={[{ href: "/day/transport/new", label: "Add a car or coach" }]} />
+    </Section>
+  );
+}
+
 /**
  * One area of the wedding (screens 5 and 6 in docs/information-architecture.md):
  * the same template for every area, including ones a couple invents.
@@ -348,7 +501,12 @@ export default function AreaView({
   error,
   detail,
   areas,
+  guestFacts,
+  couple,
 }: {
+  /** Facts from the guest list, for the areas that show them (src/lib/area-guests.ts). */
+  guestFacts: AreaGuestFacts | null;
+  couple: string;
   area: AreaRow;
   /** The wedding's areas with their budgets, for the supplier card. */
   areas: (AreaOption & { budget?: number | null })[];
@@ -498,6 +656,8 @@ export default function AreaView({
           )}
           <Adds links={[{ href: `/people/suppliers/new?category=${key}`, label: "Add a supplier" }]} />
         </Section>
+
+        {guestFacts && <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} />}
 
         <Section
           title="Plan"

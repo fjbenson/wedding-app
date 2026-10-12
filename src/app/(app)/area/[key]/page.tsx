@@ -9,6 +9,11 @@ import { countInspo, listInspo } from "@/lib/db/inspo";
 import { moneyFor, paymentArea } from "@/lib/budget";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { listGuests, listHouseholds } from "@/lib/db/contacts";
+import { listEvents, listRsvps } from "@/lib/db/rsvps";
+import { getDay } from "@/lib/db/day";
+import { areaGuestFacts, guestFactsKind } from "@/lib/area-guests";
+import { coupleName } from "@/lib/couple-name";
 import AreaView from "../area-view";
 
 export const metadata = { title: "Area — Wedding App" };
@@ -41,6 +46,21 @@ export default async function AreaPage({
     listAreas(wedding.id),
   ]);
   const allPayments = payments ?? [];
+
+  // Food & drink, Stationery and Transport also show facts from the guest
+  // list (src/lib/area-guests.ts); other areas don't ask for them.
+  const kind = guestFactsKind(area.key);
+  let guestFacts = null;
+  if (kind) {
+    const [guests, households, events, rsvps, day] = await Promise.all([
+      listGuests(wedding.id),
+      listHouseholds(wedding.id),
+      listEvents(wedding.id),
+      listRsvps(wedding.id),
+      kind === "transport" ? getDay(wedding.id) : Promise.resolve(null),
+    ]);
+    guestFacts = areaGuestFacts(kind, { guests, households, events, rsvps, runs: day?.runs, passengers: day?.passengers });
+  }
   const areaSuppliers = suppliers.filter((s) => s.supplier_details?.category === area.key);
   const supplierIds = new Set(areaSuppliers.map((s) => s.id));
 
@@ -62,6 +82,8 @@ export default async function AreaPage({
       editing={
         edit === "facts" || edit === "note" || (edit && /^note:[0-9a-f-]{36}$/i.test(edit)) ? edit : null
       }
+      guestFacts={guestFacts}
+      couple={coupleName(wedding.name)}
       error={error}
       detail={detail}
     />

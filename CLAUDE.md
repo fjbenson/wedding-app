@@ -81,7 +81,20 @@ Next.js scaffold. Built so far, against the plan's tabs:
   [area]** (key facts via `?edit=facts`, notes — "- " lines become bullets,
   `rich-text.tsx` — and a line to its Inspo pictures). Adds sit at the foot
   of each card. The old tiles (supplier, to pay, next appointment) folded
-  into those sections; a booked supplier's call/email is on their card. Supplier stages (12 Oct 2026): **In touch → Quote in →
+  into those sections; a booked supplier's call/email is on their card.
+  **Facts from the guest list** (canvas 2 "Area page · Facts from the guest
+  list", option B, owner's pick 12 Oct 2026; `src/lib/area-guests.ts`,
+  `GuestsSection` in `area-view.tsx`): three areas get a fifth section after
+  People, worked out from the guest list each time (nothing stored twice).
+  **Food & drink** (key `food`, or `catering`): Guests · "Who you're
+  feeding" — day / evening / children coming, a bar per meal choice plus
+  "Not picked", the dietary needs, and **Copy the list for [caterer]**
+  (`catererText()`, `CopyText` in `src/components/copy-text.tsx`).
+  **Stationery**: Guests · "Who you're sending to" — households, invited, to
+  invite, the ones with no address yet, and **Copy every address for the
+  envelopes**. **Transport**: "On the day" with the pocket watch — each car
+  or coach from The Day, and day guests coming without a lift. Every figure
+  opens the guest list (or The Day) already filtered. Supplier stages (12 Oct 2026): **In touch → Quote in →
   Booked** (booked last); **Not taken** isn't a stage — a quiet "We didn't go
   with them" / "Bring them back" on the supplier card (`SUPPLIER_STAGES` vs
   `SUPPLIER_STATUSES` in `src/lib/supplier-status.ts`)
@@ -444,7 +457,10 @@ calls the anon key the *publishable* key — same thing).
 build that fails there leaves the last good version live. Tell the owner in
 plain words what changed once it's pushed.
 **Check the deploy actually went live** (12 Oct 2026: a forms update failed
-on Vercel while building fine locally, and the owner saw no change). After
+on Vercel while building fine locally, and the owner saw no change). **Since the
+move to Pro (12 Oct 2026) Vercel no longer reports back to GitHub** — the
+status check below comes back empty even when the change is live, so ask
+the owner to look on their phone (or at vercel.com › Deployments) instead. After
 pushing, look at Vercel's verdict on the commit:
 `gh api repos/fjbenson/wedding-app/commits/<sha>/statuses --jq '.[] | "\(.context) \(.state) \(.description)"'`
 — wait for `success` before saying it's live. The build logs need the

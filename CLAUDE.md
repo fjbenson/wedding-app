@@ -59,7 +59,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   its **area page** (`/area/[key]`, screens 5–6): key facts
   (`areas.details`, `0005_area_details.sql`), cost, to-dos and suppliers
   tagged with that area, and "take off the hub" / "not planning this". The
-  ring's + opens `/area/new` (screen 7): add your own, or bring one back.
+  ring's + opens `/area/new` (screen 7) — **three steps since 12 Oct 2026**
+  (canvas 2 "Area · Add in three steps"; `area-steps.tsx`): 1 the name (tap
+  a taken-off area to bring it back, or an idea), 2 **its icon**, already
+  guessed from the name, with a search ("lights" finds the bulb) over a
+  shortlist of Lucide icons with search words (`src/lib/area-icons.ts`; add
+  a line there to offer another), 3 a budget or Skip; then its page. The
+  icon's name is stored in `areas.icon` (`0016_area_icon.sql`; until it's
+  run the icon is quietly left out) and `areaIcon(key, icon)` draws it.
+  Changing it later (tap the icon on the area page) is designed, not built.
   **Area page design settled 7 Oct 2026** (canvas "Area page · Round 4 ·
   One template"): one template, same pieces in the same order for every
   area. A photo-collage cover from the area's Inspo folder (soft-colour
@@ -527,7 +535,7 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0015_supplier_website.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0016_area_icon.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check

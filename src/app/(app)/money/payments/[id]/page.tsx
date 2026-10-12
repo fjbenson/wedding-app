@@ -26,7 +26,7 @@ export default async function PaymentPage({
   const { areas, suppliers } = await formOptions(payment.wedding_id);
 
   return (
-    <FormPage backHref="/money?tab=payments" backLabel="Money" title={payment.description} error={error} detail={detail}>
+    <FormPage backHref="/money?view=month" backLabel="Money" title={payment.description} error={error} detail={detail}>
       <PaymentForm action={savePaymentAction.bind(null, payment.id)} payment={payment} suppliers={suppliers} areas={areas} />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton

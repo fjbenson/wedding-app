@@ -82,7 +82,7 @@ export async function savePaymentAction(paymentId: string | null, formData: Form
   }
 
   refresh();
-  redirect("/money?tab=payments");
+  redirect("/money?view=month");
 }
 
 /** The quick "paid" / "not paid after all" tap on a payment row. */
@@ -90,7 +90,7 @@ export async function markPaidAction(paymentId: string, paid: boolean) {
   try {
     await updatePayment(paymentId, { paid_on: paid ? todayISO() : null });
   } catch (error) {
-    failed("/money?tab=payments", "That didn't change.", error);
+    failed("/money?view=month", "That didn't change.", error);
   }
   refresh();
 }
@@ -102,5 +102,5 @@ export async function deletePaymentAction(paymentId: string) {
     failed(`/money/payments/${paymentId}`, "That didn't remove it.", error);
   }
   refresh();
-  redirect("/money?tab=payments");
+  redirect("/money?view=month");
 }

@@ -237,13 +237,26 @@ Next.js scaffold. Built so far, against the plan's tabs:
   form's "Done by / Start around" switch — so no migration; its date
   passing means "start now", never overdue. The starter list includes
   nudges. The to-do form offers the wedding's own areas.
-- **Money** (`/money`, screens 22–24; `0006_money.sql`): **Budget** — the
-  wedding's budget and each area's share against committed and paid, by
-  area — and **Payments** (`?tab=payments`): due and paid, tick to mark paid,
-  overdue flagged, booked suppliers' unscheduled balances offered as
-  payments. How committed/paid are counted lives only in `src/lib/budget.ts`
-  (area pages use it too): committed = booked suppliers' quotes + payments
-  not for a supplier; paid = supplier deposits + payments marked paid.
+- **Money** (`/money`, screens 22–24; `0006_money.sql`): **rebuilt 12 Oct
+  2026** to canvas 2 "Money · Round 4" (owner's pick: B for the budget, C
+  for the schedule). Money moves **Budget → Agreed → Paid**, and the rest
+  has a schedule. A corner switch **By area | By month** (`money-view.tsx`;
+  `?view=month`, old `?tab=payments` links still land there). No sentences,
+  figures and bars. **By area** (default, "The budget"): the whole wedding
+  as three thin labelled bars (Budget, Agreed, Paid — `ThreeBars`), the next
+  payment due, then each area with its own three bars and a short tag: "▲
+  Over by £…" (agreed bar runs past the budget in rose stripes — never colour
+  alone), "✓ All paid", "Not booked yet"; areas with nothing show "Nothing
+  yet". **By month** ("Payments"): Paid so far · Still to pay (agreed −
+  paid), Add a payment, a **column per month** from now to the wedding
+  (first column = paid so far, dark; due months light; overdue counts in
+  this month; scrolls sideways if long), then "Not scheduled yet" balances,
+  the payments grouped by month with totals (tick £ to mark paid), No date
+  yet, and Paid folded at the foot. "Agreed" is the UI word for what
+  `src/lib/budget.ts` calls committed (committed = booked suppliers' quotes
+  + payments not for a supplier; paid = supplier deposits + payments marked
+  paid; area pages use it too). A laptop table view is for the laptop
+  design pass, not a switch here (owner agreed).
 - **Quick capture and inbox** (screens 35–36, `0008_notes.sql`): jot a
   thought and/or a link from anywhere — a glass pen button above the phone
   menu bar (not on the Hub, which has its own jot box), a button in the
@@ -558,8 +571,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    B three thin bars per area (budget, agreed, paid), C the Payments tab: a
    column per month to the wedding (paid dark, due light) then what's due
    grouped by month. Overspend never by colour alone (validator: rose vs
-   dark gold too close for colour-blind eyes). **Waiting on the owner's
-   pick.** **Laptop design has begun:** phone and
+   dark gold too close for colour-blind eyes). **Picked and built 12 Oct
+   2026: B + C** as By area | By month (see "Current state"). **Laptop design has begun:** phone and
    laptop are designed separately but share colours, type and each tab's
    signature (owner, 11 Oct 2026). Canvas 2 "Laptop · The Hub": A centre
    stage, **B magazine spread** (top menu bar, huge names, an "At a glance"

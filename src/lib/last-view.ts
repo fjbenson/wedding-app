@@ -29,7 +29,7 @@ export function rememberView(url: string) {
 }
 
 /**
- * The view to go back to for `href` ("/plan", "/money?tab=payments"): the one
+ * The view to go back to for `href` ("/plan", "/money?view=month"): the one
  * last seen on that screen, if it agrees with everything `href` asks for —
  * so going back to Payments never lands on Budget.
  */

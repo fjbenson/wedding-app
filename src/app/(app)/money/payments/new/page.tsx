@@ -28,7 +28,7 @@ export default async function NewPaymentPage({
       : undefined;
 
   return (
-    <FormPage backHref="/money?tab=payments" backLabel="Money" title="Add a payment" error={error} detail={detail}>
+    <FormPage backHref="/money?view=month" backLabel="Money" title="Add a payment" error={error} detail={detail}>
       <PaymentForm action={savePaymentAction.bind(null, null)} suppliers={suppliers} areas={areas} prefill={prefill} />
     </FormPage>
   );

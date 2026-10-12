@@ -12,11 +12,11 @@ export const metadata = { title: "Money — Wedding App" };
 export default async function MoneyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ view?: string; tab?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { tab, error, detail } = await searchParams;
+  const { view, tab, error, detail } = await searchParams;
 
   const [areaRows, suppliers, found] = await Promise.all([
     listAreas(wedding.id),
@@ -30,7 +30,9 @@ export default async function MoneyPage({
 
   return (
     <MoneyView
-      tab={tab === "payments" ? "payments" : "budget"}
+      // ?tab=payments is the old link to what is now By month.
+      view={view === "month" || tab === "payments" ? "month" : "area"}
+      weddingDate={wedding.wedding_date}
       total={moneyFor(undefined, suppliers, payments, wedding.budget ?? null)}
       byArea={moneyByArea(areas, suppliers, payments)}
       payments={payments}

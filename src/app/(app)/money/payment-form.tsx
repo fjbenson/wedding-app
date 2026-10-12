@@ -174,7 +174,7 @@ export default function PaymentForm({
         </section>
       </Folded>
 
-      <SubmitBar label={payment ? "Save changes" : "Add payment"} />
+      <SubmitBar label={payment ? "Save changes" : "Add payment"} whenChanged={!!payment} />
     </form>
   );
 }

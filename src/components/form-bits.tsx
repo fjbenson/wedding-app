@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { ReturnTo } from "./back-link";
 import { useFormStatus } from "react-dom";
@@ -39,15 +39,54 @@ export function SubmitButton({ label }: { label: string }) {
   );
 }
 
+/** Everything a form would send, as one string, to tell whether it's changed. */
+function snapshot(form: HTMLFormElement) {
+  return JSON.stringify([...new FormData(form).entries()].map(([k, v]) => [k, typeof v === "string" ? v : v.name]));
+}
+
 /**
  * The form's main button, kept in reach (owner, 12 Oct 2026: a date was
  * changed and never saved because Save was below the fold). It sits at the
  * foot of the screen while the form scrolls, on a soft fade of the page,
  * then settles in place at the end of the form.
+ *
+ * `whenChanged` (editing): it only rises into view once something on the
+ * form is different from how it opened — and goes again if it's put back
+ * (owner: just looking at a to-do shouldn't show a big Save).
  */
-export function SubmitBar({ label }: { label: string }) {
+export function SubmitBar({ label, whenChanged = false }: { label: string; whenChanged?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [changed, setChanged] = useState(false);
+
+  useEffect(() => {
+    const form = ref.current?.closest("form");
+    if (!whenChanged || !form) return;
+    const start = snapshot(form);
+    let frame = 0;
+    // Taps on quick picks and tiles change the form through React a moment
+    // later, so look on the next frame rather than at the event itself.
+    const check = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setChanged(snapshot(form) !== start));
+    };
+    const events = ["input", "change", "click", "keyup"] as const;
+    events.forEach((e) => form.addEventListener(e, check));
+    return () => {
+      cancelAnimationFrame(frame);
+      events.forEach((e) => form.removeEventListener(e, check));
+    };
+  }, [whenChanged]);
+
+  const shown = !whenChanged || changed;
   return (
-    <div className="sticky bottom-0 z-20 -mx-5 mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6">
+    <div
+      ref={ref}
+      className={
+        shown
+          ? `sticky bottom-0 z-20 -mx-5 mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 ${whenChanged ? "rise-in" : ""}`
+          : "hidden"
+      }
+    >
       <SubmitButton label={label} />
     </div>
   );

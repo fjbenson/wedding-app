@@ -143,7 +143,7 @@ export default function BudgetForm({ total, areas }: { total: number | null; are
         </section>
       )}
 
-      <SubmitBar label="Save the budget" />
+      <SubmitBar label="Save the budget" whenChanged />
     </form>
   );
 }

@@ -199,3 +199,19 @@ body::before {
     font-size: max(16px, 1em);
   }
 }
+
+/* The Save bar rising into view once a form has been changed (SubmitBar). */
+@keyframes rise-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+.rise-in {
+  animation: rise-in 0.22s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+}

@@ -86,7 +86,7 @@ export default function MilestoneForm({
         </div>
       </section>
 
-      <SubmitBar label={milestone ? "Save changes" : "Add to the plan"} />
+      <SubmitBar label={milestone ? "Save changes" : "Add to the plan"} whenChanged={!!milestone} />
     </form>
   );
 }

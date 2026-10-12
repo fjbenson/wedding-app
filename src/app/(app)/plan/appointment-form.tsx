@@ -169,7 +169,7 @@ export default function AppointmentForm({
         </section>
       </Folded>
 
-      <SubmitBar label={appointment ? "Save changes" : "Add appointment"} />
+      <SubmitBar label={appointment ? "Save changes" : "Add appointment"} whenChanged={!!appointment} />
     </form>
   );
 }

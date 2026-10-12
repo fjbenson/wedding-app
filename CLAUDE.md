@@ -656,7 +656,10 @@ access control is RLS. No column-level encryption is planned.
   `form-bits.tsx` keeps the main button at the foot of the screen while the
   form scrolls, then it settles at the end of the form. On the to-do,
   appointment, payment, budget, guest and supplier forms; use it on new ones.
-  Editing says "Save changes".
+  Editing says "Save changes". **When editing it only rises into view once something is
+  changed** (`whenChanged`; it compares the form with how it opened, so
+  putting it back hides it again) — owner, 12 Oct 2026: just looking at a
+  to-do shouldn't show a big Save.
 - **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
   just doesn't show the structure of the page"). Never fill a screen with
   made-up data the couple has to delete; instead draw the real structure

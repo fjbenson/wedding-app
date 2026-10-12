@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { CalendarClock, Check, ChevronRight } from "lucide-react";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { formatMonthYear, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
+import { formatMonthYear } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone } from "@/types/db";
+import { AppointmentRow } from "./appointment-row";
 import PlanCalendar, { type Dot } from "./calendar";
 import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
@@ -96,27 +96,7 @@ export default function Agenda({
         />
       );
     }
-    const a = entry.appointment;
-    const details = [
-      `${formatWeekdayDayMonth(a.on_date)}${a.at_time ? ` · ${formatTime(a.at_time)}` : ""}`,
-      a.location,
-      // "at Hazel Gap Barn · with Hazel Gap Barn" says it twice.
-      supplierName(a.contact_id) && !a.location?.includes(supplierName(a.contact_id)!) && `with ${supplierName(a.contact_id)}`,
-    ].filter(Boolean);
-    return (
-      <li key={`a-${a.id}`} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${faded ? "opacity-60" : ""}`}>
-        <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
-          {faded ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
-        </span>
-        <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
-          <span className="min-w-0 flex-1">
-            <span className={`type-item block ${faded ? "!text-stone" : ""}`}>{a.title}</span>
-            <span className="type-meta mt-1 block">{details.join(" · ")}</span>
-          </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-        </Link>
-      </li>
-    );
+    return <AppointmentRow key={`a-${entry.appointment.id}`} appointment={entry.appointment} been={faded} supplier={supplierName(entry.appointment.contact_id)} />;
   };
 
   const earlierMonth = fromEarlier[0]?.date?.slice(0, 7);

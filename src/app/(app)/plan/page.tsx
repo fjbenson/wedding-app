@@ -32,6 +32,7 @@ export default async function PlanPage({
       suppliers={suppliers.map((s) => ({
         id: s.id,
         name: s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" "),
+        area: s.supplier_details?.category ?? null,
       }))}
       weddingDate={wedding.wedding_date}
       areas={areaOptions(areas)}

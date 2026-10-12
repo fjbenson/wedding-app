@@ -284,9 +284,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   things and **Add on this day**: a to-do or an appointment with the date
   filled in (`/plan/new?date=`, `/plan/appointments/new?date=`). No day is
   picked on arrival; `?day=` keeps the card open across Back.
-  **List** (`?view=list`, `todo-list.tsx`): **just the to-dos** — no
-  appointments or payments, which live on the Calendar — as a **glass card
-  per month** ("October *2026*", "This month · 2"): Overdue first, then
+  **List** (`?view=list`, `todo-list.tsx`): **to-dos and appointments**
+  (since 12 Oct 2026, so Plan means the same in every view and on the area
+  page; payments live in Money; one shared `AppointmentRow` in
+  `appointment-row.tsx`) as a **glass card per month** ("October *2026*",
+  "This month · 2 to-dos · 1 appointment"; been appointments fold in with done): Overdue first, then
   each month, then No date yet (`#no-date`), done folded at the foot; tick
   off in place. **By area is now a filter** on the List ("All areas ▾",
   `area-filter.tsx`, `&area=<key>` or `none`), not a view. Old links
@@ -318,7 +320,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   2026** to canvas 2 "Money · Round 4" (owner's pick: B for the budget, C
   for the schedule). Money moves **Budget → Agreed → Paid**, and the rest
   has a schedule. A corner switch **By area | By month** (`money-view.tsx`;
-  `?view=month`, old `?tab=payments` links still land there). No sentences,
+  `?view=month`, old `?tab=payments` links still land there). **An area filter**
+  (12 Oct 2026, the same `AreaFilter` as Plan's List, `&area=<key>` or
+  `none`) narrows either view to one area: the top card is that area's
+  money, By month only its payments; the switch keeps the filter. The area
+  page's "In Money ›" opens By month filtered. Rule: **every tab can be
+  narrowed to an area, and the area page's links land on that.** No sentences,
   figures and bars. **By area** (default, "The budget"; **Round 5, 12 Oct
   2026**: owner picked the top of option 3 and the list of option 4): the
   whole wedding on a glass card (agreed of budget large, one thick bar —

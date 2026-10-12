@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, ChevronRight, Plus } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
+import AreaFilter from "../plan/area-filter";
 import PageTitle from "@/components/page-title";
 import type { AreaOption } from "@/lib/areas";
 import type { Money } from "@/lib/budget";
@@ -38,8 +39,17 @@ export default function MoneyView({
   ready,
   error,
   detail,
+  areas,
+  area,
+  scope,
 }: {
   view: "area" | "month";
+  /** The wedding's areas, for the filter. */
+  areas: AreaOption[];
+  /** The area filter (`?area=`): an area's key, `none` for Other, or null for everything. */
+  area: string | null;
+  /** The filtered area's name, or null when showing everything. */
+  scope: string | null;
   total: Money;
   byArea: (AreaOption & Money)[];
   payments: Payment[];
@@ -56,13 +66,21 @@ export default function MoneyView({
       <CornerSwitch
         label="Show the money"
         tabs={[
-          { label: "By area", href: "/money", active: view === "area" },
-          { label: "By month", href: "/money?view=month", active: view === "month" },
+          { label: "By area", href: area ? `/money?area=${encodeURIComponent(area)}` : "/money", active: view === "area" },
+          { label: "By month", href: area ? `/money?view=month&area=${encodeURIComponent(area)}` : "/money?view=month", active: view === "month" },
         ]}
       />
       <PageTitle drawing="money" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         {view === "area" ? "The budget" : "Payments"}
       </PageTitle>
+      <div className="mt-4 flex justify-end">
+        <AreaFilter
+          areas={areas}
+          current={area}
+          base={view === "month" ? "/money?view=month" : "/money"}
+          label="Show the money for"
+        />
+      </div>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -79,7 +97,7 @@ export default function MoneyView({
       )}
 
       {view === "area" ? (
-        <ByArea total={total} byArea={byArea} payments={payments} />
+        <ByArea total={total} byArea={byArea} payments={payments} scope={scope} />
       ) : (
         <ByMonth total={total} payments={payments} suppliers={suppliers} balances={balances} weddingDate={weddingDate} />
       )}
@@ -111,7 +129,17 @@ function flag(m: Money): { text: string; tone: string } {
   return { text: "No budget yet", tone: "text-champagne-600" };
 }
 
-function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption & Money)[]; payments: Payment[] }) {
+function ByArea({
+  total,
+  byArea,
+  payments,
+  scope,
+}: {
+  total: Money;
+  byArea: (AreaOption & Money)[];
+  payments: Payment[];
+  scope: string | null;
+}) {
   const next = payments
     .filter((p) => !p.paid_on && p.due_date)
     .sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0];
@@ -122,11 +150,11 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
     <>
       <Link
         href="/money/budget"
-        aria-label="The whole wedding — change the budget"
+        aria-label={`${scope ?? "The whole wedding"} — change the budget`}
         className="glass-card row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
       >
         <p className="flex items-baseline justify-between gap-3">
-          <span className="type-meta">The whole wedding</span>
+          <span className="type-meta">{scope ?? "The whole wedding"}</span>
           <span className="type-meta flex items-center !text-champagne-600">
             {total.budget === null ? "Set budget" : "Change"}
             <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />

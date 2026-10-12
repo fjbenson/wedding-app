@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
+import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import { TabDrawing, type Drawing } from "@/components/page-title";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
@@ -7,13 +7,14 @@ import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
 import { unscheduledBalances, type Money } from "@/lib/budget";
-import { formatDayMonth, formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
+import { formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
 import { markPaidAction } from "../money/actions";
+import { AppointmentRow } from "../plan/appointment-row";
 import { MilestoneRow } from "../plan/milestone-row";
 import { SupplierCards, SupplierLink } from "../people/supplier-cards";
 import type { AreaOption } from "@/lib/areas";
@@ -297,10 +298,6 @@ function Folded({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
-function appointmentLine(a: Appointment) {
-  return [a.at_time && formatTime(a.at_time), a.location].filter(Boolean).join(" · ");
-}
-
 function SupplierRow({ s }: { s: Supplier }) {
   const d = s.supplier_details;
   const status = d?.status ?? "enquired";
@@ -413,21 +410,9 @@ export default function AreaView({
   const free = money.budget !== null ? money.budget - money.committed : null;
   const anyMoney = money.budget !== null || money.committed > 0 || money.paid > 0;
 
+  const supplierNames = new Map(suppliers.map((s) => [s.id, supplierName(s)]));
   const appointmentRow = (a: Appointment, been: boolean) => (
-    <li key={a.id} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${been ? "opacity-60" : ""}`}>
-      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
-        {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
-      </span>
-      <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
-        <span className="min-w-0 flex-1">
-          <span className={`type-item block truncate ${been ? "!text-stone" : ""}`}>{a.title}</span>
-          <span className="type-meta mt-1 block truncate">
-            {[formatWeekdayDayMonth(a.on_date), appointmentLine(a)].filter(Boolean).join(" · ")}
-          </span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-      </Link>
-    </li>
+    <AppointmentRow key={a.id} appointment={a} been={been} supplier={a.contact_id ? supplierNames.get(a.contact_id) : undefined} />
   );
 
   return (
@@ -552,7 +537,7 @@ export default function AreaView({
           />
         </Section>
 
-        <Section id="payments" title="Money" sub="Budget, agreed, paid" drawing="money" seeHref="/money" seeLabel="In Money">
+        <Section id="payments" title="Money" sub="Budget, agreed, paid" drawing="money" seeHref={`/money?view=month&area=${key}`} seeLabel="In Money">
           {anyMoney ? (
             <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
               <span className="flex flex-wrap items-baseline gap-x-2">

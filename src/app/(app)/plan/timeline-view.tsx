@@ -15,8 +15,9 @@ import TodoList from "./todo-list";
  *
  * - Calendar (the default): to-dos and appointments as dots on their days
  *   (payments live in Money only, owner, 12 Oct 2026). agenda.tsx + calendar.tsx.
- * - List (`?view=list`): just the to-dos, a glass card per month, with an
- *   area filter (`&area=`) in place of the old "By area" view. todo-list.tsx.
+ * - List (`?view=list`): to-dos and appointments, a glass card per month,
+ *   with an area filter (`&area=`) in place of the old "By area" view.
+ *   todo-list.tsx.
  *
  * The old list ("the road to the day": a gold line with a dot per month) is
  * kept in mind for The Day's run sheet rather than Plan (docs/DESIGN.md).
@@ -33,7 +34,7 @@ export default function TimelineView({
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
   appointments: Appointment[] | null;
-  suppliers: { id: string; name: string }[];
+  suppliers: { id: string; name: string; area: string | null }[];
   weddingDate: string | null;
   areas: AreaOption[];
   view: "calendar" | "list";
@@ -85,7 +86,7 @@ export default function TimelineView({
       )}
 
       {view === "list" ? (
-        <TodoList milestones={milestones} areas={areas} area={area} today={today} />
+        <TodoList milestones={milestones} appointments={appointments ?? []} suppliers={suppliers} areas={areas} area={area} today={today} />
       ) : (
         <Agenda
           milestones={milestones}

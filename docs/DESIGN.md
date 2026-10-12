@@ -32,8 +32,9 @@ ring on a champagne cover described further down:
 - **Background: paper under a lamp** (canvas 2, "Background · Round 2 ·
   Not boring, not amateur", option A, owner's pick 12 Oct 2026) — one light
   source: near-white at the top of the screen warming to a deeper ivory
-  (`#EFE5D5`) below and at the edges, with a visible fine grain and faint
-  fibres (`body::before` in `globals.css`). History: round 14's champagne
+  (`#EFE5D5`) below and at the edges (`body::before` in `globals.css`). A
+  paper grain on top was tried and dropped the same day (owner: "doesn't
+  feel right") — no texture. History: round 14's champagne
   satin (diagonal stripes) looked cheap; plain paper with a faint grain
   (round 1, option 1) looked like a white background; round 15's plain
   ivory looked flat. Rule from this: **light should look like it has one

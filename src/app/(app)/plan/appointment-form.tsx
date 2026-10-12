@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Clock, MapPin, NotebookPen, UsersRound } from "lucide-react";
 import { ReturnTo } from "@/components/back-link";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, AreaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import type { Appointment } from "@/types/db";
@@ -169,9 +169,7 @@ export default function AppointmentForm({
         </section>
       </Folded>
 
-      <div className="mt-8">
-        <SubmitButton label={appointment ? "Save" : "Add appointment"} />
-      </div>
+      <SubmitBar label={appointment ? "Save changes" : "Add appointment"} />
     </form>
   );
 }

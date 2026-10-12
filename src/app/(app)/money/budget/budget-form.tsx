@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
 import { formatMoney, parseMoney, withCommas } from "@/lib/money";
 import { saveBudgetsAction } from "../actions";
@@ -143,7 +143,7 @@ export default function BudgetForm({ total, areas }: { total: number | null; are
         </section>
       )}
 
-      <SubmitButton label="Save the budget" />
+      <SubmitBar label="Save the budget" />
     </form>
   );
 }

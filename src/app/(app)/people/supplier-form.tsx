@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, FileText, Globe, Mail, MoreHorizontal, Phone, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import MoneyInput from "@/components/money-input";
 import { AreaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
@@ -143,9 +143,7 @@ export default function SupplierForm({
         </button>
       )}
 
-      <div className="mt-8">
-        <SubmitButton label="Add supplier" />
-      </div>
+      <SubmitBar label="Add supplier" />
     </form>
   );
 }

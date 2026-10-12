@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, Star } from "lucide-react";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import { GUEST_ROLES } from "@/lib/guest-roles";
 import type { Household, WeddingEvent } from "@/types/db";
 import { DetailLabel } from "./guest-table";
@@ -165,9 +165,7 @@ export default function GuestForm({
         </div>
       </section>
 
-      <div className="mt-8">
-        <SubmitButton label="Add to the list" />
-      </div>
+      <SubmitBar label="Add to the list" />
     </form>
   );
 }

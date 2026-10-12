@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CircleCheck, Hourglass, NotebookPen, Store } from "lucide-react";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, AreaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import { withCommas } from "@/lib/money";
@@ -174,9 +174,7 @@ export default function PaymentForm({
         </section>
       </Folded>
 
-      <div className="mt-8">
-        <SubmitButton label={payment ? "Save" : "Add payment"} />
-      </div>
+      <SubmitBar label={payment ? "Save changes" : "Add payment"} />
     </form>
   );
 }

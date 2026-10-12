@@ -643,6 +643,12 @@ access control is RLS. No column-level encryption is planned.
   when on, menu opens to the left) on the left, **Sort** on the right
   (canvas 2 "People · Fewer boxes" led here: too many boxed things). The
   count cards' big **All** tile is champagne, not black, when picked.
+- **A form's Save stays in reach** (owner, 12 Oct 2026: a date was
+  changed and never saved because Save was below the fold): `SubmitBar` in
+  `form-bits.tsx` keeps the main button at the foot of the screen while the
+  form scrolls, then it settles at the end of the form. On the to-do,
+  appointment, payment, budget, guest and supplier forms; use it on new ones.
+  Editing says "Save changes".
 - **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
   just doesn't show the structure of the page"). Never fill a screen with
   made-up data the couple has to delete; instead draw the real structure

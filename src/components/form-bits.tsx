@@ -32,10 +32,24 @@ export function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 disabled:opacity-60"
+      className="h-[52px] w-full rounded-2xl bg-ink px-4 text-ivory shadow-[0_10px_24px_-12px_rgb(30_27_24/0.5)] transition hover:bg-ink/90 disabled:opacity-60"
     >
       {pending ? "Saving…" : label}
     </button>
+  );
+}
+
+/**
+ * The form's main button, kept in reach (owner, 12 Oct 2026: a date was
+ * changed and never saved because Save was below the fold). It sits at the
+ * foot of the screen while the form scrolls, on a soft fade of the page,
+ * then settles in place at the end of the form.
+ */
+export function SubmitBar({ label }: { label: string }) {
+  return (
+    <div className="sticky bottom-0 z-20 -mx-5 mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6">
+      <SubmitButton label={label} />
+    </div>
   );
 }
 

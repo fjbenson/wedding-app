@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NotebookPen } from "lucide-react";
 import { ReturnTo } from "@/components/back-link";
-import { SubmitButton } from "@/components/form-bits";
+import { SubmitBar } from "@/components/form-bits";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part, TITLE_INPUT } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
@@ -86,9 +86,7 @@ export default function MilestoneForm({
         </div>
       </section>
 
-      <div className="mt-8">
-        <SubmitButton label={milestone ? "Save changes" : "Add to the plan"} />
-      </div>
+      <SubmitBar label={milestone ? "Save changes" : "Add to the plan"} />
     </form>
   );
 }

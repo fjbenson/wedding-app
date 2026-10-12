@@ -420,6 +420,12 @@ calls the anon key the *publishable* key — same thing).
 `npm run build` must pass. Vercel deploys `main` about a minute later, and a
 build that fails there leaves the last good version live. Tell the owner in
 plain words what changed once it's pushed.
+**Check the deploy actually went live** (12 Oct 2026: a forms update failed
+on Vercel while building fine locally, and the owner saw no change). After
+pushing, look at Vercel's verdict on the commit:
+`gh api repos/fjbenson/wedding-app/commits/<sha>/statuses --jq '.[] | "\(.context) \(.state) \(.description)"'`
+— wait for `success` before saying it's live. The build logs need the
+owner's Vercel login (the deployment page on vercel.com).
 
 **Start and end of a chat (11 Oct 2026).** Every cloud chat runs
 `.claude/hooks/session-start.sh` first: it brings the copy up to date with

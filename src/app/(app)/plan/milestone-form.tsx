@@ -63,7 +63,7 @@ export default function MilestoneForm({
       />
 
       <Part label="When">
-        <DateCard name="when" value={date} onChange={setDate} weddingDate={weddingDate} clearable />
+        <DateCard name="when" value={date} onChange={setDate} weddingDate={weddingDate} />
       </Part>
 
       <Part label="Area">

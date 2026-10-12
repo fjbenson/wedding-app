@@ -244,8 +244,10 @@ const addMonths = (iso: string, months: number) => {
  * A date as a card: the day written out large, quick picks (next week,
  * next month, … the month before the wedding) wrapping onto as many lines
  * as they need — not a sideways scroll, which hid half of them (owner, 12
- * Oct 2026) — and the calendar for anything else. `clearable` adds a ✕ to
- * take the date off again.
+ * Oct 2026) — and the calendar for anything else. The quick picks only
+ * show while there's no date (owner, 12 Oct 2026); once one's picked, tap
+ * the date to change it in the phone's calendar, or ✕ to take it off and
+ * get the quick picks back.
  */
 export function DateCard({
   name,
@@ -254,7 +256,6 @@ export function DateCard({
   weddingDate,
   required,
   quick = true,
-  clearable = false,
 }: {
   name: string;
   value: string;
@@ -262,7 +263,6 @@ export function DateCard({
   weddingDate?: string | null;
   required?: boolean;
   quick?: boolean;
-  clearable?: boolean;
 }) {
   const today = todayISO();
   const picks = [
@@ -297,7 +297,7 @@ export function DateCard({
           aria-label="Date"
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
-        {clearable && value && (
+        {value && (
           <button
             type="button"
             onClick={() => onChange("")}
@@ -308,7 +308,7 @@ export function DateCard({
           </button>
         )}
       </label>
-      {quick && (
+      {quick && !value && (
         <div className="flex flex-wrap gap-2 border-t border-linen px-4 py-3">
           {picks.map((p) => (
             <button

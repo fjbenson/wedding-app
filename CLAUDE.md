@@ -332,8 +332,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `areaTiles`, `DateCard`, `Line`, `CARD`, `Folded`): the name large (24px,
   under the page title — owner, 12 Oct 2026); **to-dos simplified the same
   day**: the name, then an optional **date card** (the day written out large,
-  ✕ to take it off, quick picks that wrap onto two lines rather than scroll
-  sideways: next week, next month, in 3 months, 6 months / a month / the
+  ✕ to take it off, quick picks — shown only while there's no date — that wrap onto two
+  lines rather than scroll sideways: next week, next month, in 3 months, 6 months / a month / the
   week before the day), area tiles, and notes always open; appointments offer one-tap name ideas (Venue visit, Dress
   fitting…), the date card, a time card with quick taps (10:00…18:00), a
   Where and who card (picking a supplier picks their area), then the area as

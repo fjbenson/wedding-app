@@ -5,7 +5,7 @@ import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import AreaFilter from "../plan/area-filter";
 import PageTitle from "@/components/page-title";
-import type { AreaOption } from "@/lib/areas";
+import { areaIcon, type AreaOption } from "@/lib/areas";
 import type { Money } from "@/lib/budget";
 import { formatDayMonth, formatMonthYear, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -111,20 +111,18 @@ export default function MoneyView({
 /*
  * Canvas 2 "Money · Round 5" (owner's pick 12 Oct 2026): the top of option 3
  * (a glass card — agreed of budget, one thick bar, Paid · To pay · Still
- * free) and the list of option 4 (a menu card: name, dotted line, figure,
- * one slim bar underneath). No divider lines between areas (owner: they got
- * mixed up with the bars) — space separates the rows, so the only lines in
- * the list are the bars, and the dotted line joining name to figure.
+ * free). The areas were option 4's menu-card rows until 12 Oct 2026; now
+ * they're little glass cards, two to a row (owner's call).
  */
 
-/** The short word under an area's bar. */
+/** The short word under an area's bar (short enough for a half-width card). */
 function flag(m: Money): { text: string; tone: string } {
   if (m.budget !== null && m.committed > m.budget) {
     return { text: `▲ Over by ${formatMoney(m.committed - m.budget)}`, tone: "text-[#9A3F2B]" };
   }
   if (m.committed > 0 && m.paid >= m.committed) return { text: "✓ All paid", tone: "text-ink" };
   if (m.committed > 0) {
-    return { text: `${formatMoney(m.paid)} paid · ${formatMoney(m.committed - m.paid)} to go`, tone: "text-stone" };
+    return { text: `${formatMoney(m.committed - m.paid)} to go`, tone: "text-stone" };
   }
   if (m.budget !== null) return { text: "Not booked yet", tone: "text-stone" };
   return { text: "No budget yet", tone: "text-champagne-600" };
@@ -191,36 +189,39 @@ function ByArea({
           <h2 className="section-label">By area</h2>
           <AddButton href="/money/payments/new" label="Add a payment" />
         </div>
-        <ul className="mt-1">
+        {/* Little cards, two to a row (owner, 12 Oct 2026: "areas as cards
+            instead of rows"): the area's icon and name, what's agreed large,
+            "of £budget", its bar and the short word. */}
+        <ul className="mt-3 grid grid-cols-2 gap-3">
           {byArea.map((a) => {
             const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
             const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";
-            const ofBudget = a.committed > 0 ? (a.budget !== null ? `of ${formatMoney(a.budget)}` : "") : a.budget !== null ? "budget" : "";
+            const ofBudget = a.committed > 0 ? (a.budget !== null ? `of ${formatMoney(a.budget)}` : "agreed") : a.budget !== null ? "budget" : "";
+            const Icon = areaIcon(a.key || "other", a.icon);
             const body = (
               <>
-                <span className="flex items-baseline">
-                  <span className="type-item min-w-0 truncate">{a.label}</span>
-                  <span aria-hidden className="mx-2 min-w-4 flex-1 -translate-y-[5px] border-b-[1.5px] border-dotted border-stone/35" />
-                  <span className="type-figure shrink-0 text-lg !font-light">{figure}</span>
-                  {ofBudget && <span className="ml-1.5 shrink-0 text-xs text-stone">{ofBudget}</span>}
+                <span className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
+                  <span className="type-item min-w-0 truncate text-[15px]">{a.label}</span>
                 </span>
-                {/* No budget and nothing agreed: no bar at all, just the word under the name. */}
-                {(a.budget !== null || a.committed > 0) && (
-                  <span className="mt-3 block">
-                    <BudgetBar money={a} />
-                  </span>
-                )}
-                <span className={`mt-2 block text-xs font-semibold uppercase tracking-[0.1em] ${note.tone}`}>{note.text}</span>
+                <span className="mt-3 block type-figure text-[26px] leading-none !font-light">{figure}</span>
+                <span className="mt-1 block h-4 text-xs text-stone">{ofBudget}</span>
+                {/* No budget and nothing agreed: no bar, just the word. */}
+                <span className="mt-2.5 block h-2">{(a.budget !== null || a.committed > 0) && <BudgetBar money={a} />}</span>
+                <span className={`mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] ${note.tone}`}>
+                  {note.text}
+                </span>
               </>
             );
+            const card = "glass-card block h-full overflow-hidden rounded-[22px] p-4";
             return (
-              <li key={a.key || "none"} className={a.key ? "row-press" : undefined}>
+              <li key={a.key || "none"}>
                 {a.key ? (
-                  <Link href={`/area/${encodeURIComponent(a.key)}`} className="block py-[18px]">
+                  <Link href={`/area/${encodeURIComponent(a.key)}`} className={`${card} row-press [--row-bleed:16px]`}>
                     {body}
                   </Link>
                 ) : (
-                  <div className="py-[18px]">{body}</div>
+                  <div className={card}>{body}</div>
                 )}
               </li>
             );

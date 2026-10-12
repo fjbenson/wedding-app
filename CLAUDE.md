@@ -663,8 +663,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
-   up (12 Oct 2026): People's other screens** (suppliers, household, add a
-   guest) — Plan, Money and The Day's run sheet are now settled.
+   up (12 Oct 2026): The Day's Seating and Transport, then the forms and
+   capture** — Plan, People, Money (rounds 5 and 6) and The Day's run sheet
+   are settled.
    **Suppliers round 1 on canvas 2** (12 Oct 2026, page "Suppliers · Round
    1 · Like the guest list"): A the list mirroring the guest list (count
    card All · Booked · Quote in · Asked, search + Filter, grouped by area,
@@ -675,8 +676,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    "Open the Photos page ›") — would replace the supplier form page; C the
    alternative: a glass card per area still being decided with quotes side
    by side (under / ▲ over budget), then a plain Booked list. **Picked and
-   built 12 Oct 2026: A + B** (see "Current state"). Next on People: the
-   household page and the add-a-guest form (the supplier form is done).
+   built 12 Oct 2026: A + B** (see "Current state"). The household page
+   (Round 1, 9 Oct) and the add-a-guest form (laid out like the card) were
+   already done — People's design pass is complete.
    **"People · Fewer boxes"** on canvas 2 (12 Oct 2026; owner: "containers
    and containers"): 1 flat search, 2 numbers off their card, 3 Add in the
    title row. The owner chose instead to move Add (a round black + at the end

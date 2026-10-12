@@ -847,7 +847,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of 12 Oct 2026 chat):** the forms still
+   `calendar.tsx`). **Next up (end of the 12 Oct 2026 evening chat):** **the Money
+   budget, again** — the owner, seeing it full of the demo wedding's data:
+   "biggest downfall right now is budget… STILL". Start next chat by opening
+   the demo (Settings › Your weddings) and asking what feels off with real
+   numbers in it; options on canvas 2 before building. After that: the forms still
    in the older plain style (car or coach, day/evening event, Inspo save,
    jot a note; household edit) — bring them into line with the visual forms;
    then The Day's Seating, then Journeys (backlog) and capture. Ideas waiting:

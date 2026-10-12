@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { getArea } from "@/lib/db/areas";
+import { getArea, listAreas } from "@/lib/db/areas";
+import { areaOptions } from "@/lib/areas";
 import { listAppointments } from "@/lib/db/appointments";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
@@ -28,7 +29,7 @@ export default async function AreaPage({
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
-  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts] = await Promise.all([
+  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows] = await Promise.all([
     listMilestones(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -37,6 +38,7 @@ export default async function AreaPage({
     // Enough of the latest to find four with a picture for the cover.
     listInspo(wedding.id, { folder: area.key, limit: 12 }),
     countInspo(wedding.id),
+    listAreas(wedding.id),
   ]);
   const allPayments = payments ?? [];
   const areaSuppliers = suppliers.filter((s) => s.supplier_details?.category === area.key);
@@ -45,6 +47,7 @@ export default async function AreaPage({
   return (
     <AreaView
       area={area}
+      areas={areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }))}
       milestones={milestones.filter((m) => m.category === area.key)}
       suppliers={areaSuppliers}
       money={moneyFor(area.key, suppliers, allPayments, area.budget ?? null)}

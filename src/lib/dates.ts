@@ -17,13 +17,8 @@ export function daysUntil(date: string): number {
 /** "Saturday, 12 June 2027" */
 export function formatLongDate(date: string): string {
   const [year, month, day] = date.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
+  return `${weekday}, ${day} ${MONTHS[month - 1]} ${year}`;
 }
 
 /** "12.06.2027" — the date under the couple's names on the home screen. */
@@ -32,14 +27,19 @@ export function formatFullDotDate(date: string): string {
   return `${day}.${month}.${year}`;
 }
 
+/*
+ * Day and month names are spelled out here rather than left to the browser:
+ * a phone and the server word them differently ("Wed, 14 Oct" or "Wed 14
+ * Oct", "Sep" or "Sept"), and a card drawn by both then didn't match.
+ */
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const parts = (date: string) => date.split("-").map(Number);
+
 /** "1 Nov" — dates beside list items. */
 export function formatDayMonth(date: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
+  const [, month, day] = parts(date);
+  return `${day} ${MONTHS[month - 1].slice(0, 3)}`;
 }
 
 /** True if the date falls in the current calendar month. */
@@ -56,12 +56,8 @@ export function todayISO(): string {
 
 /** "November 2026" */
 export function formatMonthYear(date: string): string {
-  const [year, month] = date.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-GB", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const [year, month] = parts(date);
+  return `${MONTHS[month - 1]} ${year}`;
 }
 
 /** "14:30:00" → "2:30pm", "09:00" → "9am". */
@@ -95,13 +91,8 @@ export function nowInLondon(): { date: string; time: string } {
 
 /** "Sat 3 Oct" */
 export function formatWeekdayDayMonth(date: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
+  const [year, month, day] = parts(date);
+  return `${DAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]} ${day} ${MONTHS[month - 1].slice(0, 3)}`;
 }
 
 /** "Today", "Yesterday", "3 days ago", then "12 Oct" — when a note was jotted. */

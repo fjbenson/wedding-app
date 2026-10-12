@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronRight, Mail, Pencil, Phone, Plus, X } from "lucide-react";
+import { ChevronRight, Mail, Pencil, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
-import { formatDayMonth } from "@/lib/dates";
+import { formatWeekdayDayMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
 import type { Payment, SupplierStatus } from "@/types/db";
@@ -142,31 +142,9 @@ export default function SupplierCard({
                 </p>
               </div>
             </div>
-            {payments.length > 0 && (
-              <ul className="mt-4 border-t border-linen [--row-bleed:22px]">
-                {payments.map((p) => (
-                  <li key={p.id} className="row-press border-b border-linen">
-                    <Link href={`/money/payments/${p.id}`} className="flex items-center gap-3 py-3">
-                      <span className="min-w-0 flex-1">
-                        <span className={`block truncate text-[15px] ${p.paid_on ? "text-stone" : "text-ink"}`}>{p.description}</span>
-                        <span className="type-meta mt-0.5 block">
-                          {p.paid_on ? `Paid ${formatDayMonth(p.paid_on)}` : p.due_date ? `Due ${formatDayMonth(p.due_date)}` : "No date"}
-                        </span>
-                      </span>
-                      <span className={`type-figure shrink-0 text-lg !font-light ${p.paid_on ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link
-              href={`/money/payments/new?supplier=${supplier.id}`}
-              className="mt-3 inline-flex h-11 items-center gap-1.5 text-sm text-champagne-600 hover:text-ink"
-            >
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              {payments.length > 0 ? "Add another payment" : "Add a payment"}
-            </Link>
+            {/* The payments themselves live on the area page and in Money —
+                deciding and paying — so the card just says where they stand. */}
+            <PaymentsLine payments={payments} areaKey={area?.key ?? null} supplierId={supplier.id} />
           </section>
 
           <section className="-mx-[22px] mt-4 border-t border-linen px-[22px] pt-6">
@@ -396,5 +374,34 @@ function RemoveSupplier({ id, name }: { id: string; name: string }) {
         </button>
       </div>
     </div>
+  );
+}
+
+/** "2 payments · next £250 Wed 14 Oct ›", or a way to add the first. */
+function PaymentsLine({ payments, areaKey, supplierId }: { payments: Payment[]; areaKey: string | null; supplierId: string }) {
+  const next = payments
+    .filter((p) => !p.paid_on && p.due_date)
+    .sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0];
+  const href = areaKey ? `/area/${encodeURIComponent(areaKey)}#payments` : "/money?view=month";
+  if (payments.length === 0) {
+    return (
+      <Link href={`/money/payments/new?supplier=${supplierId}`} className="mt-3 inline-flex h-11 items-center text-sm text-champagne-600 hover:text-ink">
+        + Add a payment
+      </Link>
+    );
+  }
+  return (
+    <Link href={href} className="mt-3 flex min-h-11 items-center gap-2 border-t border-linen pt-3 text-sm text-ink hover:text-champagne-600">
+      <span className="min-w-0 flex-1">
+        {payments.length} {payments.length === 1 ? "payment" : "payments"}
+        {next && (
+          <span className="text-stone">
+            {" "}
+            · next {formatMoney(next.amount)} {formatWeekdayDayMonth(next.due_date!)}
+          </span>
+        )}
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+    </Link>
   );
 }

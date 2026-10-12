@@ -14,6 +14,8 @@ import { supplierStatusLabel } from "@/lib/supplier-status";
 import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
 import { markPaidAction } from "../money/actions";
 import { MilestoneRow } from "../plan/milestone-row";
+import { SupplierCards, SupplierLink } from "../people/supplier-cards";
+import type { AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
 import {
   addAreaNoteAction,
@@ -273,7 +275,7 @@ function SupplierRow({ s }: { s: Supplier }) {
   const strong = status === "booked" || status === "quoted";
   return (
     <li className="border-b border-linen last:border-b-0">
-      <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3.5">
+      <SupplierLink id={s.id} className="flex w-full items-center gap-3 py-3.5">
         <span className={`type-item min-w-0 flex-1 truncate ${status === "cancelled" ? "!text-stone" : ""}`}>
           {supplierName(s)}
         </span>
@@ -287,7 +289,7 @@ function SupplierRow({ s }: { s: Supplier }) {
         <span className="type-figure w-[4.5rem] shrink-0 text-right text-xl">
           {d?.quoted_cost != null ? formatMoney(d.quoted_cost) : <span className="text-stone">—</span>}
         </span>
-      </Link>
+      </SupplierLink>
     </li>
   );
 }
@@ -315,8 +317,11 @@ export default function AreaView({
   editing,
   error,
   detail,
+  areas,
 }: {
   area: AreaRow;
+  /** The wedding's areas with their budgets, for the supplier card. */
+  areas: (AreaOption & { budget?: number | null })[];
   milestones: Milestone[];
   suppliers: Supplier[];
   /** Budget, committed and paid, counted as the Money tab counts them. */
@@ -374,6 +379,7 @@ export default function AreaView({
   const tile = "glass-card relative flex flex-col rounded-[22px] p-4";
 
   return (
+    <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
     <main className="page relative pb-28 lg:pb-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-20 top-[520px] h-72 w-72 rounded-full bg-[#E6D9C4] blur-[55px]" />
@@ -425,9 +431,9 @@ export default function AreaView({
             {lead ? (
               <>
                 <span className="label">Supplier</span>
-                <Link href={`/people/${lead.id}`} className="type-item mt-2 hover:underline">
+                <SupplierLink id={lead.id} className="type-item mt-2 hover:underline">
                   {supplierName(lead)}
-                </Link>
+                </SupplierLink>
                 <span className="type-meta mt-1.5">
                   {["Booked", lead.supplier_details?.company_name && [lead.first_name, lead.last_name].filter(Boolean).join(" ")]
                     .filter(Boolean)
@@ -591,7 +597,7 @@ export default function AreaView({
           )}
         </Section>
 
-        <Section title="Payment schedule" addHref={`/money/payments/new?area=${key}`}>
+        <Section id="payments" title="Payment schedule" addHref={`/money/payments/new?area=${key}`}>
           {deposits.length + schedule.length + unscheduled.length > 0 ? (
             <ul>
               {deposits.map((s) => (
@@ -599,10 +605,10 @@ export default function AreaView({
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white">
                     <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
                   </span>
-                  <Link href={`/people/${s.id}`} className="min-w-0 flex-1">
+                  <SupplierLink id={s.id} className="min-w-0 flex-1">
                     <span className="type-item block truncate">Deposit</span>
                     <span className="type-meta mt-1 block truncate">Paid · {supplierName(s)}</span>
-                  </Link>
+                  </SupplierLink>
                   <span className="type-figure text-lg !text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
                 </li>
               ))}
@@ -751,5 +757,6 @@ export default function AreaView({
         </Section>
       </div>
     </main>
+    </SupplierCards>
   );
 }

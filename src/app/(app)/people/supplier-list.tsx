@@ -156,7 +156,14 @@ export default function SupplierList({
           {groups.map((g) => (
             <section key={g.key || "none"} aria-label={g.label}>
               <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-                <span className="label">{g.label}</span>
+                {/* The heading opens the area page: where the choosing happens. */}
+                {areas.some((x) => x.key === g.key) ? (
+                  <Link href={`/area/${encodeURIComponent(g.key)}`} className="label hover:text-ink">
+                    {g.label} ›
+                  </Link>
+                ) : (
+                  <span className="label">{g.label}</span>
+                )}
                 <span className="text-xs text-stone">{g.rows.length ? groupNote(g.rows) : "To find"}</span>
               </p>
               <ul>

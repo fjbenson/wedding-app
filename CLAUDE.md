@@ -185,7 +185,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Adding a supplier still uses the form (`/people/suppliers/new`). With
   nothing narrowing the list, **every area shows**, an empty one as a faded
   "Add a supplier" row (see Conventions, "An empty screen still shows its
-  shape"). No
+  shape").
+  **Two jobs, one record** (owner, 12 Oct 2026): the Suppliers list is the
+  **address book** (everyone, every area, contact in two taps); the **area
+  page** is where you **decide** (quotes, stages, payments). The **supplier
+  card** is that supplier's own facts and opens **wherever you are**: on the
+  area page its supplier rows, the "Supplier" tile and deposit rows open it
+  in place (`SupplierCards` / `SupplierLink` in `supplier-cards.tsx`, card in
+  `?supplier=`). The card is contact-first: no payment list — one line ("2
+  payments · next £250 Wed 14 Oct ›" to the area page's `#payments`, or "+
+  Add a payment"). Area headings on the Suppliers list open the area page. No
   **website** field yet — it would need a new column (a small migration).
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
@@ -515,6 +524,13 @@ access control is RLS. No column-level encryption is planned.
   supplier" row, `/people/suppliers/new?category=…&from=suppliers`), and
   the notes wall's faded blank notes work the same way. Use it on any new
   screen, and fix older empty screens to match as they come up.
+- **Dates are worded by the app, not the browser** (12 Oct 2026):
+  `formatDayMonth`, `formatWeekdayDayMonth`, `formatMonthYear` and
+  `formatLongDate` in `src/lib/dates.ts` spell month and day names out
+  themselves. A phone and the server word them differently ("Wed, 14 Oct"
+  vs "Wed 14 Oct", "Sep" vs "Sept"), which made cards drawn by both
+  disagree. Don't use `toLocaleDateString` for anything a client component
+  shows.
 - **Server actions called from client code must not be able to throw into
   React** (9 Oct 2026): after a deploy, a page left open calls the old
   action, which no longer exists, and an uncaught error blanks the screen.

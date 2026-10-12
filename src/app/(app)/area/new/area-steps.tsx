@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { ChevronLeft, Search, X } from "lucide-react";
+import { Check, ChevronLeft, Search, X } from "lucide-react";
 import BackLink from "@/components/back-link";
 import MoneyInput from "@/components/money-input";
 import { AREA_ICONS, guessIcon, iconByName, searchIcons } from "@/lib/area-icons";
@@ -62,9 +62,23 @@ export default function AreaSteps({
             <ChevronLeft className="h-[22px] w-[22px]" strokeWidth={1.6} aria-hidden />
           </button>
         )}
-        <span className="flex items-center gap-[5px]" aria-label={`Step ${step} of 3`}>
+        {/* Circles joined by a line that fills gold as you go (owner's pick, canvas 2 "Area · The step marker", B). */}
+        <span className="flex items-center" aria-label={`Step ${step} of 3`}>
           {[1, 2, 3].map((s) => (
-            <span key={s} className={`h-1.5 rounded-full transition-all ${s === step ? "w-[22px]" : "w-1.5"} ${s <= step ? "bg-ink" : "bg-linen"}`} />
+            <span key={s} className="flex items-center" aria-hidden>
+              {s < step ? (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-champagne-400 text-white">
+                  <Check className="h-3 w-3" strokeWidth={2.4} />
+                </span>
+              ) : s === step ? (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-champagne-400 bg-white">
+                  <span className="h-2 w-2 rounded-full bg-champagne-400" />
+                </span>
+              ) : (
+                <span className="h-6 w-6 rounded-full border-[1.5px] border-linen bg-white" />
+              )}
+              {s < 3 && <span className={`h-0.5 w-[34px] rounded-full transition-colors ${s < step ? "bg-champagne-400" : "bg-linen"}`} />}
+            </span>
           ))}
         </span>
         <span className="w-11 text-right text-xs text-stone">{step} of 3</span>

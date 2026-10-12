@@ -66,7 +66,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   shortlist of Lucide icons with search words (`src/lib/area-icons.ts`; add
   a line there to offer another), 3 a budget or Skip; then its page. The
   icon's name is stored in `areas.icon` (`0016_area_icon.sql`; until it's
-  run the icon is quietly left out) and `areaIcon(key, icon)` draws it.
+  run the icon is quietly left out — **run 12 Oct 2026**) and `areaIcon(key,
+  icon)` draws it. The step marker is circles joined by a line that fills
+  gold, ticks when done, "2 of 3" on the right (canvas 2 "Area · The step
+  marker", B).
   Changing it later (tap the icon on the area page) is designed, not built.
   **Area page design settled 7 Oct 2026** (canvas "Area page · Round 4 ·
   One template"): one template, same pieces in the same order for every
@@ -542,7 +545,7 @@ by hand** in the Supabase SQL editor — the owner has to paste them in.
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0015 are now in** (12 Oct
+only queries) needs no OK. **All migrations 0001–0016 are now in** (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

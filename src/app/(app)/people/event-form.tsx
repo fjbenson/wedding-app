@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { Field, INPUT, SubmitBar } from "@/components/form-bits";
 import type { WeddingEvent } from "@/types/db";
 
 /** Add or rename one part of the wedding. `event` is missing when adding. */
@@ -32,7 +32,7 @@ export default function EventForm({
         />
       </Field>
 
-      <SubmitButton label={event ? "Save" : "Add it"} />
+      <SubmitBar label={event ? "Save changes" : "Add it"} whenChanged={!!event} />
     </form>
   );
 }

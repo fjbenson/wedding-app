@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { Field, INPUT, SubmitBar } from "@/components/form-bits";
 import type { Household } from "@/types/db";
 
 /** A household's name and where its invitation gets posted. */
@@ -63,7 +63,7 @@ export default function HouseholdForm({
         />
       </fieldset>
 
-      <SubmitButton label="Save" />
+      <SubmitBar label="Save changes" whenChanged />
     </form>
   );
 }

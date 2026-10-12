@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, INPUT, SubmitButton } from "@/components/form-bits";
+import { Field, INPUT, SubmitBar } from "@/components/form-bits";
 import type { RunSheetItem, TransportRun } from "@/types/db";
 
 type Action = (formData: FormData) => void | Promise<void>;
@@ -32,7 +32,7 @@ export function RunSheetForm({ action, item }: { action: Action; item?: RunSheet
           className={INPUT}
         />
       </Field>
-      <SubmitButton label={item ? "Save" : "Add to the run sheet"} />
+      <SubmitBar label={item ? "Save changes" : "Add to the run sheet"} whenChanged={!!item} />
     </form>
   );
 }
@@ -60,7 +60,7 @@ export function TransportForm({ action, run }: { action: Action; run?: Transport
       <Field label="Notes" hint="optional">
         <textarea name="notes" rows={3} defaultValue={run?.notes ?? ""} placeholder="e.g. Driver: Mike, 07700 900555" className={INPUT} />
       </Field>
-      <SubmitButton label={run ? "Save" : "Add"} />
+      <SubmitBar label={run ? "Save changes" : "Add"} whenChanged={!!run} />
     </form>
   );
 }

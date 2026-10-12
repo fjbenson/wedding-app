@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { ReturnTo } from "./back-link";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
 /** Shared pieces for the add/edit forms. */
 
@@ -52,10 +53,12 @@ function snapshot(form: HTMLFormElement) {
  *
  * `whenChanged` (editing): it only rises into view once something on the
  * form is different from how it opened — and goes again if it's put back
- * (owner: just looking at a to-do shouldn't show a big Save).
+ * (owner: just looking at a to-do shouldn't show a big Save) — with a
+ * Cancel beside it that leaves without saving, back to where you came from.
  */
 export function SubmitBar({ label, whenChanged = false }: { label: string; whenChanged?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [changed, setChanged] = useState(false);
 
   useEffect(() => {
@@ -87,7 +90,22 @@ export function SubmitBar({ label, whenChanged = false }: { label: string; whenC
           : "hidden"
       }
     >
-      <SubmitButton label={label} />
+      {whenChanged ? (
+        <div className="flex gap-2.5">
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            className="h-[52px] w-[34%] shrink-0 rounded-2xl border border-champagne-400/70 bg-white text-ink transition hover:bg-cream"
+          >
+            Cancel
+          </button>
+          <div className="flex-1">
+            <SubmitButton label={label} />
+          </div>
+        </div>
+      ) : (
+        <SubmitButton label={label} />
+      )}
     </div>
   );
 }

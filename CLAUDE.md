@@ -670,7 +670,10 @@ access control is RLS. No column-level encryption is planned.
   Editing says "Save changes". **When editing it only rises into view once something is
   changed** (`whenChanged`; it compares the form with how it opened, so
   putting it back hides it again) — owner, 12 Oct 2026: just looking at a
-  to-do shouldn't show a big Save.
+  to-do shouldn't show a big Save. It comes with a **Cancel** beside it (leaves
+  without saving, back where you came from). Edit forms using it: to-do,
+  appointment, payment, budget, run sheet moment, car or coach, day/evening
+  event, household.
 - **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
   just doesn't show the structure of the page"). Never fill a screen with
   made-up data the couple has to delete; instead draw the real structure

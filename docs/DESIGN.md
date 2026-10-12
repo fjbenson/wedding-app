@@ -93,7 +93,7 @@ Ivory is the paper, champagne is the detail, ink is the rare accent. Roughly
 | `champagne-100` | `#F1E7D4` | "Done" fills (e.g. venue booked) |
 | `champagne-400` | `#B8914F` | Fine lines only: rules, dashed outlines. **Never text** — about 2.9:1 on ivory |
 | `champagne-600` | `#8E6A2C` | Champagne text: small-caps labels, list numbers |
-| `ink` | `#1E1B18` | Headlines and body text; the rare solid fill (selected area, primary button) |
+| `ink` | `#1E1B18` | Headlines and body text; the rare solid fill — kept for the main action (the round + by search on People, Plan's Add buttons); a picked count tile is champagne, not ink (12 Oct 2026) |
 | `stone` | `#6B655E` | Secondary text: dates, counts |
 
 On a photo, text and icons switch to `#FFFFFF` with a soft shadow. The app

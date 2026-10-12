@@ -166,10 +166,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   screens 12 and 13) — **rebuilt 12 Oct 2026** to canvas 2 "Suppliers ·
   Round 1", A + B (owner's pick), **shaped like the guest list**
   (`supplier-list.tsx`): a count card (All · Booked · Quote in · Asked,
-  each shows just those), search and a **Filter** (always shown, the guest
-  list's round button and "Show only" menu: any of the wedding's areas, then
+  each shows just those), search with a round black **+** (add a supplier) at its end, then a
+  **Filter** (always shown, plain words and the guest list's "Show only" menu: any of the wedding's areas, then
   Still to pay · No phone or email · Not taken; pills to take off; `?f=`;
-  Booked stays on the count card), "+ Add a supplier",
+  Booked stays on the count card),
   then everyone **grouped by area** in the wedding's order (heading shows a
   count, "1 supplier" / "0 suppliers", like the guest list; within a group booked → quotes → asked →
   not taken). **Rows are phone-book entries** (Suppliers round 2, A, 12 Oct
@@ -180,7 +180,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   on the row. A missing phone or email shows as a **faded dashed button**
   that opens the card with that box ready to type in (`editField` →
   `TextRow startEditing`). A key under the list. **Sort** (like the guest
-  list, on the "+ Add a supplier" line): By area (default) or Name, A–Z
+  list, on the Filter line): By area (default) or Name, A–Z
   (one plain list like the guest list, no letter dividers; a leading "The" ignored); kept on the phone
   (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card),
@@ -664,7 +664,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    alternative: a glass card per area still being decided with quotes side
    by side (under / ▲ over budget), then a plain Booked list. **Picked and
    built 12 Oct 2026: A + B** (see "Current state"). Next on People: the
-   household page and the add-a-guest / add-a-supplier forms.
+   household page and the add-a-guest form (the supplier form is done).
+   **"People · Fewer boxes"** on canvas 2 (12 Oct 2026; owner: "containers
+   and containers"): 1 flat search, 2 numbers off their card, 3 Add in the
+   title row. The owner chose instead to move Add (a round black + at the end
+   of search) and pair Filter with Sort on the row under it — built. A
+   flatter search (1) is the next thing to try if it still feels boxy.
    **Suppliers round 2 on canvas 2** (12 Oct 2026, page "Suppliers · Round
    2 · A phone book"): the owner sees the list as a phone book — call and
    email from the row, the stage visible, full details on tap (different

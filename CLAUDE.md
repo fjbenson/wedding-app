@@ -693,9 +693,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    own signature picture** (owner's rule, 10 Oct — `docs/DESIGN.md`):
    Hub ring · People count card · Plan calendar · Money one big
    spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
-   up (12 Oct 2026): The Day's Seating and Transport, then the forms and
-   capture** — Plan, People, Money (rounds 5 and 6) and The Day's run sheet
-   are settled.
+   up (12 Oct 2026): the owner's pick of calendar icons** (canvas 2 "Plan ·
+   Calendar · Icons instead of dots": A the list's marks — ring, tiny
+   calendar, £; B money bag and clock; C tiny round badges; D dots with only
+   payments as £; up to two per day plus "+1"), **then The Day's Seating
+   and Transport, then capture.** Plan, People, Money (rounds 5 and 6), The
+   Day's run sheet and the to-do / appointment / payment forms are settled.
    **Suppliers round 1 on canvas 2** (12 Oct 2026, page "Suppliers · Round
    1 · Like the guest list"): A the list mirroring the guest list (count
    card All · Booked · Quote in · Asked, search + Filter, grouped by area,

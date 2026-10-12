@@ -97,7 +97,8 @@ export default function TodoList({
             </h3>
             <span className="type-meta">
               {card.note ? `${card.note} · ` : ""}
-              {card.items.length}
+              {/* "3 to-dos", not a bare number (owner, 12 Oct 2026). */}
+              {card.items.length === 1 ? "1 to-do" : `${card.items.length} to-dos`}
             </span>
           </div>
           <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-[18px] py-1 [--row-bleed:18px]">

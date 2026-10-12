@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, Check, ChevronRight } from "lucide-react";
+import { Calendar, Check, ChevronRight } from "lucide-react";
 import { formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import type { Appointment } from "@/types/db";
 
@@ -30,8 +30,10 @@ export function AppointmentRow({
   ].filter(Boolean);
   return (
     <li className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${been ? "opacity-60" : ""}`}>
-      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
-        {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
+      {/* Outlined like a to-do's circle so the two read the same size (owner,
+          12 Oct 2026); the plain calendar, as on the Plan calendar. */}
+      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-champagne-400/70 bg-champagne-100 text-champagne-600" aria-hidden>
+        {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <Calendar className="h-3.5 w-3.5" strokeWidth={2} />}
       </span>
       <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
         <span className="min-w-0 flex-1">

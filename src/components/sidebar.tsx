@@ -49,6 +49,7 @@ export default function Sidebar({
             <Link
               key={item.label}
               href={item.href}
+              prefetch
               aria-current={active ? "page" : undefined}
               className={`${className} ${active ? "" : "hover:bg-white/60 hover:text-ink"}`}
             >

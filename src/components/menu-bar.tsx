@@ -31,6 +31,9 @@ export default function MenuBar() {
           <Link
             key={tab.label}
             href={tab.href}
+            // Fetch each tab in full while the bar is on screen, so a tap
+            // shows the real page at once instead of a placeholder.
+            prefetch
             aria-label={tab.label}
             aria-current={active ? "page" : undefined}
             className={className}

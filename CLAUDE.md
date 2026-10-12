@@ -856,6 +856,15 @@ screen is tapped. The middleware and home page check the session with
 and `getCurrentWedding()` is cached per request. Vercel's servers run in Dublin
 (`dub1`, set in `vercel.json`) to sit next to Supabase, which is in Ireland
 (`eu-west-1`). If either moves, move the other.
+**Speed, round 2 (12 Oct 2026; owner: tapping a page "takes a while").**
+Supabase's logs showed the database answering in 10–100ms and pages already
+asking in parallel, so the wait is the trip to Vercel itself. Now: the menu
+bar and sidebar links **fetch each tab in full ahead of time** (`prefetch`),
+the phone **keeps screens for a short while** (`staleTimes` in
+`next.config.ts`: 30s for ones it visited, 60s for ones fetched ahead —
+any save clears it, so your own changes show at once; a partner's edits can
+take up to a minute), and Vercel's **Fluid compute** is on (`vercel.json`)
+so fewer taps wait for a server to wake up.
 
 ### Design decisions still open
 

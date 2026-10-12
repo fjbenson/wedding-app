@@ -17,6 +17,15 @@ const DRAWINGS = {
 export type Drawing = keyof typeof DRAWINGS;
 
 /**
+ * Just the drawing, for a heading that stands for a tab somewhere else — the
+ * area page's People, Plan and Money sections. Decoration only.
+ */
+export function TabDrawing({ drawing, className }: { drawing: Drawing; className: string }) {
+  const { src, width, height } = DRAWINGS[drawing];
+  return <Image src={src} alt="" aria-hidden width={width} height={height} className={className} />;
+}
+
+/**
  * A tab's title with its drawing at the end of the same row. The drawing is
  * decoration only, so screen readers skip it, and it hides on the narrowest
  * phones (under 370px), where it would push the title onto more lines.

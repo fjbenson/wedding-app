@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check, ChevronRight, Plus } from "lucide-react";
+import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import PageTitle from "@/components/page-title";
 import type { AreaOption } from "@/lib/areas";
@@ -25,9 +26,6 @@ import { markPaidAction } from "./actions";
  */
 
 const BUDGET_BAR = "bg-stone/25";
-const AGREED_BAR = "bg-champagne-400/50";
-const PAID_BAR = "bg-champagne-600";
-const OVER_STRIPES = { background: "repeating-linear-gradient(135deg,#B5523B 0 3px,#E8B4A6 3px 6px)" };
 
 export default function MoneyView({
   view,
@@ -99,36 +97,6 @@ export default function MoneyView({
  * mixed up with the bars) — space separates the rows, so the only lines in
  * the list are the bars, and the dotted line joining name to figure.
  */
-
-const pct = (x: number, of: number) => `${Math.min((x / of) * 100, 100)}%`;
-
-/** One bar on the budget's scale: agreed inside, paid inside that, stripes past a tick when over. */
-function BudgetBar({ money, thick = false }: { money: Money; thick?: boolean }) {
-  const budget = money.budget ?? 0;
-  const scale = Math.max(budget, money.committed, money.paid, 1);
-  const over = money.budget !== null && money.committed > budget;
-  return (
-    <span
-      aria-hidden
-      className={`relative block rounded-full bg-linen ${thick ? "h-3.5 overflow-hidden" : "h-2"}`}
-    >
-      <span
-        className={`absolute inset-y-0 left-0 ${over ? "rounded-l-full" : "rounded-full"} ${AGREED_BAR}`}
-        style={{ width: pct(over ? budget : money.committed, scale) }}
-      />
-      <span className={`absolute inset-y-0 left-0 rounded-full ${PAID_BAR}`} style={{ width: pct(money.paid, scale) }} />
-      {over && (
-        <>
-          <span
-            className="absolute -inset-y-0.5 rounded-r-full"
-            style={{ left: pct(budget, scale), width: pct(money.committed - budget, scale), ...OVER_STRIPES }}
-          />
-          <span className="absolute -inset-y-1 w-[1.5px] bg-ink" style={{ left: pct(budget, scale) }} />
-        </>
-      )}
-    </span>
-  );
-}
 
 /** The short word under an area's bar. */
 function flag(m: Money): { text: string; tone: string } {

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
-import ContactButtons from "@/components/contact-buttons";
+import { CalendarClock, Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
+import BudgetBar from "@/components/budget-bar";
+import { TabDrawing, type Drawing } from "@/components/page-title";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
@@ -204,36 +205,77 @@ function StageStrip({ done, current }: { done: boolean[]; current: number }) {
   );
 }
 
-/** A section: a small heading with "+ Add", over one glass card. */
+/**
+ * A section of the area page, headed like the tab it comes from (canvas 2
+ * "Area page · Made of the tabs", option A, owner's pick 12 Oct 2026): the
+ * tab's drawing, its name, a line saying what's in it, and a way through to
+ * the tab itself. The page is the tabs, filtered to one area.
+ */
 function Section({
   id,
   title,
-  addHref,
-  addLabel,
-  addStays = false,
+  sub,
+  drawing,
+  art,
+  seeHref,
+  seeLabel,
   children,
 }: {
   id?: string;
   title: string;
-  addHref?: string;
-  addLabel?: string;
-  /** "+ Add" opens something on this page: keep the scroll where it is. */
-  addStays?: boolean;
+  sub: string;
+  drawing?: Drawing;
+  /** In place of a tab's drawing (the extras have none). */
+  art?: React.ReactNode;
+  seeHref?: string;
+  seeLabel?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="mt-3 scroll-mt-6">
-      <div className="mb-2 flex items-baseline justify-between px-1.5">
-        <h2 className="section-label">{title}</h2>
-        {addHref && (
-          <Link href={addHref} scroll={!addStays} className="label py-1 hover:text-ink">
-            <span aria-hidden>+ </span>
-            {addLabel ?? "Add"}
+    <section id={id} className="mt-6 scroll-mt-6">
+      <div className="mb-2.5 flex items-center gap-3 px-1">
+        {drawing ? (
+          <TabDrawing drawing={drawing} className="-my-2 -ml-1 h-auto max-h-[52px] w-14 shrink-0 object-contain min-[370px]:w-[68px]" />
+        ) : (
+          art
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 className="label">{title}</h2>
+          <p className="type-meta mt-0.5">{sub}</p>
+        </div>
+        {seeHref && (
+          <Link href={seeHref} className="type-meta shrink-0 py-2 !text-champagne-600 hover:!text-ink">
+            {seeLabel} ›
           </Link>
         )}
       </div>
       <div className="glass-card relative overflow-hidden rounded-[22px] px-[18px] py-0.5 [--row-bleed:18px]">{children}</div>
     </section>
+  );
+}
+
+/** The "+ Add …" links at the foot of a section's card. */
+function Adds({ links }: { links: { href: string; label: string; stays?: boolean }[] }) {
+  return (
+    <div className="flex flex-wrap gap-x-6 border-t border-linen">
+      {links.map((l) => (
+        <Link key={l.href} href={l.href} scroll={!l.stays} className="label flex min-h-12 items-center hover:text-ink">
+          <span aria-hidden>+&nbsp;</span>
+          {l.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** The extras' heading picture: the cover's four tiles, small and tilted. */
+function MiniCollage({ photos }: { photos: InspoWithPicture[] }) {
+  return (
+    <span aria-hidden className="grid h-[42px] w-14 shrink-0 -rotate-3 grid-cols-2 gap-[2px] overflow-hidden rounded-[10px] min-[370px]:w-[60px]">
+      {[0, 1, 2, 3].map((i) => (
+        <Tile key={i} photo={photos[i]} index={i} />
+      ))}
+    </span>
   );
 }
 
@@ -252,16 +294,6 @@ function Folded({ label, children }: { label: string; children: React.ReactNode 
       </summary>
       <div className="pb-1">{children}</div>
     </details>
-  );
-}
-
-function DateBox({ date }: { date: string }) {
-  const [day, month] = formatDayMonth(date).split(" ");
-  return (
-    <span aria-hidden className="w-10 shrink-0 text-center">
-      <span className="type-figure block text-2xl leading-none">{day}</span>
-      <span className="mt-1 block text-xs font-medium uppercase tracking-[0.12em] text-champagne-600">{month}</span>
-    </span>
   );
 }
 
@@ -298,11 +330,12 @@ function SupplierRow({ s }: { s: Supplier }) {
  * One area of the wedding (screens 5 and 6 in docs/information-architecture.md):
  * the same template for every area, including ones a couple invents.
  *
- * Laid out as "Area page · Round 4 · One template" on the design canvas: the
- * collage cover, the five stages, tiles for the supplier, the money and the
- * next appointment, then always the same five sections in the same order —
- * Suppliers, Appointments, To-dos, Payment schedule, Notes. Only what's in
- * them changes as the area moves through its stages.
+ * The collage cover and the five stages ("Area page · Round 4 · One
+ * template"), then the tabs, filtered to this area (canvas 2 "Area page ·
+ * Made of the tabs", option A, 12 Oct 2026): People (its suppliers), Plan
+ * (to-dos and appointments by date), Money (budget, agreed, paid, then the
+ * payments), and the extras only an area has — key facts, notes, pictures.
+ * The old supplier / to-pay / next-appointment tiles folded into those.
  */
 export default function AreaView({
   area,
@@ -353,19 +386,22 @@ export default function AreaView({
   );
   const booked = sorted.filter((s) => s.supplier_details?.status === "booked");
   const live = sorted.filter((s) => s.supplier_details?.status !== "cancelled");
-  const quotes = live.map((s) => s.supplier_details?.quoted_cost).filter((q): q is number => q != null);
-  const quoteCount = live.filter((s) => s.supplier_details?.status === "quoted").length;
   // Once someone's booked, everyone else folds away; before that, only the ones not taken.
   const shown = booked.length > 0 ? booked : live;
   const folded = sorted.filter((s) => !shown.includes(s));
-  const lead = booked[0];
 
   const openTodos = milestones.filter(isOpen).sort((a, b) => byDate(planDate(a), planDate(b)));
   const doneTodos = milestones.filter((m) => !isOpen(m));
 
   const upcoming = appointments.filter((a) => a.on_date >= today);
   const past = appointments.filter((a) => a.on_date < today).reverse();
-  const nextAppointment = upcoming[0];
+  // Plan, as the Plan tab has it: to-dos and appointments in one list by date.
+  type PlanEntry = { kind: "todo"; date: string | null; m: Milestone } | { kind: "appointment"; date: string; a: Appointment };
+  const planNow: PlanEntry[] = [
+    ...openTodos.map((m) => ({ kind: "todo" as const, date: planDate(m), m })),
+    ...upcoming.map((a) => ({ kind: "appointment" as const, date: a.on_date, a })),
+  ].sort((x, y) => byDate(x.date, y.date) || (x.kind === y.kind ? 0 : x.kind === "appointment" ? -1 : 1));
+  const planDone = doneTodos.length + past.length;
 
   const supplierIds = new Set(suppliers.map((s) => s.id));
   const deposits = live.filter((s) => (s.supplier_details?.deposit_paid ?? 0) > 0);
@@ -374,9 +410,25 @@ export default function AreaView({
   );
   const unscheduled = unscheduledBalances(booked, payments.filter((p) => p.contact_id && supplierIds.has(p.contact_id)));
   const toPay = Math.max(money.committed - money.paid, 0);
-  const paidShare = money.committed > 0 ? Math.min(money.paid / money.committed, 1) : 0;
+  const free = money.budget !== null ? money.budget - money.committed : null;
+  const anyMoney = money.budget !== null || money.committed > 0 || money.paid > 0;
 
-  const tile = "glass-card relative flex flex-col rounded-[22px] p-4";
+  const appointmentRow = (a: Appointment, been: boolean) => (
+    <li key={a.id} className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${been ? "opacity-60" : ""}`}>
+      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
+        {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />}
+      </span>
+      <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
+        <span className="min-w-0 flex-1">
+          <span className={`type-item block truncate ${been ? "!text-stone" : ""}`}>{a.title}</span>
+          <span className="type-meta mt-1 block truncate">
+            {[formatWeekdayDayMonth(a.on_date), appointmentLine(a)].filter(Boolean).join(" · ")}
+          </span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+      </Link>
+    </li>
+  );
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
@@ -424,92 +476,13 @@ export default function AreaView({
           </form>
         )}
 
-        <div className="mt-1 grid grid-cols-2 gap-3">
-          {/* Who: the booked supplier, or where the choosing is up to. Above the
-              tiles after it so its contact pop-up isn't covered. */}
-          <div className={`${tile} z-10`}>
-            {lead ? (
-              <>
-                <span className="label">Supplier</span>
-                <SupplierLink id={lead.id} className="type-item mt-2 hover:underline">
-                  {supplierName(lead)}
-                </SupplierLink>
-                <span className="type-meta mt-1.5">
-                  {["Booked", lead.supplier_details?.company_name && [lead.first_name, lead.last_name].filter(Boolean).join(" ")]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-                <div className="mt-auto pt-3.5">
-                  <ContactButtons name={supplierName(lead)} phone={lead.phone} email={lead.email} />
-                </div>
-              </>
-            ) : area.diy ? (
-              <>
-                <span className="label">Supplier</span>
-                <span className="type-item mt-2">Doing it ourselves</span>
-                <span className="type-meta mt-1.5">No one to book</span>
-              </>
-            ) : (
-              <>
-                <span className="label">Supplier</span>
-                <span className="type-item mt-2">Not chosen yet</span>
-                <span className="type-meta mt-1.5">
-                  {live.length === 0
-                    ? "No one asked"
-                    : [`${live.length} asked`, quoteCount > 0 && `${plural(quoteCount, "quote")} in`].filter(Boolean).join(" · ")}
-                </span>
-              </>
-            )}
-          </div>
-
-          <Link href="/money" className={`${tile} hover:border-champagne-400`}>
-            {money.committed > 0 || money.paid > 0 ? (
-              <>
-                <span className="label">To pay</span>
-                <span className="type-figure mt-2.5 text-[34px] leading-none">
-                  {formatMoney(toPay)}
-                </span>
-                <span className="mt-4 block h-1 overflow-hidden rounded-full bg-linen">
-                  <span className="block h-1 bg-champagne-600" style={{ width: `${Math.round(paidShare * 100)}%` }} />
-                </span>
-                <span className="mt-2 text-[13px] text-stone">
-                  {formatMoney(money.paid)} of {formatMoney(money.committed)} paid
-                </span>
-                {money.budget !== null && <span className="text-[13px] text-stone">Budget {formatMoney(money.budget)}</span>}
-              </>
-            ) : (
-              <>
-                <span className="label">Budget</span>
-                <span className="type-figure mt-2.5 text-[34px] leading-none">
-                  {money.budget !== null ? formatMoney(money.budget) : "—"}
-                </span>
-                <span className="mt-4 block h-1 rounded-full bg-linen" />
-                <span className="mt-2 text-[13px] text-stone">{money.budget !== null ? "Nothing committed" : "No budget set"}</span>
-                {quotes.length > 0 && (
-                  <span className="text-[13px] text-stone">
-                    {quotes.length > 1 ? "Quotes from" : "Quote"} {formatMoney(Math.min(...quotes))}
-                  </span>
-                )}
-              </>
-            )}
-          </Link>
-        </div>
-
-        {nextAppointment && (
-          <Link href={`/plan/appointments/${nextAppointment.id}`} className="glass-card flex items-center gap-3.5 rounded-[22px] px-[18px] py-3.5 hover:border-champagne-400">
-            <DateBox date={nextAppointment.on_date} />
-            <span className="min-w-0 flex-1">
-              <span className="label block">Next appointment</span>
-              <span className="type-item mt-1.5 block truncate">{nextAppointment.title}</span>
-              <span className="type-meta mt-1 block truncate">
-                {[formatWeekdayDayMonth(nextAppointment.on_date), appointmentLine(nextAppointment)].filter(Boolean).join(" · ")}
-              </span>
-            </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-          </Link>
-        )}
-
-        <Section title="Suppliers" addHref={`/people/suppliers/new?category=${key}`}>
+        <Section
+          title="People"
+          sub={area.diy ? "Doing it yourselves" : booked.length > 0 ? "Who you've booked" : "Who you're asking"}
+          drawing="suppliers"
+          seeHref={`/people?tab=suppliers&f=${encodeURIComponent(`area:${area.key}`)}`}
+          seeLabel="In People"
+        >
           {shown.length > 0 ? (
             <ul>
               {shown.map((s) => (
@@ -538,66 +511,82 @@ export default function AreaView({
               </button>
             </form>
           )}
+          <Adds links={[{ href: `/people/suppliers/new?category=${key}`, label: "Add a supplier" }]} />
         </Section>
 
-        <Section title="Appointments" addHref={`/plan/appointments/new?area=${key}`}>
-          {upcoming.length > 0 ? (
+        <Section
+          title="Plan"
+          sub="To-dos and appointments, by date"
+          drawing="plan"
+          seeHref={`/plan?view=list&area=${key}`}
+          seeLabel="In Plan"
+        >
+          {planNow.length > 0 ? (
             <ul>
-              {upcoming.map((a) => (
-                <li key={a.id} className="border-b border-linen last:border-b-0">
-                  <Link href={`/plan/appointments/${a.id}`} className="flex items-center gap-3.5 py-3.5">
-                    <DateBox date={a.on_date} />
-                    <span className="min-w-0 flex-1">
-                      <span className="type-item block truncate">{a.title}</span>
-                      <span className="type-meta mt-1 block truncate">
-                        {appointmentLine(a) || formatWeekdayDayMonth(a.on_date)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {planNow.map((e) =>
+                e.kind === "todo" ? (
+                  <MilestoneRow key={e.m.id} milestone={e.m} overdue={!!e.m.due_date && e.m.due_date < today} />
+                ) : (
+                  appointmentRow(e.a, false)
+                ),
+              )}
             </ul>
           ) : (
-            <Empty>Nothing booked in. Consultations, tastings and fittings go here.</Empty>
+            <Empty>{planDone > 0 ? "All done." : "Nothing planned yet. Consultations, tastings and things to do go here."}</Empty>
           )}
-          {past.length > 0 && (
-            <Folded label={`${past.length} been`}>
-              <ul>
-                {past.map((a) => (
-                  <li key={a.id}>
-                    <Link href={`/plan/appointments/${a.id}`} className="flex items-center gap-3.5 py-2.5 text-stone">
-                      <DateBox date={a.on_date} />
-                      <span className="min-w-0 flex-1 truncate text-[15px]">{a.title}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Folded>
-          )}
-        </Section>
-
-        <Section title="To-dos" addHref={`/plan/new?area=${key}`}>
-          {openTodos.length > 0 ? (
-            <ul>
-              {openTodos.map((m) => (
-                <MilestoneRow key={m.id} milestone={m} overdue={!!m.due_date && m.due_date < today} />
-              ))}
-            </ul>
-          ) : (
-            <Empty>{doneTodos.length > 0 ? "All done." : "Nothing to do here yet."}</Empty>
-          )}
-          {doneTodos.length > 0 && (
-            <Folded label={`${doneTodos.length} done`}>
+          {planDone > 0 && (
+            <Folded label={`${planDone} done`}>
               <ul>
                 {doneTodos.map((m) => (
                   <MilestoneRow key={m.id} milestone={m} overdue={false} />
                 ))}
+                {past.map((a) => appointmentRow(a, true))}
               </ul>
             </Folded>
           )}
+          <Adds
+            links={[
+              { href: `/plan/new?area=${key}`, label: "To-do" },
+              { href: `/plan/appointments/new?area=${key}`, label: "Appointment" },
+            ]}
+          />
         </Section>
 
-        <Section id="payments" title="Payment schedule" addHref={`/money/payments/new?area=${key}`}>
+        <Section id="payments" title="Money" sub="Budget, agreed, paid" drawing="money" seeHref="/money" seeLabel="In Money">
+          {anyMoney ? (
+            <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
+              <span className="flex flex-wrap items-baseline gap-x-2">
+                <span className="type-figure text-[36px] leading-none !font-light">{formatMoney(money.committed)}</span>
+                <span className="text-sm text-stone">
+                  {money.budget !== null ? `of ${formatMoney(money.budget)} agreed` : "agreed · no budget set"}
+                </span>
+              </span>
+              <span className="mt-3 block">
+                <BudgetBar money={money} />
+              </span>
+              <span className="mt-3 grid grid-cols-3 gap-2 text-[13px]">
+                <span>
+                  <span className="block text-champagne-600">Paid</span>
+                  <span className="type-figure block text-lg !font-light !text-champagne-600">{formatMoney(money.paid)}</span>
+                </span>
+                <span>
+                  <span className="block text-stone">To pay</span>
+                  <span className="type-figure block text-lg !font-light">{formatMoney(toPay)}</span>
+                </span>
+                <span>
+                  <span className="block text-stone">{free !== null && free < 0 ? "Over" : "Still free"}</span>
+                  <span className={`type-figure block text-lg !font-light ${free !== null && free < 0 ? "!text-[#9A3F2B]" : ""}`}>
+                    {free === null ? "—" : free < 0 ? `▲ ${formatMoney(-free)}` : formatMoney(free)}
+                  </span>
+                </span>
+              </span>
+            </Link>
+          ) : (
+            <Link href="/money/budget" className="flex items-center justify-between gap-3 border-b border-linen py-3.5">
+              <span className="text-sm text-stone">No budget for {area.label} yet.</span>
+              <span className="label shrink-0">Set it ›</span>
+            </Link>
+          )}
           {deposits.length + schedule.length + unscheduled.length > 0 ? (
             <ul>
               {deposits.map((s) => (
@@ -660,9 +649,10 @@ export default function AreaView({
           ) : (
             <Empty>Nothing to pay yet. The deposit and balance go here once you book.</Empty>
           )}
+          <Adds links={[{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }]} />
         </Section>
 
-        <Section id="notes" title="Notes" addHref={`/area/${area.key}?edit=note#notes`} addStays>
+        <Section id="notes" title={`Just for ${area.label}`} sub="Key facts, notes and pictures" art={<MiniCollage photos={photos} />}>
           <div className={notes.length > 0 || editing === "note" ? "border-b border-linen" : ""}>
             <div className="flex items-baseline justify-between pt-3.5">
               <h3 className="label">Key facts</h3>
@@ -754,6 +744,14 @@ export default function AreaView({
               )}
             </ul>
           )}
+          <Link
+            href={ideaCount > 0 ? `/inspo?folder=${key}` : `/inspo/new?folder=${key}&from=${encodeURIComponent(`/area/${area.key}`)}`}
+            className="flex items-center justify-between gap-3 border-t border-linen py-3.5"
+          >
+            <span className="text-sm text-ink">{ideaCount > 0 ? `${plural(ideaCount, "idea")} in Inspo` : "No pictures yet"}</span>
+            <span className="label shrink-0">{ideaCount > 0 ? "See them ›" : "Save one ›"}</span>
+          </Link>
+          <Adds links={[{ href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }]} />
         </Section>
       </div>
     </main>

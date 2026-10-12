@@ -68,12 +68,20 @@ Next.js scaffold. Built so far, against the plan's tabs:
   planning). Then the **five stages** — Dream · Compare · Book · Pay ·
   Ready (`src/lib/area-stage.ts`): the first four tick themselves from
   what's recorded, Ready is a button; "we're doing this ourselves"
-  (`areas.diy`) skips Compare and Book. Then tiles (booked supplier with
-  phone/email pop-ups to call or copy · to pay or budget · next
-  appointment) and five sections: Suppliers (quotes until one's booked,
-  then the rest fold away), Appointments, To-dos, Payment schedule, Notes
-  (key facts via `?edit=facts`, plus captures; "- " lines become bullets,
-  `rich-text.tsx`). Supplier stages (12 Oct 2026): **In touch → Quote in →
+  (`areas.diy`) skips Compare and Book. Then **the tabs, filtered to
+  this area** (canvas 2 "Area page · Made of the tabs", option A, owner's
+  pick 12 Oct 2026 — so the page reads as People, Plan and Money for one
+  area): four sections, each headed like its tab with that tab's drawing
+  (`TabDrawing` in `page-title.tsx`) and an "In People › / In Plan › / In
+  Money ›" link to the tab filtered to the area. **People** (its suppliers:
+  quotes until one's booked, then the rest fold away), **Plan** (to-dos and
+  appointments in one list by date, done and been folded), **Money**
+  (agreed of budget, `BudgetBar` from `src/components/budget-bar.tsx`,
+  Paid · To pay · Still free, then the payment schedule), and **Just for
+  [area]** (key facts via `?edit=facts`, notes — "- " lines become bullets,
+  `rich-text.tsx` — and a line to its Inspo pictures). Adds sit at the foot
+  of each card. The old tiles (supplier, to pay, next appointment) folded
+  into those sections; a booked supplier's call/email is on their card. Supplier stages (12 Oct 2026): **In touch → Quote in →
   Booked** (booked last); **Not taken** isn't a stage — a quiet "We didn't go
   with them" / "Bring them back" on the supplier card (`SUPPLIER_STAGES` vs
   `SUPPLIER_STATUSES` in `src/lib/supplier-status.ts`)
@@ -212,7 +220,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **address book** (everyone, every area, contact in two taps); the **area
   page** is where you **decide** (quotes, stages, payments). The **supplier
   card** is that supplier's own facts and opens **wherever you are**: on the
-  area page its supplier rows, the "Supplier" tile and deposit rows open it
+  area page its supplier rows and deposit rows open it
   in place (`SupplierCards` / `SupplierLink` in `supplier-cards.tsx`, card in
   `?supplier=`). The card is contact-first: no payment list — one line ("2
   payments · next £250 Wed 14 Oct ›" to the area page's `#payments`, or "+

@@ -821,8 +821,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). Next up: **The Day's Seating
-   and Transport, then capture.** Plan, People, Money (rounds 5 and 6), The
+   `calendar.tsx`). **Next up (end of 12 Oct 2026 chat):** the forms still
+   in the older plain style (car or coach, day/evening event, Inspo save,
+   jot a note; household edit) — bring them into line with the visual forms;
+   then The Day's Seating, then Journeys (backlog) and capture. Ideas waiting:
+   Money's one + with a Budget | Payment switch; renaming an area by tapping
+   its name on its page. Plan, People, Money (rounds 5 and 6), The
    Day's run sheet and the to-do / appointment / payment forms are settled.
    **Suppliers round 1 on canvas 2** (12 Oct 2026, page "Suppliers · Round
    1 · Like the guest list"): A the list mirroring the guest list (count

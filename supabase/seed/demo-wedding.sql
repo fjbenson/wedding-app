@@ -14,7 +14,7 @@
 do $$
 declare
   v_user uuid := '86604270-61ba-4dc9-b7db-ab4d50e34b33';
-  w uuid; e_day uuid; e_eve uuid; h uuid; inv uuid; c uuid;
+  w uuid; e_day uuid; e_eve uuid; c uuid;
 begin
   delete from weddings where name = 'Olivia & Theo' and created_by = v_user;
 
@@ -45,385 +45,190 @@ begin
   insert into events (wedding_id, name, starts_at, location) values (w, 'The day', '2027-06-12 13:30+01', 'Ashcombe Barn') returning id into e_day;
   insert into events (wedding_id, name, starts_at, location) values (w, 'The evening', '2027-06-12 19:30+01', 'Ashcombe Barn') returning id into e_eve;
 
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Bennetts', '14 Orchard Lane', 'Cheltenham', 'GL52 3AB', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Claire', 'Bennett', 'claire.bennett@example.com', '07700 900107', false, 'Mother of the bride') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Richard', 'Bennett', 'richard.bennett@example.com', null, false, 'Father of the bride') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-04');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-04');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Hales', '3 Mill Close', 'Bath', 'BA2 4QT', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Fiona', 'Hale', 'fiona.hale@example.com', null, false, 'Mother of the groom') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', 'Gluten-free', '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Martin', 'Hale', 'martin.hale@example.com', '07700 900114', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-01');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-01');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Grace Whitfield', 'Flat 2, 41 Park Street', 'Bristol', 'BS1 5NG', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Grace', 'Whitfield', 'grace.whitfield@example.com', '07700 900121', false, 'Maid of honour') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, 'Vegetarian', '2026-10-01');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-01');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Oscar Hale', '22 Kingsdown Parade', 'Bristol', 'BS6 5UE', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Oscar', 'Hale', null, '07700 900128', false, 'Best man') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', null, '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Priya & Tom', '8 Rosemary Gardens', 'London', 'SE15 4RT', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Priya', 'Shah', 'priya.shah@example.com', '07700 900135', false, 'Bridesmaid') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', 'Vegetarian', '2026-10-04');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-04');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Tom', 'Ellis', 'tom.ellis@example.com', '07700 900142', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-04');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-04');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Hannah Cole', '17 Victoria Road', 'Oxford', 'OX2 7QD', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Hannah', 'Cole', 'hannah.cole@example.com', '07700 900149', false, 'Bridesmaid') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Dairy-free', '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Moores', '5 Church View', 'Stroud', 'GL5 1HD', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Sophie', 'Moore', 'sophie.moore@example.com', '07700 900156', false, 'Bridesmaid') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ben', 'Moore', 'ben.moore@example.com', '07700 900163', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Isla', 'Moore', null, null, true, 'Flower girl') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Children''s menu', null, '2026-10-05');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-05');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Alfie', 'Moore', null, null, true, 'Page boy') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Children''s menu', 'Nut allergy', '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Jack & Ellie', '29 Hampton Road', 'Bristol', 'BS6 6HP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Jack', 'Turner', 'jack.turner@example.com', null, false, 'Groomsman') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ellie', 'Turner', 'ellie.turner@example.com', '07700 900170', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', 'Vegan', '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Sam Okafor', '11 Cotham Hill', 'Bristol', 'BS6 6LA', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'bridal_party', 'Sam', 'Okafor', 'sam.okafor@example.com', '07700 900177', false, 'Groomsman') returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', null, '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Granny Bennett', 'The Willows, Sheep Street', 'Burford', 'OX18 4LS', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Margaret', 'Bennett', 'margaret.bennett@example.com', '07700 900184', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Soft food', '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Patels', '62 Elm Grove', 'Reading', 'RG1 5HN', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Anil', 'Patel', null, '07700 900191', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Vegetarian', '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Meera', 'Patel', 'meera.patel@example.com', '07700 900198', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', 'Vegetarian', '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Riya', 'Patel', null, null, true, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Children''s menu', null, '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Harts', '4 Station Approach', 'Cirencester', 'GL7 1AE', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Amelia', 'Hart', null, null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', null, '2026-10-03');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-03');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Daniel', 'Hart', 'daniel.hart@example.com', '07700 900205', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Uncle Pete & Aunt Jo', '19 Ferry Lane', 'Tewkesbury', 'GL20 5BA', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Peter', 'Hale', 'peter.hale@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-07');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Jo', 'Hale', 'jo.hale@example.com', '07700 900212', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Gluten-free', '2026-10-07');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Carters', '7 Beech Avenue', 'Swindon', 'SN1 4EF', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ben', 'Carter', 'ben.carter@example.com', '07700 900219', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Lucy', 'Carter', 'lucy.carter@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Chloe Price', '33 Queens Road', 'Cardiff', 'CF10 3NP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Chloe', 'Price', 'chloe.price@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', null, '2026-10-05');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-05');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Nguyens', '12 Marlborough Hill', 'Bristol', 'BS2 8EZ', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Linh', 'Nguyen', 'linh.nguyen@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', 'Shellfish allergy', '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-06');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'David', 'Nguyen', 'david.nguyen@example.com', '07700 900226', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', null, '2026-10-01');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-01');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Dan Okafor', '50 Gloucester Road', 'Bristol', 'BS7 8NN', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Dan', 'Okafor', 'dan.okafor@example.com', '07700 900233', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'declined', null, null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'declined', null, null, '2026-10-09');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Fletchers', '2 Abbey Mews', 'Malmesbury', 'SN16 9AS', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Rose', 'Fletcher', 'rose.fletcher@example.com', '07700 900240', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', null, '2026-10-07');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'James', 'Fletcher', null, null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Poppy', 'Fletcher', null, null, true, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Children''s menu', null, '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Laura & Mike', '45 Wells Road', 'Bath', 'BA2 3AP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Laura', 'Grant', null, '07700 900247', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Mike', 'Grant', 'mike.grant@example.com', '07700 900254', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Zara Ahmed', '9 Clifton Vale', 'Bristol', 'BS8 4PT', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Zara', 'Ahmed', 'zara.ahmed@example.com', '07700 900261', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', 'No pork', '2026-10-07');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Wrights', '88 High Street', 'Marlborough', 'SN8 1HF', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Helen', 'Wright', 'helen.wright@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Graham', 'Wright', 'graham.wright@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Kate Lawson', '15 Kings Road', 'Brighton', 'BN1 2FN', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Kate', 'Lawson', 'kate.lawson@example.com', '07700 900268', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'declined', null, null, '2026-10-03');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'declined', null, null, '2026-10-03');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Hughes', '6 Meadow Way', 'Monmouth', 'NP25 3EP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Rhys', 'Hughes', 'rhys.hughes@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Bethan', 'Hughes', 'bethan.hughes@example.com', '07700 900275', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Osian', 'Hughes', null, null, true, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Ella Moss', '21 Albion Street', 'Cheltenham', 'GL52 2LP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ella', 'Moss', null, null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Finn', 'Doyle', 'finn.doyle@example.com', '07700 900282', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Ashworths', '3 Quarry Road', 'Frome', 'BA11 1QD', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Nina', 'Ashworth', 'nina.ashworth@example.com', '07700 900289', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Pescatarian', '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Paul', 'Ashworth', 'paul.ashworth@example.com', '07700 900296', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Tilly & Jess', '10 Raleigh Road', 'Bristol', 'BS3 1QR', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Tilly', 'Brooks', 'tilly.brooks@example.com', '07700 900303', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Jess', 'Marsh', 'jess.marsh@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The O''Briens', '27 Harbour View', 'Cork', 'T12 X2N4', 'Ireland') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Aoife', 'O''Brien', 'aoife.obrien@example.com', '07700 900310', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Conor', 'O''Brien', 'conor.obrien@example.com', '07700 900317', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Leo Grant', '14 Charlotte Street', 'London', 'W1T 2LX', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Leo', 'Grant', 'leo.grant@example.com', '07700 900324', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', null, '2026-10-01');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-01');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Stantons', '1 Vicarage Lane', 'Painswick', 'GL6 6XP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Hugh', 'Stanton', 'hugh.stanton@example.com', '07700 900331', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'declined', null, null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'declined', null, null, '2026-10-08');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Pam', 'Stanton', 'pam.stanton@example.com', '07700 900338', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'declined', null, null, '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'declined', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Maya Robinson', '52 St Michael''s Hill', 'Bristol', 'BS2 8DX', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Maya', 'Robinson', 'maya.robinson@example.com', '07700 900345', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', null, 'Vegan', '2026-10-06');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Kellys', '18 Riverside', 'Gloucester', 'GL1 2QR', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, null) returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Sean', 'Kelly', null, null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'to_invite', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'to_invite', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Niamh', 'Kelly', 'niamh.kelly@example.com', '07700 900352', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'to_invite', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'to_invite', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Ruby Evans', '4 Bridge Street', 'Chepstow', 'NP16 5EZ', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ruby', 'Evans', 'ruby.evans@example.com', '07700 900359', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Beef wellington', null, '2026-10-08');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Lowes', '31 Grove Park', 'Bath', 'BA1 3RD', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Simon', 'Lowe', 'simon.lowe@example.com', '07700 900366', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Wild mushroom risotto', null, '2026-10-02');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Anna', 'Lowe', 'anna.lowe@example.com', '07700 900373', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'attending', 'Sea bass', 'Gluten-free', '2026-10-03');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-03');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Callum Reid', '7 Leith Walk', 'Edinburgh', 'EH6 8LP', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Callum', 'Reid', 'callum.reid@example.com', '07700 900380', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_day, 'pending', null, null, null);
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Work friends · Olivia', null, null, null, null) returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Harriet', 'Shaw', 'harriet.shaw@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Josh', 'Bell', 'josh.bell@example.com', '07700 900387', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Amira', 'Haddad', 'amira.haddad@example.com', '07700 900394', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, 'Vegetarian', '2026-10-03');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Will', 'Parsons', 'will.parsons@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-08');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Work friends · Theo', null, null, null, null) returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Kieran', 'Doyle', null, '07700 900401', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Freya', 'Lund', 'freya.lund@example.com', '07700 900408', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Marcus', 'Webb', 'marcus.webb@example.com', '07700 900415', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'pending', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'The Greens', '40 Stokes Croft', 'Bristol', 'BS1 3QD', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Tess', 'Green', null, '07700 900422', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-01');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Alex', 'Green', 'alex.green@example.com', '07700 900429', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-02');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Neighbours', '16 Orchard Lane', 'Cheltenham', 'GL52 3AB', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Jean', 'Porter', 'jean.porter@example.com', '07700 900436', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-07');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Colin', 'Porter', 'colin.porter@example.com', '07700 900443', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-04');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Football lot', null, null, null, null) returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, null) returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Rob', 'Hayes', 'rob.hayes@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'to_invite', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Ollie', 'Stone', 'ollie.stone@example.com', '07700 900450', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'to_invite', null, null, null);
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Dev', 'Mistry', 'dev.mistry@example.com', '07700 900457', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'to_invite', null, null, null);
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Evie Clarke', '3 Southville Road', 'Bristol', 'BS3 1DG', 'United Kingdom') returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Evie', 'Clarke', null, '07700 900464', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'declined', null, null, '2026-10-06');
-
-  insert into households (wedding_id, name, address_line1, city, postcode, country) values (w, 'Yoga friends', null, null, null, null) returning id into h;
-  insert into invitations (wedding_id, household_id, sent_at) values (w, h, '2026-09-20') returning id into inv;
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Lena', 'Fischer', 'lena.fischer@example.com', '07700 900471', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, 'Vegan', '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, h, 'guest', 'Sasha', 'Ivanova', 'sasha.ivanova@example.com', '07700 900478', false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, inv, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, null, 'guest', 'Arthur', 'Bennett', 'arthur.bennett@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, null, c, e_day, 'attending', 'Beef wellington', null, '2026-10-09');
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, null, c, e_eve, 'attending', null, null, '2026-10-09');
-
-  insert into contacts (wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day) values (w, null, 'guest', 'Nora', 'Quinn', 'nora.quinn@example.com', null, false, null) returning id into c;
-  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at) values (w, null, c, e_eve, 'pending', null, null, null);
+  -- Households (name, address, city, postcode, country, invitation sent)
+  insert into households (wedding_id, name, address_line1, city, postcode, country)
+  select w, v.hn, v.ha, v.hc, v.hp, v.hco from (values
+    ('The Bennetts', '14 Orchard Lane', 'Cheltenham', 'GL52 3AB', 'United Kingdom', true),
+    ('The Hales', '3 Mill Close', 'Bath', 'BA2 4QT', 'United Kingdom', true),
+    ('Grace Whitfield', 'Flat 2, 41 Park Street', 'Bristol', 'BS1 5NG', 'United Kingdom', true),
+    ('Oscar Hale', '22 Kingsdown Parade', 'Bristol', 'BS6 5UE', 'United Kingdom', true),
+    ('Priya & Tom', '8 Rosemary Gardens', 'London', 'SE15 4RT', 'United Kingdom', true),
+    ('Hannah Cole', '17 Victoria Road', 'Oxford', 'OX2 7QD', 'United Kingdom', true),
+    ('The Moores', '5 Church View', 'Stroud', 'GL5 1HD', 'United Kingdom', true),
+    ('Jack & Ellie', '29 Hampton Road', 'Bristol', 'BS6 6HP', 'United Kingdom', true),
+    ('Sam Okafor', '11 Cotham Hill', 'Bristol', 'BS6 6LA', 'United Kingdom', true),
+    ('Granny Bennett', 'The Willows, Sheep Street', 'Burford', 'OX18 4LS', 'United Kingdom', true),
+    ('The Patels', '62 Elm Grove', 'Reading', 'RG1 5HN', 'United Kingdom', true),
+    ('The Harts', '4 Station Approach', 'Cirencester', 'GL7 1AE', 'United Kingdom', true),
+    ('Uncle Pete & Aunt Jo', '19 Ferry Lane', 'Tewkesbury', 'GL20 5BA', 'United Kingdom', true),
+    ('The Carters', '7 Beech Avenue', 'Swindon', 'SN1 4EF', 'United Kingdom', true),
+    ('Chloe Price', '33 Queens Road', 'Cardiff', 'CF10 3NP', 'United Kingdom', true),
+    ('The Nguyens', '12 Marlborough Hill', 'Bristol', 'BS2 8EZ', 'United Kingdom', true),
+    ('Dan Okafor', '50 Gloucester Road', 'Bristol', 'BS7 8NN', 'United Kingdom', true),
+    ('The Fletchers', '2 Abbey Mews', 'Malmesbury', 'SN16 9AS', 'United Kingdom', true),
+    ('Laura & Mike', '45 Wells Road', 'Bath', 'BA2 3AP', 'United Kingdom', true),
+    ('Zara Ahmed', '9 Clifton Vale', 'Bristol', 'BS8 4PT', 'United Kingdom', true),
+    ('The Wrights', '88 High Street', 'Marlborough', 'SN8 1HF', 'United Kingdom', true),
+    ('Kate Lawson', '15 Kings Road', 'Brighton', 'BN1 2FN', 'United Kingdom', true),
+    ('The Hughes', '6 Meadow Way', 'Monmouth', 'NP25 3EP', 'United Kingdom', true),
+    ('Ella Moss', '21 Albion Street', 'Cheltenham', 'GL52 2LP', 'United Kingdom', true),
+    ('The Ashworths', '3 Quarry Road', 'Frome', 'BA11 1QD', 'United Kingdom', true),
+    ('Tilly & Jess', '10 Raleigh Road', 'Bristol', 'BS3 1QR', 'United Kingdom', true),
+    ('The O''Briens', '27 Harbour View', 'Cork', 'T12 X2N4', 'Ireland', true),
+    ('Leo Grant', '14 Charlotte Street', 'London', 'W1T 2LX', 'United Kingdom', true),
+    ('The Stantons', '1 Vicarage Lane', 'Painswick', 'GL6 6XP', 'United Kingdom', true),
+    ('Maya Robinson', '52 St Michael''s Hill', 'Bristol', 'BS2 8DX', 'United Kingdom', true),
+    ('The Kellys', '18 Riverside', 'Gloucester', 'GL1 2QR', 'United Kingdom', false),
+    ('Ruby Evans', '4 Bridge Street', 'Chepstow', 'NP16 5EZ', 'United Kingdom', true),
+    ('The Lowes', '31 Grove Park', 'Bath', 'BA1 3RD', 'United Kingdom', true),
+    ('Callum Reid', '7 Leith Walk', 'Edinburgh', 'EH6 8LP', 'United Kingdom', true),
+    ('Work friends · Olivia', null, null, null, null, true),
+    ('Work friends · Theo', null, null, null, null, true),
+    ('The Greens', '40 Stokes Croft', 'Bristol', 'BS1 3QD', 'United Kingdom', true),
+    ('Neighbours', '16 Orchard Lane', 'Cheltenham', 'GL52 3AB', 'United Kingdom', true),
+    ('Football lot', null, null, null, null, false),
+    ('Evie Clarke', '3 Southville Road', 'Bristol', 'BS3 1DG', 'United Kingdom', true),
+    ('Yoga friends', null, null, null, null, true)
+  ) v(hn, ha, hc, hp, hco, sent);
+  insert into invitations (wedding_id, household_id, sent_at)
+  select w, hh.id, case when v.sent then timestamptz '2026-09-20' end from households hh join (values
+    ('The Bennetts', true),
+    ('The Hales', true),
+    ('Grace Whitfield', true),
+    ('Oscar Hale', true),
+    ('Priya & Tom', true),
+    ('Hannah Cole', true),
+    ('The Moores', true),
+    ('Jack & Ellie', true),
+    ('Sam Okafor', true),
+    ('Granny Bennett', true),
+    ('The Patels', true),
+    ('The Harts', true),
+    ('Uncle Pete & Aunt Jo', true),
+    ('The Carters', true),
+    ('Chloe Price', true),
+    ('The Nguyens', true),
+    ('Dan Okafor', true),
+    ('The Fletchers', true),
+    ('Laura & Mike', true),
+    ('Zara Ahmed', true),
+    ('The Wrights', true),
+    ('Kate Lawson', true),
+    ('The Hughes', true),
+    ('Ella Moss', true),
+    ('The Ashworths', true),
+    ('Tilly & Jess', true),
+    ('The O''Briens', true),
+    ('Leo Grant', true),
+    ('The Stantons', true),
+    ('Maya Robinson', true),
+    ('The Kellys', false),
+    ('Ruby Evans', true),
+    ('The Lowes', true),
+    ('Callum Reid', true),
+    ('Work friends · Olivia', true),
+    ('Work friends · Theo', true),
+    ('The Greens', true),
+    ('Neighbours', true),
+    ('Football lot', false),
+    ('Evie Clarke', true),
+    ('Yoga friends', true)
+  ) v(hn, sent) on v.hn = hh.name where hh.wedding_id = w;
+  -- Guests (household, first, last, child, day/evening, answer, meal, diet, role, email, phone, answered)
+  create temp table demo_guests (hh text, first text, last text, child boolean, kind text, answer rsvp_status, meal text, diet text, role text, email text, phone text, answered timestamptz, id uuid default gen_random_uuid()) on commit drop;
+  insert into demo_guests (hh, first, last, child, kind, answer, meal, diet, role, email, phone, answered) values
+    ('The Bennetts', 'Claire', 'Bennett', false, 'day', 'attending', 'Beef wellington', null, 'Mother of the bride', 'claire.bennett@example.com', '07700 900107', '2026-10-09'),
+    ('The Bennetts', 'Richard', 'Bennett', false, 'day', 'attending', null, null, 'Father of the bride', 'richard.bennett@example.com', null, '2026-10-04'),
+    ('The Hales', 'Fiona', 'Hale', false, 'day', 'attending', 'Beef wellington', 'Gluten-free', 'Mother of the groom', 'fiona.hale@example.com', null, '2026-10-09'),
+    ('The Hales', 'Martin', 'Hale', false, 'day', 'attending', 'Beef wellington', null, null, 'martin.hale@example.com', '07700 900114', '2026-10-01'),
+    ('Grace Whitfield', 'Grace', 'Whitfield', false, 'day', 'attending', null, 'Vegetarian', 'Maid of honour', 'grace.whitfield@example.com', '07700 900121', '2026-10-01'),
+    ('Oscar Hale', 'Oscar', 'Hale', false, 'day', 'attending', 'Wild mushroom risotto', null, 'Best man', null, '07700 900128', '2026-10-02'),
+    ('Priya & Tom', 'Priya', 'Shah', false, 'day', 'attending', 'Beef wellington', 'Vegetarian', 'Bridesmaid', 'priya.shah@example.com', '07700 900135', '2026-10-04'),
+    ('Priya & Tom', 'Tom', 'Ellis', false, 'day', 'attending', 'Beef wellington', null, null, 'tom.ellis@example.com', '07700 900142', '2026-10-04'),
+    ('Hannah Cole', 'Hannah', 'Cole', false, 'day', 'attending', 'Sea bass', 'Dairy-free', 'Bridesmaid', 'hannah.cole@example.com', '07700 900149', '2026-10-08'),
+    ('The Moores', 'Sophie', 'Moore', false, 'day', 'attending', 'Beef wellington', null, 'Bridesmaid', 'sophie.moore@example.com', '07700 900156', '2026-10-02'),
+    ('The Moores', 'Ben', 'Moore', false, 'day', 'attending', null, null, null, 'ben.moore@example.com', '07700 900163', '2026-10-08'),
+    ('The Moores', 'Isla', 'Moore', true, 'day', 'attending', 'Children''s menu', null, 'Flower girl', null, null, '2026-10-05'),
+    ('The Moores', 'Alfie', 'Moore', true, 'day', 'attending', 'Children''s menu', 'Nut allergy', 'Page boy', null, null, '2026-10-02'),
+    ('Jack & Ellie', 'Jack', 'Turner', false, 'day', 'attending', 'Beef wellington', null, 'Groomsman', 'jack.turner@example.com', null, '2026-10-08'),
+    ('Jack & Ellie', 'Ellie', 'Turner', false, 'day', 'attending', 'Wild mushroom risotto', 'Vegan', null, 'ellie.turner@example.com', '07700 900170', '2026-10-06'),
+    ('Sam Okafor', 'Sam', 'Okafor', false, 'day', 'attending', 'Sea bass', null, 'Groomsman', 'sam.okafor@example.com', '07700 900177', '2026-10-02'),
+    ('Granny Bennett', 'Margaret', 'Bennett', false, 'day', 'attending', 'Sea bass', 'Soft food', null, 'margaret.bennett@example.com', '07700 900184', '2026-10-08'),
+    ('The Patels', 'Anil', 'Patel', false, 'day', 'attending', 'Sea bass', 'Vegetarian', null, null, '07700 900191', '2026-10-08'),
+    ('The Patels', 'Meera', 'Patel', false, 'day', 'attending', 'Beef wellington', 'Vegetarian', null, 'meera.patel@example.com', '07700 900198', '2026-10-08'),
+    ('The Patels', 'Riya', 'Patel', true, 'day', 'attending', 'Children''s menu', null, null, null, null, '2026-10-06'),
+    ('The Harts', 'Amelia', 'Hart', false, 'day', 'attending', 'Sea bass', null, null, null, null, '2026-10-03'),
+    ('The Harts', 'Daniel', 'Hart', false, 'day', 'attending', null, null, null, 'daniel.hart@example.com', '07700 900205', '2026-10-08'),
+    ('Uncle Pete & Aunt Jo', 'Peter', 'Hale', false, 'day', 'attending', 'Beef wellington', null, null, 'peter.hale@example.com', null, '2026-10-07'),
+    ('Uncle Pete & Aunt Jo', 'Jo', 'Hale', false, 'day', 'attending', 'Sea bass', 'Gluten-free', null, 'jo.hale@example.com', '07700 900212', '2026-10-07'),
+    ('The Carters', 'Ben', 'Carter', false, 'day', 'pending', null, null, null, 'ben.carter@example.com', '07700 900219', null),
+    ('The Carters', 'Lucy', 'Carter', false, 'day', 'pending', null, null, null, 'lucy.carter@example.com', null, null),
+    ('Chloe Price', 'Chloe', 'Price', false, 'day', 'attending', 'Sea bass', null, null, 'chloe.price@example.com', null, '2026-10-05'),
+    ('The Nguyens', 'Linh', 'Nguyen', false, 'day', 'attending', 'Wild mushroom risotto', 'Shellfish allergy', null, 'linh.nguyen@example.com', null, '2026-10-06'),
+    ('The Nguyens', 'David', 'Nguyen', false, 'day', 'attending', 'Wild mushroom risotto', null, null, 'david.nguyen@example.com', '07700 900226', '2026-10-01'),
+    ('Dan Okafor', 'Dan', 'Okafor', false, 'day', 'declined', null, null, null, 'dan.okafor@example.com', '07700 900233', '2026-10-09'),
+    ('The Fletchers', 'Rose', 'Fletcher', false, 'day', 'attending', 'Wild mushroom risotto', null, null, 'rose.fletcher@example.com', '07700 900240', '2026-10-07'),
+    ('The Fletchers', 'James', 'Fletcher', false, 'day', 'attending', 'Beef wellington', null, null, null, null, '2026-10-02'),
+    ('The Fletchers', 'Poppy', 'Fletcher', true, 'day', 'attending', 'Children''s menu', null, null, null, null, '2026-10-06'),
+    ('Laura & Mike', 'Laura', 'Grant', false, 'day', 'pending', null, null, null, null, '07700 900247', null),
+    ('Laura & Mike', 'Mike', 'Grant', false, 'day', 'pending', null, null, null, 'mike.grant@example.com', '07700 900254', null),
+    ('Zara Ahmed', 'Zara', 'Ahmed', false, 'day', 'attending', 'Beef wellington', 'No pork', null, 'zara.ahmed@example.com', '07700 900261', '2026-10-07'),
+    ('The Wrights', 'Helen', 'Wright', false, 'day', 'attending', 'Sea bass', null, null, 'helen.wright@example.com', null, '2026-10-08'),
+    ('The Wrights', 'Graham', 'Wright', false, 'day', 'attending', null, null, null, 'graham.wright@example.com', null, '2026-10-08'),
+    ('Kate Lawson', 'Kate', 'Lawson', false, 'day', 'declined', null, null, null, 'kate.lawson@example.com', '07700 900268', '2026-10-03'),
+    ('The Hughes', 'Rhys', 'Hughes', false, 'day', 'pending', null, null, null, 'rhys.hughes@example.com', null, null),
+    ('The Hughes', 'Bethan', 'Hughes', false, 'day', 'pending', null, null, null, 'bethan.hughes@example.com', '07700 900275', null),
+    ('The Hughes', 'Osian', 'Hughes', true, 'day', 'pending', null, null, null, null, null, null),
+    ('Ella Moss', 'Ella', 'Moss', false, 'day', 'attending', null, null, null, null, null, '2026-10-09'),
+    ('Ella Moss', 'Finn', 'Doyle', false, 'day', 'attending', null, null, null, 'finn.doyle@example.com', '07700 900282', '2026-10-09'),
+    ('The Ashworths', 'Nina', 'Ashworth', false, 'day', 'attending', 'Sea bass', 'Pescatarian', null, 'nina.ashworth@example.com', '07700 900289', '2026-10-09'),
+    ('The Ashworths', 'Paul', 'Ashworth', false, 'day', 'attending', 'Wild mushroom risotto', null, null, 'paul.ashworth@example.com', '07700 900296', '2026-10-09'),
+    ('Tilly & Jess', 'Tilly', 'Brooks', false, 'day', 'pending', null, null, null, 'tilly.brooks@example.com', '07700 900303', null),
+    ('Tilly & Jess', 'Jess', 'Marsh', false, 'day', 'pending', null, null, null, 'jess.marsh@example.com', null, null),
+    ('The O''Briens', 'Aoife', 'O''Brien', false, 'day', 'pending', null, null, null, 'aoife.obrien@example.com', '07700 900310', null),
+    ('The O''Briens', 'Conor', 'O''Brien', false, 'day', 'pending', null, null, null, 'conor.obrien@example.com', '07700 900317', null),
+    ('Leo Grant', 'Leo', 'Grant', false, 'day', 'attending', 'Sea bass', null, null, 'leo.grant@example.com', '07700 900324', '2026-10-01'),
+    ('The Stantons', 'Hugh', 'Stanton', false, 'day', 'declined', null, null, null, 'hugh.stanton@example.com', '07700 900331', '2026-10-08'),
+    ('The Stantons', 'Pam', 'Stanton', false, 'day', 'declined', null, null, null, 'pam.stanton@example.com', '07700 900338', '2026-10-06'),
+    ('Maya Robinson', 'Maya', 'Robinson', false, 'day', 'attending', null, 'Vegan', null, 'maya.robinson@example.com', '07700 900345', '2026-10-06'),
+    ('The Kellys', 'Sean', 'Kelly', false, 'day', 'to_invite', null, null, null, null, null, null),
+    ('The Kellys', 'Niamh', 'Kelly', false, 'day', 'to_invite', null, null, null, 'niamh.kelly@example.com', '07700 900352', null),
+    ('Ruby Evans', 'Ruby', 'Evans', false, 'day', 'attending', 'Beef wellington', null, null, 'ruby.evans@example.com', '07700 900359', '2026-10-08'),
+    ('The Lowes', 'Simon', 'Lowe', false, 'day', 'attending', 'Wild mushroom risotto', null, null, 'simon.lowe@example.com', '07700 900366', '2026-10-02'),
+    ('The Lowes', 'Anna', 'Lowe', false, 'day', 'attending', 'Sea bass', 'Gluten-free', null, 'anna.lowe@example.com', '07700 900373', '2026-10-03'),
+    ('Callum Reid', 'Callum', 'Reid', false, 'day', 'pending', null, null, null, 'callum.reid@example.com', '07700 900380', null),
+    ('Work friends · Olivia', 'Harriet', 'Shaw', false, 'evening', 'attending', null, null, null, 'harriet.shaw@example.com', null, '2026-10-07'),
+    ('Work friends · Olivia', 'Josh', 'Bell', false, 'evening', 'attending', null, null, null, 'josh.bell@example.com', '07700 900387', '2026-10-02'),
+    ('Work friends · Olivia', 'Amira', 'Haddad', false, 'evening', 'attending', null, 'Vegetarian', null, 'amira.haddad@example.com', '07700 900394', '2026-10-03'),
+    ('Work friends · Olivia', 'Will', 'Parsons', false, 'evening', 'attending', null, null, null, 'will.parsons@example.com', null, '2026-10-08'),
+    ('Work friends · Theo', 'Kieran', 'Doyle', false, 'evening', 'pending', null, null, null, null, '07700 900401', null),
+    ('Work friends · Theo', 'Freya', 'Lund', false, 'evening', 'pending', null, null, null, 'freya.lund@example.com', '07700 900408', null),
+    ('Work friends · Theo', 'Marcus', 'Webb', false, 'evening', 'pending', null, null, null, 'marcus.webb@example.com', '07700 900415', null),
+    ('The Greens', 'Tess', 'Green', false, 'evening', 'attending', null, null, null, null, '07700 900422', '2026-10-01'),
+    ('The Greens', 'Alex', 'Green', false, 'evening', 'attending', null, null, null, 'alex.green@example.com', '07700 900429', '2026-10-02'),
+    ('Neighbours', 'Jean', 'Porter', false, 'evening', 'attending', null, null, null, 'jean.porter@example.com', '07700 900436', '2026-10-07'),
+    ('Neighbours', 'Colin', 'Porter', false, 'evening', 'attending', null, null, null, 'colin.porter@example.com', '07700 900443', '2026-10-04'),
+    ('Football lot', 'Rob', 'Hayes', false, 'evening', 'to_invite', null, null, null, 'rob.hayes@example.com', null, null),
+    ('Football lot', 'Ollie', 'Stone', false, 'evening', 'to_invite', null, null, null, 'ollie.stone@example.com', '07700 900450', null),
+    ('Football lot', 'Dev', 'Mistry', false, 'evening', 'to_invite', null, null, null, 'dev.mistry@example.com', '07700 900457', null),
+    ('Evie Clarke', 'Evie', 'Clarke', false, 'evening', 'declined', null, null, null, null, '07700 900464', '2026-10-06'),
+    ('Yoga friends', 'Lena', 'Fischer', false, 'evening', 'attending', null, 'Vegan', null, 'lena.fischer@example.com', '07700 900471', '2026-10-09'),
+    ('Yoga friends', 'Sasha', 'Ivanova', false, 'evening', 'attending', null, null, null, 'sasha.ivanova@example.com', '07700 900478', '2026-10-09'),
+    (null, 'Arthur', 'Bennett', false, 'day', 'attending', 'Beef wellington', null, null, 'arthur.bennett@example.com', null, '2026-10-09'),
+    (null, 'Nora', 'Quinn', false, 'evening', 'pending', null, null, null, 'nora.quinn@example.com', null, null);
+  insert into contacts (id, wedding_id, household_id, contact_type, first_name, last_name, email, phone, is_child, role_on_the_day)
+  select g.id, w, hh.id, case when g.role is null then 'guest' else 'bridal_party' end::contact_type, g.first, g.last, g.email, g.phone, g.child, g.role
+  from demo_guests g left join households hh on hh.wedding_id = w and hh.name = g.hh;
+  -- Day guests are on both events (meal on the day's), evening guests on the evening only.
+  insert into rsvps (wedding_id, invitation_id, contact_id, event_id, status, meal_choice, dietary_notes, responded_at)
+  select w, i.id, g.id, ev.id, g.answer,
+         case when ev.id = e_day and g.answer = 'attending' then g.meal end,
+         case when ev.id = e_day or g.kind = 'evening' then g.diet end,
+         g.answered
+  from demo_guests g
+  left join households hh on hh.wedding_id = w and hh.name = g.hh
+  left join invitations i on i.household_id = hh.id
+  join events ev on ev.wedding_id = w and (ev.id = e_eve or g.kind = 'day');
 
   -- Suppliers
   insert into contacts (wedding_id, contact_type, first_name, last_name, email, phone) values (w, 'supplier', 'Sarah', 'Lyle', 'hello@ashcombebarn.example.com', '07700 900485') returning id into c;

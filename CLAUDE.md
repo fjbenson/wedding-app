@@ -656,6 +656,22 @@ On an iPhone the home-screen app keeps its own cookies, separate from the
 browser, so it asks you to sign in once there too. Icons: the hub ring on
 satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
 
+**Demo wedding (12 Oct 2026).** "Olivia & Theo", 12 Jun 2027, in the live
+database beside the owner's real wedding and on the owner's login: 79
+guests in 41 households (day and evening, every answer, meals, diets, a
+bridal party), 16 suppliers at every stage, budgets per area (venue over),
+payments, 28 to-dos, 8 appointments, a run sheet, a floor plan, transport and
+notes. All made up (phones in Ofcom's 07700 900xxx drama range, emails
+@example.com), so safe to screenshot. Open it from **Settings › Your
+weddings** (shown only with more than one); the pick is remembered on that
+device in the `wedding` cookie (`getCurrentWedding()`; with no pick it's
+the first wedding made, so the demo never takes over). **Reset it** by
+running `supabase/seed/demo-wedding.sql` again (it deletes and rebuilds only
+that demo; ask the owner first). No Inspo pictures yet. A **public demo
+mode** ("Look around" on the sign-in page, no email) is the agreed next
+step for the portfolio, not built: needs a fresh copy per visitor or saves
+switched off.
+
 ### Before real couples use it (owner's checklist, 11 Oct 2026)
 
 Not legal advice — the UK list raised with the owner:

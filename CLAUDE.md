@@ -549,7 +549,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
    quieter (sentence, one thin line, plain rows with hairline bars), 2 one
    big number ("£6,750 left to spend", sentence under it), 3 three plain
    figures (Budget · Booked · Paid) then each area with a word ("On
-   track", "Nearly full"…). **Waiting on the owner's pick.** **Laptop design has begun:** phone and
+   track", "Nearly full"…). Owner, 12 Oct: rethink from what a couple
+   needs — money moves **Budget → Agreed → Paid**, plus a **schedule**
+   (when the rest is due); bars work, **no wordy sentences**. **Round 4**
+   ("Money · Round 4 · Budget, agreed, paid — and when"): A one bar per
+   area (budget = the track, agreed light gold, paid dark gold inside it;
+   over budget runs past a black tick in hatched rose + "▲ Over by £400"),
+   B three thin bars per area (budget, agreed, paid), C the Payments tab: a
+   column per month to the wedding (paid dark, due light) then what's due
+   grouped by month. Overspend never by colour alone (validator: rose vs
+   dark gold too close for colour-blind eyes). **Waiting on the owner's
+   pick.** **Laptop design has begun:** phone and
    laptop are designed separately but share colours, type and each tab's
    signature (owner, 11 Oct 2026). Canvas 2 "Laptop · The Hub": A centre
    stage, **B magazine spread** (top menu bar, huge names, an "At a glance"

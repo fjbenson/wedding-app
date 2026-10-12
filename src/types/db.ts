@@ -200,6 +200,8 @@ export interface RunSheetItem {
   location: string | null;
   who: string | null;
   notes: string | null;
+  /** The area it belongs to, by key; empty is Other (0017_run_sheet_area.sql). */
+  area_key?: string | null;
   created_at: string;
 }
 

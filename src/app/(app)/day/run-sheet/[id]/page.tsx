@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { RemoveButton } from "@/components/form-bits";
+import { areaOptions } from "@/lib/areas";
+import { listAreas } from "@/lib/db/areas";
 import { getRunSheetItem } from "@/lib/db/day";
 import { deleteRunSheetItemAction, saveRunSheetItemAction } from "../../actions";
 import { RunSheetForm } from "../../day-forms";
@@ -22,8 +24,8 @@ export default async function RunSheetItemPage({
   if (!item) notFound();
 
   return (
-    <FormPage backHref="/day" backLabel="The Day" title={item.title} error={error} detail={detail}>
-      <RunSheetForm action={saveRunSheetItemAction.bind(null, item.id)} item={item} />
+    <FormPage backHref="/day" backLabel="The Day" title="Moment" error={error} detail={detail}>
+      <RunSheetForm action={saveRunSheetItemAction.bind(null, item.id)} item={item} areas={areaOptions(await listAreas(item.wedding_id))} />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton action={deleteRunSheetItemAction.bind(null, item.id)} label="Remove from the run sheet" question={`Remove "${item.title}"?`} />
       </div>

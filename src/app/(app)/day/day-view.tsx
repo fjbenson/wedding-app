@@ -17,6 +17,8 @@ import {
   updateTableAction,
 } from "./actions";
 import FloorPlan from "./floor-plan";
+import AreaFilter from "../plan/area-filter";
+import { areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
 
 export type DayTab = "run-sheet" | "seating" | "transport";
@@ -51,6 +53,8 @@ export default function DayView({
   day,
   guests,
   rsvps,
+  areas,
+  area,
   error,
   detail,
 }: {
@@ -62,6 +66,9 @@ export default function DayView({
   day: DayData | null;
   guests: Contact[];
   rsvps: Rsvp[];
+  areas: AreaOption[];
+  /** The run sheet narrowed to one area (`?area=<key>`, or `none` for Other). */
+  area: string | null;
   error?: string;
   detail?: string;
 }) {
@@ -98,7 +105,7 @@ export default function DayView({
       ) : tab === "transport" ? (
         <Transport data={data} guests={guests} />
       ) : (
-        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} />
+        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} areas={areas} area={area} />
       )}
     </main>
   );
@@ -119,7 +126,24 @@ const PARTS = [
  * moment, the moment on the right. On the day itself, the moment under way
  * is marked Now.
  */
-function RunSheet({ items, coupleName, weddingDate }: { items: RunSheetItem[]; coupleName: string; weddingDate: string | null }) {
+function RunSheet({
+  items: all,
+  coupleName,
+  weddingDate,
+  areas,
+  area,
+}: {
+  items: RunSheetItem[];
+  coupleName: string;
+  weddingDate: string | null;
+  areas: AreaOption[];
+  area: string | null;
+}) {
+  // Narrowed to one area (12 Oct 2026): what an area page's "In The Day ›"
+  // opens, and a copy to print for that supplier.
+  const items =
+    area === null ? all : all.filter((i) => (area === "none" ? !i.area_key || i.area_key === "other" : i.area_key === area));
+  const forWhom = area === "none" ? "Other" : area ? areaName(area, areas) : null;
   const now = nowInLondon();
   const isTheDay = weddingDate === now.date;
   const nowId = isTheDay ? items.filter((i) => i.at_time.slice(0, 5) <= now.time).at(-1)?.id : undefined;
@@ -141,20 +165,26 @@ function RunSheet({ items, coupleName, weddingDate }: { items: RunSheetItem[]; c
 
       <div className="mt-5 flex gap-2.5 print:hidden">
         <Link
-          href="/day/run-sheet/new"
+          href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
           className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-sm text-ivory transition hover:bg-ink/90 sm:flex-none sm:px-6"
         >
           <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
           Add a moment
         </Link>
         {items.length > 0 && <PrintButton />}
+        {all.length > 0 && (
+          <div className="ml-auto flex items-center">
+            <AreaFilter areas={areas} current={area} base="/day" label="Show the run sheet for" />
+          </div>
+        )}
       </div>
+      {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (
         <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:max-w-xl print:shadow-none">
           <div className="border border-champagne-400 px-[18px] pb-3 pt-7 outline outline-1 -outline-offset-[5px] outline-champagne-100">
             <header className="text-center">
-              <p className="label">The order of the day</p>
+              <p className="label">{forWhom ? `The order of the day · ${forWhom}` : "The order of the day"}</p>
               <p className="type-display mt-2 text-[30px] leading-[1.05]">{setCoupleName(coupleName)}</p>
               {weddingDate && <p className="type-meta mt-2">{formatLongDate(weddingDate)}</p>}
               <Flourish />

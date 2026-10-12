@@ -34,7 +34,7 @@ export async function getDay(weddingId: string): Promise<{
 
 // Run sheet ------------------------------------------------------------------
 
-type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes">;
+type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes" | "area_key">;
 
 export async function getRunSheetItem(id: string): Promise<RunSheetItem | null> {
   const supabase = await createClient();
@@ -45,9 +45,17 @@ export async function getRunSheetItem(id: string): Promise<RunSheetItem | null> 
 
 export async function saveRunSheetItem(weddingId: string, id: string | null, fields: RunSheetFields): Promise<void> {
   const supabase = await createClient();
-  const { error } = id
-    ? await supabase.from("run_sheet_items").update(fields).eq("id", id)
-    : await supabase.from("run_sheet_items").insert({ wedding_id: weddingId, ...fields });
+  const save = (f: Partial<RunSheetFields>) =>
+    id
+      ? supabase.from("run_sheet_items").update(f).eq("id", id)
+      : supabase.from("run_sheet_items").insert({ wedding_id: weddingId, ...f });
+  let { error } = await save(fields);
+  // Before 0017_run_sheet_area.sql there's no area column: save without it.
+  if (error && (error.code === "PGRST204" || error.code === "42703") && /area_key/.test(error.message ?? "")) {
+    const { area_key: _dropped, ...rest } = fields;
+    void _dropped;
+    ({ error } = await save(rest));
+  }
   if (error) throw error;
 }
 

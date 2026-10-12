@@ -34,7 +34,7 @@ export default async function AreaPage({
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
-  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows] = await Promise.all([
+  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows, day] = await Promise.all([
     listMilestones(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -44,6 +44,7 @@ export default async function AreaPage({
     listInspo(wedding.id, { folder: area.key, limit: 12 }),
     countInspo(wedding.id),
     listAreas(wedding.id),
+    getDay(wedding.id),
   ]);
   const allPayments = payments ?? [];
 
@@ -52,12 +53,11 @@ export default async function AreaPage({
   const kind = guestFactsKind(area.key);
   let guestFacts = null;
   if (kind) {
-    const [guests, households, events, rsvps, day] = await Promise.all([
+    const [guests, households, events, rsvps] = await Promise.all([
       listGuests(wedding.id),
       listHouseholds(wedding.id),
       listEvents(wedding.id),
       listRsvps(wedding.id),
-      kind === "transport" ? getDay(wedding.id) : Promise.resolve(null),
     ]);
     guestFacts = areaGuestFacts(kind, { guests, households, events, rsvps, runs: day?.runs, passengers: day?.passengers });
   }
@@ -83,6 +83,7 @@ export default async function AreaPage({
         edit === "facts" || edit === "note" || (edit && /^note:[0-9a-f-]{36}$/i.test(edit)) ? edit : null
       }
       guestFacts={guestFacts}
+      moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key)}
       couple={coupleName(wedding.name)}
       error={error}
       detail={detail}

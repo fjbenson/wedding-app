@@ -9,12 +9,12 @@ import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
 import { unscheduledBalances, type Money } from "@/lib/budget";
-import { formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
+import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatMoney } from "@/lib/money";
 import { supplierStatusLabel } from "@/lib/supplier-status";
-import type { Appointment, AreaRow, Milestone, Note, Payment } from "@/types/db";
+import type { Appointment, AreaRow, Milestone, Note, Payment, RunSheetItem } from "@/types/db";
 import { markPaidAction } from "../money/actions";
 import { AppointmentRow } from "../plan/appointment-row";
 import { MilestoneRow } from "../plan/milestone-row";
@@ -443,11 +443,40 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
       </Section>
     );
   }
+  return null;
+}
+
+/**
+ * The area's part of the day (owner, 12 Oct 2026): its run sheet moments in
+ * time order, headed like The Day with the menu's clock, "In The Day ›"
+ * opening the run sheet narrowed to this area. Transport's cars and coaches,
+ * and day guests still without a lift, sit here too.
+ */
+function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: RunSheetItem[]; facts: AreaGuestFacts | null }) {
+  const transport = facts?.kind === "transport" ? facts : null;
   return (
-    <Section title="On the day" icon={Clock} seeHref="/day?tab=transport" seeLabel="In The Day">
-      {facts.runs.length > 0 ? (
+    <Section id="day" title="The Day" icon={Clock} seeHref={`/day?area=${encodeURIComponent(areaKey)}`} seeLabel="In The Day">
+      {moments.length > 0 && (
         <ul>
-          {facts.runs.map((r) => (
+          {moments.map((m) => (
+            <li key={m.id}>
+              <Link href={`/day/run-sheet/${m.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
+                <span className="type-figure w-12 shrink-0 text-lg text-champagne-600">{formatClock(m.at_time)}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="type-item block truncate">{m.title}</span>
+                  {(m.location || m.who) && (
+                    <span className="type-meta mt-0.5 block truncate">{[m.location, m.who].filter(Boolean).join(" · ")}</span>
+                  )}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      {transport && transport.runs.length > 0 && (
+        <ul>
+          {transport.runs.map((r) => (
             <li key={r.id}>
               <Link href={`/day/transport/${r.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
                 <span className="type-figure w-12 shrink-0 text-lg">{r.time}</span>
@@ -462,16 +491,21 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
             </li>
           ))}
         </ul>
-      ) : null}
-      {facts.withoutLift > 0 && (
+      )}
+      {transport && transport.withoutLift > 0 && (
         <FactRow
           href="/day?tab=transport"
-          title={facts.withoutLift === 1 ? "1 day guest without a lift" : `${facts.withoutLift} day guests without a lift`}
+          title={transport.withoutLift === 1 ? "1 day guest without a lift" : `${transport.withoutLift} day guests without a lift`}
           line="Tap to put them on a car"
           dashed
         />
       )}
-      <Adds links={[{ href: "/day/transport/new", label: "Add a car or coach" }]} />
+      <Adds
+        links={[
+          { href: `/day/run-sheet/new?area=${encodeURIComponent(areaKey)}&from=area`, label: "Add a moment" },
+          ...(transport ? [{ href: "/day/transport/new", label: "Add a car or coach" }] : []),
+        ]}
+      />
     </Section>
   );
 }
@@ -502,8 +536,11 @@ export default function AreaView({
   detail,
   areas,
   guestFacts,
+  moments,
   couple,
 }: {
+  /** This area's run sheet moments, in time order (0017_run_sheet_area.sql). */
+  moments: RunSheetItem[];
   /** Facts from the guest list, for the areas that show them (src/lib/area-guests.ts). */
   guestFacts: AreaGuestFacts | null;
   couple: string;
@@ -790,6 +827,8 @@ export default function AreaView({
           ) : null}
           <Adds links={[{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }]} />
         </Section>
+
+        <DaySection areaKey={area.key} moments={moments} facts={guestFacts} />
 
         <Section id="notes" title={`Just for ${area.label}`} icon={areaIcon(area.key, area.icon)}>
           <div className={notes.length > 0 || editing === "note" ? "border-b border-linen" : ""}>

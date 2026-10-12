@@ -118,6 +118,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   with them" / "Bring them back" on the supplier card (`SUPPLIER_STAGES` vs
   `SUPPLIER_STATUSES` in `src/lib/supplier-status.ts`)
   (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
+  **The Day on every area page** (owner, 12 Oct 2026; `DaySection` in
+  `area-view.tsx`, after Money, `#day`): the area's run sheet moments in
+  time order, "+ Add a moment" (`/day/run-sheet/new?area=<key>&from=area`,
+  Save comes back) and "In The Day ›" (the run sheet narrowed with
+  `/day?area=<key>`, same `AreaFilter` as Plan and Money; the card's label
+  says "The order of the day · Photos", so it can be printed for that
+  supplier). Moments carry `run_sheet_items.area_key`
+  (`0017_run_sheet_area.sql`, run 12 Oct 2026); the moment form is now
+  visual (what happens large, time card, area tiles, where and who, notes).
   Notes can be added, edited and removed in place on the area page.
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
@@ -546,14 +555,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0016_area_icon.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0017_run_sheet_area.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0016 are now in** (12 Oct
+only queries) needs no OK. **All migrations 0001–0017 are now in** (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

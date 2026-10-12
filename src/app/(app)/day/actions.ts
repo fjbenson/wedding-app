@@ -19,6 +19,7 @@ import {
 } from "@/lib/db/day";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { returnTo } from "@/lib/return-to";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -57,12 +58,19 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       location: text(formData, "location"),
       who: text(formData, "who"),
       notes: text(formData, "notes"),
+      area_key: text(formData, "area_key"),
     });
   } catch (error) {
     failed(back, "That didn't save.", error);
   }
   refresh();
-  redirect("/day");
+  // Added from an area page: back to its The Day section.
+  const fromArea = text(formData, "from_area");
+  if (fromArea && /^[a-z0-9-]+$/.test(fromArea)) {
+    revalidatePath(`/area/${fromArea}`);
+    redirect(`/area/${fromArea}#day`);
+  }
+  redirect(returnTo(formData, "/day"));
 }
 
 export async function deleteRunSheetItemAction(id: string) {

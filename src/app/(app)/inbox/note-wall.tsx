@@ -7,7 +7,6 @@ import { DateInput } from "@/components/form-bits";
 import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
-import { WHEN_TITLE } from "@/lib/plan";
 import type { Note } from "@/types/db";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
@@ -182,7 +181,6 @@ function NotePanel({
   const [text, setText] = useState(note.body ?? "");
   // Making it a to-do asks when, like the to-do form: done by, start around, or no date yet.
   const [asking, setAsking] = useState(false);
-  const [whenKind, setWhenKind] = useState<"due" | "start" | "none">("due");
   const [whenDate, setWhenDate] = useState("");
 
   useEffect(() => {
@@ -292,7 +290,7 @@ function NotePanel({
             onSubmit={(event) => {
               event.preventDefault();
               start(async () => {
-                const result = await safely(() => inboxNoteToTodoAction(note.id, { kind: whenKind, date: whenDate || null }));
+                const result = await safely(() => inboxNoteToTodoAction(note.id, { kind: whenDate ? "due" : "none", date: whenDate || null }));
                 setError(result.error);
                 const id = (result as { milestoneId?: string }).milestoneId;
                 if (!result.error && id) {
@@ -304,47 +302,24 @@ function NotePanel({
           >
             <p className="flex items-center gap-3 text-base text-ink">
               <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-              Make it a to-do — when?
+              Make it a to-do
             </p>
-            <div role="radiogroup" aria-label="When" className="mt-3 grid grid-cols-3 rounded-full bg-cream p-[3px]">
-              {(
-                [
-                  ["due", "Done by"],
-                  ["start", "Start around"],
-                  ["none", "No date"],
-                ] as const
-              ).map(([kind, label]) => (
-                <button
-                  key={kind}
-                  type="button"
-                  role="radio"
-                  aria-checked={whenKind === kind}
-                  onClick={() => setWhenKind(kind)}
-                  className={`h-9 rounded-full text-sm transition ${
-                    whenKind === kind ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            {whenKind !== "none" && (
-              <label className="mt-3.5 block text-sm text-ink">
-                {WHEN_TITLE[whenKind]}
-                <DateInput
-                  value={whenDate}
-                  onChange={(event) => setWhenDate(event.target.value)}
-                  className="mt-2 block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
-                />
-              </label>
-            )}
+            {/* Just an optional date (owner, 12 Oct 2026: no Done by / Start around). */}
+            <label className="mt-3.5 block text-sm text-ink">
+              <span className="sr-only">Date (optional)</span>
+              <DateInput
+                value={whenDate}
+                onChange={(event) => setWhenDate(event.target.value)}
+                className="block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
+              />
+            </label>
             <div className="mt-3 flex justify-end gap-2">
               <button type="button" onClick={() => setAsking(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={pending || (whenKind !== "none" && !whenDate)}
+                disabled={pending}
                 className="h-11 rounded-xl bg-ink px-5 text-sm text-ivory disabled:opacity-50"
               >
                 {pending ? "Adding…" : "Add to the plan"}

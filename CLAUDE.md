@@ -319,16 +319,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `/plan/appointments/…`; calendar on champagne). Payments were on the
   calendar too until 12 Oct 2026; now only in Money and the Hub's coming up. A **nudge** is a to-do with `remind_at` and
   no `due_date` (`src/lib/plan.ts`: `isNudge`, `planDate`) — the to-do
-  form's "Done by / Start around" switch — so no migration; its date
+  form's old "Done by / Start around" switch (taken out 12 Oct 2026; new
+  to-dos just have a date, and existing nudges stay nudges) — so no migration; its date
   passing means "start now", never overdue. The starter list includes
   nudges. **The to-do and appointment forms were made visual** (12 Oct 2026,
   owner: "like add a supplier… super satisfying to fill in"), built from
   shared pieces in `src/components/visual-form.tsx` (`TITLE_INPUT`, `Tiles`,
-  `areaTiles`, `DateCard`, `Line`, `CARD`, `Folded`): the name large like a
-  title; to-dos pick **When** as three tiles (Done by · Start around · No
-  date) then a **date card** (the day written out large, quick picks: next
-  week, next month, in 3 months, 6 months / a month / the week before the
-  day); appointments offer one-tap name ideas (Venue visit, Dress
+  `areaTiles`, `DateCard`, `Line`, `CARD`, `Folded`): the name large (24px,
+  under the page title — owner, 12 Oct 2026); **to-dos simplified the same
+  day**: the name, then an optional **date card** (the day written out large,
+  ✕ to take it off, quick picks that wrap onto two lines rather than scroll
+  sideways: next week, next month, in 3 months, 6 months / a month / the
+  week before the day), area tiles, and notes always open; appointments offer one-tap name ideas (Venue visit, Dress
   fitting…), the date card, a time card with quick taps (10:00…18:00), a
   Where and who card (picking a supplier picks their area), then the area as
   picture tiles ending in Other; notes folded under "Add notes".
@@ -392,7 +394,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   a note** (owner, 11 Oct 2026): it stays on the wall with a gold area tag
   and shows in that area's Notes block too; its panel says "Filed under" and
   can change it or set it back to Not filed. No "Filed lately" list any more.
-  **Make it a to-do** asks when (Done by · Start around · No date), keeps the
+  **Make it a to-do** offers an optional date, keeps the
   note with a dark "To-do" tag (`notes.milestone_id`, `0014_note_todo.sql`;
   until that's run the note stays without the tag — never removed) whose panel row opens the
   to-do, and shows "Added to your plan · See it". A note still **to sort**

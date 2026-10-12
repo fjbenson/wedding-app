@@ -83,7 +83,7 @@ export default function PaymentForm({
         aria-label="What's it for?"
         placeholder="What's it for?"
         // A supplier's name plus "deposit" runs long: step the size down so it fits.
-        className={description.length > 24 ? TITLE_INPUT.replace("!text-[30px]", "!text-[22px]") : TITLE_INPUT}
+        className={description.length > 24 ? TITLE_INPUT.replace("!text-[24px]", "!text-[20px]") : TITLE_INPUT}
       />
       {!payment && (
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">

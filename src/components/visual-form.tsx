@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronDown, MoreHorizontal } from "lucide-react";
+import { CalendarDays, ChevronDown, MoreHorizontal, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import { formatLongDate, todayISO } from "@/lib/dates";
@@ -21,9 +21,9 @@ export const CARD =
 export const BARE =
   "min-w-0 flex-1 bg-transparent py-3.5 text-[16px] text-ink placeholder:text-stone/60 focus:outline-none";
 
-/** The big first box — the name of the thing, like a title. */
+/** The first box — the name of the thing. Large, but under the page title (owner, 12 Oct 2026: 30px was as big as the title). */
 export const TITLE_INPUT =
-  "w-full border-b border-champagne-400 bg-transparent pb-2 font-display !text-[30px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:italic placeholder:text-stone/50 focus:border-ink focus:outline-none";
+  "w-full border-b border-champagne-400 bg-transparent pb-2 font-display !text-[24px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:italic placeholder:text-stone/50 focus:border-ink focus:outline-none";
 
 /** One line of a card: an icon, then the box. Hairlines between. */
 export function Line({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
@@ -113,9 +113,11 @@ const addMonths = (iso: string, months: number) => {
 };
 
 /**
- * A date as a card: the day written out large, a row of quick picks
- * (next week, next month, … the month before the wedding), and the
- * calendar for anything else.
+ * A date as a card: the day written out large, quick picks (next week,
+ * next month, … the month before the wedding) wrapping onto as many lines
+ * as they need — not a sideways scroll, which hid half of them (owner, 12
+ * Oct 2026) — and the calendar for anything else. `clearable` adds a ✕ to
+ * take the date off again.
  */
 export function DateCard({
   name,
@@ -124,6 +126,7 @@ export function DateCard({
   weddingDate,
   required,
   quick = true,
+  clearable = false,
 }: {
   name: string;
   value: string;
@@ -131,6 +134,7 @@ export function DateCard({
   weddingDate?: string | null;
   required?: boolean;
   quick?: boolean;
+  clearable?: boolean;
 }) {
   const today = todayISO();
   const picks = [
@@ -165,15 +169,25 @@ export function DateCard({
           aria-label="Date"
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
+        {clearable && value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label="Take the date off"
+            className="relative z-10 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
+          >
+            <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          </button>
+        )}
       </label>
       {quick && (
-        <div className="flex gap-2 overflow-x-auto border-t border-linen px-4 py-3 [scrollbar-width:none]">
+        <div className="flex flex-wrap gap-2 border-t border-linen px-4 py-3">
           {picks.map((p) => (
             <button
               key={p.label}
               type="button"
               onClick={() => onChange(p.date)}
-              className={`h-9 shrink-0 rounded-full border px-3.5 text-[13px] transition ${
+              className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
                 value === p.date ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
               }`}
             >

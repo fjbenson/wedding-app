@@ -857,6 +857,20 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 ### Backlog (ideas parked by the owner)
 
+- **From the information-architecture review (12 Oct 2026)** — the owner
+  asked for the app's map ("Wedding App Map", a sitemap:
+  https://claude.ai/artifact/GfcFVHZX4vuf1Ykzdk1i5B) and what doesn't line
+  up. Done the same day: payments off the Plan calendar, appointments in
+  Plan's List, Money's area filter, guest facts on area pages. Still open:
+  - **Your notes and Inspo are two homes for one thing** (ideas to come
+    back to): one **Ideas** place with notes and pictures together, filed
+    the same way — bigger; think it through before building.
+  - Areas are added from the ring's + but renamed / reordered in Settings
+    (two places for one thing).
+  - Day and evening events are set up at the foot of the guest list, though
+    they're really about the day.
+  - A supplier's card could show their next appointment as well as payments.
+
 - **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box
   above the grid listing that month's "start around" nudges, to help
   couples along. The owner likes the idea but not yet the look; it was

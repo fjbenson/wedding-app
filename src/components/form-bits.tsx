@@ -56,7 +56,16 @@ function snapshot(form: HTMLFormElement) {
  * (owner: just looking at a to-do shouldn't show a big Save) — with a
  * Cancel beside it that leaves without saving, back to where you came from.
  */
-export function SubmitBar({ label, whenChanged = false }: { label: string; whenChanged?: boolean }) {
+export function SubmitBar({
+  label,
+  whenChanged = false,
+  onCancel,
+}: {
+  label: string;
+  whenChanged?: boolean;
+  /** Cancel's own job (a card closes itself); otherwise it goes back a screen. */
+  onCancel?: () => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [changed, setChanged] = useState(false);
@@ -94,7 +103,7 @@ export function SubmitBar({ label, whenChanged = false }: { label: string; whenC
         <div className="flex gap-2.5">
           <button
             type="button"
-            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            onClick={() => (onCancel ? onCancel() : window.history.length > 1 ? router.back() : router.push("/"))}
             className="h-[52px] w-[34%] shrink-0 rounded-2xl border border-champagne-400/70 bg-white text-ink transition hover:bg-cream"
           >
             Cancel

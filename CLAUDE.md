@@ -232,8 +232,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   list, on the Filter line): By area (default) or Name, A–Z
   (one plain list like the guest list, no letter dividers; a leading "The" ignored); kept on the phone
   (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
-  (`supplier-card.tsx`, a sheet / right panel like the guest card),
-  **edited in place**: area link, business name (tap to rename), Call ·
+  (`supplier-card.tsx`, a sheet / right panel like the guest card) — **since
+  12 Oct 2026 the add-a-supplier form itself, filled in** (`SupplierForm`
+  with `supplier`; owner: the card looked nothing like the form): name,
+  Call · Email · Website, What they do tiles, Where you're up to tiles,
+  Money (+ area budget and payments line), How to reach them, More; Cancel /
+  Save changes rise once something's changed (`saveSupplierCardAction`, only
+  what was sent is changed); "We didn't go with them" saves at once. The
+  older description, kept for reference — area link, business name (tap to rename), Call ·
   Email, **Where you're up to** slider, Money (Quote and Deposit paid tap
   to edit, the area's budget, this supplier's payments, "+ Add a payment"),
   Details (Area picker, Contact, Phone, Email, Contract link, Notes —

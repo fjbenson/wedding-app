@@ -162,3 +162,52 @@ export async function updateSupplierAction(supplierId: string, edit: SupplierEdi
   revalidatePath("/area/[key]", "page");
   return {};
 }
+
+/**
+ * Saves the supplier card — the add form filled in with their details (owner,
+ * 12 Oct 2026) — and returns a message rather than redirecting, so the card
+ * stays open. Only what the form sent is changed: a folded-away box (notes,
+ * contract) is left alone, and "not taken" stays unless a stage is picked.
+ */
+export async function saveSupplierCardAction(supplierId: string, formData: FormData): Promise<{ error?: string }> {
+  const company = text(formData, "company_name");
+  if (!company) return { error: "Please give the business a name." };
+  const sent = (key: string) => formData.has(key);
+
+  const { first, last } = splitName(text(formData, "contact_name") ?? company);
+  const contact: Record<string, string | null> = { first_name: first, last_name: last };
+  for (const key of ["phone", "email", "notes"] as const) if (sent(key)) contact[key] = text(formData, key);
+
+  const details: Record<string, unknown> = { company_name: company };
+  if (sent("category")) details.category = text(formData, "category");
+  const status = String(formData.get("status") ?? "");
+  if (SUPPLIER_STATUSES.some((s) => s.status === status)) details.status = status;
+  for (const key of ["quoted_cost", "deposit_paid"] as const) {
+    const raw = text(formData, key);
+    const amount = parseMoney(formData.get(key));
+    if (raw && amount === null) return { error: "That doesn't look like an amount — try 1800 or £1,800." };
+    details[key] = amount;
+  }
+  for (const key of ["contract_url", "website"] as const) if (sent(key)) details[key] = text(formData, key);
+
+  try {
+    try {
+      await updateSupplierParts(supplierId, contact, details);
+    } catch (error) {
+      if (!missingWebsite(error)) throw error;
+      const { website: _dropped, ...rest } = details;
+      void _dropped;
+      await updateSupplierParts(supplierId, contact, rest);
+    }
+  } catch (error) {
+    console.error("saving supplier card failed", error);
+    if (status === "quoted" && /supplier_status/.test(describe(error))) {
+      return { error: "\"Quote in\" needs one database step: run supabase/migrations/0012_area_stages.sql in Supabase." };
+    }
+    return { error: "That didn't save. Try again." };
+  }
+  revalidatePath("/people");
+  revalidatePath("/money");
+  revalidatePath("/area/[key]", "page");
+  return {};
+}

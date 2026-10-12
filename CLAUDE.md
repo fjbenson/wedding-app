@@ -442,7 +442,10 @@ pushing, look at Vercel's verdict on the commit:
 `gh api repos/fjbenson/wedding-app/commits/<sha>/statuses --jq '.[] | "\(.context) \(.state) \(.description)"'`
 — wait for `success` before saying it's live. The build logs need the
 owner's Vercel login (the deployment page on vercel.com).
-**Vercel's free plan builds at most 100 updates a day** (12 Oct 2026: ~95 in
+**Vercel is on the Pro plan since 12 Oct 2026** (owner upgraded: the
+free plan is for non-commercial use, and its build limit kept stopping
+changes reaching the owner's phone), so the limit below no longer bites.
+History: **Vercel's free plan builds at most 100 updates a day** (12 Oct 2026: ~95 in
 24 hours stopped the payment form going live; Vercel silently skipped the
 pushes). Every push to `main` *and* every push to a side branch counts. So:
 Claude's side branches (`claude/…`) no longer build on Vercel at all
@@ -575,6 +578,7 @@ Not legal advice — the UK list raised with the owner:
 6. Let a couple export or delete their wedding.
 7. Supabase paid plan (~$25/month): the free plan has no proper backups and
    pauses quiet projects.
+   (Vercel Pro, needed for commercial use: done 12 Oct 2026.)
 8. Two-step login on the owner's Supabase, Vercel and GitHub accounts.
 
 Data is in Supabase Postgres in Ireland, encrypted at rest and in transit;

@@ -111,6 +111,9 @@ export default function SupplierForm({
           <input name="email" type="email" defaultValue={supplier?.email ?? ""} className={INPUT} />
         </Field>
       </div>
+      <Field label="Website" hint="optional">
+        <input name="website" type="text" inputMode="url" autoCapitalize="none" defaultValue={d?.website ?? ""} placeholder="e.g. ellierose.co.uk" className={INPUT} />
+      </Field>
 
       <Field label="Contract" hint="a link, optional">
         <input

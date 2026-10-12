@@ -18,6 +18,12 @@ function text(formData: FormData, key: string): string | null {
 
 const LIST = "/people?tab=suppliers";
 
+/** The database hasn't got the website column yet (0015 not run). */
+function missingWebsite(error: unknown) {
+  const e = error as { code?: string; message?: string };
+  return (e.code === "PGRST204" || e.code === "42703") && /website/.test(e.message ?? "");
+}
+
 /** Adds a supplier (supplierId null) or saves changes to one. */
 export async function saveSupplierAction(supplierId: string | null, formData: FormData) {
   const back = supplierId ? `/people/${supplierId}` : "/people/suppliers/new";
@@ -50,12 +56,23 @@ export async function saveSupplierAction(supplierId: string | null, formData: Fo
     quoted_cost: parseMoney(formData.get("quoted_cost")),
     deposit_paid: parseMoney(formData.get("deposit_paid")),
     contract_url: text(formData, "contract_url"),
+    website: text(formData, "website"),
   };
 
   let detail = "";
   try {
-    if (supplierId) await updateSupplier(supplierId, contact, details);
-    else await createSupplier(wedding.id, contact, details);
+    try {
+      if (supplierId) await updateSupplier(supplierId, contact, details);
+      else await createSupplier(wedding.id, contact, details);
+    } catch (error) {
+      // Before 0015_supplier_website.sql there's no website column: save
+      // everything else rather than nothing.
+      if (!missingWebsite(error)) throw error;
+      const { website: _dropped, ...rest } = details;
+      void _dropped;
+      if (supplierId) await updateSupplier(supplierId, contact, rest);
+      else await createSupplier(wedding.id, contact, rest);
+    }
   } catch (error) {
     console.error("saving supplier failed", error);
     detail = describe(error);
@@ -96,7 +113,7 @@ export async function deleteSupplierAction(supplierId: string) {
 
 /** One thing changed on the supplier card (a tap, then Save). */
 export type SupplierEdit =
-  | { field: "company_name" | "category" | "contract_url" | "phone" | "email" | "notes" | "contact_name"; value: string }
+  | { field: "company_name" | "category" | "contract_url" | "website" | "phone" | "email" | "notes" | "contact_name"; value: string }
   | { field: "quoted_cost" | "deposit_paid"; value: string }
   | { field: "status"; value: SupplierStatus };
 
@@ -132,6 +149,9 @@ export async function updateSupplierAction(supplierId: string, edit: SupplierEdi
   } catch (error) {
     console.error("saving supplier failed", error);
     const detail = describe(error);
+    if (edit.field === "website" && missingWebsite(error)) {
+      return { error: "Websites need one database step: run supabase/migrations/0015_supplier_website.sql in Supabase." };
+    }
     if (edit.field === "status" && edit.value === "quoted" && /supplier_status/.test(detail)) {
       return { error: "\"Quote in\" needs one database step: run supabase/migrations/0012_area_stages.sql in Supabase." };
     }

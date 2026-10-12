@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronRight, Mail, Pencil, Phone, X } from "lucide-react";
+import { ChevronRight, Globe, Mail, Pencil, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
@@ -49,6 +49,7 @@ export default function SupplierCard({
   const save = (edit: SupplierEdit) => updateSupplierAction(supplier.id, edit);
   const drag = usePullToClose(onClose);
   const phone = supplier.phone?.replace(/\s+/g, "");
+  const site = websiteHref(d?.website ?? null);
 
   // Escape closes it, and the list behind doesn't scroll while it's open.
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function SupplierCard({
             </button>
           </div>
 
-          {(phone || supplier.email) && (
+          {(phone || supplier.email || site) && (
             <div className="mt-5 flex gap-2.5">
               {phone && (
                 <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory hover:bg-ink/90">
@@ -122,6 +123,19 @@ export default function SupplierCard({
                 >
                   <Mail className="h-4 w-4" strokeWidth={1.6} aria-hidden />
                   Email
+                </a>
+              )}
+              {site && (
+                <a
+                  href={site}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm ${
+                    phone || supplier.email ? "border border-linen bg-white text-ink hover:border-champagne-400" : "bg-ink text-ivory hover:bg-ink/90"
+                  }`}
+                >
+                  <Globe className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                  Website
                 </a>
               )}
             </div>
@@ -154,6 +168,7 @@ export default function SupplierCard({
               <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
               <TextRow label="Phone" value={supplier.phone} type="tel" onSave={(v) => save({ field: "phone", value: v })} />
               <TextRow label="Email" value={supplier.email} type="email" onSave={(v) => save({ field: "email", value: v })} />
+              <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
               <TextRow label="Contract" value={d?.contract_url ?? null} type="url" onSave={(v) => save({ field: "contract_url", value: v })} />
               <TextRow label="Notes" value={supplier.notes} multiline onSave={(v) => save({ field: "notes", value: v })} />
             </dl>
@@ -404,4 +419,16 @@ function PaymentsLine({ payments, areaKey, supplierId }: { payments: Payment[]; 
       <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
     </Link>
   );
+}
+
+/** "ellierose.co.uk" → "https://ellierose.co.uk"; anything that isn't a web address → null. */
+function websiteHref(value: string | null): string | null {
+  const v = value?.trim();
+  if (!v || /\s/.test(v)) return null;
+  const href = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  try {
+    return new URL(href).hostname.includes(".") ? href : null;
+  } catch {
+    return null;
+  }
 }

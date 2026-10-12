@@ -77,6 +77,8 @@ export interface SupplierDetails {
   quoted_cost: number | null;
   deposit_paid: number | null;
   contract_url: string | null;
+  /** Their website (0015_supplier_website.sql); missing until that's run. */
+  website?: string | null;
   created_at: string;
 }
 

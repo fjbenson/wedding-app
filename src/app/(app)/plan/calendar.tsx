@@ -116,33 +116,33 @@ export default function PlanCalendar({
 
   return (
     <section className="mt-6">
-      {/* The month large on the left, sized to sit level with the round +;
-          the arrows and the + on the right (owner, 12 Oct 2026). */}
+      {/* ‹ the month › on the left, the round + on the right (owner, 12 Oct
+          2026). The month stays well under the page title's size. */}
       <div className="flex items-center justify-between gap-2">
-        <h2 className="min-w-0 font-display text-[22px] font-light leading-none tracking-[-0.02em] text-ink min-[360px]:text-[26px] min-[390px]:text-[30px]" aria-live="polite">
-          {name} <span className="italic text-champagne-600">{year}</span>
-        </h2>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex min-w-0 items-center">
           <button
             type="button"
             onClick={() => go(-1)}
             disabled={month <= firstMonth}
             aria-label="Previous month"
-            className="flex h-11 w-8 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+            className="flex h-11 w-9 shrink-0 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
           >
-            <ChevronLeft className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+            <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
           </button>
+          <h2 className="min-w-[150px] text-center font-display text-[22px] text-ink" aria-live="polite">
+            {name} <span className="font-light italic text-champagne-600">{year}</span>
+          </h2>
           <button
             type="button"
             onClick={() => go(1)}
             disabled={month >= lastMonth}
             aria-label="Next month"
-            className="flex h-11 w-8 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+            className="flex h-11 w-9 shrink-0 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
           >
-            <ChevronRight className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+            <ChevronRight className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
           </button>
-          <span className="ml-1.5">{toggle}</span>
         </div>
+        {toggle}
       </div>
 
       {monthTops[month]}

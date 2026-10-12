@@ -333,9 +333,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   a day (`?day=undated`, Add a to-do) — was a fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
-  **Calendar header and list, 12 Oct 2026 (owner):** the month large on the
-  left (30px, sized to sit level with the round +), ‹ › and the **black +**
-  on the right (the + lives here on the calendar, beside the To-dos |
+  **Calendar header and list, 12 Oct 2026 (owner):** ‹ the month › on the
+  left at 22px (tried at 30px beside the +; too close to the page title), the
+  **black +** on the right (the + lives here on the calendar, beside the To-dos |
   Appointments switch on the List). The key's row ends with a small
   **"6 undated ›"** pill (calendar-off icon) opening the Undated card — the
   cream banner at the foot is gone. Under the grid, done things sit in a

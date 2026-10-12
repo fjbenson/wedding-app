@@ -703,9 +703,10 @@ access control is RLS. No column-level encryption is planned.
   ("Other" = none or other), Money's leftover row, the Suppliers groups.
   There's no Other **budget** (budgets live on the areas table).
   **Then a dashed "+ Add an area" tile** (owner, 12 Oct 2026): `AreaTiles`
-  in `visual-form.tsx` opens a name box in place and adds the area through
-  `quickAddAreaAction` (`area/actions.ts`; brings an old one back if the
-  name matches), then picks it, without leaving the form. On the to-do,
+  in `visual-form.tsx` opens **the same three steps as the ring's +**
+  (`AreaSteps` with `sheet`, full screen over the form, no form of its own),
+  saves through `quickAddAreaAction` (`area/actions.ts`; brings an old one
+  back if the name matches), then picks it, without leaving the form. On the to-do,
   appointment, payment and add-a-supplier forms so far; still to do on the
   supplier card, capture, note filing and Inspo.
 - **Amounts get a comma every thousand as you type** (owner, 12 Oct

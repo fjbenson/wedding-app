@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { Check, ChevronLeft, X } from "lucide-react";
 import BackLink from "@/components/back-link";
@@ -8,7 +8,7 @@ import MoneyInput from "@/components/money-input";
 import IconPicker from "@/components/icon-picker";
 import { guessIcon, iconByName } from "@/lib/area-icons";
 import { formatMoney } from "@/lib/money";
-import { addAreaAction } from "../actions";
+import { addAreaAction, quickAddAreaAction } from "../actions";
 
 /** Ideas to tap on the first step, after any areas the couple took off the ring. */
 const IDEAS = ["Accommodation", "Honeymoon", "Favours", "Lighting", "Children", "Entertainment"];
@@ -19,12 +19,18 @@ const IDEAS = ["Accommodation", "Honeymoon", "Favours", "Lighting", "Children", 
  * the name, with a search ("lights") over the shortlist in
  * src/lib/area-icons.ts — 3 a budget, or skip. One form underneath, so Back
  * keeps what was typed; it saves at the end and opens the new area's page.
+ *
+ * `sheet`: the same steps over another form ("+ Add an area" in the area
+ * tiles, `AreaTiles`): no form of its own (it would sit inside theirs), it
+ * saves through `quickAddAreaAction` and hands the new area back, picked.
  */
 export default function AreaSteps({
   hidden,
   stillFree,
   error,
+  sheet,
 }: {
+  sheet?: { onAdded: (area: { key: string; label: string; icon: string | null }) => void; onClose: () => void };
   /** Areas taken off the ring or switched off: offered first on step 1. */
   hidden: string[];
   /** The whole budget less what's shared out, if there's a budget. */
@@ -34,6 +40,22 @@ export default function AreaSteps({
   const [step, setStep] = useState(1);
   const [label, setLabel] = useState("");
   const [icon, setIcon] = useState<string | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [saving, start] = useTransition();
+  const [sheetError, setSheetError] = useState<string | undefined>();
+  const finishSheet = (skip: boolean) =>
+    start(async () => {
+      if (!sheet) return;
+      const budget = skip ? null : (root.current?.querySelector<HTMLInputElement>('input[name="budget"]')?.value ?? null);
+      let result: { key?: string; label?: string; icon?: string; error?: string };
+      try {
+        result = await quickAddAreaAction(name, { icon, budget });
+      } catch {
+        result = { error: "That didn't add it. Reload the page and try again." };
+      }
+      if (result.error || !result.key) return setSheetError(result.error);
+      sheet.onAdded({ key: result.key, label: result.label ?? name, icon: result.icon ?? icon });
+    });
 
   const name = label.trim();
   const toIcons = () => {
@@ -45,12 +67,16 @@ export default function AreaSteps({
   const Picked = iconByName(icon) ?? iconByName("Sparkles")!;
   const suggestions = [...hidden, ...IDEAS.filter((i) => !hidden.some((h) => h.toLowerCase() === i.toLowerCase()))];
 
-  return (
-    <form action={addAreaAction} className="pb-40">
+  const body = (
+    <>
       <input type="hidden" name="icon" value={icon ?? ""} />
 
       <div className="flex items-center justify-between">
-        {step === 1 ? (
+        {step === 1 && sheet ? (
+          <button type="button" onClick={sheet.onClose} aria-label="Close" className="-ml-1 flex h-11 w-11 items-center text-stone hover:text-ink">
+            <X className="h-[22px] w-[22px]" strokeWidth={1.6} aria-hidden />
+          </button>
+        ) : step === 1 ? (
           <BackLink href="/" className="-ml-1 flex h-11 w-11 items-center text-stone hover:text-ink">
             <X className="h-[22px] w-[22px]" strokeWidth={1.6} aria-hidden />
             <span className="sr-only">Close</span>
@@ -82,9 +108,9 @@ export default function AreaSteps({
         <span className="w-11 text-right text-xs text-stone">{step} of 3</span>
       </div>
 
-      {error && (
+      {(error || sheetError) && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
-          {error}
+          {sheetError ?? error}
         </p>
       )}
 
@@ -178,10 +204,34 @@ export default function AreaSteps({
           >
             Next
           </button>
+        ) : sheet ? (
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => finishSheet(false)}
+              disabled={saving}
+              className="h-[52px] w-full rounded-2xl bg-ink text-ivory shadow-[0_10px_24px_-12px_rgb(30_27_24/0.5)] transition hover:bg-ink/90 disabled:opacity-60"
+            >
+              {saving ? "Adding…" : `Add ${name}`}
+            </button>
+            <button type="button" onClick={() => finishSheet(true)} disabled={saving} className="h-11 text-sm text-champagne-600 hover:text-ink">
+              Skip — no budget yet
+            </button>
+          </div>
         ) : (
           <Finish name={name} />
         )}
       </div>
+    </>
+  );
+
+  return sheet ? (
+    <div ref={root} className="pb-40">
+      {body}
+    </div>
+  ) : (
+    <form action={addAreaAction} className="pb-40">
+      {body}
     </form>
   );
 }

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { guessIcon, iconByName } from "@/lib/area-icons";
 import { areaKey } from "@/lib/areas";
-import { addArea, getArea, missingIcon, updateArea } from "@/lib/db/areas";
+import { addArea, getArea, listAreas, missingIcon, updateArea } from "@/lib/db/areas";
 import { parseMoney } from "@/lib/money";
 import { createNote, deleteNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -83,7 +83,10 @@ export async function setAreaIconAction(areaId: string, key: string, icon: strin
  * and returns it so the form can pick it. Never throws — the form shows the
  * message instead.
  */
-export async function quickAddAreaAction(name: string): Promise<{ key?: string; label?: string; error?: string }> {
+export async function quickAddAreaAction(
+  name: string,
+  chosen: { icon?: string | null; budget?: string | null } = {},
+): Promise<{ key?: string; label?: string; icon?: string; error?: string }> {
   try {
     const wedding = await getCurrentWedding();
     if (!wedding) return { error: "Couldn't find your wedding. Reload the page." };
@@ -91,15 +94,36 @@ export async function quickAddAreaAction(name: string): Promise<{ key?: string; 
     const key = areaKey(label) === "new" ? "new-area" : areaKey(label);
     if (!key) return { error: "Give the area a name." };
     if (key === "other") return { error: "Other is already there." };
+    // The icon they picked, else a first guess from the name (changeable on its page).
+    const icon = chosen.icon && iconByName(chosen.icon) ? chosen.icon : guessIcon(label);
+    const budget = chosen.budget ? parseMoney(chosen.budget) : null;
     const existing = await getArea(wedding.id, key);
-    if (existing) await updateArea(existing.id, { enabled: true, show_on_hub: true });
-    // Its icon is a first guess from the name; it can be changed on its page.
-    else await addArea(wedding.id, key, label, { icon: guessIcon(label) });
+    if (existing) {
+      await updateArea(existing.id, { enabled: true, show_on_hub: true, ...(budget !== null ? { budget } : {}) });
+      if (chosen.icon) await updateArea(existing.id, { icon }).catch(() => undefined);
+    } else await addArea(wedding.id, key, label, { icon, budget });
     refresh(key);
-    return { key, label: existing?.label ?? label };
+    revalidatePath("/money");
+    return { key, label: existing?.label ?? label, icon: existing && !chosen.icon ? (existing.icon ?? undefined) : icon };
   } catch (error) {
     console.error("quick add area failed", error);
     return { error: "That didn't add it. Try again." };
+  }
+}
+
+/** What the three steps offer when opened from a form: areas to bring back, and the budget still free. */
+export async function areaStepsInfoAction(): Promise<{ hidden: string[]; stillFree: number | null }> {
+  try {
+    const wedding = await getCurrentWedding();
+    if (!wedding) return { hidden: [], stillFree: null };
+    const areas = (await listAreas(wedding.id)) ?? [];
+    const shared = areas.filter((a) => a.enabled).reduce((sum, a) => sum + (a.budget ?? 0), 0);
+    return {
+      hidden: areas.filter((a) => !a.show_on_hub || !a.enabled).map((a) => a.label),
+      stillFree: wedding.budget != null ? Math.max(0, wedding.budget - shared) : null,
+    };
+  } catch {
+    return { hidden: [], stillFree: null };
   }
 }
 

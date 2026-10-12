@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { CalendarDays, ChevronDown, MoreHorizontal, Plus, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import { formatLongDate, todayISO } from "@/lib/dates";
-import { quickAddAreaAction } from "@/app/(app)/area/actions";
+import { areaStepsInfoAction } from "@/app/(app)/area/actions";
+import AreaSteps from "@/app/(app)/area/new/area-steps";
 
 /*
  * The pieces of the "visual" forms (owner, 12 Oct 2026: the add-a-supplier
@@ -119,9 +121,9 @@ export function areaTiles(areas: AreaOption[], otherValue: string) {
 /**
  * The wedding's areas as tiles, Other, then a dashed **+ Add an area** tile
  * (owner, 12 Oct 2026: wherever an area is picked, you can add one). It opens
- * a name box in place; the new area is added to the wedding (and the ring)
- * and picked, without leaving the form. Controlled (`value` + `onChange`) or
- * not (`defaultValue`).
+ * the same three steps as the ring's + (name, icon, budget — `AreaSteps`) full
+ * screen over the form, so nothing typed is lost; the new area comes back
+ * picked. Controlled (`value` + `onChange`) or not (`defaultValue`).
  */
 export function AreaTiles({
   name,
@@ -147,80 +149,60 @@ export function AreaTiles({
   };
   const [added, setAdded] = useState<AreaOption[]>([]);
   const [adding, setAdding] = useState(false);
-  const [label, setLabel] = useState("");
-  const [error, setError] = useState<string | undefined>();
-  const [pending, start] = useTransition();
+  const tile = useRef<HTMLButtonElement>(null);
+  const [info, setInfo] = useState<{ hidden: string[]; stillFree: number | null }>({ hidden: [], stillFree: null });
   const all = [...areas, ...added.filter((a) => !areas.some((b) => b.key === a.key))];
 
-  const add = () =>
-    start(async () => {
-      let result: { key?: string; label?: string; error?: string };
-      try {
-        result = await quickAddAreaAction(label);
-      } catch {
-        result = { error: "That didn't add it. Reload the page and try again." };
-      }
-      if (result.error || !result.key) return setError(result.error);
-      setAdded((list) => [...list, { key: result.key!, label: result.label ?? label }]);
-      pick(result.key);
-      setAdding(false);
-      setLabel("");
-      setError(undefined);
-    });
+  const open = () => {
+    setAdding(true);
+    areaStepsInfoAction()
+      .then(setInfo)
+      .catch(() => undefined);
+  };
+
+  // The page behind doesn't scroll while the steps are open.
+  useEffect(() => {
+    if (!adding) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [adding]);
 
   return (
     <Tiles name={name} options={areaTiles(all, otherValue)} value={picked} onChange={pick}>
-      {adding ? (
-        <div className="col-span-full rounded-2xl border border-dashed border-champagne-400 bg-white/70 p-2">
-          <div className="flex items-center gap-2">
-            <input
-              autoFocus
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onKeyDown={(e) => {
-                // Enter adds the area rather than sending the whole form.
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (label.trim()) add();
-                }
-              }}
-              maxLength={40}
-              aria-label="The new area's name"
-              placeholder="e.g. Fireworks"
-              className="h-11 min-w-0 flex-1 bg-transparent px-2 text-[16px] text-ink placeholder:text-stone/60 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={add}
-              disabled={pending || !label.trim()}
-              className="h-11 shrink-0 rounded-xl bg-ink px-4 text-sm text-ivory disabled:opacity-40"
-            >
-              {pending ? "Adding…" : "Add"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAdding(false);
-                setError(undefined);
-              }}
-              aria-label="Cancel"
-              className="flex h-11 w-9 shrink-0 items-center justify-center text-stone hover:text-ink"
-            >
-              <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            </button>
-          </div>
-          {error && <p className="px-2 pb-1 text-sm text-champagne-600">{error}</p>}
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-champagne-400/80 px-1.5 py-2.5 text-center text-[13px] leading-tight text-champagne-600 transition hover:bg-white/60"
-        >
-          <Plus aria-hidden className="h-5 w-5" strokeWidth={1.6} />
-          Add an area
-        </button>
-      )}
+      <button
+        ref={tile}
+        type="button"
+        onClick={open}
+        className="flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-champagne-400/80 px-1.5 py-2.5 text-center text-[13px] leading-tight text-champagne-600 transition hover:bg-white/60"
+      >
+        <Plus aria-hidden className="h-5 w-5" strokeWidth={1.6} />
+        Add an area
+      </button>
+      {adding &&
+        createPortal(
+          <div role="dialog" aria-modal="true" aria-label="Add an area" className="fixed inset-0 z-50 overflow-y-auto bg-ivory">
+            <div className="page">
+              <AreaSteps
+                hidden={info.hidden}
+                stillFree={info.stillFree}
+                sheet={{
+                  onClose: () => setAdding(false),
+                  onAdded: (area) => {
+                    setAdded((list) => [...list, area]);
+                    pick(area.key);
+                    setAdding(false);
+                    // Tell the form something changed (its Save shows on change, SubmitBar).
+                    requestAnimationFrame(() => tile.current?.closest("form")?.dispatchEvent(new Event("change", { bubbles: true })));
+                  },
+                }}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </Tiles>
   );
 }

@@ -198,8 +198,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `?supplier=`). The card is contact-first: no payment list — one line ("2
   payments · next £250 Wed 14 Oct ›" to the area page's `#payments`, or "+
   Add a payment"). Area headings on the Suppliers list open the area page.
-  **Website** (12 Oct 2026, `0015_supplier_website.sql` — the owner pastes
-  it into Supabase): a field on the add form and the card, and a **Website**
+  **Website** (12 Oct 2026, `0015_supplier_website.sql`, run): a field on the add form and the card, and a **Website**
   button beside Call · Email ("ellierose.co.uk" gets https:// added). Until
   0015 is run, saves quietly leave the website out (`missingWebsite()` retry
   in `supplier-actions.ts`); editing it on the card says to run 0015.
@@ -429,8 +428,9 @@ by hand** in the Supabase SQL editor — the owner has to paste them in.
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. Checked 12 Oct: 0001–0010 and 0012–0015 are in;
-**0011 (floor plan) was missing**. Until
+only queries) needs no OK. **All migrations 0001–0015 are now in** (12 Oct
+2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
+The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
 starter areas rather than breaking; until 0004 is run, a guest's role
 quietly isn't saved (`saveGuestAction` retries without it).

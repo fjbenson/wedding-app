@@ -29,9 +29,13 @@ ring on a champagne cover described further down:
   day number in `champagne-600`.
 - **Glass cards below** (`.glass-card`): "coming up" and Inspo, over soft
   champagne glows the page puts behind them so the glass shows.
-- **Background: champagne satin** (round 14, no. 4) — a still diagonal
-  satin gradient behind every screen (`body::before` in `globals.css`), a warm champagne circle (`#EADCC6`)
-  behind the ring. Round 15's plain ivory looked flat on the phone.
+- **Background: paper** (canvas 2, "Background · Instead of the satin",
+  option 1, owner's pick 12 Oct 2026) — warm ivory (`#F8F3EA`) with a very
+  fine grain and faint fibres, like cotton invitation card: a small SVG tile
+  repeated behind every screen (`body::before` in `globals.css`). It
+  replaced round 14's champagne satin (diagonal stripes), which the owner
+  found cheap-looking. Options 2 (soft light, warm glows) and 3 (paper and
+  light) are still on the canvas. Round 15's plain ivory looked flat.
 - What the owner rejected on the way: blue; stacking several "grounding"
   ideas at once (card + dark centre + ring line); solid white cards.
 - Area names show under the buttons from tablet width up. On phones it's

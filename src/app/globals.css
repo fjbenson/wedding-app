@@ -44,10 +44,13 @@
 }
 
 /*
- * Champagne satin behind every screen (round 14, no. 4 on the design
- * canvas): soft diagonal bands of cream and pale gold. It sits on a fixed
- * layer so it stays put while the page scrolls (iPhones ignore a fixed
- * body background). Left off when printing.
+ * Paper behind every screen (canvas 2, "Background · Instead of the satin",
+ * option 1, 12 Oct 2026; replaced the satin stripes, which looked cheap):
+ * warm ivory with a very fine grain and faint fibres, like heavy cotton
+ * invitation card. The grain is a small SVG tile drawn once and repeated,
+ * so it costs nothing while scrolling. It sits on a fixed layer so it stays
+ * put while the page scrolls (iPhones ignore a fixed body background). Left
+ * off when printing.
  */
 body::before {
   content: "";
@@ -55,7 +58,8 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(118deg, #f3eadf 0%, #fff9f2 30%, #e9ddcf 48%, #fffaf3 66%, #f1e7db 100%);
+  background-color: #f8f3ea;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.34 0 0 0 0 0.22 0 0 0 0.55 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0 0.3 0 0 0 0.35 -0.08'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.16'/%3E%3Crect width='240' height='240' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
 }
 
 @media print {

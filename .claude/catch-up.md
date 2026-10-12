@@ -9,8 +9,8 @@ anything for this. `/banana` is the *end*-of-chat wrap-up.
    than those files mention.
 3. Reply briefly, in plain language (the owner is new to development):
    - **Where we are** — two or three lines: what's built, what's live.
-   - **The look we chose** — one line (ivory magazine on champagne
-     satin, editorial type, glass cards, frosted hub ring).
+   - **The look we chose** — one line (ivory magazine on paper-grain
+     ivory, editorial type, glass cards, frosted hub ring).
    - **Links** — the design canvases, Glass Lab and Taste Lab from `CLAUDE.md`.
    - **Next step** — the agreed next step from `CLAUDE.md`, as a question:
      "Shall I start on …?"

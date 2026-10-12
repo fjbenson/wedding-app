@@ -1,17 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-
-export const WHEN_CHOICES = [
-  ["overdue", "Overdue"],
-  ["month", "This month"],
-  ["soon", "Next 3 months"],
-  ["none", "No date"],
-] as const;
-export type When = (typeof WHEN_CHOICES)[number][0];
-
-export const asWhen = (value: string | undefined): When | null =>
-  WHEN_CHOICES.some(([key]) => key === value) ? (value as When) : null;
+import { WHEN_CHOICES, type When } from "./when";
 
 /**
  * Plan's List narrowed by when (owner, 12 Oct 2026: the List is one long

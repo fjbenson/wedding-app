@@ -8,7 +8,7 @@ import { todayISO } from "@/lib/dates";
 import type { Appointment, Milestone } from "@/types/db";
 import Agenda from "./agenda";
 import TodoList from "./todo-list";
-import type { When } from "./when-filter";
+import type { When } from "./when";
 
 /**
  * The Plan tab (docs/information-architecture.md): two views, owner's call

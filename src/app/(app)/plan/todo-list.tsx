@@ -5,7 +5,8 @@ import type { Milestone } from "@/types/db";
 import AreaFilter from "./area-filter";
 import { Fold, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
-import WhenFilter, { WHEN_CHOICES, type When } from "./when-filter";
+import WhenFilter from "./when-filter";
+import { WHEN_CHOICES, type When } from "./when";
 
 /** "2026-10-12" → "2027-01-12": three months on, for "Next 3 months". */
 function threeMonthsOn(today: string) {

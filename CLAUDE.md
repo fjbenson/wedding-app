@@ -672,6 +672,11 @@ access control is RLS. No column-level encryption is planned.
   action, which no longer exists, and an uncaught error blanks the screen.
   Wrap such calls like `safely()` in `guest-card.tsx` and show a message.
   `src/app/(app)/error.tsx` is the safety net for anything else.
+- **Never import plain values (lists, helper functions) from a `"use client"`
+  file into a server one** (12 Oct 2026: Plan's List crashed live with
+  "Something went wrong" — `asWhen()` lived in `when-filter.tsx`). Typecheck
+  and build both pass; it only fails when the page runs. Put shared values in
+  a plain file (like `plan/when.ts`) and import them from both sides.
 - **Row-level security is the real access control.** Policies are built on
   `is_wedding_member()` and `is_wedding_host()`. App-level checks are a
   convenience, not the guarantee.

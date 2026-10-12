@@ -6,7 +6,7 @@ import { listMilestones } from "@/lib/db/milestones";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import TimelineView from "./timeline-view";
-import { asWhen } from "./when-filter";
+import { asWhen } from "./when";
 
 export const metadata = { title: "Plan — Wedding App" };
 

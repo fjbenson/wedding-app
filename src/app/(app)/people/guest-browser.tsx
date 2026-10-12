@@ -476,7 +476,7 @@ function AnswersCard({
         aria-pressed={all}
         onClick={() => onShow("all")}
         className={`mb-1 flex flex-col justify-between rounded-2xl p-3 text-left transition ${
-          all ? "bg-champagne-100 text-ink shadow-[inset_0_0_0_1px_rgb(201_169_110/0.45)]" : "bg-white/55 text-ink hover:bg-champagne-100/60"
+          all ? "glass-tile-on text-ink" : "glass-tile text-ink hover:bg-champagne-100/60"
         }`}
       >
         <span className="type-meta text-champagne-600">All</span>

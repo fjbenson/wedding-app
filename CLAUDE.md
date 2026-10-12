@@ -958,6 +958,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
     they're really about the day.
   - A supplier's card could show their next appointment as well as payments.
 
+- **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
+  "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
+  day's journeys down a gold thread in time order, a tiny map on each card,
+  a List | Map switch, "71 guests · 6 without a lift" and a dashed card for
+  those six — with **C**'s journey page (route on the map, vehicle as
+  picture tiles: Coach · Minibus · Vintage car · Limo · Taxi · On foot), but
+  **guests as initial circles** (like the guest list's) filling the seats,
+  not squares. Needs: a map service (Google Maps or Mapbox: account + key;
+  guests' addresses go to it, so add it to the privacy list) and a vehicle
+  type column on `transport_runs`. B works without the map, so it can come
+  first.
 - **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box
   above the grid listing that month's "start around" nudges, to help
   couples along. The owner likes the idea but not yet the look; it was

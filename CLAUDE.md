@@ -70,7 +70,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   icon)` draws it. The step marker is circles joined by a line that fills
   gold, ticks when done, "2 of 3" on the right (canvas 2 "Area · The step
   marker", B).
-  Changing it later (tap the icon on the area page) is designed, not built.
+  **Changing it later**: the icon sits beside the name on the area page;
+  tap it for a card with the same search (`IconPicker` in
+  `src/components/icon-picker.tsx`, `area-icon.tsx`, `setAreaIconAction`),
+  and a tap saves.
   **Area page design settled 7 Oct 2026** (canvas "Area page · Round 4 ·
   One template"): one template, same pieces in the same order for every
   area. A photo-collage cover from the area's Inspo folder (soft-colour
@@ -82,8 +85,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`areas.diy`) skips Compare and Book. Then **the tabs, filtered to
   this area** (canvas 2 "Area page · Made of the tabs", option A, owner's
   pick 12 Oct 2026 — so the page reads as People, Plan and Money for one
-  area): four sections, each headed like its tab with that tab's drawing
-  (`TabDrawing` in `page-title.tsx`) and an "In People › / In Plan › / In
+  area): four sections, each headed like its tab with **that tab's icon from
+  the menu bar** (People, Plan, Money, The Day; "Just for [area]" uses the
+  area's own icon — owner, 12 Oct 2026, in place of the title drawings, and
+  no line of explanation under each heading) and an "In People › / In Plan › / In
   Money ›" link to the tab filtered to the area. **People** (its suppliers:
   quotes until one's booked, then the rest fold away), **Plan** (to-dos and
   appointments in one list by date, done and been folded), **Money**
@@ -91,7 +96,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Paid · To pay · Still free, then the payment schedule), and **Just for
   [area]** (key facts via `?edit=facts`, notes — "- " lines become bullets,
   `rich-text.tsx` — and a line to its Inspo pictures). Adds sit at the foot
-  of each card. The old tiles (supplier, to pay, next appointment) folded
+  of each card. **Say less** (owner, 12 Oct 2026: "so much copy"): an empty
+  section is just its "+ Add …" — no "No one yet…" / "Nothing to pay yet…"
+  sentences; "We're doing this ourselves" moved to the cover's ⋯ menu (only
+  "We need a supplier after all" shows in People once chosen). The old tiles (supplier, to pay, next appointment) folded
   into those sections; a booked supplier's call/email is on their card.
   **Facts from the guest list** (canvas 2 "Area page · Facts from the guest
   list", option B, owner's pick 12 Oct 2026; `src/lib/area-guests.ts`,

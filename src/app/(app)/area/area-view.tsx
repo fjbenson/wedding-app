@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Camera, Check, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from "lucide-react";
+import { CalendarDays, Camera, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
-import { TabDrawing, type Drawing } from "@/components/page-title";
+import AreaIcon from "./area-icon";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
@@ -19,7 +19,7 @@ import { markPaidAction } from "../money/actions";
 import { AppointmentRow } from "../plan/appointment-row";
 import { MilestoneRow } from "../plan/milestone-row";
 import { SupplierCards, SupplierLink } from "../people/supplier-cards";
-import type { AreaOption } from "@/lib/areas";
+import { areaIcon, type AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
 import {
   addAreaNoteAction,
@@ -80,7 +80,18 @@ const glassButton = "glass-card flex h-11 items-center justify-center rounded-fu
  * nothing saved, a camera in the middle invites the first one. The "⋯" holds
  * the rarely-used "take off the hub" and "stop planning this".
  */
-function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWithPicture[]; ideaCount: number }) {
+function AreaCover({
+  area,
+  photos,
+  ideaCount,
+  canDiy,
+}: {
+  area: AreaRow;
+  photos: InspoWithPicture[];
+  ideaCount: number;
+  /** Nothing booked yet, so "We're doing this ourselves" is on offer in the ⋯ menu. */
+  canDiy: boolean;
+}) {
   const from = encodeURIComponent(`/area/${area.key}`);
   const saveHref = `/inspo/new?folder=${encodeURIComponent(area.key)}&from=${from}`;
   const galleryHref = `/inspo?folder=${encodeURIComponent(area.key)}`;
@@ -130,12 +141,21 @@ function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWi
             <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
             Save an idea
           </Link>
-          {area.show_on_hub && (
+          {(area.show_on_hub || canDiy) && (
             <details className="relative">
               <summary aria-label="More" className={`${glassButton} w-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
                 <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
               </summary>
-              <div className="absolute right-0 top-full z-10 mt-2 w-56 rounded-[18px] bg-white p-2 shadow-[0_18px_40px_-16px_rgba(60,50,40,0.45)]">
+              <div className="absolute right-0 top-full z-10 mt-2 w-60 rounded-[18px] bg-white p-2 shadow-[0_18px_40px_-16px_rgba(60,50,40,0.45)]">
+                {canDiy && (
+                  <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "diy", true)}>
+                    <button type="submit" className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink hover:bg-cream">
+                      We&apos;re doing this ourselves
+                    </button>
+                  </form>
+                )}
+                {area.show_on_hub && (
+                <>
                 <form action={setAreaAction.bind(null, area.id, area.key, "hide")}>
                   <button type="submit" className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink hover:bg-cream">
                     Take off the hub
@@ -146,6 +166,8 @@ function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWi
                     Stop planning this
                   </button>
                 </form>
+                </>
+                )}
               </div>
             </details>
           )}
@@ -153,9 +175,10 @@ function AreaCover({ area, photos, ideaCount }: { area: AreaRow; photos: InspoWi
       </div>
 
       <div className="pointer-events-none absolute inset-x-6 bottom-2 flex items-end justify-between gap-3">
-        <h1 className="type-display min-w-0 text-[48px] leading-none md:text-6xl">
-          {area.label}
-        </h1>
+        <div className="flex min-w-0 items-center gap-3">
+          <AreaIcon id={area.id} areaKey={area.key} icon={area.icon ?? null} />
+          <h1 className="type-display min-w-0 text-[48px] leading-none md:text-6xl">{area.label}</h1>
+        </div>
         {ideaCount > 0 && (
           <Link href={galleryHref} className="label pointer-events-auto mb-2 shrink-0 hover:text-ink">
             {plural(ideaCount, "idea")} ›
@@ -211,41 +234,31 @@ function StageStrip({ done, current }: { done: boolean[]; current: number }) {
 /**
  * A section of the area page, headed like the tab it comes from (canvas 2
  * "Area page · Made of the tabs", option A, owner's pick 12 Oct 2026): the
- * tab's drawing, its name, a line saying what's in it, and a way through to
- * the tab itself. The page is the tabs, filtered to one area.
+ * tab's icon from the menu bar (owner, 12 Oct 2026 — in place of the title
+ * drawings, and no line of explanation under the name), its name, and a way
+ * through to the tab itself. The page is the tabs, filtered to one area.
  */
 function Section({
   id,
   title,
-  sub,
-  drawing,
-  art,
+  icon: Icon,
   seeHref,
   seeLabel,
   children,
 }: {
   id?: string;
   title: string;
-  sub: string;
-  drawing?: Drawing;
-  /** In place of a tab's drawing (the extras have none). */
-  art?: React.ReactNode;
+  /** The tab's icon from the menu bar, or the area's own for its extras. */
+  icon: LucideIcon;
   seeHref?: string;
   seeLabel?: string;
   children: React.ReactNode;
 }) {
   return (
     <section id={id} className="mt-6 scroll-mt-6">
-      <div className="mb-2.5 flex items-center gap-3 px-1">
-        {drawing ? (
-          <TabDrawing drawing={drawing} className="-my-2 -ml-1 h-auto max-h-[52px] w-14 shrink-0 object-contain min-[370px]:w-[68px]" />
-        ) : (
-          art
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="label">{title}</h2>
-          <p className="type-meta mt-0.5">{sub}</p>
-        </div>
+      <div className="mb-2.5 flex items-center gap-2.5 px-1">
+        <Icon className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
+        <h2 className="label min-w-0 flex-1">{title}</h2>
         {seeHref && (
           <Link href={seeHref} className="type-meta shrink-0 py-2 !text-champagne-600 hover:!text-ink">
             {seeLabel} ›
@@ -260,7 +273,7 @@ function Section({
 /** The "+ Add …" links at the foot of a section's card. */
 function Adds({ links }: { links: { href: string; label: string; stays?: boolean }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-6 border-t border-linen">
+    <div className="flex flex-wrap gap-x-6 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-linen">
       {links.map((l) => (
         <Link key={l.href} href={l.href} scroll={!l.stays} className="label flex min-h-12 items-center hover:text-ink">
           <span aria-hidden>+&nbsp;</span>
@@ -268,17 +281,6 @@ function Adds({ links }: { links: { href: string; label: string; stays?: boolean
         </Link>
       ))}
     </div>
-  );
-}
-
-/** The extras' heading picture: the cover's four tiles, small and tilted. */
-function MiniCollage({ photos }: { photos: InspoWithPicture[] }) {
-  return (
-    <span aria-hidden className="grid h-[42px] w-14 shrink-0 -rotate-3 grid-cols-2 gap-[2px] overflow-hidden rounded-[10px] min-[370px]:w-[60px]">
-      {[0, 1, 2, 3].map((i) => (
-        <Tile key={i} photo={photos[i]} index={i} />
-      ))}
-    </span>
   );
 }
 
@@ -369,7 +371,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
     const most = Math.max(1, ...facts.meals.map((m) => m.count), facts.notPicked);
     const names = facts.dietary.slice(0, 2).map((d) => `${d.name.split(" ")[0]} · ${d.note}`);
     return (
-      <Section title="Guests" sub="Who you're feeding" drawing="guests" seeHref={people} seeLabel="In People">
+      <Section title="Guests" icon={Users} seeHref={people} seeLabel="In People">
         <div className={`grid gap-2 pb-3.5 pt-3.5 ${facts.eveningEventId ? "grid-cols-3" : "grid-cols-2"}`}>
           <Figure value={facts.day} word={facts.eveningEventId ? "day, coming" : "coming"} href={`${people}?show=attending${facts.dayEventId ? `&of=${facts.dayEventId}` : ""}`} />
           {facts.eveningEventId && <Figure value={facts.evening} word="evening" href={`${people}?show=attending&of=${facts.eveningEventId}`} />}
@@ -417,7 +419,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
   }
   if (facts.kind === "stationery") {
     return (
-      <Section title="Guests" sub="Who you're sending to" drawing="guests" seeHref={people} seeLabel="In People">
+      <Section title="Guests" icon={Users} seeHref={people} seeLabel="In People">
         <div className="grid grid-cols-3 gap-2 pb-3.5 pt-3.5">
           <Figure value={facts.households} word={facts.households === 1 ? "household" : "households"} href={`${people}?view=households`} />
           <Figure value={facts.invited} word="invited" href={`${people}?show=pending`} />
@@ -442,7 +444,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
     );
   }
   return (
-    <Section title="On the day" sub="Who's travelling, and when" drawing="day" seeHref="/day?tab=transport" seeLabel="In The Day">
+    <Section title="On the day" icon={Clock} seeHref="/day?tab=transport" seeLabel="In The Day">
       {facts.runs.length > 0 ? (
         <ul>
           {facts.runs.map((r) => (
@@ -460,9 +462,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
             </li>
           ))}
         </ul>
-      ) : (
-        <Empty>No cars or coaches on the day yet.</Empty>
-      )}
+      ) : null}
       {facts.withoutLift > 0 && (
         <FactRow
           href="/day?tab=transport"
@@ -581,7 +581,7 @@ export default function AreaView({
         <div className="absolute -right-16 top-[1000px] h-64 w-64 rounded-full bg-[#EFE3D3] blur-[55px]" />
       </div>
 
-      <AreaCover area={area} photos={photos} ideaCount={ideaCount} />
+      <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} />
 
       <div className="relative mt-5 flex flex-col gap-3.5">
         {error && (
@@ -621,8 +621,7 @@ export default function AreaView({
 
         <Section
           title="People"
-          sub={area.diy ? "Doing it yourselves" : booked.length > 0 ? "Who you've booked" : "Who you're asking"}
-          drawing="suppliers"
+          icon={Users}
           seeHref={`/people?tab=suppliers&f=${encodeURIComponent(`area:${area.key}`)}`}
           seeLabel="In People"
         >
@@ -633,7 +632,7 @@ export default function AreaView({
               ))}
             </ul>
           ) : (
-            <Empty>{area.diy ? "No supplier needed — you're doing this yourselves." : "No one yet. Add who you're asking for quotes."}</Empty>
+            area.diy && <Empty>You&apos;re doing this yourselves.</Empty>
           )}
           {folded.length > 0 && (
             <Folded label={booked.length > 0 && folded.some((s) => s.supplier_details?.status !== "cancelled") ? plural(folded.length, "other") : `${folded.length} not taken`}>
@@ -644,13 +643,13 @@ export default function AreaView({
               </ul>
             </Folded>
           )}
-          {booked.length === 0 && (
+          {booked.length === 0 && area.diy && (
             <form
               action={setAreaStageFlagAction.bind(null, area.id, area.key, "diy", !area.diy)}
               className="border-t border-linen py-2"
             >
               <button type="submit" className="py-1.5 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-                {area.diy ? "We need a supplier after all" : "We're doing this ourselves"}
+                We need a supplier after all
               </button>
             </form>
           )}
@@ -661,8 +660,7 @@ export default function AreaView({
 
         <Section
           title="Plan"
-          sub="To-dos and appointments, by date"
-          drawing="plan"
+          icon={CalendarDays}
           seeHref={`/plan?view=list&area=${key}`}
           seeLabel="In Plan"
         >
@@ -676,9 +674,7 @@ export default function AreaView({
                 ),
               )}
             </ul>
-          ) : (
-            <Empty>{planDone > 0 ? "All done." : "Nothing planned yet. Consultations, tastings and things to do go here."}</Empty>
-          )}
+          ) : null}
           {planDone > 0 && (
             <Folded label={`${planDone} done`}>
               <ul>
@@ -697,7 +693,7 @@ export default function AreaView({
           />
         </Section>
 
-        <Section id="payments" title="Money" sub="Budget, agreed, paid" drawing="money" seeHref={`/money?view=month&area=${key}`} seeLabel="In Money">
+        <Section id="payments" title="Money" icon={PoundSterling} seeHref={`/money?view=month&area=${key}`} seeLabel="In Money">
           {anyMoney ? (
             <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
               <span className="flex flex-wrap items-baseline gap-x-2">
@@ -791,13 +787,11 @@ export default function AreaView({
                 </li>
               ))}
             </ul>
-          ) : (
-            <Empty>Nothing to pay yet. The deposit and balance go here once you book.</Empty>
-          )}
+          ) : null}
           <Adds links={[{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }]} />
         </Section>
 
-        <Section id="notes" title={`Just for ${area.label}`} sub="Key facts, notes and pictures" art={<MiniCollage photos={photos} />}>
+        <Section id="notes" title={`Just for ${area.label}`} icon={areaIcon(area.key, area.icon)}>
           <div className={notes.length > 0 || editing === "note" ? "border-b border-linen" : ""}>
             <div className="flex items-baseline justify-between pt-3.5">
               <h3 className="label">Key facts</h3>
@@ -828,7 +822,7 @@ export default function AreaView({
             ) : area.details ? (
               <RichText text={area.details} className="pb-3.5 pt-2" />
             ) : (
-              <p className="pb-3.5 pt-1.5 text-sm text-stone">The things worth having to hand: colours, numbers, what you&apos;ve ruled out.</p>
+              <p className="pb-3.5 pt-1.5 text-sm text-stone/70">Colours, numbers, what you&apos;ve ruled out.</p>
             )}
           </div>
           {editing === "note" && (

@@ -63,6 +63,20 @@ export async function setAreaAction(
   refresh(key);
 }
 
+/** A new icon for an area, from its page (tap the icon). Never throws. */
+export async function setAreaIconAction(areaId: string, key: string, icon: string): Promise<{ error?: string }> {
+  if (!iconByName(icon)) return { error: "That icon isn't one we have." };
+  try {
+    await updateArea(areaId, { icon });
+  } catch (error) {
+    console.error("set area icon failed", error);
+    return { error: "That didn't save. Try again." };
+  }
+  refresh(key);
+  revalidatePath("/settings");
+  return {};
+}
+
 /**
  * The "+ Add an area" tile at the end of every area picker (owner, 12 Oct
  * 2026): adds the area (or brings an old one back) without leaving the form,

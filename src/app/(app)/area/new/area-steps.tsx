@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Check, ChevronLeft, Search, X } from "lucide-react";
+import { Check, ChevronLeft, X } from "lucide-react";
 import BackLink from "@/components/back-link";
 import MoneyInput from "@/components/money-input";
-import { AREA_ICONS, guessIcon, iconByName, searchIcons } from "@/lib/area-icons";
+import IconPicker from "@/components/icon-picker";
+import { guessIcon, iconByName } from "@/lib/area-icons";
 import { formatMoney } from "@/lib/money";
 import { addAreaAction } from "../actions";
 
@@ -33,7 +34,6 @@ export default function AreaSteps({
   const [step, setStep] = useState(1);
   const [label, setLabel] = useState("");
   const [icon, setIcon] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
 
   const name = label.trim();
   const toIcons = () => {
@@ -42,8 +42,6 @@ export default function AreaSteps({
     setIcon((picked) => picked ?? guessIcon(name));
     setStep(2);
   };
-  const found = searchIcons(query);
-  const shown = found.length ? found : AREA_ICONS;
   const Picked = iconByName(icon) ?? iconByName("Sparkles")!;
   const suggestions = [...hidden, ...IDEAS.filter((i) => !hidden.some((h) => h.toLowerCase() === i.toLowerCase()))];
 
@@ -143,34 +141,8 @@ export default function AreaSteps({
           </span>
           <span className="font-display text-xl font-light text-ink">{name}</span>
         </div>
-        <label className="mt-5 flex h-11 items-center gap-2.5 rounded-full border border-linen bg-white/80 px-4">
-          <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-          <span className="sr-only">Search the icons</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-            placeholder="Search, e.g. lights"
-            className="min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-stone/60 focus:outline-none"
-          />
-        </label>
-        {query.trim() && !found.length && <p className="mt-3 text-sm text-stone">Nothing for “{query.trim()}” — here they all are.</p>}
-        <div className="mt-4 grid grid-cols-6 gap-[7px]">
-          {shown.map((i) => (
-            <button
-              key={i.name}
-              type="button"
-              onClick={() => setIcon(i.name)}
-              aria-label={i.words.split(" ")[0]}
-              aria-pressed={icon === i.name}
-              className={`flex h-12 items-center justify-center rounded-[14px] border transition ${
-                icon === i.name ? "border-ink bg-ink text-champagne-100" : "border-linen bg-white/70 text-champagne-600 hover:border-champagne-400"
-              }`}
-            >
-              <i.icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-            </button>
-          ))}
+        <div className="mt-5">
+          <IconPicker value={icon} onPick={setIcon} />
         </div>
       </section>
 

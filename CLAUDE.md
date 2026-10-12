@@ -197,8 +197,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   in place (`SupplierCards` / `SupplierLink` in `supplier-cards.tsx`, card in
   `?supplier=`). The card is contact-first: no payment list — one line ("2
   payments · next £250 Wed 14 Oct ›" to the area page's `#payments`, or "+
-  Add a payment"). Area headings on the Suppliers list open the area page. No
-  **website** field yet — it would need a new column (a small migration).
+  Add a payment"). Area headings on the Suppliers list open the area page.
+  **Website** (12 Oct 2026, `0015_supplier_website.sql` — the owner pastes
+  it into Supabase): a field on the add form and the card, and a **Website**
+  button beside Call · Email ("ellierose.co.uk" gets https:// added). Until
+  0015 is run, saves quietly leave the website out (`missingWebsite()` retry
+  in `supplier-actions.ts`); editing it on the card says to run 0015.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that

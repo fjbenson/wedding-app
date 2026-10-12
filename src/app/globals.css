@@ -167,8 +167,8 @@ body::before {
 
   /*
    * Glass cards — the home screen's "coming up" and Inspo cards (Round 15 on
-   * the design canvas). Whiter and cloudier than .glass, over the soft
-   * champagne glow the page puts behind them. No colour boost, as above.
+   * the design canvas). Whiter and cloudier than .glass, sitting straight
+   * on the paper background. No colour boost, as above.
    */
   .glass-card {
     background: rgb(255 255 255 / 0.42);

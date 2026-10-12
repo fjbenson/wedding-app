@@ -613,11 +613,6 @@ export default function AreaView({
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
     <main className="page relative pb-28 lg:pb-16">
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 top-[520px] h-72 w-72 rounded-full bg-[#E6D9C4] blur-[55px]" />
-        <div className="absolute -right-16 top-[1000px] h-64 w-64 rounded-full bg-[#EFE3D3] blur-[55px]" />
-      </div>
-
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} />
 
       <div className="relative mt-5 flex flex-col gap-3.5">

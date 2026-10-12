@@ -27,8 +27,8 @@ ring on a champagne cover described further down:
   names in Fraunces italic; every small label in spaced capitals (THE
   WEDDING OF, DAYS TO GO, area names, due dates); jobs in Fraunces with their
   day number in `champagne-600`.
-- **Glass cards below** (`.glass-card`): "coming up" and Inspo, over soft
-  champagne glows the page puts behind them so the glass shows.
+- **Glass cards below** (`.glass-card`): "coming up" and Inspo, straight on the paper
+  (the soft glows behind them were taken out 12 Oct 2026 with the satin).
 - **Background: paper** (canvas 2, "Background · Instead of the satin",
   option 1, owner's pick 12 Oct 2026) — warm ivory (`#F8F3EA`) with a very
   fine grain and faint fibres, like cotton invitation card: a small SVG tile

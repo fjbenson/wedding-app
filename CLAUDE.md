@@ -185,7 +185,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   choice, filters and open card live in the address (`?q=`, `?show=`,
   `?f=`, `?supplier=`; old `?area=` links still work). **`/people/[id]` is now only a redirect** to the
   right card (guest or supplier); the area page's supplier links use it.
-  Adding a supplier still uses the form (`/people/suppliers/new`). With
+  Adding a supplier uses the form (`/people/suppliers/new`), **made lighter
+  12 Oct 2026** (owner: "one massive form… feels quite heavy"): the name
+  large like a title, **What they do** as picture tiles of the wedding's
+  areas (their ring icons, `areaIcon()`), **Where you're up to** as four
+  tiles with the list's stage icons (`StageIcon`, exported from
+  `supplier-list.tsx`), then short glass cards — Money (£ Quote · £ Deposit
+  paid side by side) and **How to reach them** (icon lines: contact, phone,
+  email, website) — and contract link and notes folded under "Add a
+  contract link or notes". Big boxes need `!text-[…]` because
+  `globals.css` keeps inputs at 16px+ (no iPhone zoom). With
   nothing narrowing the list, **every area shows**, an empty one as a faded
   "Add a supplier" row (see Conventions, "An empty screen still shows its
   shape").

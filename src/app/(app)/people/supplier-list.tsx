@@ -457,7 +457,7 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: () => v
 }
 
 /** Booked ✓ on ink · Quote in £ on champagne · Asked a dashed ? · Not taken ✕ on grey. */
-function StageIcon({ status, small = false }: { status: SupplierStatus; small?: boolean }) {
+export function StageIcon({ status, small = false }: { status: SupplierStatus; small?: boolean }) {
   const look: Record<string, { ring: string; mark: React.ReactNode }> = {
     booked: { ring: "bg-ink text-ivory", mark: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
     quoted: { ring: "bg-champagne-100 text-champagne-600 font-display", mark: "£" },

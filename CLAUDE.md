@@ -432,6 +432,13 @@ pushing, look at Vercel's verdict on the commit:
 `gh api repos/fjbenson/wedding-app/commits/<sha>/statuses --jq '.[] | "\(.context) \(.state) \(.description)"'`
 — wait for `success` before saying it's live. The build logs need the
 owner's Vercel login (the deployment page on vercel.com).
+**Vercel's free plan builds at most 100 updates a day** (12 Oct 2026: ~95 in
+24 hours stopped the payment form going live; Vercel silently skipped the
+pushes). Every push to `main` *and* every push to a side branch counts. So:
+**don't mirror each push to the session's side branch**, and gather small
+changes into one push. If a push gets no Vercel status at all, the limit is
+the likely cause — the next push after it resets (or "Redeploy" on
+vercel.com) brings everything live at once.
 
 **Start and end of a chat (11 Oct 2026).** Every cloud chat runs
 `.claude/hooks/session-start.sh` first: it brings the copy up to date with

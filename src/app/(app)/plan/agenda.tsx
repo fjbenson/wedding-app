@@ -156,7 +156,6 @@ export default function Agenda({
   const monthLists = Object.fromEntries(
     Object.entries(byMonth).map(([key, entries]) => [key, <ul key={key} className="mt-1">{entries.map((e) => row(e))}</ul>]),
   );
-  const monthCounts = Object.fromEntries(Object.entries(byMonth).map(([key, entries]) => [key, entries.length]));
   const monthTops = { [thisMonth]: <div key={thisMonth}>{earlierFold}</div> };
   const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
   const firstMonth = [thisMonth, ...dated].sort()[0];
@@ -172,7 +171,6 @@ export default function Agenda({
         dots={dots}
         dayPanels={dayPanels}
         monthLists={monthLists}
-        monthCounts={monthCounts}
         monthTops={monthTops}
         toggle={null}
         weddingPanel={

@@ -8,6 +8,7 @@ import { todayISO } from "@/lib/dates";
 import type { Appointment, Milestone } from "@/types/db";
 import Agenda from "./agenda";
 import TodoList from "./todo-list";
+import type { When } from "./when-filter";
 
 /**
  * The Plan tab (docs/information-architecture.md): two views, owner's call
@@ -15,8 +16,8 @@ import TodoList from "./todo-list";
  *
  * - Calendar (the default): to-dos and appointments as dots on their days
  *   (payments live in Money only, owner, 12 Oct 2026). agenda.tsx + calendar.tsx.
- * - List (`?view=list`): to-dos and appointments, a glass card per month,
- *   with an area filter (`&area=`) in place of the old "By area" view.
+ * - List (`?view=list`): what's left to do — to-dos only, one checklist,
+ *   with when (`&when=`) and area (`&area=`) filters (12 Oct 2026).
  *   todo-list.tsx.
  *
  * The old list ("the road to the day": a gold line with a dot per month) is
@@ -30,6 +31,7 @@ export default function TimelineView({
   areas,
   view,
   area,
+  when,
 }: {
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
@@ -40,6 +42,8 @@ export default function TimelineView({
   view: "calendar" | "list";
   /** The List's area filter: an area's key, or null for all. */
   area: string | null;
+  /** The List's when filter. */
+  when: When | null;
 }) {
   const today = todayISO();
   const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
@@ -86,7 +90,7 @@ export default function TimelineView({
       )}
 
       {view === "list" ? (
-        <TodoList milestones={milestones} appointments={appointments ?? []} suppliers={suppliers} areas={areas} area={area} today={today} />
+        <TodoList milestones={milestones} areas={areas} area={area} when={when} today={today} />
       ) : (
         <Agenda
           milestones={milestones}

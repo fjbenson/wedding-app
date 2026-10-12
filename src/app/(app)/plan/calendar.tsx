@@ -52,7 +52,6 @@ export default function PlanCalendar({
   dots,
   dayPanels,
   monthLists,
-  monthCounts,
   monthTops,
   toggle,
   weddingPanel,
@@ -65,7 +64,6 @@ export default function PlanCalendar({
   dayPanels: Record<string, ReactNode>;
   /** Everything in each month, for the list under the grid. */
   monthLists: Record<string, ReactNode>;
-  monthCounts: Record<string, number>;
   monthTops: Record<string, ReactNode>;
   toggle: ReactNode;
   weddingPanel: ReactNode;
@@ -206,18 +204,13 @@ export default function PlanCalendar({
         ))}
       </div>
 
-      <div className="mt-6 border-t border-champagne-400 pt-4">
-        <p className="flex items-baseline justify-between gap-3">
-          <span className="section-label">All of {name}</span>
-          {!!monthCounts[month] && (
-            <span className="type-meta">
-              {monthCounts[month]} {monthCounts[month] === 1 ? "thing" : "things"}
-            </span>
-          )}
-        </p>
+      {/* The month's things, straight under the key: the month is already
+          the title above the grid, and every row has its date (owner, 12 Oct
+          2026 — no "All of October · 2 things"). */}
+      <div className="mt-6 border-t border-champagne-400 pt-1">
         {monthLists[month] ?? (
-          <p className="mt-2.5 text-[15px] text-stone">
-            Nothing planned in {name} yet.{" "}
+          <p className="mt-3.5 text-[15px] text-stone">
+            Nothing planned yet.{" "}
             <Link href="/plan/new" className="text-champagne-600 underline underline-offset-4 hover:text-ink">
               Add a to-do
             </Link>

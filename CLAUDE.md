@@ -291,21 +291,23 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,
   **everything in the month** as one list in date order — no day headings,
-  each row carries its date (owner's change to the mock). Tapping a day
+  each row carries its date (owner's change to the mock), and no heading
+  over it ("All of October · 2 things" taken out, 12 Oct 2026). Tapping a day
   opens a **day card** (`DayCard` in `calendar.tsx`; a sheet on phones,
   pull down to close, a right-hand panel on laptops, like the guest card —
   `usePullToClose` is now shared in `src/components/`) with that day's
   things and **Add on this day**: a to-do or an appointment with the date
   filled in (`/plan/new?date=`, `/plan/appointments/new?date=`). No day is
   picked on arrival; `?day=` keeps the card open across Back.
-  **List** (`?view=list`, `todo-list.tsx`): **to-dos and appointments**
-  (since 12 Oct 2026, so Plan means the same in every view and on the area
-  page; payments live in Money; one shared `AppointmentRow` in
-  `appointment-row.tsx`) as a **glass card per month** ("October *2026*",
-  "This month · 2 to-dos · 1 appointment"; been appointments fold in with done): Overdue first, then
-  each month, then No date yet (`#no-date`), done folded at the foot; tick
-  off in place. **By area is now a filter** on the List ("All areas ▾",
-  `area-filter.tsx`, `&area=<key>` or `none`), not a view. Old links
+  **List** (`?view=list`, `todo-list.tsx`) — **what's left to do**, one
+  long checklist of **to-dos only** (owner, 12 Oct 2026: the Calendar is the
+  diary — *when* is everything — the List the checklist; appointments live on
+  the Calendar, the Hub and area pages). "23 *to do*" at the top, then
+  **When** (`when-filter.tsx`, `&when=overdue|month|soon|none`: Overdue · This
+  month · Next 3 months · No date) and **Area** (`area-filter.tsx`,
+  `&area=<key>` or `none`) filters; one glass card, overdue first, then
+  soonest, then no date (each row's date in its grey line, "No date" when
+  none); done folded at the foot. No month headings any more. Old links
   (`?as=list`, `?view=area`, `?view=todos`) land on the List. The old
   timeline list ("the road to the day": a gold line with a dot per month)
   was retired from Plan — kept in mind for The Day's run sheet

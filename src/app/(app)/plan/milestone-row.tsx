@@ -18,10 +18,13 @@ export function MilestoneRow({
   milestone: m,
   overdue,
   area,
+  showNoDate = false,
 }: {
   milestone: Milestone;
   overdue: boolean;
   area?: string | null;
+  /** Say "No date" when there isn't one (Plan's List, where dates aren't headings). */
+  showNoDate?: boolean;
 }) {
   const done = !isOpen(m);
   const nudge = isNudge(m);
@@ -30,7 +33,9 @@ export function MilestoneRow({
     ? start.slice(0, 7) <= todayISO().slice(0, 7)
       ? "Start now"
       : `Start ${formatMonthYear(start).split(" ")[0]}`
-    : m.due_date && `By ${formatDayMonth(m.due_date)}`;
+    : m.due_date
+      ? `By ${formatDayMonth(m.due_date)}`
+      : showNoDate && !done && "No date";
   const details = [when, area].filter(Boolean);
 
   return (

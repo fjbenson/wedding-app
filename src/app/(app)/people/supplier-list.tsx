@@ -14,7 +14,7 @@ import type { Payment, SupplierStatus } from "@/types/db";
 import SupplierCard, { supplierContact, supplierName } from "./supplier-card";
 
 type Show = "all" | "booked" | "quoted" | "enquired";
-/** "Looking" was folded into "Asked" (0012_area_stages.sql). */
+/** "Looking" was folded into "In touch" (0012_area_stages.sql). */
 const stage = (s: Supplier): SupplierStatus => {
   const status = s.supplier_details?.status ?? "enquired";
   return status === "researching" ? "enquired" : status;
@@ -23,7 +23,7 @@ const stage = (s: Supplier): SupplierStatus => {
 /**
  * The Suppliers tab of People (screen 12), shaped like the guest list
  * (canvas 2 "Suppliers · Round 1", A, owner's pick 12 Oct 2026): a count
- * card (All · Booked · Quote in · Asked, each one shows just those), search
+ * card (All · Booked · Quote in · In touch, each one shows just those), search
  * and a Filter (areas, Still to pay, No phone or email, Not taken), then
  * everyone grouped by area in the wedding's own
  * order — so quotes for the same thing sit together. Each row: initials,
@@ -265,7 +265,7 @@ function CountCard({
   const rows: { status: Exclude<Show, "all">; label: string }[] = [
     { status: "booked", label: "Booked" },
     { status: "quoted", label: "Quote in" },
-    { status: "enquired", label: "Asked" },
+    { status: "enquired", label: "In touch" },
   ];
   return (
     <section
@@ -477,7 +477,7 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: () => v
   );
 }
 
-/** Booked ✓ on ink · Quote in £ on champagne · Asked a dashed ? · Not taken ✕ on grey. */
+/** Booked ✓ on ink · Quote in £ on champagne · In touch a dashed ? · Not taken ✕ on grey. */
 export function StageIcon({ status, small = false, badge = false }: { status: SupplierStatus; small?: boolean; badge?: boolean }) {
   const look: Record<string, { ring: string; mark: React.ReactNode }> = {
     booked: { ring: "bg-ink text-ivory", mark: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },

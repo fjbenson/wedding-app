@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { Field, SubmitButton } from "@/components/form-bits";
 import { INPUT } from "@/components/form-styles";
+import MoneyInput from "@/components/money-input";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveBudgetsAction } from "../actions";
@@ -14,7 +15,7 @@ function Pounds({ name, value, label }: { name: string; value?: number | null; l
   return (
     <span className="relative block">
       <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone">£</span>
-      <input name={name} aria-label={label} inputMode="decimal" defaultValue={value ?? ""} placeholder="0" className={MONEY} />
+      <MoneyInput name={name} aria-label={label} defaultValue={value} placeholder="0" className={MONEY} />
     </span>
   );
 }

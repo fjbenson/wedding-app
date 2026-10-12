@@ -73,7 +73,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   appointment) and five sections: Suppliers (quotes until one's booked,
   then the rest fold away), Appointments, To-dos, Payment schedule, Notes
   (key facts via `?edit=facts`, plus captures; "- " lines become bullets,
-  `rich-text.tsx`). Supplier labels: Asked · Quote in · Booked · Not taken
+  `rich-text.tsx`). Supplier stages (12 Oct 2026): **In touch → Quote in →
+  Booked** (booked last); **Not taken** isn't a stage — a quiet "We didn't go
+  with them" / "Bring them back" on the supplier card (`SUPPLIER_STAGES` vs
+  `SUPPLIER_STATUSES` in `src/lib/supplier-status.ts`)
   (`0012_area_stages.sql` adds `quoted`, `areas.diy`, `areas.ready`).
   Notes can be added, edited and removed in place on the area page.
   Suppliers file under the wedding's areas too (plus "Other").
@@ -551,6 +554,10 @@ access control is RLS. No column-level encryption is planned.
   supplier" row, `/people/suppliers/new?category=…&from=suppliers`), and
   the notes wall's faded blank notes work the same way. Use it on any new
   screen, and fix older empty screens to match as they come up.
+- **Amounts get a comma every thousand as you type** (owner, 12 Oct
+  2026): use `MoneyInput` (`src/components/money-input.tsx`) or
+  `withCommas()` (`src/lib/money.ts`) for any money box — supplier form and
+  card, payments, budgets. `parseMoney` reads the commas back.
 - **Dates are worded by the app, not the browser** (12 Oct 2026):
   `formatDayMonth`, `formatWeekdayDayMonth`, `formatMonthYear` and
   `formatLongDate` in `src/lib/dates.ts` spell month and day names out

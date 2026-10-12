@@ -8,8 +8,8 @@ import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatWeekdayDayMonth } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
-import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
+import { formatMoney, withCommas } from "@/lib/money";
+import { SUPPLIER_STAGES } from "@/lib/supplier-status";
 import type { Payment, SupplierStatus } from "@/types/db";
 import { CHEVRON, FIELD, SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
 import { deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
@@ -141,7 +141,7 @@ export default function SupplierCard({
             </div>
           )}
 
-          <Stage supplierId={supplier.id} status={d?.status ?? "enquired"} />
+          <Stage supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
 
           {/* A hairline right across the card between sections, as on the guest card. */}
           <section className="-mx-[22px] mt-6 border-t border-linen px-[22px] pt-6">
@@ -235,27 +235,36 @@ function BusinessName({ name, onSave }: { name: string; onSave: (value: string) 
   );
 }
 
-/** Where you're up to with them: Asked · Quote in · Booked · Not taken, one tap. */
-function Stage({ supplierId, status }: { supplierId: string; status: SupplierStatus }) {
+/**
+ * Where you're up to with them: In touch → Quote in → Booked, one tap.
+ * Under it, a quiet "We didn't go with them" (not taken), which greys them
+ * out on the list and keeps their quote; "Bring them back" undoes it.
+ */
+function Stage({ supplierId, status, quoted }: { supplierId: string; status: SupplierStatus; quoted: boolean }) {
   const [current, setCurrent] = useOptimistic<SupplierStatus>(status === "researching" ? "enquired" : status);
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string>();
+  const set = (next: SupplierStatus) =>
+    startTransition(async () => {
+      setCurrent(next);
+      setError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: next }))).error);
+    });
+  const notTaken = current === "cancelled";
 
   return (
     <section className="mt-6">
       <h3 className="section-label">Where you&apos;re up to</h3>
-      <div role="group" aria-label="Where you're up to" className="mt-2.5 grid grid-cols-4 gap-0.5 rounded-2xl bg-cream p-[3px]">
-        {SUPPLIER_STATUSES.map((s) => (
+      <div
+        role="group"
+        aria-label="Where you're up to"
+        className={`mt-2.5 grid grid-cols-3 gap-0.5 rounded-2xl bg-cream p-[3px] ${notTaken ? "opacity-50" : ""}`}
+      >
+        {SUPPLIER_STAGES.map((s) => (
           <button
             key={s.status}
             type="button"
             aria-pressed={current === s.status}
-            onClick={() =>
-              startTransition(async () => {
-                setCurrent(s.status);
-                setError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: s.status }))).error);
-              })
-            }
+            onClick={() => set(s.status)}
             className={`h-10 min-w-0 rounded-xl px-1 text-[13px] transition ${
               current === s.status ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "text-stone hover:text-ink"
             }`}
@@ -264,6 +273,18 @@ function Stage({ supplierId, status }: { supplierId: string; status: SupplierSta
           </button>
         ))}
       </div>
+      {notTaken ? (
+        <p className="mt-2.5 flex flex-wrap items-center gap-x-2 text-sm text-stone">
+          You didn&apos;t go with them.
+          <button type="button" onClick={() => set(quoted ? "quoted" : "enquired")} className="min-h-11 text-champagne-600 underline underline-offset-4 hover:text-ink">
+            Bring them back
+          </button>
+        </p>
+      ) : (
+        <button type="button" onClick={() => set("cancelled")} className="mt-1 min-h-11 text-sm text-stone underline underline-offset-4 hover:text-ink">
+          We didn&apos;t go with them
+        </button>
+      )}
       {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
     </section>
   );
@@ -280,7 +301,7 @@ function MoneyFigure({
   onSave: (value: string) => Promise<{ error?: string }>;
 }) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value?.toString() ?? "");
+  const [draft, setDraft] = useState(value != null ? withCommas(String(value)) : "");
   const { pending, error, setError, run } = useSaver();
   const submit = () => run(() => onSave(draft), () => setEditing(false));
   const keys = editorKeys(submit, () => setEditing(false));
@@ -296,7 +317,7 @@ function MoneyFigure({
       >
         <label className="type-meta">
           {label}
-          <input autoFocus inputMode="decimal" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={keys} placeholder="e.g. 1800" className={`${FIELD} mt-1.5`} />
+          <input autoFocus inputMode="decimal" value={draft} onChange={(e) => setDraft(withCommas(e.target.value))} onKeyDown={keys} placeholder="e.g. 1,800" className={`${FIELD} mt-1.5`} />
         </label>
         {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
         <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
@@ -307,7 +328,7 @@ function MoneyFigure({
     <button
       type="button"
       onClick={() => {
-        setDraft(value?.toString() ?? "");
+        setDraft(value != null ? withCommas(String(value)) : "");
         setError(undefined);
         setEditing(true);
       }}

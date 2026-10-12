@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
+import Money from "@/components/money-input";
 import type { AreaOption } from "@/lib/areas";
 import type { Payment } from "@/types/db";
 
@@ -10,11 +11,10 @@ function MoneyInput({ name, value, required }: { name: string; value?: number | 
   return (
     <span className="relative mt-2 block">
       <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone">£</span>
-      <input
+      <Money
         name={name}
         required={required}
-        inputMode="decimal"
-        defaultValue={value ?? ""}
+        defaultValue={value}
         placeholder="0"
         className={`${INPUT.replace("mt-2 ", "")} pl-8`}
       />

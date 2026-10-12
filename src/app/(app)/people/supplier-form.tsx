@@ -4,8 +4,9 @@ import { useState } from "react";
 import { ChevronDown, FileText, Globe, Mail, MoreHorizontal, Phone, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SubmitButton } from "@/components/form-bits";
+import MoneyInput from "@/components/money-input";
 import { areaIcon, type AreaOption } from "@/lib/areas";
-import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
+import { SUPPLIER_STAGES } from "@/lib/supplier-status";
 import { StageIcon } from "./supplier-list";
 
 /** A box inside one of the form's cards: no border of its own, the card is the frame. */
@@ -78,8 +79,8 @@ export default function SupplierForm({
 
       <fieldset className="mt-7">
         <legend className="section-label">Where you&apos;re up to</legend>
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {SUPPLIER_STATUSES.map((s) => (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {SUPPLIER_STAGES.map((s) => (
             <label key={s.status} className="cursor-pointer">
               <input type="radio" name="status" value={s.status} defaultChecked={s.status === "enquired"} className="peer sr-only" />
               <span className="flex h-full flex-col items-center gap-1.5 rounded-2xl border border-linen bg-white/70 px-1 py-3 text-center text-[12px] leading-tight text-ink transition peer-checked:border-ink peer-checked:shadow-[0_0_0_1px_#1E1B18] peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400">
@@ -104,7 +105,7 @@ export default function SupplierForm({
               <span className="type-meta block">{label}</span>
               <span className="flex items-baseline gap-1">
                 <span className="font-display text-[22px] font-light text-stone">£</span>
-                <input name={name} inputMode="decimal" placeholder="0" className="w-full min-w-0 bg-transparent py-1 font-display !text-[24px] font-light text-ink placeholder:text-stone/40 focus:outline-none" />
+                <MoneyInput name={name} placeholder="0" className="w-full min-w-0 bg-transparent py-1 font-display !text-[24px] font-light text-ink placeholder:text-stone/40 focus:outline-none" />
               </span>
             </label>
           ))}

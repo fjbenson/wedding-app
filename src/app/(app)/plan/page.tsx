@@ -13,12 +13,12 @@ export const metadata = { title: "Plan — Wedding App" };
 export default async function PlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; as?: string; area?: string; when?: string }>;
+  searchParams: Promise<{ view?: string; as?: string; area?: string; when?: string; kind?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const { view, as, area, when } = await searchParams;
+  const { view, as, area, when, kind } = await searchParams;
   const [milestones, areas, appointments, suppliers] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
@@ -41,6 +41,7 @@ export default async function PlanPage({
       view={view === "list" || view === "area" || view === "todos" || as === "list" ? "list" : "calendar"}
       area={area || null}
       when={asWhen(when)}
+      kind={kind === "appointments" ? "appointments" : "todos"}
     />
   );
 }

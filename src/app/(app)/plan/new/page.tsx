@@ -1,39 +1,12 @@
-import { redirect } from "next/navigation";
-import FormPage from "@/components/form-page";
-import { areaOptions } from "@/lib/areas";
-import { listAreas } from "@/lib/db/areas";
-import { getCurrentWedding } from "@/lib/db/weddings";
-import { saveMilestoneAction } from "../actions";
-import MilestoneForm from "../milestone-form";
+import PlanAddPage from "../plan-add-page";
 
-export const metadata = { title: "Add a to-do — Wedding App" };
+export const metadata = { title: "Add to the plan — Wedding App" };
 
+/** Add to the plan, starting as a to-do (plan-add-page.tsx). */
 export default async function NewMilestonePage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; detail?: string; area?: string; date?: string }>;
 }) {
-  const { error, detail, area, date } = await searchParams;
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-  const areas = areaOptions(await listAreas(wedding.id));
-  const fromArea = areas.some((a) => a.key === area) ? area : undefined;
-
-  return (
-    <FormPage
-      backHref={fromArea ? `/plan?view=list&area=${encodeURIComponent(fromArea)}` : "/plan"}
-      backLabel="Plan"
-      title="Add a to-do"
-      error={error}
-      detail={detail}
-    >
-      <MilestoneForm
-        action={saveMilestoneAction.bind(null, null)}
-        areas={areas}
-        defaultArea={fromArea}
-        defaultDate={date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined}
-        weddingDate={wedding.wedding_date}
-      />
-    </FormPage>
-  );
+  return <PlanAddPage kind="todo" searchParams={await searchParams} />;
 }

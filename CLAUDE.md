@@ -308,8 +308,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   separate dietary box is gone.
 - **Plan** (`/plan`): **two views, owner's call 11 Oct 2026** — a corner
   switch **Calendar | List** (`CornerSwitch`, shared with People), the
-  title, then two big buttons side by side: **Add a to-do** · **Add an
-  appointment**. **Calendar** (the default; canvas "Plan · Calendar · Round
+  title, then **one round black +** (owner, 12 Oct 2026, like People's;
+  the two big Add buttons are gone) opening **one form with a To-do |
+  Appointment switch** (`plan-add-form.tsx` via `plan-add-page.tsx`;
+  `/plan/new` starts as a to-do, `/plan/appointments/new` as an appointment;
+  an appointment adds time, where and who, and name ideas; what's typed stays
+  when switching; editing still uses `milestone-form.tsx` /
+  `appointment-form.tsx`). On the List, a **To-dos | Appointments** switch
+  sits left of the + (`&kind=appointments`): appointments coming up in date
+  order with This month / Next 3 months and area filters, been ones folded.
+  Idea for later (owner): the same on Money — one + with a Budget | Payment
+  switch. **Calendar** (the default; canvas "Plan · Calendar · Round
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a mark per thing
   on each day (to-do a solid white circle, appointment a little gold

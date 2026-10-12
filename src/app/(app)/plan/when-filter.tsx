@@ -9,7 +9,16 @@ import { WHEN_CHOICES, type When } from "./when";
  * the area filter beside it; picking one reloads with `when=` added to
  * `base`, so it can be linked to.
  */
-export default function WhenFilter({ current, base }: { current: When | null; base: string }) {
+export default function WhenFilter({
+  current,
+  base,
+  choices = WHEN_CHOICES,
+}: {
+  current: When | null;
+  base: string;
+  /** Appointments only offer This month and Next 3 months. */
+  choices?: readonly (readonly [When, string])[];
+}) {
   const router = useRouter();
   const join = base.includes("?") ? "&" : "?";
   return (
@@ -23,7 +32,7 @@ export default function WhenFilter({ current, base }: { current: When | null; ba
         }`}
       >
         <option value="">Any time</option>
-        {WHEN_CHOICES.map(([key, label]) => (
+        {choices.map(([key, label]) => (
           <option key={key} value={key}>
             {label}
           </option>

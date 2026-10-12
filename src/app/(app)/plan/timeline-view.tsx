@@ -1,6 +1,6 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
-import { CalendarClock, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
 import CornerSwitch from "@/components/corner-switch";
 import type { AreaOption } from "@/lib/areas";
@@ -16,8 +16,9 @@ import type { When } from "./when";
  *
  * - Calendar (the default): to-dos and appointments as dots on their days
  *   (payments live in Money only, owner, 12 Oct 2026). agenda.tsx + calendar.tsx.
- * - List (`?view=list`): what's left to do — to-dos only, one checklist,
- *   with when (`&when=`) and area (`&area=`) filters (12 Oct 2026).
+ * - List (`?view=list`): a To-dos | Appointments switch (`&kind=appointments`);
+ *   to-dos as one checklist, appointments in date order, both with when
+ *   (`&when=`) and area (`&area=`) filters (12 Oct 2026).
  *   todo-list.tsx.
  *
  * The old list ("the road to the day": a gold line with a dot per month) is
@@ -32,6 +33,7 @@ export default function TimelineView({
   view,
   area,
   when,
+  kind,
 }: {
   milestones: Milestone[];
   /** null until 0007_appointments.sql has been run. */
@@ -44,6 +46,8 @@ export default function TimelineView({
   area: string | null;
   /** The List's when filter. */
   when: When | null;
+  /** What the List lists (`&kind=appointments`), to-dos by default. */
+  kind: "todos" | "appointments";
 }) {
   const today = todayISO();
   const upcoming = (appointments ?? []).filter((a) => a.on_date >= today).length;
@@ -65,21 +69,40 @@ export default function TimelineView({
         <p className="mt-2 text-sm text-stone">Whatever you add here shows on your home screen too.</p>
       )}
 
-      {/* The two ways in, side by side (owner's ask, Plan round 3). */}
-      <div className="mt-5 grid grid-cols-2 gap-2.5 lg:max-w-md">
+      {/* One way in (owner, 12 Oct 2026): a round black + like People's,
+          opening one form with a To-do | Appointment switch. On the List,
+          the switch for what it lists sits beside it. */}
+      <div className="mt-5 flex items-center justify-between gap-3">
+        {view === "list" ? (
+          <div role="tablist" aria-label="List" className="grid grid-cols-2 rounded-full bg-cream p-[3px]">
+            {(
+              [
+                ["todos", "To-dos"],
+                ["appointments", "Appointments"],
+              ] as const
+            ).map(([k, label]) => (
+              <Link
+                key={k}
+                role="tab"
+                aria-selected={kind === k}
+                href={`/plan?view=list${k === "appointments" ? "&kind=appointments" : ""}${area ? `&area=${encodeURIComponent(area)}` : ""}`}
+                className={`flex h-9 items-center justify-center rounded-full px-4 text-[13px] transition ${
+                  kind === k ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "text-stone hover:text-ink"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <span />
+        )}
         <Link
-          href="/plan/new"
-          className="flex h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] bg-ink px-2 text-sm text-ivory transition hover:bg-ink/90"
+          href={view === "list" && kind === "appointments" ? "/plan/appointments/new" : "/plan/new"}
+          aria-label="Add to the plan"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
         >
-          <Plus className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
-          Add a to-do
-        </Link>
-        <Link
-          href="/plan/appointments/new"
-          className="flex h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-champagne-400/70 bg-white px-2 text-sm text-ink transition hover:bg-champagne-100"
-        >
-          <CalendarClock className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
-          Add an appointment
+          <Plus className="h-5 w-5" strokeWidth={1.8} aria-hidden />
         </Link>
       </div>
 
@@ -90,7 +113,16 @@ export default function TimelineView({
       )}
 
       {view === "list" ? (
-        <TodoList milestones={milestones} areas={areas} area={area} when={when} today={today} />
+        <TodoList
+          kind={kind}
+          milestones={milestones}
+          appointments={appointments ?? []}
+          suppliers={suppliers}
+          areas={areas}
+          area={area}
+          when={when}
+          today={today}
+        />
       ) : (
         <Agenda
           milestones={milestones}

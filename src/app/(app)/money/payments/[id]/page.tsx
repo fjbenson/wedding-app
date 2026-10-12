@@ -5,6 +5,7 @@ import { getPayment } from "@/lib/db/money";
 import { deletePaymentAction, savePaymentAction } from "../../actions";
 import PaymentForm from "../../payment-form";
 import { formOptions } from "@/lib/form-options";
+import { getCurrentWedding } from "@/lib/db/weddings";
 
 export const metadata = { title: "Payment — Wedding App" };
 
@@ -23,11 +24,17 @@ export default async function PaymentPage({
   // Row-level security returns nothing for a payment from another wedding.
   const payment = await getPayment(id);
   if (!payment) notFound();
-  const { areas, suppliers } = await formOptions(payment.wedding_id);
+  const [{ areas, suppliers }, wedding] = await Promise.all([formOptions(payment.wedding_id), getCurrentWedding()]);
 
   return (
     <FormPage backHref="/money?view=month" backLabel="Money" title={payment.description} error={error} detail={detail}>
-      <PaymentForm action={savePaymentAction.bind(null, payment.id)} payment={payment} suppliers={suppliers} areas={areas} />
+      <PaymentForm
+        action={savePaymentAction.bind(null, payment.id)}
+        payment={payment}
+        suppliers={suppliers}
+        areas={areas}
+        weddingDate={wedding?.wedding_date}
+      />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton
           action={deletePaymentAction.bind(null, payment.id)}

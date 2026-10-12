@@ -29,7 +29,10 @@ export default async function NewPaymentPage({
 
   return (
     <FormPage backHref="/money?view=month" backLabel="Money" title="Add a payment" error={error} detail={detail}>
-      <PaymentForm action={savePaymentAction.bind(null, null)} suppliers={suppliers} areas={areas} prefill={prefill} />
+      <PaymentForm
+        action={savePaymentAction.bind(null, null)} suppliers={suppliers} areas={areas} prefill={prefill}
+        weddingDate={wedding.wedding_date}
+      />
     </FormPage>
   );
 }

@@ -1,115 +1,182 @@
 "use client";
 
 import { useState } from "react";
-import { DateInput, Field, INPUT, SubmitButton } from "@/components/form-bits";
-import Money from "@/components/money-input";
+import { CircleCheck, Hourglass, NotebookPen, Store } from "lucide-react";
+import { SubmitButton } from "@/components/form-bits";
+import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, areaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
+import { withCommas } from "@/lib/money";
+import { todayISO } from "@/lib/dates";
 import type { Payment } from "@/types/db";
 
-/** "£" in front of an amount box. */
-function MoneyInput({ name, value, required }: { name: string; value?: number | null; required?: boolean }) {
-  return (
-    <span className="relative mt-2 block">
-      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone">£</span>
-      <Money
-        name={name}
-        required={required}
-        defaultValue={value}
-        placeholder="0"
-        className={`${INPUT.replace("mt-2 ", "")} pl-8`}
-      />
-    </span>
-  );
-}
+/** One-tap names. The first three take the supplier's name in front when one's picked. */
+const KINDS = ["Deposit", "Instalment", "Balance"];
+const OTHERS = ["Wedding rings", "Giving notice", "Ceremony fee", "Marriage certificate"];
 
-/** Add or edit one payment (screen 24). `payment` is missing when adding. */
+const STATUS_TILES = [
+  { value: "due", label: "Still to pay", icon: Hourglass },
+  { value: "paid", label: "Already paid", icon: CircleCheck },
+];
+
+/**
+ * Add or edit one payment (screen 24; `payment` is missing when adding).
+ * Made visual like the add-a-supplier and Plan forms (owner, 12 Oct 2026):
+ * what it's for, large, with one-tap names; the amount as one big figure;
+ * Still to pay · Already paid as tiles, then the date as a card (due date
+ * with quick picks, or the day it was paid); who it's to (picking a supplier
+ * picks their area); the area as picture tiles; notes folded away.
+ */
 export default function PaymentForm({
   action,
   payment,
   suppliers,
   areas,
   prefill,
+  weddingDate,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   payment?: Payment;
-  suppliers: { id: string; name: string }[];
+  suppliers: { id: string; name: string; area?: string | null }[];
   areas: AreaOption[];
   /** From "Add as a payment" on an unscheduled balance. */
   prefill?: { supplier?: string; amount?: number; description?: string; area?: string };
+  weddingDate?: string | null;
 }) {
-  const [paid, setPaid] = useState(Boolean(payment?.paid_on));
+  const [description, setDescription] = useState(payment?.description ?? prefill?.description ?? "");
+  const [amount, setAmount] = useState(() => {
+    const start = payment?.amount ?? prefill?.amount;
+    return start != null ? withCommas(String(start)) : "";
+  });
+  const [status, setStatus] = useState(payment?.paid_on ? "paid" : "due");
+  const [due, setDue] = useState(payment?.due_date ?? "");
+  const [paidOn, setPaidOn] = useState(payment?.paid_on ?? todayISO());
+  const [supplier, setSupplier] = useState(payment?.contact_id ?? prefill?.supplier ?? "");
+  const [area, setArea] = useState(payment?.area_key ?? prefill?.area ?? "");
+  const known = new Set(areas.map((a) => a.key));
+  const original = payment?.area_key;
+  const options =
+    original && original !== "other" && !known.has(original) ? [...areas, { key: original, label: original }] : areas;
+  const supplierName = suppliers.find((s) => s.id === supplier)?.name;
+
+  const chip = (label: string, value: string) => (
+    <button
+      key={label}
+      type="button"
+      onClick={() => setDescription(value)}
+      className={`h-9 shrink-0 rounded-full border px-3.5 text-[13px] transition ${
+        description === value ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
-    <form action={action} className="space-y-5">
-      <Field label="What's it for?">
-        <input
-          name="description"
-          required
-          defaultValue={payment?.description ?? prefill?.description ?? ""}
-          placeholder="e.g. Photographer balance, Wedding rings"
-          className={INPUT}
-        />
-      </Field>
-
-      <div className="grid grid-cols-2 items-end gap-3">
-        <Field label="Amount">
-          <MoneyInput name="amount" required value={payment?.amount ?? prefill?.amount} />
-        </Field>
-        <Field label="Due" hint="optional">
-          <DateInput name="due_date" defaultValue={payment?.due_date ?? ""} className={INPUT} />
-        </Field>
-      </div>
-
-      <Field label="Who to" hint="optional">
-        <select name="supplier" defaultValue={payment?.contact_id ?? prefill?.supplier ?? ""} className={INPUT}>
-          <option value="">Not a supplier</option>
-          {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <Field label="Area" hint="optional — a supplier's payment goes under theirs">
-        <select name="area" defaultValue={payment?.area_key ?? prefill?.area ?? ""} className={INPUT}>
-          <option value="">—</option>
-          {areas.map((a) => (
-            <option key={a.key} value={a.key}>
-              {a.label}
-            </option>
-          ))}
-          <option value="other">Other</option>
-        </select>
-      </Field>
-
-      <label className="flex items-center gap-3 text-sm text-ink">
-        <input
-          type="checkbox"
-          name="paid"
-          checked={paid}
-          onChange={(event) => setPaid(event.target.checked)}
-          className="h-5 w-5 accent-ink"
-        />
-        Already paid
-      </label>
-      {paid && (
-        <Field label="Paid on">
-          <DateInput name="paid_on" defaultValue={payment?.paid_on ?? ""} className={INPUT} />
-        </Field>
+    <form action={action}>
+      <input
+        name="description"
+        required
+        autoFocus={!payment && !prefill}
+        autoComplete="off"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        aria-label="What's it for?"
+        placeholder="What's it for?"
+        // A supplier's name plus "deposit" runs long: step the size down so it fits.
+        className={`${TITLE_INPUT} ${description.length > 24 ? "!text-[22px]" : ""}`}
+      />
+      {!payment && (
+        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          {KINDS.map((k) => chip(k, supplierName ? `${supplierName} ${k.toLowerCase()}` : k))}
+          {OTHERS.map((k) => chip(k, k))}
+        </div>
       )}
 
-      <Field label="Notes" hint="optional">
-        <textarea
-          name="notes"
-          rows={3}
-          defaultValue={payment?.notes ?? ""}
-          placeholder="e.g. Invoice #1042, pay by bank transfer"
-          className={INPUT}
-        />
-      </Field>
+      <Part label="How much">
+        <label className={`${CARD} flex items-baseline gap-1.5 px-5 py-3`}>
+          <span className="font-display text-[32px] font-light text-stone">£</span>
+          <input
+            name="amount"
+            required
+            inputMode="decimal"
+            autoComplete="off"
+            aria-label="Amount"
+            placeholder="0"
+            value={amount}
+            onChange={(e) => setAmount(withCommas(e.target.value))}
+            className="w-full min-w-0 bg-transparent font-display !text-[44px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:text-stone/40 focus:outline-none"
+          />
+        </label>
+      </Part>
 
-      <SubmitButton label={payment ? "Save" : "Add payment"} />
+      <Part label="Paid yet?">
+        <Tiles name="status" options={STATUS_TILES} value={status} onChange={setStatus} columns="grid-cols-2" />
+        {status === "paid" ? (
+          <div className="mt-4">
+            <input type="hidden" name="paid" value="on" />
+            {/* Keep any due date it had, so marking it paid loses nothing. */}
+            <input type="hidden" name="due_date" value={due} />
+            <p className="type-meta">The day you paid</p>
+            <DateCard name="paid_on" value={paidOn} onChange={setPaidOn} quick={false} />
+          </div>
+        ) : (
+          <div className="mt-4">
+            <p className="type-meta">When it&apos;s due</p>
+            <DateCard name="due_date" value={due} onChange={setDue} weddingDate={weddingDate} />
+          </div>
+        )}
+      </Part>
+
+      <Part label="Who it's to">
+        <div className={CARD}>
+          <Line icon={Store} label="Supplier">
+            <select
+              name="supplier"
+              value={supplier}
+              onChange={(e) => {
+                setSupplier(e.target.value);
+                // Picking a supplier picks their area too, unless one's already chosen.
+                const s = suppliers.find((x) => x.id === e.target.value);
+                if (s?.area && !area) setArea(known.has(s.area) ? s.area : "other");
+              }}
+              className={`${BARE} appearance-none ${supplier ? "" : "text-stone/60"}`}
+            >
+              <option value="">Not a supplier</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </Line>
+        </div>
+      </Part>
+
+      <Part label="Area">
+        {/* None picked means it follows the supplier's area, as before. */}
+        <Tiles name="area" options={areaTiles(options, "other")} value={area} onChange={setArea} />
+      </Part>
+
+      <Folded label="Add notes" open={!!payment?.notes}>
+        <section className="mt-7">
+          <h2 className="section-label font-body">Notes</h2>
+          <div className={CARD}>
+            <Line icon={NotebookPen} label="Notes">
+              <textarea
+                name="notes"
+                rows={3}
+                defaultValue={payment?.notes ?? ""}
+                placeholder="e.g. Invoice #1042, pay by bank transfer"
+                className={`${BARE} w-full resize-none`}
+              />
+            </Line>
+          </div>
+        </section>
+      </Folded>
+
+      <div className="mt-8">
+        <SubmitButton label={payment ? "Save" : "Add payment"} />
+      </div>
     </form>
   );
 }

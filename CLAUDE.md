@@ -329,7 +329,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   paid so far, dark; due months light; overdue counts in this month;
   scrolls sideways if long); then "What's due" with a round black + (add a
   payment); then a **glass card per month** ("October *2026*", total, "2
-  payments") listing its payments (tick £ to mark paid); then a dashed **No
+  payments") listing its payments (tick £ to mark paid); **The payment form** (`payment-form.tsx`) was made visual
+  too (12 Oct 2026, same pieces): what it's for, large, with one-tap names
+  (Deposit · Instalment · Balance take the supplier's name in front, then
+  Wedding rings, Giving notice…); the amount as one big £ figure; **Still to
+  pay · Already paid** as tiles, then the due date card (quick picks) or the
+  day it was paid; who it's to (picking a supplier picks their area); area
+  tiles; notes folded. then a dashed **No
   date yet** card holding undated payments and unscheduled supplier
   balances (faded rows, tap to add with a date); Paid folded at the foot. "Agreed" is the UI word for what
   `src/lib/budget.ts` calls committed (committed = booked suppliers' quotes

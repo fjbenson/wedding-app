@@ -70,10 +70,11 @@ export default function TimelineView({
       )}
 
       {/* One way in (owner, 12 Oct 2026): a round black + like People's,
-          opening one form with a To-do | Appointment switch. On the List,
-          the switch for what it lists sits beside it. */}
+          opening one form with a To-do | Appointment switch. On the List it
+          sits beside the To-dos | Appointments switch; on the calendar, at
+          the end of the month's row (calendar.tsx). */}
+      {view === "list" && (
       <div className="mt-5 flex items-center justify-between gap-3">
-        {view === "list" ? (
           <div role="tablist" aria-label="List" className="grid grid-cols-2 rounded-full bg-cream p-[3px]">
             {(
               [
@@ -94,9 +95,7 @@ export default function TimelineView({
               </Link>
             ))}
           </div>
-        ) : (
-          <span />
-        )}
+
         <Link
           href={view === "list" && kind === "appointments" ? "/plan/appointments/new" : "/plan/new"}
           aria-label="Add to the plan"
@@ -105,6 +104,7 @@ export default function TimelineView({
           <Plus className="h-5 w-5" strokeWidth={1.8} aria-hidden />
         </Link>
       </div>
+      )}
 
       {milestones.length === 0 && (
         <div className="mt-8">

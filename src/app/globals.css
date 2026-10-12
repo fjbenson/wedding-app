@@ -215,3 +215,23 @@ body::before {
     animation: none;
   }
 }
+
+/* A ticked row sliding away to its Done fold (TickForm). */
+@keyframes tick-away {
+  40% {
+    opacity: 0.5;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+.tick-away {
+  max-height: 120px;
+  overflow: hidden;
+  animation: tick-away 0.45s ease-in forwards;
+}

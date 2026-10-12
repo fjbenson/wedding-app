@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Calendar, CalendarOff, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
 export type Dot = "todo" | "appointment";
@@ -116,31 +116,33 @@ export default function PlanCalendar({
 
   return (
     <section className="mt-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center">
+      {/* The month large on the left, sized to sit level with the round +;
+          the arrows and the + on the right (owner, 12 Oct 2026). */}
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="min-w-0 font-display text-[22px] font-light leading-none tracking-[-0.02em] text-ink min-[360px]:text-[26px] min-[390px]:text-[30px]" aria-live="polite">
+          {name} <span className="italic text-champagne-600">{year}</span>
+        </h2>
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={() => go(-1)}
             disabled={month <= firstMonth}
             aria-label="Previous month"
-            className="flex h-11 w-9 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+            className="flex h-11 w-8 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
           >
-            <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+            <ChevronLeft className="h-5 w-5" strokeWidth={1.8} aria-hidden />
           </button>
-          <h2 className="min-w-[150px] text-center font-display text-[22px] text-ink" aria-live="polite">
-            {name} <span className="font-light italic text-champagne-600">{year}</span>
-          </h2>
           <button
             type="button"
             onClick={() => go(1)}
             disabled={month >= lastMonth}
             aria-label="Next month"
-            className="flex h-11 w-9 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+            className="flex h-11 w-8 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
           >
-            <ChevronRight className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+            <ChevronRight className="h-5 w-5" strokeWidth={1.8} aria-hidden />
           </button>
+          <span className="ml-1.5">{toggle}</span>
         </div>
-        {toggle}
       </div>
 
       {monthTops[month]}
@@ -195,18 +197,34 @@ export default function PlanCalendar({
         })}
       </div>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-stone" aria-hidden>
-        {(
-          [
-            ["todo", "To-do"],
-            ["appointment", "Appointment"],
-          ] as const
-        ).map(([dot, label]) => (
-          <span key={dot} className="flex items-center gap-1.5">
-            <Mark kind={dot} />
-            {label}
-          </span>
-        ))}
+      {/* The key on the left; on the right, the to-dos with no date yet as a
+          small pill that opens their card (owner, 12 Oct 2026: the banner at
+          the foot was too much, and the pen button sat on its arrow). */}
+      <div className="mt-5 flex min-h-9 items-center justify-between gap-3">
+        <span className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-stone" aria-hidden>
+          {(
+            [
+              ["todo", "To-do"],
+              ["appointment", "Appointment"],
+            ] as const
+          ).map(([dot, label]) => (
+            <span key={dot} className="flex items-center gap-1.5">
+              <Mark kind={dot} />
+              {label}
+            </span>
+          ))}
+        </span>
+        {undatedCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelected("undated")}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-champagne-400/70 bg-white px-3 text-[13px] text-ink transition hover:bg-cream"
+          >
+            <CalendarOff className="h-3.5 w-3.5 text-champagne-600" strokeWidth={1.8} aria-hidden />
+            {undatedCount} undated
+            <ChevronRight className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden />
+          </button>
+        )}
       </div>
 
       {/* The month's things, straight under the key: the month is already
@@ -223,19 +241,6 @@ export default function PlanCalendar({
         )}
       </div>
 
-      {undatedCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setSelected("undated")}
-          className="row-press mt-6 flex w-full items-center gap-3 rounded-2xl bg-cream px-4 py-3.5 text-left text-[15px] text-ink"
-        >
-          <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border border-dashed border-stone/60 bg-white" />
-          <span className="flex-1">
-            {undatedCount} {undatedCount === 1 ? "to-do has" : "to-dos have"} no date yet
-          </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-        </button>
-      )}
 
       {selected === "undated" && (
         <DayCard date={null} title="No date yet" isToday={false} onClose={close}>
@@ -333,9 +338,7 @@ function DayCard({
                     {day} <span className="italic">{month.join(" ")}</span>
                   </>
                 ) : (
-                  <>
-                    No date <span className="italic">yet</span>
-                  </>
+                  <span className="italic">Undated</span>
                 )}
               </h2>
             </div>

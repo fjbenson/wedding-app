@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatMonthYear } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
@@ -137,13 +138,37 @@ export default function Agenda({
   const dayPanels = Object.fromEntries(
     Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
   );
-  // The list under the grid: everything with a date in the month, nudges
-  // included, in date order — done things stay where they were, crossed out.
-  // No day headings (owner, 11 Oct 2026): each row carries its own date.
+  // The list under the grid: everything with a date in the month, in date
+  // order, no day headings (owner, 11 Oct 2026): each row carries its own
+  // date. What's done moves down into a "Done" fold at the foot (owner, 12
+  // Oct 2026: crossed out in place was jarring; ticking slides it away).
   const byMonth: Record<string, Entry[]> = {};
   for (const e of all) if (e.date) (byMonth[monthOf(e)!] ??= []).push(e);
   const monthLists = Object.fromEntries(
-    Object.entries(byMonth).map(([key, entries]) => [key, <ul key={key} className="mt-1">{entries.map((e) => row(e))}</ul>]),
+    Object.entries(byMonth).map(([key, entries]) => {
+      const open = entries.filter((e) => !isDone(e));
+      const done = entries.filter(isDone);
+      return [
+        key,
+        <div key={key}>
+          {open.length > 0 && <ul className="mt-1">{open.map((e) => row(e))}</ul>}
+          {done.length > 0 && (
+            <Fold
+              id={`done-${key}`}
+              className="mt-3 border-t border-linen pt-3"
+              header={
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="section-label">Done</span>
+                  <span className="type-meta">{done.length}</span>
+                </span>
+              }
+            >
+              <ul className="mt-1">{done.map((e) => row(e))}</ul>
+            </Fold>
+          )}
+        </div>,
+      ];
+    }),
   );
   const monthTops = { [thisMonth]: <div key={thisMonth}>{earlierFold}</div> };
   const dated = all.filter((e) => e.date).map((e) => monthOf(e)!);
@@ -163,7 +188,16 @@ export default function Agenda({
         monthTops={monthTops}
         undatedCount={undated.length}
         undatedPanel={undatedPanel}
-        toggle={null}
+        toggle={
+          // The one way in (owner, 12 Oct 2026): the round black +, at the end of the month's row.
+          <Link
+            href="/plan/new"
+            aria-label="Add to the plan"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
+          >
+            <Plus className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+          </Link>
+        }
         weddingPanel={
           <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">
             The wedding — open The Day ›

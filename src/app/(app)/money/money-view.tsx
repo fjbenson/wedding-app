@@ -152,8 +152,18 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
 
   return (
     <>
-      <section className="glass-card mt-6 rounded-[26px] p-5">
-        <p className="type-meta">The whole wedding</p>
+      <Link
+        href="/money/budget"
+        aria-label="The whole wedding — change the budget"
+        className="glass-card row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
+      >
+        <p className="flex items-baseline justify-between gap-3">
+          <span className="type-meta">The whole wedding</span>
+          <span className="type-meta flex items-center !text-champagne-600">
+            {total.budget === null ? "Set budget" : "Change"}
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+          </span>
+        </p>
         <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
           <span className="type-figure text-[44px] leading-none !font-light">{formatMoney(total.committed)}</span>
           <span className="text-sm text-stone">
@@ -179,12 +189,7 @@ function ByArea({ total, byArea, payments }: { total: Money; byArea: (AreaOption
             </dd>
           </div>
         </dl>
-        {total.budget === null && (
-          <Link href="/money/budget" className="mt-3 inline-block text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
-            Set your budget
-          </Link>
-        )}
-      </section>
+      </Link>
 
       {next && (
         <Link

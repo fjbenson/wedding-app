@@ -302,7 +302,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   figures and bars. **By area** (default, "The budget"; **Round 5, 12 Oct
   2026**: owner picked the top of option 3 and the list of option 4): the
   whole wedding on a glass card (agreed of budget large, one thick bar —
-  `BudgetBar` — then Paid · To pay · Still free), the next payment due on a
+  `BudgetBar` — then Paid · To pay · Still free; **tapping the card opens
+  the budget page**, `/money/budget`, `budget-form.tsx`: the whole budget large,
+  then each area's share with a running "£… left to share" and **Share it out
+  for us**, which fills the empty areas from what's left by a typical UK split
+  (`TYPICAL_SHARE`, rounded to £50) — a starting point, saved only on Save.
+  Agreed and Paid are never typed: they add up from suppliers and payments), the next payment due on a
   glass row, then each area menu-card style (name, dotted line, agreed "of
   £budget", one bar; no divider lines between rows, so bars aren't mistaken
   for rules; no bar at all when there's no budget or spend) with a short tag: "▲

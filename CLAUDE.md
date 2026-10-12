@@ -435,8 +435,9 @@ owner's Vercel login (the deployment page on vercel.com).
 **Vercel's free plan builds at most 100 updates a day** (12 Oct 2026: ~95 in
 24 hours stopped the payment form going live; Vercel silently skipped the
 pushes). Every push to `main` *and* every push to a side branch counts. So:
-**don't mirror each push to the session's side branch**, and gather small
-changes into one push. If a push gets no Vercel status at all, the limit is
+Claude's side branches (`claude/…`) no longer build on Vercel at all
+(`git.deploymentEnabled` in `vercel.json`), so only `main` counts; still,
+gather small changes into one push. If a push gets no Vercel status at all, the limit is
 the likely cause — the next push after it resets (or "Redeploy" on
 vercel.com) brings everything live at once.
 

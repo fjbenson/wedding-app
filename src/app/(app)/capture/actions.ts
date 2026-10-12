@@ -98,10 +98,15 @@ export async function inboxNoteToTodoAction(
   const result = await attempt("That didn't make a to-do. Try again.", async () => {
     const note = await getNote(noteId);
     if (!note) return;
+    // The note's first line becomes the name; the notes keep only what's
+    // left (the rest of it, a link), never the name again (owner, 12 Oct 2026).
+    const lines = (note.body ?? "").split("\n");
+    const title = (lines[0] || note.url || "").slice(0, 120);
+    const rest = [lines.slice(1).join("\n").trim() || (lines[0].length > 120 ? lines[0] : ""), note.body ? note.url : null];
     const milestone = await createMilestone({
       wedding_id: wedding.id,
-      title: (note.body ?? note.url ?? "").split("\n")[0].slice(0, 120),
-      description: [note.body, note.url].filter(Boolean).join("\n\n") || null,
+      title,
+      description: rest.filter(Boolean).join("\n\n") || null,
       category: note.area_key,
       due_date: when.kind === "due" ? date : null,
       status: "todo",

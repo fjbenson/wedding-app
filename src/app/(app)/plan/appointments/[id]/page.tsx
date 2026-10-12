@@ -27,7 +27,7 @@ export default async function AppointmentPage({
   const [{ areas, suppliers }, wedding] = await Promise.all([formOptions(appointment.wedding_id), getCurrentWedding()]);
 
   return (
-    <FormPage backHref="/plan" backLabel="Plan" title={appointment.title} error={error} detail={detail}>
+    <FormPage backHref="/plan" backLabel="Plan" title="Appointment" error={error} detail={detail}>
       <AppointmentForm
         action={saveAppointmentAction.bind(null, appointment.id)}
         appointment={appointment}

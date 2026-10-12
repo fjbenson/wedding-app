@@ -27,7 +27,7 @@ export default async function PaymentPage({
   const [{ areas, suppliers }, wedding] = await Promise.all([formOptions(payment.wedding_id), getCurrentWedding()]);
 
   return (
-    <FormPage backHref="/money?view=month" backLabel="Money" title={payment.description} error={error} detail={detail}>
+    <FormPage backHref="/money?view=month" backLabel="Money" title="Payment" error={error} detail={detail}>
       <PaymentForm
         action={savePaymentAction.bind(null, payment.id)}
         payment={payment}

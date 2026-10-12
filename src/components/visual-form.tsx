@@ -25,11 +25,25 @@ export const BARE =
 export const TITLE_INPUT =
   "w-full border-b border-champagne-400 bg-transparent pb-2 font-display !text-[24px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:italic placeholder:text-stone/50 focus:border-ink focus:outline-none";
 
-/** One line of a card: an icon, then the box. Hairlines between. */
-export function Line({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
+/**
+ * One line of a card: an icon, then the box. Hairlines between. `top` puts
+ * the icon level with the first line of a box that grows (notes), rather
+ * than the middle of it.
+ */
+export function Line({
+  icon: Icon,
+  label,
+  top = false,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  top?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <label className="flex items-center gap-3 border-b border-linen px-4 last:border-b-0">
-      <Icon aria-hidden className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.6} />
+    <label className={`flex gap-3 border-b border-linen px-4 last:border-b-0 ${top ? "items-start" : "items-center"}`}>
+      <Icon aria-hidden className={`h-[18px] w-[18px] shrink-0 text-champagne-600 ${top ? "mt-[17px]" : ""}`} strokeWidth={1.6} />
       <span className="sr-only">{label}</span>
       {children}
     </label>

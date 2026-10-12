@@ -33,7 +33,7 @@ export default async function EditMilestonePage({
     <FormPage
       backHref="/plan"
       backLabel="Plan"
-      title={milestone.title}
+      title="To-do"
       error={error}
       detail={detail}
     >

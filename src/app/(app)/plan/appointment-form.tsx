@@ -156,7 +156,7 @@ export default function AppointmentForm({
         <section className="mt-7">
           <h2 className="section-label font-body">Notes</h2>
           <div className={CARD}>
-            <Line icon={NotebookPen} label="Notes">
+            <Line icon={NotebookPen} label="Notes" top>
               <textarea
                 name="notes"
                 rows={3}

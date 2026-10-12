@@ -553,7 +553,10 @@ settled on an editorial, ivory-and-champagne look with a floating glass hub
 ring (`docs/DESIGN.md`). The palette, fonts and glass working default are now
 in `tailwind.config.ts` and `src/app/globals.css` (`.glass`, `.label`); the
 existing sign-in, new-wedding and hub screens use them. Final glass use is
-still open.
+still open. **Background (12 Oct 2026):** the satin stripes were replaced by
+**paper**, ivory with a fine grain (canvas 2 "Background · Instead of the
+satin", option 1; `body::before` in `globals.css`). Options 2 (soft glows)
+and 3 (paper + glows) wait on the canvas if it feels too plain.
 **T is part done** — hosting is live, the screens are not.
 
 ## Architecture (decided, don't relitigate)

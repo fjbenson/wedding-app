@@ -281,6 +281,17 @@ export default function GuestBrowser({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
+            <Link
+              href="/people/new"
+              aria-label="Add a guest"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
+            >
+              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} aria-hidden />
+            </Link>
+          </div>
+
+          {/* Find or add on the row above; how the list is shown here: Filter left, Sort right (owner, 12 Oct 2026). */}
+          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
             <FilterMenu
               guestOf={ofCounted}
               ofOn={guestOf}
@@ -290,17 +301,6 @@ export default function GuestBrowser({
               onToggle={toggle}
               onClear={clearAll}
             />
-          </div>
-
-          {/* Add on the left; the order on the right, which opens Sort (owner's call, 9 Oct 2026). */}
-          <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
-            <Link
-              href="/people/new"
-              className="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink pl-3.5 pr-4 text-sm text-ivory shadow-[0_8px_20px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
-            >
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Add<span className="max-[359px]:sr-only"> a guest</span>
-            </Link>
             <SortMenu sort={sort} onSort={setSort} />
           </div>
           {filters.length + guestOf.length > 0 && (
@@ -691,23 +691,18 @@ function FilterMenu({
         aria-haspopup="true"
         aria-label={active > 0 ? `Filter, ${active} on` : "Filter"}
         onClick={() => setOpen((o) => !o)}
-        className={`relative flex h-12 w-12 items-center justify-center rounded-full border transition ${
-          active > 0 ? "border-ink bg-ink text-ivory" : "border-linen bg-white text-ink hover:border-champagne-400"
+        className={`flex h-9 items-center gap-1.5 rounded-full transition ${
+          active > 0
+            ? "border border-champagne-600 bg-champagne-100 pl-2.5 pr-3 text-[13px] font-medium text-champagne-600"
+            : "type-meta hover:text-ink"
         }`}
       >
-        <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-        {active > 0 && (
-          <span
-            aria-hidden
-            className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400 px-1 text-[11px] font-semibold text-white"
-          >
-            {active}
-          </span>
-        )}
+        <SlidersHorizontal className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+        {active > 0 ? `Filter · ${active}` : "Filter"}
       </button>
 
       {open && (
-        <div className={`${MENU} w-[17rem] pb-2 pt-2.5`}>
+        <div className={`${MENU.replace("right-0", "left-0")} w-[17rem] pb-2 pt-2.5`}>
           <div className="flex items-baseline justify-between py-1">
             <span className="section-label">Show only</span>
             {active > 0 && (

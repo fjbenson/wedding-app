@@ -104,9 +104,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Filter** button that drops down a small menu (Day guests · Evening
   guests, then Bridal party · Dietary needs · Children · No address yet,
   any mix); with filters on, the button goes dark with a count and each
-  filter shows as a pill to take off (on their own line). The line just
-  above the list has "+ Add a guest" on the left and the order ("BY FIRST
-  NAME ⌄") on the right — tapping that is **Sort**: first name, surname,
+  filter shows as a pill to take off (on their own line). Search has a round black + (add a guest) at its end; the line under it has
+  Filter on the left and the order ("BY FIRST NAME ⌄") on the right — tapping that is **Sort**: first name, surname,
   household, or day guests then evening (9 Oct 2026; no separate sort
   button by the search); "Rename the
   day / evening" and "Add an event" sit at the foot of the list.
@@ -549,10 +548,13 @@ access control is RLS. No column-level encryption is planned.
   hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
   `src/lib/return-to.ts`); other screens' saves can opt in the same way.
 - **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
-  button should be the loudest thing on the page). "+ Add a guest" / "+ Add
-  a supplier" are black pills on the line above the list (like Plan's "Add
-  a to-do"); the count cards' big **All** tile is champagne, not black, when
-  picked. Small "on" states (a dark Filter button, ✓ icons) can stay ink.
+  button should be the loudest thing on the page). On Guests and Suppliers
+  the Add is a **round black + at the end of the search row** (find or add
+  — the moment you search and they're not there); the row under it is how
+  the list is shown: **Filter** (plain words; champagne pill "Filter · 2"
+  when on, menu opens to the left) on the left, **Sort** on the right
+  (canvas 2 "People · Fewer boxes" led here: too many boxed things). The
+  count cards' big **All** tile is champagne, not black, when picked.
 - **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
   just doesn't show the structure of the page"). Never fill a screen with
   made-up data the couple has to delete; instead draw the real structure

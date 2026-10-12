@@ -285,7 +285,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   today softly circled, the wedding in a gold ring; tap a day for its card (below).
   The month in view and the tapped day live in the
   address (`?month=`, `?day=`), so Back from a to-do lands on the same
-  month and tapping Plan starts on today. Undated things are in a "No date yet" fold at the
+  month and tapping Plan starts on today. Undated to-dos: a cream line under the month ("3 to-dos have no date
+  yet ›", 12 Oct 2026) opens a **"No date yet" card**, the day card without
+  a day (`?day=undated`, Add a to-do) — was a fold at the
   foot (a banner above the grid was tried and taken out, owner, 11 Oct 2026);
   the List has them on their own card.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The

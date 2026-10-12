@@ -117,20 +117,9 @@ export default function Agenda({
     </Fold>
   );
 
-  const undatedFold = undated.length > 0 && (
-    <Fold
-      id="undated"
-      className="mt-10 border-t border-linen pt-4"
-      header={
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="section-label">No date yet</span>
-          <span className="type-meta">{undated.length}</span>
-        </span>
-      }
-    >
-      <ul className="mt-1">{undated.map((e) => row(e))}</ul>
-    </Fold>
-  );
+  // To-dos with no date have no day on the grid: a line under the month
+  // opens them in a card of their own, like a day's (owner, 12 Oct 2026).
+  const undatedPanel = undated.length > 0 && <ul className="mt-1">{undated.map((e) => row(e))}</ul>;
 
   // Nudges ("start around") have a month, not a day, so they aren't on the
   // grid; they're on the List's month cards. A "Start this month" box above
@@ -172,6 +161,8 @@ export default function Agenda({
         dayPanels={dayPanels}
         monthLists={monthLists}
         monthTops={monthTops}
+        undatedCount={undated.length}
+        undatedPanel={undatedPanel}
         toggle={null}
         weddingPanel={
           <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">
@@ -179,7 +170,6 @@ export default function Agenda({
           </Link>
         }
       />
-      {undatedFold}
     </FoldGroup>
   );
 }

@@ -53,6 +53,8 @@ export default function PlanCalendar({
   dayPanels,
   monthLists,
   monthTops,
+  undatedCount,
+  undatedPanel,
   toggle,
   weddingPanel,
 }: {
@@ -65,6 +67,9 @@ export default function PlanCalendar({
   /** Everything in each month, for the list under the grid. */
   monthLists: Record<string, ReactNode>;
   monthTops: Record<string, ReactNode>;
+  /** To-dos with no date: a line under the month opens them in a card (`?day=undated`). */
+  undatedCount: number;
+  undatedPanel: ReactNode;
   toggle: ReactNode;
   weddingPanel: ReactNode;
 }) {
@@ -79,7 +84,7 @@ export default function PlanCalendar({
   );
   const askedDay = params.get("day");
   const [selected, setSelected] = useState<string | null>(
-    askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month) ? askedDay : null,
+    askedDay === "undated" || (askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)) ? askedDay : null,
   );
   useEffect(() => {
     replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected });
@@ -218,7 +223,27 @@ export default function PlanCalendar({
         )}
       </div>
 
-      {selected && (
+      {undatedCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setSelected("undated")}
+          className="row-press mt-6 flex w-full items-center gap-3 rounded-2xl bg-cream px-4 py-3.5 text-left text-[15px] text-ink"
+        >
+          <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border border-dashed border-stone/60 bg-white" />
+          <span className="flex-1">
+            {undatedCount} {undatedCount === 1 ? "to-do has" : "to-dos have"} no date yet
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+        </button>
+      )}
+
+      {selected === "undated" && (
+        <DayCard date={null} title="No date yet" isToday={false} onClose={close}>
+          {undatedPanel || <p className="py-4 text-[15px] text-stone">Every to-do has a date.</p>}
+        </DayCard>
+      )}
+
+      {selected && selected !== "undated" && (
         <DayCard
           date={selected}
           title={longDate(selected)}
@@ -238,7 +263,8 @@ export default function PlanCalendar({
  * One day, over the calendar: a card that slides up on a phone (pull it
  * down, tap outside or ✕ to close), a panel on the right on a laptop — like
  * the guest card. Its things, then "Add on this day": a to-do or an
- * appointment with the date already filled in.
+ * appointment with the date already filled in. With no `date` it's the card
+ * for the to-dos that have no day yet ("No date yet", one Add a to-do).
  */
 function DayCard({
   date,
@@ -247,7 +273,7 @@ function DayCard({
   onClose,
   children,
 }: {
-  date: string;
+  date: string | null;
   title: string;
   isToday: boolean;
   onClose: () => void;
@@ -292,11 +318,25 @@ function DayCard({
           <div onPointerDown={drag.start} className="flex touch-none items-start gap-3 lg:touch-auto">
             <div className="min-w-0 flex-1">
               <p className="label">
-                {isToday && "Today · "}
-                {weekday}
+                {date ? (
+                  <>
+                    {isToday && "Today · "}
+                    {weekday}
+                  </>
+                ) : (
+                  "To-dos"
+                )}
               </p>
               <h2 className="mt-1 font-display text-[32px] font-light leading-[1.05] tracking-[-0.02em] text-ink">
-                {day} <span className="italic">{month.join(" ")}</span>
+                {date ? (
+                  <>
+                    {day} <span className="italic">{month.join(" ")}</span>
+                  </>
+                ) : (
+                  <>
+                    No date <span className="italic">yet</span>
+                  </>
+                )}
               </h2>
             </div>
             <button
@@ -311,13 +351,14 @@ function DayCard({
 
           <div className="mt-3 border-t border-linen [--row-bleed:22px]">{children}</div>
 
-          <p className="section-label mt-6">Add on this day</p>
+          <p className="section-label mt-6">{date ? "Add on this day" : "Add"}</p>
           <div className="mt-2.5 flex gap-2.5">
-            {(
-              [
-                ["A to-do", `/plan/new?date=${date}`],
-                ["An appointment", `/plan/appointments/new?date=${date}`],
-              ] as const
+            {(date
+              ? [
+                  ["A to-do", `/plan/new?date=${date}`],
+                  ["An appointment", `/plan/appointments/new?date=${date}`],
+                ]
+              : [["A to-do", "/plan/new"]]
             ).map(([label, href]) => (
               <Link
                 key={href}

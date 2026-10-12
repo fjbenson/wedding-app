@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CircleCheck, Hourglass, NotebookPen, Store } from "lucide-react";
 import { SubmitButton } from "@/components/form-bits";
-import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, areaTiles } from "@/components/visual-form";
+import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, AreaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import { withCommas } from "@/lib/money";
 import { todayISO } from "@/lib/dates";
@@ -154,7 +154,7 @@ export default function PaymentForm({
 
       <Part label="Area">
         {/* None picked means it follows the supplier's area, as before. */}
-        <Tiles name="area" options={areaTiles(options, "other")} value={area} onChange={setArea} />
+        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} />
       </Part>
 
       <Folded label="Add notes" open={!!payment?.notes}>

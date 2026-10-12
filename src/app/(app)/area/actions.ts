@@ -61,6 +61,31 @@ export async function setAreaAction(
   refresh(key);
 }
 
+/**
+ * The "+ Add an area" tile at the end of every area picker (owner, 12 Oct
+ * 2026): adds the area (or brings an old one back) without leaving the form,
+ * and returns it so the form can pick it. Never throws — the form shows the
+ * message instead.
+ */
+export async function quickAddAreaAction(name: string): Promise<{ key?: string; label?: string; error?: string }> {
+  try {
+    const wedding = await getCurrentWedding();
+    if (!wedding) return { error: "Couldn't find your wedding. Reload the page." };
+    const label = name.trim().slice(0, 40);
+    const key = areaKey(label) === "new" ? "new-area" : areaKey(label);
+    if (!key) return { error: "Give the area a name." };
+    if (key === "other") return { error: "Other is already there." };
+    const existing = await getArea(wedding.id, key);
+    if (existing) await updateArea(existing.id, { enabled: true, show_on_hub: true });
+    else await addArea(wedding.id, key, label);
+    refresh(key);
+    return { key, label: existing?.label ?? label };
+  } catch (error) {
+    console.error("quick add area failed", error);
+    return { error: "That didn't add it. Try again." };
+  }
+}
+
 /** The + on the ring: a new area of the couple's own, or an old one back. */
 export async function addAreaAction(formData: FormData) {
   const wedding = await getCurrentWedding();

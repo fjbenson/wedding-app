@@ -5,7 +5,8 @@ import { ChevronDown, FileText, Globe, Mail, MoreHorizontal, Phone, UserRound } 
 import type { LucideIcon } from "lucide-react";
 import { SubmitButton } from "@/components/form-bits";
 import MoneyInput from "@/components/money-input";
-import { areaIcon, type AreaOption } from "@/lib/areas";
+import { AreaTiles } from "@/components/visual-form";
+import type { AreaOption } from "@/lib/areas";
 import { SUPPLIER_STAGES } from "@/lib/supplier-status";
 import { StageIcon } from "./supplier-list";
 
@@ -56,25 +57,12 @@ export default function SupplierForm({
         autoComplete="off"
         aria-label="Business name"
         placeholder="Business name"
-        className="w-full border-b border-champagne-400 bg-transparent pb-2 font-display !text-[30px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:italic placeholder:text-stone/50 focus:border-ink focus:outline-none"
+        className="w-full border-b border-champagne-400 bg-transparent pb-2 font-display !text-[24px] font-light leading-tight tracking-[-0.02em] text-ink placeholder:italic placeholder:text-stone/50 focus:border-ink focus:outline-none"
       />
 
       <fieldset className="mt-7">
         <legend className="section-label">What they do</legend>
-        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {categories.map((c) => {
-            const Icon = areaIcon(c.key);
-            return (
-              <label key={c.key} className="cursor-pointer">
-                <input type="radio" name="category" value={c.key} defaultChecked={c.key === defaultCategory} className="peer sr-only" />
-                <span className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-linen bg-white/70 px-1.5 py-2.5 text-center text-[13px] leading-tight text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400 peer-checked:[&>svg]:text-champagne-100">
-                  <Icon aria-hidden className="h-5 w-5 text-champagne-600" strokeWidth={1.6} />
-                  {c.label}
-                </span>
-              </label>
-            );
-          })}
-        </div>
+        <AreaTiles name="category" areas={categories} otherValue="other" defaultValue={defaultCategory} />
       </fieldset>
 
       <fieldset className="mt-7">

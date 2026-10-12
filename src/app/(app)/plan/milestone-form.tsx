@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NotebookPen } from "lucide-react";
 import { ReturnTo } from "@/components/back-link";
 import { SubmitButton } from "@/components/form-bits";
-import { BARE, CARD, DateCard, Line, Part, TITLE_INPUT, Tiles, areaTiles } from "@/components/visual-form";
+import { AreaTiles, BARE, CARD, DateCard, Line, Part, TITLE_INPUT } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
 import type { Milestone } from "@/types/db";
@@ -68,7 +68,7 @@ export default function MilestoneForm({
 
       <Part label="Area">
         {/* Other is stored as no area, as before (owner: "always have that other option"). */}
-        <Tiles name="category" options={areaTiles(options, "")} defaultValue={current ?? defaultArea} />
+        <AreaTiles name="category" areas={options} otherValue="" defaultValue={current ?? defaultArea} />
       </Part>
 
       <section className="mt-7">

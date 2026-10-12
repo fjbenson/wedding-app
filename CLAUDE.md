@@ -407,8 +407,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   then each area's share with a running "£… left to share" and **Share it out
   for us**, which fills the empty areas from what's left by a typical UK split
   (`TYPICAL_SHARE`, rounded to £50) — a starting point, saved only on Save.
-  Agreed and Paid are never typed: they add up from suppliers and payments), the next payment due on a
-  glass row, then each area menu-card style (name, dotted line, agreed "of
+  Agreed and Paid are never typed: they add up from suppliers and payments), then
+  straight into **By area** (the "Next to pay" row was taken out, owner, 12
+  Oct 2026), headed like By month's "What's due" with the same round black +
+  (add a payment), then each area menu-card style (name, dotted line, agreed "of
   £budget", one bar; no divider lines between rows, so bars aren't mistaken
   for rules; no bar at all when there's no budget or spend) with a short tag: "▲
   Over by £…" (agreed bar runs past the budget in rose stripes — never colour

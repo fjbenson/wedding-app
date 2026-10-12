@@ -97,7 +97,7 @@ export default function MoneyView({
       )}
 
       {view === "area" ? (
-        <ByArea total={total} byArea={byArea} payments={payments} scope={scope} />
+        <ByArea total={total} byArea={byArea} scope={scope} />
       ) : (
         <ByMonth total={total} payments={payments} suppliers={suppliers} balances={balances} weddingDate={weddingDate} />
       )}
@@ -132,17 +132,12 @@ function flag(m: Money): { text: string; tone: string } {
 function ByArea({
   total,
   byArea,
-  payments,
   scope,
 }: {
   total: Money;
   byArea: (AreaOption & Money)[];
-  payments: Payment[];
   scope: string | null;
 }) {
-  const next = payments
-    .filter((p) => !p.paid_on && p.due_date)
-    .sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0];
   const toPay = Math.max(total.committed - total.paid, 0);
   const free = total.budget !== null ? total.budget - total.committed : null;
 
@@ -187,24 +182,19 @@ function ByArea({
         </dl>
       </Link>
 
-      {next && (
-        <Link
-          href={`/money/payments/${next.id}`}
-          className="glass-card row-press mt-3 flex items-center gap-3 overflow-hidden rounded-[18px] px-4 py-3 [--row-bleed:16px]"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="type-meta block">Next to pay · {formatWeekdayDayMonth(next.due_date!)}</span>
-            <span className="type-item mt-0.5 block truncate">{next.description}</span>
-          </span>
-          <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(next.amount)}</span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-        </Link>
-      )}
-
-      <section className="mt-9">
-        <div className="text-center">
+      {/* Straight from the totals into the areas (owner, 12 Oct 2026: the
+          "Next to pay" banner went — By month has the schedule), headed like
+          By month's "What's due", with the same round black + to add a payment. */}
+      <section className="mt-8">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="section-label">By area</h2>
-          <span aria-hidden className="mx-auto mt-2.5 block h-px w-[60px] bg-champagne-400" />
+          <Link
+            href="/money/payments/new"
+            aria-label="Add a payment"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-ivory transition hover:bg-ink/90"
+          >
+            <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+          </Link>
         </div>
         <ul className="mt-1">
           {byArea.map((a) => {

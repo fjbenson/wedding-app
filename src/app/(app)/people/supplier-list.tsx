@@ -196,7 +196,7 @@ export default function SupplierList({
           </div>
 
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
-            <Link href="/people/suppliers/new" className="flex h-9 items-center gap-1 text-sm text-champagne-600 hover:text-ink">
+            <Link href="/people/suppliers/new" className="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink pl-3.5 pr-4 text-sm text-ivory shadow-[0_8px_20px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90">
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Add a supplier
             </Link>
@@ -333,12 +333,12 @@ function CountCard({
         type="button"
         aria-pressed={all}
         onClick={() => onShow("all")}
-        className={`mb-1 flex flex-col justify-between rounded-2xl p-3 text-left transition ${all ? "bg-ink text-ivory" : "bg-cream text-ink hover:bg-champagne-100"}`}
+        className={`mb-1 flex flex-col justify-between rounded-2xl p-3 text-left transition ${all ? "bg-champagne-100 text-ink shadow-[inset_0_0_0_1px_rgb(201_169_110/0.45)]" : "bg-white/55 text-ink hover:bg-champagne-100/60"}`}
       >
-        <span className={`type-meta ${all ? "text-ivory/75" : ""}`}>All</span>
+        <span className="type-meta text-champagne-600">All</span>
         <span>
-          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-ivory" : ""}`}>{total}</span>
-          <span className={`mt-1.5 block text-xs ${all ? "text-ivory/75" : "text-stone"}`}>
+          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] text-ink`}>{total}</span>
+          <span className="mt-1.5 block text-xs text-stone">
             {areasWith} of {areas} {areas === 1 ? "area" : "areas"}
           </span>
         </span>

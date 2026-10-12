@@ -296,7 +296,7 @@ export default function GuestBrowser({
           <div className="mt-4 flex min-h-9 items-center justify-between gap-3 px-1">
             <Link
               href="/people/new"
-              className="flex h-9 shrink-0 items-center gap-1 whitespace-nowrap text-sm text-champagne-600 hover:text-ink"
+              className="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink pl-3.5 pr-4 text-sm text-ivory shadow-[0_8px_20px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
             >
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Add<span className="max-[359px]:sr-only"> a guest</span>
@@ -464,7 +464,7 @@ function AnswersCard({
 }) {
   const all = showing === "all";
   const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
-    // All three in champagne (owner's call); only the big All is ink.
+    // All three in champagne (owner's call). The big All is champagne too: ink is kept for the Add button (12 Oct 2026).
     { status: "attending", label: "Coming", tone: "text-champagne-600" },
     { status: "pending", label: "Invited", tone: "text-champagne-600" },
     { status: "declined", label: "Can't come", tone: "text-champagne-600" },
@@ -481,13 +481,13 @@ function AnswersCard({
         aria-pressed={all}
         onClick={() => onShow("all")}
         className={`mb-1 flex flex-col justify-between rounded-2xl p-3 text-left transition ${
-          all ? "bg-ink text-ivory" : "bg-cream text-ink hover:bg-champagne-100"
+          all ? "bg-champagne-100 text-ink shadow-[inset_0_0_0_1px_rgb(201_169_110/0.45)]" : "bg-white/55 text-ink hover:bg-champagne-100/60"
         }`}
       >
-        <span className={`type-meta ${all ? "text-ivory/75" : ""}`}>All</span>
+        <span className="type-meta text-champagne-600">All</span>
         <span>
-          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-ivory" : ""}`}>{total}</span>
-          <span className={`mt-1.5 block text-xs ${all ? "text-ivory/75" : "text-stone"}`}>
+          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] text-ink`}>{total}</span>
+          <span className="mt-1.5 block text-xs text-stone">
             {total === 1 ? "guest" : "guests"} · {homes} {homes === 1 ? "home" : "homes"}
           </span>
         </span>

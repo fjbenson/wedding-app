@@ -96,7 +96,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   ring is its picture. Sharp vector versions are a to-do. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
-  Rounds 3–7"): no event switch any more. The card is a big dark **All**
+  Rounds 3–7"): no event switch any more. The card is a big **All** (champagne when picked; was dark until 12 Oct 2026)
   with the breakdown beside it (Coming · Invited · Can't come, each with
   an arrow; To invite guests count only in All) — every one is a button
   that shows just those people. **The card counts whatever the filters
@@ -548,6 +548,11 @@ access control is RLS. No column-level encryption is planned.
   `BackLink`) returns to it. Plan's to-do and appointment forms also send a
   hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
   `src/lib/return-to.ts`); other screens' saves can opt in the same way.
+- **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
+  button should be the loudest thing on the page). "+ Add a guest" / "+ Add
+  a supplier" are black pills on the line above the list (like Plan's "Add
+  a to-do"); the count cards' big **All** tile is champagne, not black, when
+  picked. Small "on" states (a dark Filter button, ✓ icons) can stay ink.
 - **An empty screen still shows its shape** (owner, 12 Oct 2026: "it
   just doesn't show the structure of the page"). Never fill a screen with
   made-up data the couple has to delete; instead draw the real structure

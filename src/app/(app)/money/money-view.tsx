@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AddButton from "@/components/add-button";
 import { Check, ChevronRight, Plus } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
@@ -188,13 +189,7 @@ function ByArea({
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">
           <h2 className="section-label">By area</h2>
-          <Link
-            href="/money/payments/new"
-            aria-label="Add a payment"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-ivory transition hover:bg-ink/90"
-          >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-          </Link>
+          <AddButton href="/money/payments/new" label="Add a payment" />
         </div>
         <ul className="mt-1">
           {byArea.map((a) => {
@@ -390,13 +385,7 @@ function ByMonth({
 
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">What&apos;s due</h2>
-        <Link
-          href="/money/payments/new"
-          aria-label="Add a payment"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-ivory transition hover:bg-ink/90"
-        >
-          <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-        </Link>
+        <AddButton href="/money/payments/new" label="Add a payment" />
       </div>
 
       {[...byMonth.entries()].map(([key, list]) => (

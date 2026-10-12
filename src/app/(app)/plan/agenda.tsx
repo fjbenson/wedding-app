@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import AddButton from "@/components/add-button";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatMonthYear } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
@@ -190,13 +190,7 @@ export default function Agenda({
         undatedPanel={undatedPanel}
         toggle={
           // The one way in (owner, 12 Oct 2026): the round black +, at the end of the month's row.
-          <Link
-            href="/plan/new"
-            aria-label="Add to the plan"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
-          >
-            <Plus className="h-5 w-5" strokeWidth={1.8} aria-hidden />
-          </Link>
+          <AddButton href="/plan/new" label="Add to the plan" />
         }
         weddingPanel={
           <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">

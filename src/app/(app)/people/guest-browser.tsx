@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import AddButton from "@/components/add-button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronRight, Mail, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Mail, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -270,7 +271,7 @@ export default function GuestBrowser({
 
         <div className="mt-5 lg:mt-0">
           <div className="flex items-center gap-2">
-            <label className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+            <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a guest</span>
               <input
@@ -281,13 +282,7 @@ export default function GuestBrowser({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            <Link
-              href="/people/new"
-              aria-label="Add a guest"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
-            >
-              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} aria-hidden />
-            </Link>
+            <AddButton href="/people/new" label="Add a guest" />
           </div>
 
           {/* Find or add on the row above; how the list is shown here: Filter left, Sort right (owner, 12 Oct 2026). */}

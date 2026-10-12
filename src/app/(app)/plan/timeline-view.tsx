@@ -1,6 +1,6 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import AddButton from "@/components/add-button";
 import StarterPlanCard from "@/components/starter-plan-card";
 import CornerSwitch from "@/components/corner-switch";
 import type { AreaOption } from "@/lib/areas";
@@ -96,13 +96,7 @@ export default function TimelineView({
             ))}
           </div>
 
-        <Link
-          href={view === "list" && kind === "appointments" ? "/plan/appointments/new" : "/plan/new"}
-          aria-label="Add to the plan"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)] transition hover:bg-ink/90"
-        >
-          <Plus className="h-5 w-5" strokeWidth={1.8} aria-hidden />
-        </Link>
+        <AddButton href={view === "list" && kind === "appointments" ? "/plan/appointments/new" : "/plan/new"} label="Add to the plan" />
       </div>
       )}
 

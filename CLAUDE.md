@@ -693,7 +693,11 @@ access control is RLS. No column-level encryption is planned.
   hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
   `src/lib/return-to.ts`); other screens' saves can opt in the same way.
 - **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
-  button should be the loudest thing on the page). On Guests and Suppliers
+  button should be the loudest thing on the page). **The round black + is one
+  size everywhere: 40px** (`AddButton`, `src/components/add-button.tsx`;
+  owner, 12 Oct 2026, taken from Money's By month) — Guests, Suppliers,
+  Plan (calendar and List), Money (both views). A search box beside it is
+  40px tall too. Use `AddButton` for any new one. On Guests and Suppliers
   the Add is a **round black + at the end of the search row** (find or add
   — the moment you search and they're not there); the row under it is how
   the list is shown: **Filter** (plain words; champagne pill "Filter · 2"

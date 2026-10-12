@@ -550,6 +550,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
    spent-vs-budget shape (built 12 Oct as three bars) · The Day hour-by-hour line. **Next
    up (12 Oct 2026): People's other screens** (suppliers, household, add a
    guest) — Plan, Money and The Day's run sheet are now settled.
+   **Suppliers round 1 on canvas 2** (12 Oct 2026, page "Suppliers · Round
+   1 · Like the guest list"): A the list mirroring the guest list (count
+   card All · Booked · Quote in · Asked, search + Filter, grouped by area,
+   rows with initials, quote and a status icon ✓ / £ / dashed ? / ✕, key
+   underneath); B the supplier card (sheet like the guest card, edited in
+   place: Call · Email · Website, status slider Asked · Quote in · Booked ·
+   Not taken, Money: quote, deposit, area budget, payments; Details;
+   "Open the Photos page ›") — would replace the supplier form page; C the
+   alternative: a glass card per area still being decided with quotes side
+   by side (under / ▲ over budget), then a plain Booked list. **Waiting on
+   the owner's pick.**
    **11 Oct 2026:** The Day's run sheet settled and built (option D, see
    "Current state"). **Money** is on canvas 2: round 1 ("Money · Signature
    look": A ledger, B menu card, C champagne glass — owner loved all three)

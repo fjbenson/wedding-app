@@ -96,7 +96,9 @@ function Panel({
   const view = useVisibleArea();
 
   useEffect(() => {
-    bottom.current?.scrollIntoView({ block: "end" });
+    // Scroll the conversation only: scrollIntoView would also nudge the page on an iPhone.
+    const list = bottom.current?.parentElement;
+    if (list) list.scrollTop = list.scrollHeight;
   }, [turns, cards]);
 
   /** Adds to the assistant's turn being written. */
@@ -244,7 +246,7 @@ function Panel({
             rows={1}
             autoFocus={big && canHover()}
             placeholder={hint ?? "Jot or ask…"}
-            className={`block max-h-32 w-full resize-none bg-transparent py-2 font-display leading-snug ${big ? "text-[19px]" : "text-[17px]"} text-ink [field-sizing:content] placeholder:italic placeholder:text-stone focus:outline-none`}
+            className={`block max-h-32 w-full resize-none bg-transparent py-2 leading-snug ${big ? "text-[17px]" : "text-[16px]"} text-ink [field-sizing:content] placeholder:text-stone focus:outline-none`}
           />
         </label>
         <Link
@@ -270,7 +272,7 @@ function Panel({
   return (
     <div
       className="fixed inset-x-0 top-0 z-50 h-dvh"
-      style={view ? { top: view.top, height: view.height } : undefined}
+      style={view ? { height: view.height } : undefined}
       role="dialog"
       aria-modal="true"
       aria-label="Your assistant"
@@ -333,7 +335,7 @@ function Panel({
             {turns.map((turn, i) =>
               turn.role === "user" ? (
                 <div key={i} className="mt-4 flex justify-end">
-                  <p className="max-w-[78%] whitespace-pre-wrap rounded-[20px_20px_6px_20px] bg-ink px-4 py-2.5 text-[15px] leading-snug text-ivory">
+                  <p className="max-w-[78%] whitespace-pre-wrap rounded-[20px_20px_6px_20px] bg-ink px-4 py-2.5 text-[16px] leading-snug text-ivory">
                     {turn.text}
                   </p>
                 </div>
@@ -342,7 +344,7 @@ function Panel({
                   {/* Words first, then what they're about (as on the canvas): a lookup often
                       arrives before the sentence that sums it up. */}
                   {turn.parts.some((p) => p.kind === "text" && p.text.trim()) && (
-                    <p className="max-w-[90%] whitespace-pre-wrap font-display text-[18px] leading-snug text-ink">
+                    <p className="max-w-[92%] whitespace-pre-wrap text-[16px] leading-relaxed text-ink">
                       {turn.parts
                         .filter((p) => p.kind === "text")
                         .map((p) => p.text.trim())
@@ -358,7 +360,7 @@ function Panel({
                     ),
                   )}
                   {busy && i === turns.length - 1 && turn.parts.length === 0 && !turn.error && (
-                    <p className="font-display text-[18px] italic text-stone">
+                    <p className="text-[16px] text-stone">
                       <span className="animate-pulse">Just a moment…</span>
                     </p>
                   )}
@@ -444,20 +446,28 @@ function canHover() {
 
 /**
  * The part of the screen the keyboard leaves free. On an iPhone the keyboard
- * doesn't shrink the page; Safari scrolls it up instead, pushing the panel's
- * top off the screen. Sizing the panel to what's visible keeps the header
- * on screen and the box just above the keyboard.
+ * doesn't shrink the page; Safari scrolls it up instead, which pushed the
+ * panel's top off the screen and then, when we followed it, made it jump.
+ * So the panel stays pinned to the top and takes the visible height, and any
+ * scroll Safari makes behind it is put straight back.
  */
 function useVisibleArea() {
-  const [area, setArea] = useState<{ top: number; height: number } | null>(null);
+  const [area, setArea] = useState<{ height: number } | null>(null);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const update = () => setArea({ top: vv.offsetTop, height: vv.height });
+    const html = document.documentElement;
+    const overflow = html.style.overflow;
+    html.style.overflow = "hidden";
+    const update = () => {
+      if (window.scrollY !== 0 || vv.offsetTop !== 0) window.scrollTo(0, 0);
+      setArea({ height: vv.height });
+    };
     update();
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
     return () => {
+      html.style.overflow = overflow;
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
     };

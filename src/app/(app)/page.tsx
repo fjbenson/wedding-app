@@ -1,17 +1,16 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAppointments } from "@/lib/db/appointments";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
-import { countInspo } from "@/lib/db/inspo";
+import { countInspo, listInspo } from "@/lib/db/inspo";
 import { listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
 import { STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
+import HubTiles from "@/components/hub-tiles";
 import JotSheet from "@/components/jot-sheet";
 import ThisWeek from "@/components/this-week";
 
@@ -28,15 +27,17 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas, appointments, payments, unfiled, inspo] = await Promise.all([
+  const [milestones, areas, appointments, payments, unfiled, inspo, latestInspo] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
     listAppointments(wedding.id),
     listPayments(wedding.id),
     listNotes(wedding.id, { area: null }),
     countInspo(wedding.id),
+    listInspo(wedding.id, { limit: 4 }),
   ]);
-  const toSortCount = (unfiled ?? []).filter(toSort).length;
+  const sortable = (unfiled ?? []).filter(toSort);
+  const toSortCount = sortable.length;
   const ideas = inspo ? [...inspo.values()].reduce((a, b) => a + b, 0) : 0;
   // Empty: made before setup had an areas step, so send them to finish it.
   // null: the database hasn't got the areas table yet, so show the starter set.
@@ -46,8 +47,8 @@ export default async function HomePage() {
   // Under the ring (canvas 2, "Home · Round 2 · Calm under the ring",
   // option B, owner's pick 13 Oct 2026): a small "Jot something down" pill
   // that brings up the jot sheet, This week on one glass card (in place of
-  // the top three, owner, 13 Oct 2026), then
-  // Your notes and Inspo as two quiet lines.
+  // the top three, owner, 13 Oct 2026), then Your notes and Inspo as two
+  // tiles side by side ("Home · Round 3", option A).
   // Phone: the names and ring, then those under them.
   // Desktop: the ring fills the left, with those in a column beside it.
   return (
@@ -66,31 +67,15 @@ export default async function HomePage() {
           payments={payments ?? []}
           hasDate={wedding.wedding_date !== null}
         />
-        <nav aria-label="More" className="relative mx-5 mt-4 lg:mx-0">
-          {unfiled && (
-            <QuietLine href="/inbox" label="Your notes" detail={toSortCount ? `${toSortCount} to sort` : "All sorted"} />
-          )}
-          {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
-          <QuietLine href="/inspo" label="Inspo" detail={ideas ? `${ideas} ${ideas === 1 ? "idea" : "ideas"}` : "Ideas you’ve saved"} last />
-        </nav>
+        <HubTiles
+          note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}
+          toSort={toSortCount}
+          pictures={(latestInspo ?? []).map((i) => i.picture)}
+          ideas={ideas}
+        />
         {email && <SignedIn email={email} />}
       </div>
     </main>
-  );
-}
-
-/** Your notes and Inspo under the top three: a plain line each, no card. */
-function QuietLine({ href, label, detail, last = false }: { href: string; label: string; detail: string; last?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`flex min-h-12 items-center gap-3 px-1.5 py-3 text-[15px] text-ink ${last ? "" : "border-b border-linen"}`}
-    >
-      <span className="flex-1">
-        {label} <span className="text-stone">· {detail}</span>
-      </span>
-      <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
-    </Link>
   );
 }
 

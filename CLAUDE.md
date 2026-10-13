@@ -60,8 +60,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   slides away); appointments show but need no tick; undated to-dos never
   show; laid out by day (13 Oct 2026, owner: "shout about the days"): the card's header gives the week's dates ("12–18 Oct"), each day a big gold date with its weekday down the left (today in ink, "Today"), several things on one day share it, the tick at the row's right; overdue things sit apart under "Overdue" first; up to five, then "And N more ›" and "The plan ›"; when it's clear, "✓
   *Nothing more this week.*" and "Next up: … ›",
-  then **Your notes · N to sort ›** and **Inspo · N ideas ›** as two quiet
-  lines (`home-notes.tsx` is gone). All on glass cards (design
+  then **Your notes and Inspo as two tiles side by side** (canvas 2 "Home ·
+  Round 3", option A, owner's pick 13 Oct 2026; `hub-tiles.tsx`): the
+  latest note to sort on a taped scrap of paper ("3 to sort ›"), and the four
+  latest pictures as a little collage ("24 ideas ›"); soft blank squares
+  before there are pictures (`home-notes.tsx` is gone). All on glass cards (design
   settled 7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the
   wedding's own **areas** (`areas` table, `0003_areas.sql`). Each dot opens
   its **area page** (`/area/[key]`, screens 5–6): key facts
@@ -973,6 +976,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
      before other couples use it.
    - **Where it lives (owner's idea, 11 Oct 2026):** maybe on the home
      screen, near the "Your notes" card under the ring. Not decided.
+     **Idea (13 Oct 2026): the Hub's jot box doubles as the assistant** —
+     type "Add Amy Latham, vegan, Latham household" and it offers to do it
+     instead of saving a note; one box for thoughts, pictures and jobs.
+   - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
+     to the data — a short list of named actions, the same ones the forms
+     use (add a guest, set an RSVP, add a to-do…), so it follows the same
+     rules (day guests also on the evening, names split, households made)
+     and only ever touches its own wedding. A new skill is mostly a short
+     description of an action that already exists.
 
 ### Open issues
 
@@ -1007,9 +1019,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
   https://claude.ai/artifact/GfcFVHZX4vuf1Ykzdk1i5B) and what doesn't line
   up. Done the same day: payments off the Plan calendar, appointments in
   Plan's List, Money's area filter, guest facts on area pages. Still open:
-  - **Your notes and Inspo are two homes for one thing** (ideas to come
-    back to): one **Ideas** place with notes and pictures together, filed
-    the same way — bigger; think it through before building.
+  - ~~**Your notes and Inspo are two homes for one thing**~~ — settled
+    13 Oct 2026 (owner): they stay two things — notes are quick words, Inspo
+    the pictures — with **one front door** (the jot sheet takes words, a
+    link or a photo, each landing in the right place) and shown together
+    where it helps (an area page's "Just for …").
   - Areas are added from the ring's + but renamed / reordered in Settings
     (two places for one thing).
   - Day and evening events are set up at the foot of the guest list, though

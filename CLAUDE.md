@@ -53,8 +53,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   "Home · Under the ring" B): a small glass **"Jot something down"** pill
   that brings up the jot sheet (`jot-sheet.tsx` + `jot-form.tsx`: write,
   Link, Photo, "Save to your notes"; closes on `?captured=1`) — no black
-  Save on the page any more — then **Your top three**, the next three
-  to-dos, appointments and payments on one glass card (`this-month.tsx`),
+  Save on the page any more — then **This week** on one glass card
+  (`this-week.tsx`; owner, 13 Oct 2026, replacing "Your top three": a week
+  has an end you can reach): everything due by Sunday plus anything overdue,
+  ticked off right there (to-dos done, payments paid, Undo note, the row
+  slides away); appointments show but need no tick; undated to-dos never
+  show; first four then "And N more this week ›"; when it's clear, "✓
+  *Nothing more this week.*" and "Next up: … ›",
   then **Your notes · N to sort ›** and **Inspo · N ideas ›** as two quiet
   lines (`home-notes.tsx` is gone). All on glass cards (design
   settled 7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the

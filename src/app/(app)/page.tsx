@@ -13,7 +13,7 @@ import { toSort } from "@/lib/notes";
 import { STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
 import JotSheet from "@/components/jot-sheet";
-import ThisMonth from "@/components/this-month";
+import ThisWeek from "@/components/this-week";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -45,7 +45,8 @@ export default async function HomePage() {
 
   // Under the ring (canvas 2, "Home · Round 2 · Calm under the ring",
   // option B, owner's pick 13 Oct 2026): a small "Jot something down" pill
-  // that brings up the jot sheet, your top three on one glass card, then
+  // that brings up the jot sheet, This week on one glass card (in place of
+  // the top three, owner, 13 Oct 2026), then
   // Your notes and Inspo as two quiet lines.
   // Phone: the names and ring, then those under them.
   // Desktop: the ring fills the left, with those in a column beside it.
@@ -59,7 +60,7 @@ export default async function HomePage() {
             <JotSheet />
           </div>
         )}
-        <ThisMonth
+        <ThisWeek
           milestones={milestones}
           appointments={appointments ?? []}
           payments={payments ?? []}

@@ -28,6 +28,7 @@ function failed(back: string, message: string, error: unknown): never {
 /** Everywhere money shows. */
 function refresh() {
   revalidatePath("/money");
+  revalidatePath("/");
   revalidatePath("/plan");
   revalidatePath("/area/[key]", "page");
 }

@@ -57,9 +57,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   areas, here.
 - **Hub** (`/`): names, hub ring, then under the ring (canvas 2, "Home ·
   Round 2 · Calm under the ring", option B, owner's pick 13 Oct 2026; was
-  "Home · Under the ring" B): a small glass **"Jot or ask…"** pill (with
-  examples under it) that opens **Your assistant** (`AssistantSheet`,
-  13 Oct 2026; was the "Jot something down" jot sheet, removed) — then **This week** on one glass card
+  "Home · Under the ring" B): one quiet glass pill, the assistant's gold pen
+  mark and **"Ask your assistant"** in italics (canvas 2 "Hub · How to reach
+  the assistant", A, owner's pick 13 Oct 2026 — says assistant, never "AI";
+  the Hub stays the most beautiful screen, so no line of examples under it),
+  opening **Your assistant** full screen (`AssistantSheet`; "Your assistant ·
+  Round 3 · Opening it", A's centred "What can I do for you?" and box with
+  B's prompts grouped **Ask · Do · Jot** under it; a conversation once you
+  ask) — then **This week** on one glass card
   (`this-week.tsx`; owner, 13 Oct 2026, replacing "Your top three": a week
   has an end you can reach): everything due by Sunday plus anything overdue,
   ticked off right there (to-dos done, payments paid, Undo note, the row
@@ -1237,6 +1242,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
      lift), and those become guest list filters ("Staying at the pub"),
      which then feed 2. Would need new tables (places to stay, and who's
      staying where) hanging off `weddings` — additive, no rebuild.
+- **"Where things stand"** (owner, 13 Oct 2026, from the assistant's
+  round 3 option C): the Hub answers *what's next*; nothing yet gives the
+  overall picture (replies waiting, money due, meals not picked…). A gap,
+  not designed — maybe a screen, maybe the assistant's opening.
 - **A card of their own for guests** (owner, 13 Oct 2026: suppliers got a
   business card, what for guests?). Canvas 2 "Guest card · Round 1 · A card
   of their own": **A** a place card (table at the top, name large, role and
@@ -1245,7 +1254,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
   keepsake polaroid with an optional photo. Same card body under each
   (Guest of, RSVP, Role, Details, Contact). Photos, if built: optional,
   initials by default, private bucket like Inspo, **never for children**,
-  and on the privacy list. Waiting on the owner's pick.
+  and on the privacy list. **Owner's pick: A, the place card** ("almost
+  there", 13 Oct 2026) — to build next.
 - **Reminders and notifications** (owner, 13 Oct 2026: "not something we
   thought about yet"). Two different things:
   1. **Badges inside the app** (no new services): a small count where

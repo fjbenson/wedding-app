@@ -4,13 +4,13 @@ import StarterPlanCard from "@/components/starter-plan-card";
 import TickForm from "@/components/tick-form";
 import { toggleMilestoneAction } from "@/app/(app)/plan/actions";
 import { markPaidAction } from "@/app/(app)/money/actions";
-import { formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
+import { formatDayMonth, formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone, Payment } from "@/types/db";
 
 /** How many of the week's things the Hub lists before "and N more". */
-const LIST_LENGTH = 4;
+const LIST_LENGTH = 5;
 
 type Entry = {
   key: string;
@@ -27,17 +27,20 @@ type Entry = {
   amount?: string;
 };
 
-/** The Sunday that ends this week (weeks start on Monday, like the calendar). */
-function weekEnd(today: string): string {
+/** This week's Monday and Sunday (weeks start on Monday, like the calendar). */
+function weekBounds(today: string): [string, string] {
   const d = new Date(`${today}T00:00:00Z`);
   const weekday = (d.getUTCDay() + 6) % 7; // Monday 0 … Sunday 6
-  d.setUTCDate(d.getUTCDate() + (6 - weekday));
-  return d.toISOString().slice(0, 10);
+  d.setUTCDate(d.getUTCDate() - weekday);
+  const monday = d.toISOString().slice(0, 10);
+  d.setUTCDate(d.getUTCDate() + 6);
+  return [monday, d.toISOString().slice(0, 10)];
 }
 
-function when(date: string, today: string): string {
-  if (date === today) return "Today";
-  return formatWeekdayDayMonth(date);
+/** "12–18 Oct", or "28 Sep – 4 Oct" across a month's end. */
+function weekRange(monday: string, sunday: string): string {
+  const [a, b] = [formatDayMonth(monday), formatDayMonth(sunday)];
+  return monday.slice(5, 7) === sunday.slice(5, 7) ? `${a.split(" ")[0]}–${b}` : `${a} – ${b}`;
 }
 
 /**
@@ -61,7 +64,7 @@ export default function ThisWeek({
   hasDate: boolean;
 }) {
   const today = todayISO();
-  const sunday = weekEnd(today);
+  const [monday, sunday] = weekBounds(today);
 
   const all: Entry[] = [
     ...milestones
@@ -74,7 +77,7 @@ export default function ThisWeek({
         return [{
           key: `t-${m.id}`, kind: "todo" as const, id: m.id, date, order: 2, href: `/plan/${m.id}`,
           title: m.title, italic: isNudge(m), overdue,
-          meta: isNudge(m) ? "Start now" : overdue ? `Overdue · ${formatWeekdayDayMonth(date)}` : when(date, today),
+          meta: isNudge(m) ? "Start now" : "To do",
         }];
       }),
     ...appointments
@@ -82,7 +85,7 @@ export default function ThisWeek({
       .map((a) => ({
         key: `a-${a.id}`, kind: "appointment" as const, id: a.id, date: a.on_date, order: 0,
         href: `/plan/appointments/${a.id}`, title: a.title, overdue: false,
-        meta: `${when(a.on_date, today)}${a.at_time ? ` · ${formatTime(a.at_time)}` : ""}`,
+        meta: a.at_time ? formatTime(a.at_time) : "Appointment",
       })),
     ...payments
       .filter((p) => !p.paid_on && p.due_date)
@@ -91,7 +94,7 @@ export default function ThisWeek({
         return {
           key: `p-${p.id}`, kind: "payment" as const, id: p.id, date: p.due_date!, order: 1,
           href: `/money/payments/${p.id}`, title: p.description, amount: formatMoney(p.amount), overdue,
-          meta: overdue ? `Overdue · ${formatWeekdayDayMonth(p.due_date!)}` : `Due ${when(p.due_date!, today).replace("Today", "today")}`,
+          meta: "To pay",
         };
       }),
   ].sort((a, b) => a.date.localeCompare(b.date) || a.order - b.order);
@@ -100,6 +103,14 @@ export default function ThisWeek({
   const next = all.find((e) => e.date > sunday);
   const shown = week.slice(0, LIST_LENGTH);
   const more = week.length - shown.length;
+  // Overdue first, on its own; then the week, one group per day.
+  const groups: { key: string; overdue: boolean; date: string; items: Entry[] }[] = [];
+  for (const e of shown) {
+    const key = e.date < today ? "overdue" : e.date;
+    const last = groups[groups.length - 1];
+    if (last?.key === key) last.items.push(e);
+    else groups.push({ key, overdue: key === "overdue", date: e.date, items: [e] });
+  }
 
   if (milestones.length === 0 && all.length === 0) {
     return (
@@ -111,35 +122,50 @@ export default function ThisWeek({
 
   return (
     <section className="relative px-5 lg:px-0">
-      <div className="glass-card rounded-[22px] px-[18px] pb-1.5 pt-4">
-        <div className="flex items-baseline justify-between">
+      <div className="glass-card rounded-[22px] px-[18px] pb-2 pt-4">
+        <div className="flex items-baseline justify-between gap-3">
           <h2 className="section-label">This week</h2>
-          <Link href="/plan" className="label hover:text-ink">
-            The plan ›
-          </Link>
+          <span className="type-meta tabular-nums">{weekRange(monday, sunday)}</span>
         </div>
 
         {week.length > 0 ? (
           <>
-            <ul className="mt-1.5">
-              {shown.map((e) => (
-                <li key={e.key} className="flex items-center gap-3.5 border-t border-linen first:border-t-0">
-                  <Mark entry={e} />
-                  <Link href={e.href} className="flex min-w-0 flex-1 items-center gap-3 py-3.5">
-                    <span className="min-w-0 flex-1">
-                      <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
-                      <span className={`type-meta mt-1 block ${e.overdue ? "!text-champagne-600" : ""}`}>{e.meta}</span>
-                    </span>
-                    {e.amount && <span className="type-figure shrink-0 text-[19px]">{e.amount}</span>}
-                  </Link>
-                </li>
+            <div className="mt-2">
+              {groups.map((g) => (
+                <div key={g.key} className="flex gap-3.5 border-t border-linen py-1 first:border-t-0">
+                  <DayStamp date={g.date} today={today} overdue={g.overdue} />
+                  <ul className="min-w-0 flex-1">
+                    {g.items.map((e) => (
+                      <li key={e.key} className="flex items-center gap-3 border-t border-linen/70 first:border-t-0">
+                        <Link href={e.href} className="flex min-w-0 flex-1 items-center gap-3 py-3">
+                          <span className="min-w-0 flex-1">
+                            <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
+                            <span className="type-meta mt-1 block">
+                              {g.overdue && <span className="text-champagne-600">{formatDayMonth(e.date)} · </span>}
+                              {e.meta}
+                            </span>
+                          </span>
+                          {e.amount && <span className="type-figure shrink-0 text-[18px]">{e.amount}</span>}
+                        </Link>
+                        <Mark entry={e} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-            {more > 0 && (
-              <Link href="/plan" className="type-meta block border-t border-linen py-3 !text-champagne-600 hover:!text-ink">
-                And {more} more this week ›
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-linen py-3">
+              {more > 0 ? (
+                <Link href="/plan" className="type-meta !text-champagne-600 hover:!text-ink">
+                  And {more} more ›
+                </Link>
+              ) : (
+                <span />
+              )}
+              <Link href="/plan" className="type-meta !text-champagne-600 hover:!text-ink">
+                The plan ›
               </Link>
-            )}
+            </div>
           </>
         ) : (
           // The week is clear: a calm moment, then the next thing after it.
@@ -162,7 +188,33 @@ export default function ThisWeek({
   );
 }
 
-/** The left-hand mark: a tick circle for a to-do, £ for a payment, a calendar for an appointment. */
+/**
+ * The day down the left, large (owner, 13 Oct 2026, like canvas 2's option
+ * B): the date in gold with its weekday under it; today in ink, "Today";
+ * the overdue group a plain "Overdue" in its place.
+ */
+function DayStamp({ date, today, overdue }: { date: string; today: string; overdue: boolean }) {
+  if (overdue) {
+    return (
+      <span className="w-12 shrink-0 pt-3.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">
+        Overdue
+      </span>
+    );
+  }
+  const isToday = date === today;
+  return (
+    <span className="flex w-12 shrink-0 flex-col items-start pt-2">
+      <span className={`font-display text-[34px] font-light leading-none tabular-nums ${isToday ? "text-ink" : "text-champagne-600"}`}>
+        {Number(date.slice(8))}
+      </span>
+      <span className={`mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${isToday ? "text-ink" : "text-stone"}`}>
+        {isToday ? "Today" : formatWeekdayDayMonth(date).split(" ")[0]}
+      </span>
+    </span>
+  );
+}
+
+/** The mark at the end of a row: a tick circle for a to-do, £ for a payment, a calendar for an appointment. */
 function Mark({ entry: e }: { entry: Entry }) {
   if (e.kind === "appointment") {
     return (

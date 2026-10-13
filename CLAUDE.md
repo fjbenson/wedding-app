@@ -58,7 +58,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   has an end you can reach): everything due by Sunday plus anything overdue,
   ticked off right there (to-dos done, payments paid, Undo note, the row
   slides away); appointments show but need no tick; undated to-dos never
-  show; first four then "And N more this week ›"; when it's clear, "✓
+  show; laid out by day (13 Oct 2026, owner: "shout about the days"): the card's header gives the week's dates ("12–18 Oct"), each day a big gold date with its weekday down the left (today in ink, "Today"), several things on one day share it, the tick at the row's right; overdue things sit apart under "Overdue" first; up to five, then "And N more ›" and "The plan ›"; when it's clear, "✓
   *Nothing more this week.*" and "Next up: … ›",
   then **Your notes · N to sort ›** and **Inspo · N ideas ›** as two quiet
   lines (`home-notes.tsx` is gone). All on glass cards (design

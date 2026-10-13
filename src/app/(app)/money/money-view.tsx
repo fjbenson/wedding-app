@@ -76,6 +76,9 @@ export default function MoneyView({
     <FilterMenu
       base={view === "month" ? "/money?view=month" : "/money"}
       groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
+      // By area: no heading, the + sits on the Filter's row (owner, 13 Oct
+      // 2026, as on The Day). Opens on Budget; the same page as By month's +.
+      end={view === "area" ? <AddButton href="/money/budget/new" label="Add a budget or payment" /> : undefined}
     />
   );
   return (
@@ -163,14 +166,9 @@ function ByArea({
       </Link>
 
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the
-          "Next to pay" banner went — By month has the schedule), headed like
-          By month's "What's due", with the same round black + to add a payment. */}
-      <section className="mt-8">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="section-label">By area</h2>
-          {/* Opens on Budget; the same page as By month's +, switched. */}
-          <AddButton href="/money/budget/new" label="Add a budget or payment" />
-        </div>
+          "Next to pay" banner went — By month has the schedule). No heading
+          since 13 Oct 2026: Filter on the left, the round black + on the right. */}
+      <section className="mt-5">
         {filter}
         <AreaCards areas={byArea} open={open} />
         {/* Owner, 13 Oct 2026: no "Change budgets ›" link (the top card already

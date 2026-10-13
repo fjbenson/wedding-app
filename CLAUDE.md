@@ -244,7 +244,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (one plain list like the guest list, no letter dividers; a leading "The" ignored); kept on the phone
   (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card) — **since
-  12 Oct 2026 the add-a-supplier form itself, filled in** (`SupplierForm`
+  13 Oct 2026 a business card** (canvas 2 "Suppliers · Round 3", A, owner:
+  "business card baby you nailed it"): a cream card with the stage stamped
+  in gold ("Booked ✓"), the area as a tag top right (tap to move them — the
+  area tiles open under it), the name large (tap to rename), the person and
+  website, round Call (ink) · Email · Website; then **Progress** (In touch →
+  Quote in → Booked as steps on a gold line, tap one to set it), **Money**
+  (Quote and Deposit paid, tap to change; a bar of what's paid incl. paid
+  payments; "£… to go"; the area's budget; **Next payment** opening Money By
+  month for that area, or "+ Add a payment"), **Documents**, **Contact**
+  (contact person, phone, email, website, notes — `TextRow`s). Every part
+  saves on its own (`updateSupplierAction`); the card isn't a form any
+  more. Before that, from 12 Oct 2026, it was **the add-a-supplier form itself, filled in** (`SupplierForm`
   with `supplier`; owner: the card looked nothing like the form): name,
   Call · Email · Website, What they do tiles, Where you're up to tiles,
   Money (+ area budget and payments line), How to reach them, More; Cancel /

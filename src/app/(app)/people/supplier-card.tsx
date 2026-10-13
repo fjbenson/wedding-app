@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronRight, Globe, Mail, Phone, X } from "lucide-react";
+import { Check, ChevronRight, Globe, Mail, MoreHorizontal, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
@@ -10,9 +10,12 @@ import type { Supplier } from "@/lib/db/suppliers";
 import { formatWeekdayDayMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import type { Payment, SupplierStatus } from "@/types/db";
-import { safely } from "./guest-card";
-import { deleteSupplierAction, saveSupplierCardAction, updateSupplierAction } from "./supplier-actions";
-import SupplierForm from "./supplier-form";
+import { SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
+import { AreaTiles } from "@/components/visual-form";
+import { areaIcon } from "@/lib/areas";
+import { SUPPLIER_STAGES } from "@/lib/supplier-status";
+import { withCommas } from "@/lib/money";
+import { deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
 import SupplierFiles from "@/components/supplier-files";
 
 export function supplierName(s: Supplier) {
@@ -53,8 +56,11 @@ export default function SupplierCard({
   const area = areas.find((a) => a.key === d?.category);
   const drag = usePullToClose(onClose);
   const phone = supplier.phone?.replace(/\s+/g, "");
-  const [saves, setSaves] = useState(0);
   const [error, setError] = useState<string>();
+  const save = async (edit: SupplierEdit) => {
+    const result = await safely(() => updateSupplierAction(supplier.id, edit));
+    return result;
+  };
   const site = websiteHref(d?.website ?? null);
 
   // Escape closes it, and the list behind doesn't scroll while it's open.
@@ -90,19 +96,8 @@ export default function SupplierCard({
 
         <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8">
           <div onPointerDown={drag.start} className="flex touch-none items-center gap-3 lg:touch-auto">
-            <div className="min-w-0 flex-1">
-              {d?.category ? (
-                area ? (
-                  <Link href={`/area/${encodeURIComponent(area.key)}`} className="label hover:text-ink">
-                    {area.label} ›
-                  </Link>
-                ) : (
-                  <span className="label">{areaName(d.category, areas)}</span>
-                )
-              ) : (
-                <span className="label">Supplier</span>
-              )}
-            </div>
+            {/* The area is the tag on the business card now. */}
+            <div className="min-w-0 flex-1" />
             <button
               type="button"
               onClick={onClose}
@@ -119,85 +114,31 @@ export default function SupplierCard({
             </p>
           )}
 
-          {/* The add form, filled in (owner, 12 Oct 2026): it saves together,
-              with Cancel / Save changes once something's changed. A fresh copy
-              after each save, so it starts from what's now saved. */}
-          <SupplierForm
-            // Redrawn after each save and again when the saved details arrive,
-            // so it never shows (and re-sends) the old ones — 13 Oct 2026: an
-            // area changed to Cake showed Venue again, and the next save put
-            // Venue back.
-            key={`${saves}:${JSON.stringify([supplier.supplier_details, supplier.first_name, supplier.last_name, supplier.phone, supplier.email, supplier.notes])}`}
-            supplier={supplier}
-            categories={supplierCategories(areas)}
-            focus={editField}
-            onCancel={() => setSaves((n) => n + 1)}
-            action={async (formData) => {
-              const result = await safely(() => saveSupplierCardAction(supplier.id, formData));
-              setError(result.error);
-              if (!result.error) setSaves((n) => n + 1);
-            }}
-            afterName={
-              (phone || supplier.email || site) && (
-                <div className="mt-5 flex gap-2.5">
-                  {phone && (
-                    <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory hover:bg-ink/90">
-                      <Phone className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                      Call
-                    </a>
-                  )}
-                  {supplier.email && (
-                    <a
-                      href={`mailto:${supplier.email}`}
-                      className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm ${
-                        phone ? "border border-linen bg-white text-ink hover:border-champagne-400" : "bg-ink text-ivory hover:bg-ink/90"
-                      }`}
-                    >
-                      <Mail className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                      Email
-                    </a>
-                  )}
-                  {site && (
-                    <a
-                      href={site}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm ${
-                        phone || supplier.email ? "border border-linen bg-white text-ink hover:border-champagne-400" : "bg-ink text-ivory hover:bg-ink/90"
-                      }`}
-                    >
-                      <Globe className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                      Website
-                    </a>
-                  )}
-                </div>
-              )
-            }
-            afterMoney={
-              <>
-                {area?.budget != null && (
-                  <p className="mt-2.5 flex justify-between px-1 text-[13px] text-stone">
-                    <span>{area.label} budget</span>
-                    <span className="text-ink">{formatMoney(area.budget)}</span>
-                  </p>
-                )}
-                {/* The payments themselves live on the area page and in Money —
-                    deciding and paying — so the card just says where they stand. */}
-                <PaymentsLine payments={payments} areaKey={area?.key ?? null} supplierId={supplier.id} />
-              </>
-            }
-          />
+          {/* Canvas 2 "Suppliers · Round 3", A (owner's pick 13 Oct 2026:
+              "business card baby you nailed it"): something to look at, each
+              part changed by tapping it — no longer the add form filled in. */}
+          <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} />
+
+          <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} onError={setError} />
+
+          <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
 
           {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
           <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
 
-          <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
+          <section className="mt-7">
+            <h2 className="section-label font-body">Contact</h2>
+            <dl className="mt-1">
+              <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
+              <TextRow label="Phone" type="tel" value={supplier.phone} startEditing={editField === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+              <TextRow label="Email" type="email" value={supplier.email} startEditing={editField === "email"} onSave={(v) => save({ field: "email", value: v })} />
+              <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
+              {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
+              <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
+            </dl>
+          </section>
 
-          {d?.contract_url && /^https?:\/\//.test(d.contract_url) && (
-            <a href={d.contract_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
-              Open the contract
-            </a>
-          )}
+          <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
 
           {area && (
             <Link
@@ -272,35 +213,6 @@ function RemoveSupplier({ id, name }: { id: string; name: string }) {
   );
 }
 
-/** "2 payments · next £250 Wed 14 Oct ›", or a way to add the first. */
-function PaymentsLine({ payments, areaKey, supplierId }: { payments: Payment[]; areaKey: string | null; supplierId: string }) {
-  const next = payments
-    .filter((p) => !p.paid_on && p.due_date)
-    .sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0];
-  const href = areaKey ? `/area/${encodeURIComponent(areaKey)}#payments` : "/money?view=month";
-  if (payments.length === 0) {
-    return (
-      <Link href={`/money/payments/new?supplier=${supplierId}`} className="mt-3 inline-flex h-11 items-center text-sm text-champagne-600 hover:text-ink">
-        + Add a payment
-      </Link>
-    );
-  }
-  return (
-    <Link href={href} className="mt-3 flex min-h-11 items-center gap-2 border-t border-linen pt-3 text-sm text-ink hover:text-champagne-600">
-      <span className="min-w-0 flex-1">
-        {payments.length} {payments.length === 1 ? "payment" : "payments"}
-        {next && (
-          <span className="text-stone">
-            {" "}
-            · next {formatMoney(next.amount)} {formatWeekdayDayMonth(next.due_date!)}
-          </span>
-        )}
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-    </Link>
-  );
-}
-
 /** "ellierose.co.uk" → "https://ellierose.co.uk"; anything that isn't a web address → null. */
 function websiteHref(value: string | null): string | null {
   const v = value?.trim();
@@ -311,4 +223,308 @@ function websiteHref(value: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+const STAMP: Record<SupplierStatus, string> = {
+  booked: "Booked ✓",
+  quoted: "Quote in",
+  enquired: "In touch",
+  researching: "In touch",
+  cancelled: "Not taken",
+};
+
+/**
+ * The top of the card: a cream business card — the stage stamped in gold,
+ * the area as a tag (tap to move them), the name large (tap to rename), the
+ * person and the website under it, then round Call · Email · Website.
+ */
+function BusinessCard({
+  supplier,
+  areas,
+  phone,
+  site,
+  onError,
+}: {
+  supplier: Supplier;
+  areas: AreaOption[];
+  phone: string | undefined;
+  site: string | null;
+  onError: (message?: string) => void;
+}) {
+  const d = supplier.supplier_details;
+  const name = supplierName(supplier);
+  const person = supplierContact(supplier);
+  const category = d?.category ?? null;
+  const area = areas.find((a) => a.key === category);
+  const AreaIcon = category && category !== "other" ? areaIcon(category, area?.icon) : MoreHorizontal;
+  const [picking, setPicking] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const [draft, setDraft] = useState(name);
+  const { pending, error, run } = useSaver();
+  const rename = () =>
+    run(() => safely(() => updateSupplierAction(supplier.id, { field: "company_name", value: draft })), () => setRenaming(false));
+
+  const button = (dark: boolean) =>
+    `flex h-[52px] w-[52px] items-center justify-center rounded-full ${dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink"}`;
+  const buttons = [
+    phone && { href: `tel:${phone}`, label: "Call", Icon: Phone },
+    supplier.email && { href: `mailto:${supplier.email}`, label: "Email", Icon: Mail },
+    site && { href: site, label: "Website", Icon: Globe, out: true },
+  ].filter(Boolean) as { href: string; label: string; Icon: typeof Phone; out?: boolean }[];
+
+  return (
+    <>
+      <div className="relative mt-1 rounded-[10px] bg-[#FFFDF8] px-5 pb-5 pt-[22px] shadow-[0_18px_34px_-20px_rgb(60_45_20/0.5),0_0_0_1px_#EDE4D3]">
+        <button
+          type="button"
+          onClick={() => setPicking((p) => !p)}
+          aria-expanded={picking}
+          className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-champagne-100 px-2.5 py-1 text-[12px] font-semibold text-champagne-600"
+        >
+          <AreaIcon aria-hidden className="h-3.5 w-3.5" strokeWidth={1.8} />
+          {area?.label ?? (category === "other" ? "Other" : "Pick an area")}
+        </button>
+        <p className="type-meta !text-champagne-600">{STAMP[d?.status ?? "enquired"]}</p>
+
+        {renaming ? (
+          <form
+            className="mt-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              rename();
+            }}
+          >
+            <input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={editorKeys(rename, () => setRenaming(false))}
+              aria-label="Business name"
+              className="w-full rounded-xl border border-linen bg-white px-3 py-2 font-display !text-[24px] font-light text-ink focus:border-champagne-400 focus:outline-none"
+            />
+            {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+            <SaveCancel pending={pending} onCancel={() => setRenaming(false)} />
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(name);
+              setRenaming(true);
+            }}
+            className="mt-2.5 block pr-24 text-left font-display text-[30px] font-light leading-[1.05] tracking-[-0.01em] text-ink"
+          >
+            {name}
+          </button>
+        )}
+        {(person || d?.website) && (
+          <p className="mt-2.5 text-sm text-stone">{[person, d?.website?.replace(/^https?:\/\//, "").replace(/\/$/, "")].filter(Boolean).join(" · ")}</p>
+        )}
+
+        {buttons.length > 0 && (
+          <div className="mt-5 flex justify-around">
+            {buttons.map((b, i) => (
+              <a
+                key={b.label}
+                href={b.href}
+                {...(b.out ? { target: "_blank", rel: "noreferrer" } : {})}
+                className="flex flex-col items-center gap-1.5 text-[13px] text-ink"
+              >
+                <span className={button(i === 0)}>
+                  <b.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+                </span>
+                {b.label}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {picking && (
+        <div className="mt-3">
+          <p className="section-label">What they do</p>
+          <AreaTiles
+            name="move_area"
+            areas={supplierCategories(areas)}
+            otherValue="other"
+            value={category ?? "\u0000"}
+            onChange={async (value) => {
+              setPicking(false);
+              onError((await safely(() => updateSupplierAction(supplier.id, { field: "category", value }))).error);
+            }}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+/** In touch → Quote in → Booked, as steps joined by a line that fills gold. Tap one to move them on (or back). */
+function Progress({ supplierId, status, onError }: { supplierId: string; status: SupplierStatus; onError: (message?: string) => void }) {
+  const [current, setCurrent] = useOptimistic<SupplierStatus>(status === "researching" ? "enquired" : status);
+  const [, startTransition] = useTransition();
+  const at = SUPPLIER_STAGES.findIndex((s) => s.status === current);
+  const set = (next: SupplierStatus) =>
+    startTransition(async () => {
+      setCurrent(next);
+      onError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: next }))).error);
+    });
+
+  return (
+    <section className="mt-7">
+      <h2 className="section-label font-body">Progress</h2>
+      <div className="mt-3 flex items-start">
+        {SUPPLIER_STAGES.map((stage, i) => {
+          const done = at >= 0 && (i < at || (i === at && i === SUPPLIER_STAGES.length - 1));
+          const here = i === at;
+          return (
+            <div key={stage.status} className="flex flex-1 items-start last:flex-none">
+              <button
+                type="button"
+                onClick={() => set(stage.status)}
+                aria-pressed={here}
+                className="flex w-[74px] flex-col items-center gap-1.5"
+              >
+                <span
+                  className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
+                    done ? "bg-champagne-600 text-white" : here ? "border-2 border-champagne-600 bg-white" : "border-[1.5px] border-[#D8D0C4] bg-white"
+                  }`}
+                >
+                  {done && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
+                </span>
+                <span className={`text-[12px] ${here ? "font-semibold text-ink" : "text-stone"}`}>{stage.label}</span>
+              </button>
+              {i < SUPPLIER_STAGES.length - 1 && (
+                <span aria-hidden className={`mt-3 h-0.5 flex-1 ${at > i ? "bg-champagne-600" : "bg-linen"}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/** A figure you tap to change: the quote, the deposit. */
+function Figure({ label, value, align = "left", onSave }: { label: string; value: number | null; align?: "left" | "right"; onSave: (v: string) => Promise<{ error?: string }> }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const { pending, error, setError, run } = useSaver();
+  const submit = () => run(() => onSave(draft), () => setEditing(false));
+  if (editing) {
+    return (
+      <form
+        className="min-w-0 flex-1"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <span className="type-meta block">{label}</span>
+        <span className="mt-1 flex items-baseline gap-1 rounded-xl border border-linen bg-white px-3">
+          <span className="font-display text-[20px] text-stone">£</span>
+          <input
+            autoFocus
+            inputMode="decimal"
+            value={draft}
+            onChange={(e) => setDraft(withCommas(e.target.value))}
+            onKeyDown={editorKeys(submit, () => setEditing(false))}
+            aria-label={label}
+            className="w-full min-w-0 bg-transparent py-1.5 font-display !text-[22px] font-light text-ink focus:outline-none"
+          />
+        </span>
+        {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+        <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
+      </form>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(value != null ? withCommas(String(value)) : "");
+        setError(undefined);
+        setEditing(true);
+      }}
+      className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}
+    >
+      <span className="type-meta block">{label}</span>
+      <span className={`mt-0.5 block font-display text-[26px] font-light leading-tight ${value == null ? "text-stone/60" : "text-ink"}`}>
+        {value == null ? "Add" : formatMoney(value)}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Money in one card (owner, 13 Oct 2026: it "gets a bit messy"): the quote
+ * and the deposit (tap to change), one bar of what's paid, what's left, the
+ * area's budget as a small line, then the next payment — which opens the
+ * payments themselves, not the area page.
+ */
+function MoneyPart({
+  supplier,
+  area,
+  payments,
+  onError,
+}: {
+  supplier: Supplier;
+  area: (AreaOption & { budget?: number | null }) | undefined;
+  payments: Payment[];
+  onError: (message?: string) => void;
+}) {
+  const d = supplier.supplier_details;
+  const quote = d?.quoted_cost ?? null;
+  const deposit = d?.deposit_paid ?? null;
+  const paid = (deposit ?? 0) + payments.filter((p) => p.paid_on).reduce((sum, p) => sum + p.amount, 0);
+  const next = payments.filter((p) => !p.paid_on).sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"))[0];
+  const href = area ? `/money?view=month&area=${encodeURIComponent(area.key)}` : "/money?view=month";
+  const save = async (field: "quoted_cost" | "deposit_paid", value: string) => {
+    const result = await safely(() => updateSupplierAction(supplier.id, { field, value }));
+    onError(undefined);
+    return result;
+  };
+
+  return (
+    <section className="mt-7">
+      <h2 className="section-label font-body">Money</h2>
+      <div className="mt-3 rounded-[18px] border border-linen bg-white/75 p-4">
+        <div className="flex items-start justify-between gap-4">
+          <Figure label="Quote" value={quote} onSave={(v) => save("quoted_cost", v)} />
+          <Figure label="Deposit paid" value={deposit} align="right" onSave={(v) => save("deposit_paid", v)} />
+        </div>
+        {quote != null && quote > 0 && (
+          <>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-champagne-100">
+              <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, (paid / quote) * 100)}%` }} />
+            </div>
+            <p className="mt-2 flex justify-between gap-3 text-[13px] text-stone">
+              <span>{paid >= quote ? "✓ All paid" : `${formatMoney(quote - paid)} to go`}</span>
+              {area?.budget != null && <span>{area.label} budget {formatMoney(area.budget)}</span>}
+            </p>
+          </>
+        )}
+        {payments.length > 0 ? (
+          <Link href={href} className="mt-3.5 flex min-h-11 items-center gap-2.5 border-t border-linen pt-3 text-ink hover:text-champagne-600">
+            <span className="min-w-0 flex-1">
+              <span className="type-meta block">{next ? "Next payment" : "Payments"}</span>
+              <span className="type-item block">
+                {next ? `${formatMoney(next.amount)}${next.due_date ? ` · ${formatWeekdayDayMonth(next.due_date)}` : ""}` : "All paid"}
+              </span>
+            </span>
+            <span className="shrink-0 text-[13px] text-champagne-600">
+              {payments.length} {payments.length === 1 ? "payment" : "payments"} ›
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href={`/money/payments/new?supplier=${supplier.id}`}
+            className="mt-3.5 flex min-h-11 items-center border-t border-linen pt-3 text-sm text-champagne-600 hover:text-ink"
+          >
+            + Add a payment
+          </Link>
+        )}
+      </div>
+    </section>
+  );
 }

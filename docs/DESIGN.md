@@ -159,3 +159,25 @@ refine later — it is all tokens, so changing it is cheap:
 - **Final glass use.** The working default above stands until revisited.
 - Motion: how the ring and glass move.
 - Dark mode (an "evening" version was prototyped but not chosen).
+
+## 13 Oct 2026 — what changed
+
+- **One Filter everywhere**: the guest list's "FILTER" (sliders icon, "Show
+  only" menu, champagne pill with a count when on, a pill per choice) is now
+  the shared `FilterMenu` on Money, Plan's List and The Day too; its row can
+  carry the screen's buttons on the right (Print and +).
+- **The round black + on every add**: The Day, Your notes, Inspo too.
+- **Black is for the main action only**: a guest's Coming and a supplier's
+  Booked are gold (`champagne-600`) ticks at 26px, not black.
+- **Adding shows tiles; a saved item shows a pill** (the area picker folds
+  to "📷 Photos · Change", opens on tap, folds back once picked).
+- **Hub, round 2–3**: "Jot something down" as a small glass pill opening a
+  sheet; **This week** with big gold dates down the left; Your notes and Inspo
+  as two tiles (a taped note, a picture collage).
+- **Supplier card as a business card** (cream card, gold stage stamp, area
+  tag, round Call · Email · Website), then Progress steps, one Money card,
+  Documents, Contact.
+- **Pop-ups in the middle** for small extra steps (adding a file), after the
+  phone's own picker.
+- Icon clashes are catalogued (icon audit) and parked; see `CLAUDE.md`.
+

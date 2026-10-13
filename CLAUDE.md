@@ -133,7 +133,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `area-view.tsx`, after Money, `#day`): the area's run sheet moments in
   time order, "+ Add a moment" (`/day/run-sheet/new?area=<key>&from=area`,
   Save comes back) and "In The Day ›" (the run sheet narrowed with
-  `/day?area=<key>`, same `AreaFilter` as Plan and Money; the card's label
+  `/day?area=<key>`, same Filter as Plan and Money; the card's label
   says "The order of the day · Photos", so it can be printed for that
   supplier). Moments carry `run_sheet_items.area_key`
   (`0017_run_sheet_area.sql`, run 12 Oct 2026); the moment form is now
@@ -176,7 +176,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   option 1 — no role pill under the name any more; the role itself is on
   the card and in Filter › Bridal party; the laptop table keeps its Role
   column), and their answer as **one small
-  round icon** on the right (canvas Round 14, option A: ✓ on ink coming,
+  round icon** on the right (canvas Round 14, option A: ✓ on gold coming — ink until 13 Oct 2026, when it was made gold and 26px so it doesn't compete with the black + —
   envelope on champagne invited, dashed envelope to invite, ✕ on grey
   can't come, dashed ? not yet day or evening — `AnswerIcon`), with a key
   under the list. The laptop table shows the icon with its word. No
@@ -233,7 +233,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   then everyone **grouped by area** in the wedding's order (heading shows a
   count, "1 supplier" / "0 suppliers", like the guest list; within a group booked → quotes → asked →
   not taken). **Rows are phone-book entries** (Suppliers round 2, A, 12 Oct
-  2026): initials with the **stage as a badge** on them (✓ ink booked · £
+  2026): initials with the **stage as a badge** on them (✓ gold booked, ink until 13 Oct 2026 · £
   champagne quote in · dashed ? asked · ✕ grey not taken — `StageIcon`
   with `badge`, like a guest's role star), the business and the contact
   person, then round **Call** and **Email** buttons on the right; no quote
@@ -354,8 +354,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `appointment-form.tsx`). On the List, a **To-dos | Appointments** switch
   sits left of the + (`&kind=appointments`): appointments coming up in date
   order with This month / Next 3 months and area filters, been ones folded.
-  Idea for later (owner): the same on Money — one + with a Budget | Payment
-  switch. **Calendar** (the default; canvas "Plan · Calendar · Round
+  Money now has the same: one + with a Payment | Budget switch (13 Oct 2026). **Calendar** (the default; canvas "Plan · Calendar · Round
   1", option A; `agenda.tsx` + `calendar.tsx`): ‹ month › (anything still
   open from earlier folds in above the current month), a Monday-first grid with a mark per thing
   on each day (to-do a solid white circle, appointment a little gold
@@ -393,9 +392,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   long checklist of **to-dos only** (owner, 12 Oct 2026: the Calendar is the
   diary — *when* is everything — the List the checklist; appointments live on
   the Calendar, the Hub and area pages). "23 *to do*" at the top, then
-  **When** (`when-filter.tsx`, `&when=overdue|month|soon|none`: Overdue · This
-  month · Next 3 months · No date) and **Area** (`area-filter.tsx`,
-  `&area=<key>` or `none`) filters; one glass card, overdue first, then
+  one **Filter** under the heading (13 Oct 2026, the shared `FilterMenu` in
+  `src/components/filter-menu.tsx`, like the guest list's) holding **When**
+  (`&when=overdue|month|soon|none`: Overdue · This month · Next 3 months · No
+  date) and **Area** (`&area=<key>` or `none`), a pill per choice; one glass card, overdue first, then
   soonest, then no date (each row's date in its grey line, "No date" when
   none); done folded at the foot. No month headings any more. Old links
   (`?as=list`, `?view=area`, `?view=todos`) land on the List. The old
@@ -431,8 +431,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   for the schedule). Money moves **Budget → Agreed → Paid**, and the rest
   has a schedule. A corner switch **By area | By month** (`money-view.tsx`;
   `?view=month`, old `?tab=payments` links still land there). **An area filter**
-  (12 Oct 2026, the same `AreaFilter` as Plan's List, `&area=<key>` or
-  `none`) narrows either view to one area: the top card is that area's
+  (12 Oct 2026; since 13 Oct the shared **Filter** — `FilterMenu`, like the
+  guest list's — on the row with the round black +, `&area=<key>` or `none`) narrows either view to one area: the top card is that area's
   money, By month only its payments; the switch keeps the filter. The area
   page's "In Money ›" opens By month filtered. Rule: **every tab can be
   narrowed to an area, and the area page's links land on that.** No sentences,
@@ -446,8 +446,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`TYPICAL_SHARE`, rounded to £50) — a starting point, saved only on Save.
   Agreed and Paid are never typed: they add up from suppliers and payments), then
   straight into **By area** (the "Next to pay" row was taken out, owner, 12
-  Oct 2026), headed like By month's "What's due" with the same round black +
-  (add a payment), then **each area as a little glass card, two to a row**
+  Oct 2026; no heading since 13 Oct 2026 — Filter on the left, the round black +
+  on the right, opening **one add page with a Payment | Budget switch**,
+  `money-add-page.tsx`: By area's + starts on Budget — the whole wedding or one
+  area, the amount large, saving opens that area's money card — By month's on
+  Payment; the explanation of Agreed/Paid folded under "What do these mean?"), then **each area as a little glass card, two to a row**
   (owner, 12 Oct 2026 evening, "fab-u-lous"; `area-cards.tsx`): its ring icon
   and name, agreed large, "of £budget", one bar (none when there's no budget
   or spend) and a short tag: "▲ Over by £…" (agreed bar runs past the budget
@@ -909,7 +912,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 12 Oct 2026 late chat):** the Money
+   `calendar.tsx`). **Next up (end of the 13 Oct 2026 chat): build "Your planner", version 1**
+   — see step 8 for the plan. **Earlier next-up (end of the 12 Oct 2026 late chat):** the Money
    budget's turn is done for now — area cards two to a row, an area's money
    card from the bottom, tappable month columns; the owner loves them. Next:
    the forms still
@@ -995,7 +999,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
    still until they can draw themselves in line by line (needs the vector
    version) or truly dance (an animator, in Rive). Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
-8. **Brainstorm assistant** (agreed 7 Oct 2026, after the design pass) — a
+8. **"Your planner" — the assistant** (agreed 7 Oct 2026 as "Brainstorm"; named
+   "Your planner" by the owner, 13 Oct 2026: a calm, organised friend — short,
+   warm, British, never pushy, always checks first, no made-up human name) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",
    asking for missing details one at a time. Decided so far:
    - It calls the same server actions / `src/lib/db/` queries as the forms,
@@ -1042,6 +1048,36 @@ additive — new tables hanging off `weddings`. None require changing the above.
      Before building: an Anthropic key in Vercel, privacy-list entry (guest
      details go to the AI to answer), a spending cap; and clean versions of
      the few save steps it needs (today's take a form and redirect).
+   - **Answers you can see** (canvas 2 "Your planner · Round 2", owner
+     "absolutely love it", 13 Oct 2026): replies are a line of text plus an
+     **answer block** drawn by the app with its own components and real
+     data — never retyped by the AI: Guests (a big gold number + the guest
+     list's rows, "Open in the guest list ›"), Money (still to pay, the
+     month columns, next three payments), a Table (round table, initials in
+     seats), This week (the Hub's day list, tickable), Compare (supplier
+     business cards side by side against the budget). Plus confirm cards
+     for changes and suggested next steps as tap-able pills.
+   - **Build plan (for the next chat):**
+     1. Owner: an Anthropic API key, added in Vercel as `ANTHROPIC_API_KEY`
+        (walk them through it); add "guest details go to the AI to answer"
+        to the privacy list; agree a monthly cap.
+     2. Clean actions: plain server functions for add a guest, add a to-do,
+        record a payment, save a note, set an RSVP — no FormData, no
+        redirects, return a result; the forms then call them too (tidies the
+        divergent forms). Wedding id always from `getCurrentWedding()`.
+     3. Reading tools: guests by filter, money summary, this week, a table,
+        suppliers by area — each returns data for one answer block.
+     4. A route (`src/app/api/planner/route.ts`) on Vercel: Anthropic SDK
+        (`claude-opus-5-5`), tool use, streaming; tools = the reading ones
+        (run at once) and the writing ones (return a confirm card; only run
+        after the person's Yes).
+     5. The panel: "Jot or ask…" on the Hub pill and the floating pen
+        (`jot-sheet.tsx`, `capture-button.tsx`), conversation in the app's
+        type, blocks drawn by the components that already exist; a plain
+        thought still saves as a note.
+     6. Tests: the assistant's tools in `supabase/tests/rls_isolation.sql`
+        terms (another wedding's ids return nothing); try it on the demo
+        wedding first.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

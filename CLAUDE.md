@@ -1237,6 +1237,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
      lift), and those become guest list filters ("Staying at the pub"),
      which then feed 2. Would need new tables (places to stay, and who's
      staying where) hanging off `weddings` — additive, no rebuild.
+- **A card of their own for guests** (owner, 13 Oct 2026: suppliers got a
+  business card, what for guests?). Canvas 2 "Guest card · Round 1 · A card
+  of their own": **A** a place card (table at the top, name large, role and
+  day, meal and allergies, a "Coming" stamp — Claude's suggestion), **B** an
+  addressed envelope (household address, RSVP as a postmark), **C** a
+  keepsake polaroid with an optional photo. Same card body under each
+  (Guest of, RSVP, Role, Details, Contact). Photos, if built: optional,
+  initials by default, private bucket like Inspo, **never for children**,
+  and on the privacy list. Waiting on the owner's pick.
 - **Reminders and notifications** (owner, 13 Oct 2026: "not something we
   thought about yet"). Two different things:
   1. **Badges inside the app** (no new services): a small count where

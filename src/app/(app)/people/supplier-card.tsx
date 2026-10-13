@@ -123,7 +123,11 @@ export default function SupplierCard({
               with Cancel / Save changes once something's changed. A fresh copy
               after each save, so it starts from what's now saved. */}
           <SupplierForm
-            key={saves}
+            // Redrawn after each save and again when the saved details arrive,
+            // so it never shows (and re-sends) the old ones — 13 Oct 2026: an
+            // area changed to Cake showed Venue again, and the next save put
+            // Venue back.
+            key={`${saves}:${JSON.stringify([supplier.supplier_details, supplier.first_name, supplier.last_name, supplier.phone, supplier.email, supplier.notes])}`}
             supplier={supplier}
             categories={supplierCategories(areas)}
             focus={editField}

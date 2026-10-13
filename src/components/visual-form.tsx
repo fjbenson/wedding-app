@@ -155,6 +155,8 @@ export function AreaTiles({
   const pick = (v: string) => {
     setOwn(v);
     onChange?.(v);
+    // A saved item folds back to its pill once a new area's picked.
+    if (startFolded) setFolded(true);
   };
   const [added, setAdded] = useState<AreaOption[]>([]);
   const [adding, setAdding] = useState(false);

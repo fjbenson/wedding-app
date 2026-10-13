@@ -1053,6 +1053,32 @@ additive — new tables hanging off `weddings`. None require changing the above.
   3. Swap in screen by screen: status marks first, then the clashes, then
      ▲ ✓ ✕ › as real icons. Write the rules into `docs/DESIGN.md`.
   4. Vector title drawings (needs the Canva originals; already a to-do).
+- **From talking to couples (13 Oct 2026)** — the owner's first user
+  research. Parked, not designed yet:
+  1. **Invitations got messy** — couples sending *digital* invitations by
+     email lost track of who'd been sent one. Note: the Invitations page
+     was removed on 9 Oct on the idea that invites go by post; this says
+     many go by email, so tracking "sent" matters again. The guest list's
+     To invite → Invited answer is the start; ideas: send the invitation
+     from the app (then "sent" is recorded by itself), or a quick "mark
+     these as sent" for a picked group, and a "who hasn't been sent one"
+     view.
+  2. **Email a group of guests** — e.g. everyone staying at the pub, the
+     evening guests, the bridal party. Builds on the guest list's Filter
+     (pick a group, then "Email these people"). Sending from the app needs
+     the app's own web address verified in Resend (checklist item 1) and
+     care with guests' emails (privacy list); a first version could just
+     open the phone's email with everyone in Bcc, or copy the addresses.
+  3. **Accommodation** isn't in the app at all — where guests are staying
+     (the pub, a hotel block, at home). The owner sees it as one thing with
+     transport: **how guests get there and where they stay**. Ties into
+     **Journeys** below (a stay is a place on the map; "who needs a lift
+     from the pub").
+  4. **Everything about a guest belongs on their guest card** — so the card
+     needs a "Getting there and staying" part (their accommodation, their
+     lift), and those become guest list filters ("Staying at the pub"),
+     which then feed 2. Would need new tables (places to stay, and who's
+     staying where) hanging off `weddings` — additive, no rebuild.
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

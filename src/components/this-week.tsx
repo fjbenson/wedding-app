@@ -103,13 +103,15 @@ export default function ThisWeek({
   const next = all.find((e) => e.date > sunday);
   const shown = week.slice(0, LIST_LENGTH);
   const more = week.length - shown.length;
-  // Overdue first, on its own; then the week, one group per day.
+  // One group per day, overdue days first (they sort first); an overdue day
+  // shows its date like any other, with "Overdue" under the title (owner,
+  // 13 Oct 2026).
   const groups: { key: string; overdue: boolean; date: string; items: Entry[] }[] = [];
   for (const e of shown) {
-    const key = e.date < today ? "overdue" : e.date;
+    const key = e.date;
     const last = groups[groups.length - 1];
     if (last?.key === key) last.items.push(e);
-    else groups.push({ key, overdue: key === "overdue", date: e.date, items: [e] });
+    else groups.push({ key, overdue: e.date < today, date: e.date, items: [e] });
   }
 
   if (milestones.length === 0 && all.length === 0) {
@@ -141,7 +143,7 @@ export default function ThisWeek({
                           <span className="min-w-0 flex-1">
                             <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
                             <span className="type-meta mt-1 block">
-                              {g.overdue && <span className="text-champagne-600">{formatDayMonth(e.date)} · </span>}
+                              {e.overdue && <span className="text-[#9A3F2B]">Overdue · </span>}
                               {e.meta}
                             </span>
                           </span>
@@ -190,25 +192,19 @@ export default function ThisWeek({
 
 /**
  * The day down the left, large (owner, 13 Oct 2026, like canvas 2's option
- * B): the date in gold with its weekday under it; today in ink, "Today";
- * the overdue group a plain "Overdue" in its place.
+ * B): the date in gold with its weekday under it; today in ink, "Today"; an
+ * overdue day in rose, with "Overdue" under the title rather than here.
  */
 function DayStamp({ date, today, overdue }: { date: string; today: string; overdue: boolean }) {
-  if (overdue) {
-    return (
-      <span className="w-12 shrink-0 pt-3.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">
-        Overdue
-      </span>
-    );
-  }
   const isToday = date === today;
   return (
     <span className="flex w-12 shrink-0 flex-col items-start pt-2">
-      <span className={`font-display text-[34px] font-light leading-none tabular-nums ${isToday ? "text-ink" : "text-champagne-600"}`}>
+      <span className={`font-display text-[34px] font-light leading-none tabular-nums ${isToday ? "text-ink" : overdue ? "text-[#9A3F2B]" : "text-champagne-600"}`}>
         {Number(date.slice(8))}
       </span>
       <span className={`mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${isToday ? "text-ink" : "text-stone"}`}>
-        {isToday ? "Today" : formatWeekdayDayMonth(date).split(" ")[0]}
+        {/* An overdue day may be weeks back, so it gets its month, not a weekday. */}
+        {isToday ? "Today" : overdue ? formatDayMonth(date).split(" ")[1] : formatWeekdayDayMonth(date).split(" ")[0]}
       </span>
     </span>
   );

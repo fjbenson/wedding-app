@@ -33,6 +33,7 @@ export default function PaymentForm({
   areas,
   prefill,
   weddingDate,
+  focus = true,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   payment?: Payment;
@@ -41,6 +42,8 @@ export default function PaymentForm({
   /** From "Add as a payment" on an unscheduled balance. */
   prefill?: { supplier?: string; amount?: number; description?: string; area?: string };
   weddingDate?: string | null;
+  /** False when it opens hidden behind Money's Budget switch. */
+  focus?: boolean;
 }) {
   const [description, setDescription] = useState(payment?.description ?? prefill?.description ?? "");
   const [amount, setAmount] = useState(() => {
@@ -76,7 +79,7 @@ export default function PaymentForm({
       <input
         name="description"
         required
-        autoFocus={!payment && !prefill}
+        autoFocus={focus && !payment && !prefill}
         autoComplete="off"
         value={description}
         onChange={(e) => setDescription(e.target.value)}

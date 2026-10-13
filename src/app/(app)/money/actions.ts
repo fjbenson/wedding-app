@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { stayAfterSave } from "@/lib/return-to";
 import { listAreas } from "@/lib/db/areas";
-import { createPayment, deletePayment, saveBudgets, updatePayment } from "@/lib/db/money";
+import { createPayment, deletePayment, saveBudgets, setBudget, updatePayment } from "@/lib/db/money";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
@@ -50,6 +50,36 @@ export async function saveBudgetsAction(formData: FormData) {
 
   refresh();
   redirect(stayAfterSave("/money/budget"));
+}
+
+/**
+ * One budget from Money's + (Budget side): the whole wedding's (`for` =
+ * "wedding") or one area's (`for` = its key). Lands on By area with that
+ * area's money card open, so the change shows at once.
+ */
+export async function setBudgetAction(formData: FormData) {
+  const back = "/money/budget/new";
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+
+  const target = text(formData, "for");
+  const amount = parseMoney(formData.get("amount"));
+  if (!target || amount === null) {
+    redirect(`${back}?error=${encodeURIComponent("Please pick what it's for and say how much.")}`);
+  }
+
+  const area =
+    target === "wedding" ? undefined : ((await listAreas(wedding.id)) ?? []).find((a) => a.key === target);
+  if (target !== "wedding" && !area) redirect(`${back}?error=${encodeURIComponent("That area wasn't found.")}`);
+
+  try {
+    await setBudget(wedding.id, area?.id ?? null, amount);
+  } catch (error) {
+    failed(back, "That didn't save.", error);
+  }
+
+  refresh();
+  redirect(area ? `/money?open=${encodeURIComponent(area.key)}` : "/money");
 }
 
 /** Adds a payment (paymentId null) or saves changes to one. */

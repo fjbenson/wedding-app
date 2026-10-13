@@ -69,3 +69,12 @@ export async function saveBudgets(
     if (areaError) throw areaError;
   }
 }
+
+/** Sets one budget: the whole wedding's (`areaId` null) or one area's. */
+export async function setBudget(weddingId: string, areaId: string | null, budget: number | null): Promise<void> {
+  const supabase = await createClient();
+  const { error } = areaId
+    ? await supabase.from("areas").update({ budget }).eq("id", areaId).eq("wedding_id", weddingId)
+    : await supabase.from("weddings").update({ budget }).eq("id", weddingId);
+  if (error) throw error;
+}

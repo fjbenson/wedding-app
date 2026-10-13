@@ -172,7 +172,8 @@ function ByArea({
           <h2 className="section-label">By area</h2>
           <div className="flex items-center gap-2">
             {filter}
-            <AddButton href="/money/payments/new" label="Add a payment" />
+            {/* Opens on Budget; the same page as By month's +, switched. */}
+            <AddButton href="/money/budget/new" label="Add a budget or payment" />
           </div>
         </div>
         <AreaCards areas={byArea} open={open} />
@@ -363,7 +364,7 @@ function ByMonth({
         <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
         <div className="flex items-center gap-2">
           {filter}
-          <AddButton href="/money/payments/new" label="Add a payment" />
+          <AddButton href="/money/payments/new" label="Add a payment or budget" />
         </div>
       </div>
       {chosen && (

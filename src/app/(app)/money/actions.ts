@@ -1,13 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { stayAfterSave } from "@/lib/return-to";
 import { listAreas } from "@/lib/db/areas";
-import { createPayment, deletePayment, saveBudgets, setBudget, updatePayment } from "@/lib/db/money";
+import { deletePayment, saveBudgets, setBudget, updatePayment } from "@/lib/db/money";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
+import { addPayment, refreshMoney } from "@/lib/jobs";
 import { parseMoney } from "@/lib/money";
 
 function text(formData: FormData, key: string): string | null {
@@ -26,12 +26,7 @@ function failed(back: string, message: string, error: unknown): never {
 }
 
 /** Everywhere money shows. */
-function refresh() {
-  revalidatePath("/money");
-  revalidatePath("/");
-  revalidatePath("/plan");
-  revalidatePath("/area/[key]", "page");
-}
+const refresh = refreshMoney;
 
 /** The whole budget and each area's share (screen 22's "set budgets"). */
 export async function saveBudgetsAction(formData: FormData) {
@@ -106,11 +101,26 @@ export async function savePaymentAction(paymentId: string | null, formData: Form
     notes: text(formData, "notes"),
   };
 
-  try {
-    if (paymentId) await updatePayment(paymentId, fields);
-    else await createPayment(wedding.id, fields);
-  } catch (error) {
-    failed(back, "That didn't save.", error);
+  if (paymentId) {
+    try {
+      await updatePayment(paymentId, fields);
+    } catch (error) {
+      failed(back, "That didn't save.", error);
+    }
+  } else {
+    const result = await addPayment({
+      description,
+      amount,
+      supplierId: fields.contact_id,
+      area: fields.area_key,
+      dueDate: fields.due_date,
+      paid,
+      paidOn: fields.paid_on,
+      notes: fields.notes,
+    });
+    if (!result.ok) {
+      redirect(`${back}?error=${encodeURIComponent(result.error)}${result.detail ? `&detail=${encodeURIComponent(result.detail)}` : ""}`);
+    }
   }
 
   refresh();

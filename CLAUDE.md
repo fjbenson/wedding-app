@@ -1063,10 +1063,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
      1. Owner: an Anthropic API key, added in Vercel as `ANTHROPIC_API_KEY`
         (walk them through it); add "guest details go to the AI to answer"
         to the privacy list; agree a monthly cap.
-     2. Clean actions: plain server functions for add a guest, add a to-do,
-        record a payment, save a note, set an RSVP — no FormData, no
-        redirects, return a result; the forms then call them too (tidies the
-        divergent forms). Wedding id always from `getCurrentWedding()`.
+     2. ~~Clean actions~~ — **done 13 Oct 2026**: `src/lib/jobs.ts` —
+        `addGuest`, `setGuestAnswer`, `addTodo`, `addPayment`, `addNote`.
+        Plain inputs, no FormData or redirects, return `{ ok, … }` or
+        `{ ok: false, error, detail }`; each finds the wedding itself
+        (`getCurrentWedding()`). The add forms (guest, to-do, payment,
+        capture) and the guest card's answer now go through them; edits
+        still use their own actions. Add new jobs here.
      3. Reading tools: guests by filter, money summary, this week, a table,
         suppliers by area — each returns data for one answer block.
      4. A route (`src/app/api/planner/route.ts`) on Vercel: Anthropic SDK

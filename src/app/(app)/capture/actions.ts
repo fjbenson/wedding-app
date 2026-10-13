@@ -3,21 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createMilestone } from "@/lib/db/milestones";
-import { createNote, deleteNote, fileNote, getNote, linkNoteToMilestone, updateNote } from "@/lib/db/notes";
+import { deleteNote, fileNote, getNote, linkNoteToMilestone, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
-import { describe } from "@/lib/errors";
+import { addNote } from "@/lib/jobs";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
   return value || null;
-}
-
-function failed(back: string, message: string, error: unknown): never {
-  console.error(message, error);
-  const code = (error as { code?: string }).code;
-  const detail =
-    code === "PGRST205" || code === "42P01" ? "Run supabase/migrations/0008_notes.sql in Supabase first." : describe(error);
-  redirect(`${back}${back.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}&detail=${encodeURIComponent(detail)}`);
 }
 
 /** Only ever back to a page inside the app, never wherever a form says. */
@@ -33,24 +25,11 @@ function refresh() {
 
 /** Quick capture (screen 35): a thought and/or a link, filed now or left for the inbox. */
 export async function captureAction(formData: FormData) {
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-
-  const body = text(formData, "body");
-  let url = text(formData, "url");
-  // A bare "example.com" pasted without https:// still makes a working link.
-  if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
   const back = safeReturn(text(formData, "return_to"));
-
-  if (!body && !url) redirect(`/capture?error=${encodeURIComponent("Write something or paste a link.")}`);
-
-  try {
-    await createNote(wedding.id, { body, url, area_key: text(formData, "area") });
-  } catch (error) {
-    failed("/capture", "That didn't save.", error);
+  const result = await addNote({ body: text(formData, "body"), url: text(formData, "url"), area: text(formData, "area") });
+  if (!result.ok) {
+    redirect(`/capture?error=${encodeURIComponent(result.error)}${result.detail ? `&detail=${encodeURIComponent(result.detail)}` : ""}`);
   }
-
-  refresh();
   redirect(`${back}${back.includes("?") ? "&" : "?"}captured=1`);
 }
 

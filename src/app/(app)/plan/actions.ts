@@ -1,10 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   completeMilestone,
-  createMilestone,
   createMilestones,
   listMilestones,
   deleteMilestone,
@@ -14,6 +12,7 @@ import {
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
+import { addTodo, refreshPlan } from "@/lib/jobs";
 import { returnTo, stayAfterSave } from "@/lib/return-to";
 import { starterPlan } from "@/lib/starter-plan";
 
@@ -23,11 +22,7 @@ function text(formData: FormData, key: string): string | null {
 }
 
 /** Everywhere a milestone shows up. */
-function refresh() {
-  revalidatePath("/plan");
-  revalidatePath("/");
-  revalidatePath("/area/[key]", "page");
-}
+const refresh = refreshPlan;
 
 /** Adds a to-do (milestoneId null) or saves changes to one. */
 export async function saveMilestoneAction(milestoneId: string | null, formData: FormData) {
@@ -41,37 +36,34 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
     redirect(`${back}?error=${encodeURIComponent("Please say what needs doing.")}`);
   }
 
-  // One date box: "Done by" saves it as the due date, "Start around" as a
-  // nudge's start (src/lib/plan.ts).
-  const when = text(formData, "when");
-  const start = formData.get("when_kind") === "start";
+  // One kind of to-do: every one just has a date (owner, 12 Oct 2026). Saving
+  // an old "start around" nudge makes it ordinary.
+  const due = text(formData, "when");
   const fields = {
     title,
-    due_date: start ? null : when,
-    remind_at: start ? when : null,
+    due_date: due,
+    remind_at: null,
     category: text(formData, "category"),
     description: text(formData, "description"),
   };
 
+  let error = "";
   let detail = "";
-  try {
-    if (milestoneId) await updateMilestone(milestoneId, fields);
-    else
-      await createMilestone({
-        wedding_id: wedding.id,
-        ...fields,
-        status: "todo",
-        assigned_to: null,
-      });
-  } catch (error) {
-    console.error("saving milestone failed", error);
-    detail = describe(error);
+  if (milestoneId) {
+    try {
+      await updateMilestone(milestoneId, fields);
+    } catch (e) {
+      console.error("saving milestone failed", e);
+      error = "That didn't save.";
+      detail = describe(e);
+    }
+  } else {
+    const result = await addTodo({ title, dueDate: due, area: fields.category, notes: fields.description });
+    if (!result.ok) ({ error, detail = "" } = result);
   }
 
-  if (detail) {
-    redirect(
-      `${back}?error=${encodeURIComponent("That didn't save.")}&detail=${encodeURIComponent(detail)}`,
-    );
+  if (error) {
+    redirect(`${back}?error=${encodeURIComponent(error)}${detail ? `&detail=${encodeURIComponent(detail)}` : ""}`);
   }
 
   refresh();

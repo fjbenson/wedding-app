@@ -22,7 +22,7 @@ export default async function NewGuestPage({
   return (
     <FormPage backHref="/people" backLabel="People" title="Add a guest" error={error} detail={detail}>
       <GuestForm
-        action={saveGuestAction.bind(null, null)}
+        action={saveGuestAction}
         households={households}
         events={events}
         defaultHousehold={households.some((h) => h.id === household) ? household : undefined}

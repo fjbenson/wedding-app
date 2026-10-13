@@ -17,6 +17,7 @@ import {
 } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { setGuestAnswer } from "@/lib/jobs";
 import type { RsvpStatus } from "@/types/db";
 
 function text(formData: FormData, key: string): string | null {
@@ -28,8 +29,6 @@ function failed(back: string, message: string, error: unknown): never {
   console.error(message, error);
   redirect(`${back}?error=${encodeURIComponent(message)}&detail=${encodeURIComponent(describe(error))}`);
 }
-
-const STATUSES: RsvpStatus[] = ["to_invite", "pending", "attending", "declined"];
 
 /** The usual two: day guests and evening guests. */
 export async function addStarterEventsAction() {
@@ -131,13 +130,7 @@ export async function setGuestOfAction(guestId: string, eventId: string): Promis
 
 /** A guest's one answer — To invite, Invited, Coming or Can't come — from their card. */
 export async function setGuestAnswerAction(guestId: string, status: RsvpStatus): Promise<{ error?: string }> {
-  if (!STATUSES.includes(status)) return { error: "That isn't an answer." };
-  try {
-    await setContactStatus(guestId, status);
-  } catch (error) {
-    console.error("saving answer failed", error);
-    return { error: `That didn't save. ${describe(error)}` };
-  }
-  revalidatePath("/people");
+  const result = await setGuestAnswer(guestId, status);
+  if (!result.ok) return { error: result.detail ? `${result.error} ${result.detail}` : result.error };
   return {};
 }

@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createContact, createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
-import { inviteGuestsToEvent, listEvents, listRsvps, updateRsvp } from "@/lib/db/rsvps";
+import { createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { joinRoles } from "@/lib/guest-roles";
+import { addGuest } from "@/lib/jobs";
 import { splitName } from "@/lib/names";
 
 function text(formData: FormData, key: string): string | null {
@@ -15,96 +15,38 @@ function text(formData: FormData, key: string): string | null {
 }
 
 /**
- * Adds a guest (guestId null) or saves changes to one.
+ * Adds a guest from the add form (`addGuest` does the work).
  *
  * The household picker sends an existing household's id, "none", or "new"
  * with a name — a new household is created first so the guest can join it.
  */
-export async function saveGuestAction(guestId: string | null, formData: FormData) {
-  const back = guestId ? `/people/${guestId}` : "/people/new";
-
-  const wedding = await getCurrentWedding();
-  if (!wedding) redirect("/");
-
-  // One "Full name" box (split: last word is the surname), or the older pair.
-  const full = text(formData, "full_name");
-  const split = full ? splitName(full) : null;
-  const firstName = split ? split.first || null : text(formData, "first_name");
-  if (!firstName) {
-    redirect(`${back}?error=${encodeURIComponent("Please add their name.")}`);
-  }
-  const lastName = split ? split.last : text(formData, "last_name");
-
-  let detail = "";
-  let created: Awaited<ReturnType<typeof createContact>> | null = null;
-  try {
-    let householdId = text(formData, "household");
-    if (householdId === "none") householdId = null;
-    if (householdId === "new") {
-      const name = text(formData, "new_household") ?? `${lastName ?? firstName} household`;
-      householdId = (await createHousehold({ weddingId: wedding.id, name })).id;
-    }
-
+export async function saveGuestAction(formData: FormData) {
+  const back = "/people/new";
+  const fullName = text(formData, "full_name") ?? "";
+  const household = text(formData, "household");
+  const result = await addGuest({
+    fullName,
+    householdId: household === "none" || household === "new" ? null : household,
+    newHousehold:
+      household === "new"
+        ? (text(formData, "new_household") ?? `${splitName(fullName).last ?? splitName(fullName).first} household`)
+        : null,
     // Ticked roles plus any they typed in; one guest can have several.
-    const role = joinRoles([
-      ...formData.getAll("roles").map(String),
-      ...(text(formData, "custom_role") ?? "").split(","),
-    ]);
-    const fields = {
-      household_id: householdId,
-      // Anyone with a job on the day counts as the bridal party (the plan's filter).
-      contact_type: role ? ("bridal_party" as const) : ("guest" as const),
-      role_on_the_day: role,
-      first_name: firstName,
-      last_name: lastName,
-      email: text(formData, "email"),
-      phone: text(formData, "phone"),
-      notes: text(formData, "notes"),
-      is_child: Boolean(formData.get("is_child")),
-    };
+    roles: [...formData.getAll("roles").map(String), ...(text(formData, "custom_role") ?? "").split(",")],
+    email: text(formData, "email"),
+    phone: text(formData, "phone"),
+    notes: text(formData, "notes"),
+    isChild: Boolean(formData.get("is_child")),
+    eventId: text(formData, "event_id"),
+    meal: text(formData, "meal_choice"),
+    diet: text(formData, "dietary_notes"),
+  });
 
-    try {
-      if (guestId) await updateContact(guestId, fields);
-      else created = await createContact({ wedding_id: wedding.id, ...fields });
-    } catch (error) {
-      // Until 0004_guest_roles.sql is run in Supabase the column isn't there;
-      // save everything else rather than fail.
-      if ((error as { code?: string }).code !== "PGRST204") throw error;
-      const { role_on_the_day: _unsaved, ...rest } = fields;
-      if (guestId) await updateContact(guestId, rest);
-      else created = await createContact({ wedding_id: wedding.id, ...rest } as Parameters<typeof createContact>[0]);
-    }
-
-    // A new guest goes on the event they're a guest of and every one after
-    // it — a day guest is at the evening too; an evening guest only that.
-    const eventId = text(formData, "event_id");
-    if (created && eventId) {
-      const events = await listEvents(wedding.id);
-      const from = events.findIndex((e) => e.id === eventId);
-      for (const event of from === -1 ? [] : events.slice(from)) {
-        await inviteGuestsToEvent(wedding.id, event.id, [created]);
-      }
-      // Meal and allergies, if already known, go on their own event's answer
-      // (where the guest card keeps them).
-      const meal = text(formData, "meal_choice");
-      const diet = text(formData, "dietary_notes");
-      if (from !== -1 && (meal || diet)) {
-        const own = (await listRsvps(wedding.id, { eventId: events[from].id })).find((r) => r.contact_id === created!.id);
-        if (own) await updateRsvp(own.id, { meal_choice: meal, dietary_notes: diet });
-      }
-    }
-  } catch (error) {
-    console.error("saving guest failed", error);
-    detail = describe(error);
+  if (!result.ok) {
+    const detail = result.detail ? `&detail=${encodeURIComponent(result.detail)}` : "";
+    redirect(`${back}?error=${encodeURIComponent(result.error)}${detail}`);
   }
 
-  if (detail) {
-    redirect(
-      `${back}?error=${encodeURIComponent("That didn't save.")}&detail=${encodeURIComponent(detail)}`,
-    );
-  }
-
-  revalidatePath("/people");
   // Only ever back to a household page — never anywhere a form field says.
   const returnTo = text(formData, "return_to");
   redirect(returnTo && /^\/people\/household\/[0-9a-f-]{36}$/i.test(returnTo) ? returnTo : "/people");

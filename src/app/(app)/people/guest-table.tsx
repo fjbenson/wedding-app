@@ -21,7 +21,7 @@ export function shortEvent(name: string) {
 }
 
 const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeof Check }> = {
-  attending: { label: "Coming", className: "bg-ink text-ivory", icon: Check },
+  attending: { label: "Coming", className: "bg-champagne-600 text-white", icon: Check },
   declined: { label: "Can't come", className: "bg-cream text-stone", icon: X },
   to_invite: { label: "To invite", className: "border border-linen text-stone", icon: Minus },
   pending: {

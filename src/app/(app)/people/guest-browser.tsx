@@ -520,7 +520,9 @@ function AnswersCard({
  * invite, ✕ can't come, and a dashed ? for someone not yet day or evening.
  */
 const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNode }> = {
-  attending: { ring: "bg-ink text-ivory", icon: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
+  // Gold, not ink, and a little smaller (owner, 13 Oct 2026): black is kept
+  // for the main action, the round +. Still darker than Invited's pale fill.
+  attending: { ring: "bg-champagne-600 text-white", icon: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
   pending: { ring: "bg-champagne-100 text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
   to_invite: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-400", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
   declined: { ring: "bg-[#EEE9E1] text-[#8A837B]", icon: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
@@ -532,7 +534,7 @@ function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[30px] w-[30px] text-[17px]"}`}
+      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[26px] w-[26px] text-[15px]"}`}
     >
       {look.icon}
     </span>

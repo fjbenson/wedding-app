@@ -1024,6 +1024,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
   5. **Two places for one thing**: areas added from the ring's + but renamed
      / reordered in Settings; day/evening events set up at the foot of the
      guest list (also in the IA review list below).
+- **Iconography as a set** (owner, 13 Oct 2026: "think more about
+  iconography in general in our design system"). Done so far: a guest's
+  Coming and a supplier's Booked are gold (`champagne-600`), not black, and
+  26px rather than 30px, so they don't compete with the round black + (black
+  stays for the main action). Still to do: one look for status icons across
+  the app (sizes, fills, when to use a word instead), written into
+  `docs/DESIGN.md`; maybe options on the canvas first.
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

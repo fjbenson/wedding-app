@@ -602,7 +602,8 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?
 /** Booked ✓ on ink · Quote in £ on champagne · In touch a dashed ? · Not taken ✕ on grey. */
 export function StageIcon({ status, small = false, badge = false }: { status: SupplierStatus; small?: boolean; badge?: boolean }) {
   const look: Record<string, { ring: string; mark: React.ReactNode }> = {
-    booked: { ring: "bg-ink text-ivory", mark: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
+    // Gold like a guest's Coming, not ink (owner, 13 Oct 2026).
+    booked: { ring: "bg-champagne-600 text-white", mark: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
     quoted: { ring: "bg-champagne-100 text-champagne-600 font-display", mark: "£" },
     enquired: { ring: "border-[1.5px] border-dashed border-champagne-400 bg-ivory text-champagne-600 font-display", mark: "?" },
     cancelled: { ring: "bg-[#EEE9E1] text-[#8A837B]", mark: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
@@ -610,7 +611,7 @@ export function StageIcon({ status, small = false, badge = false }: { status: Su
   const l = look[status] ?? look.enquired;
   return (
     <span aria-hidden className={`flex shrink-0 items-center justify-center rounded-full leading-none ${l.ring} ${
-        badge ? "h-[19px] w-[19px] text-[10px] shadow-[0_0_0_2px_#FBF9F5]" : small ? "h-5 w-5 text-[12px]" : "h-[30px] w-[30px] text-[16px]"
+        badge ? "h-[19px] w-[19px] text-[10px] shadow-[0_0_0_2px_#FBF9F5]" : small ? "h-5 w-5 text-[12px]" : "h-[26px] w-[26px] text-[14px]"
       }`}>
       {l.mark}
     </span>

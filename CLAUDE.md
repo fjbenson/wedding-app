@@ -1,5 +1,12 @@
 # Wedding App — context for Claude
 
+> **Rule one, above everything else (owner, 13 Oct 2026): protecting the
+> couples' and their guests' data comes first, every time, without fail.**
+> Before building anything, ask what it does with people's details: who can
+> see them, where they're sent, how long they're kept. If a feature and the
+> data's safety pull in different directions, the data wins — raise it with
+> the owner rather than choosing quietly.
+
 A wedding planning app, built to eventually serve other couples, not just one.
 The owner is new to development — explain things plainly, avoid jargon where a
 normal word will do, and keep answers short unless asked to go deeper.
@@ -738,7 +745,13 @@ Not legal advice — the UK list raised with the owner:
 7. Supabase paid plan (~$25/month): the free plan has no proper backups and
    pauses quiet projects.
    (Vercel Pro, needed for commercial use: done 12 Oct 2026.)
-8. Two-step login on the owner's Supabase, Vercel and GitHub accounts.
+8. Two-step login on the owner's Supabase, Vercel and GitHub accounts
+   (and the Claude Console, which holds the assistant's key).
+9. **Your assistant sends data to Anthropic** (added 13 Oct 2026, owner's
+   OK): to answer, the guest, money and plan details a question needs go to
+   Anthropic's API. The privacy policy must say so; sign Anthropic's DPA
+   too (as item 4); keep the assistant's lookups to what a question needs
+   (they never send notes, files or addresses today).
 
 Data is in Supabase Postgres in Ireland, encrypted at rest and in transit;
 access control is RLS. No column-level encryption is planned.

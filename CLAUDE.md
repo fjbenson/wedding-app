@@ -1031,9 +1031,23 @@ additive — new tables hanging off `weddings`. None require changing the above.
   iconography in general in our design system"). Done so far: a guest's
   Coming and a supplier's Booked are gold (`champagne-600`), not black, and
   26px rather than 30px, so they don't compete with the round black + (black
-  stays for the main action). Still to do: one look for status icons across
-  the app (sizes, fills, when to use a word instead), written into
-  `docs/DESIGN.md`; maybe options on the canvas first.
+  stays for the main action). **Icon audit** (13 Oct 2026, everything in
+  use and where it clashes): https://claude.ai/artifact/SCHsvUpFJ6YdGBMb1EKqSY
+  — one icon with several jobs (Mail = Invited / Email / Stationery; House =
+  Hub / household; Clock = The Day / a time), near-twins (three calendars,
+  three pens, three people icons), three sets of status marks, nine stroke
+  weights, typed ▲ ✓ ✕ › as icons, raster title drawings. **The fix, parked
+  by the owner:**
+  1. Agree the rules on a canvas page "Icons" (owner): one set of status
+     marks for guests, suppliers and Plan (done gold tick · in hand pale
+     fill · not yet dashed · dropped grey cross); new pictures for Invited
+     and household (2–3 options each).
+  2. One shared icon file (like `AddButton`): two weights (1.6 alone, 2.2 in
+     small circles), three sizes (16 / 20 / 24); screens ask for "the date
+     icon" rather than picking their own.
+  3. Swap in screen by screen: status marks first, then the clashes, then
+     ▲ ✓ ✕ › as real icons. Write the rules into `docs/DESIGN.md`.
+  4. Vector title drawings (needs the Canva originals; already a to-do).
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

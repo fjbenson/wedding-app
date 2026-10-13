@@ -912,7 +912,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 13 Oct 2026 chat): build "Your planner", version 1**
+   `calendar.tsx`). **Next up (end of the 13 Oct 2026 chat): build "Your assistant", version 1**
    — see step 8 for the plan. **Earlier next-up (end of the 12 Oct 2026 late chat):** the Money
    budget's turn is done for now — area cards two to a row, an area's money
    card from the bottom, tappable month columns; the owner loves them. Next:
@@ -999,8 +999,10 @@ additive — new tables hanging off `weddings`. None require changing the above.
    still until they can draw themselves in line by line (needs the vector
    version) or truly dance (an animator, in Rive). Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
-8. **"Your planner" — the assistant** (agreed 7 Oct 2026 as "Brainstorm"; named
-   "Your planner" by the owner, 13 Oct 2026: a calm, organised friend — short,
+8. **"Your assistant"** (agreed 7 Oct 2026 as "Brainstorm"; named
+   "Your planner" 13 Oct 2026, **renamed "Your assistant" by the owner 13 Oct
+   2026: the couple are the planners — it just does the smaller jobs, so they
+   stay in charge**; the canvas pages still say "Your planner"): a calm, organised friend — short,
    warm, British, never pushy, always checks first, no made-up human name) — a
    chat screen that takes actions: "add Ellen Daniels to the guest list",
    asking for missing details one at a time. Decided so far:
@@ -1044,7 +1046,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
      ask…"**, opening one panel; replies are short with **answer cards**
      ("12 vegetarian guests · See them ›") and **confirm cards** (Add her /
      Change); a plain thought is still saved as a note; three ways to
-     introduce it: "Your planner" (suggested), "Ask", or named with the app.
+     introduce it: "Your assistant" (owner's pick; was "Your planner"), "Ask", or named with the app.
      Before building: an Anthropic key in Vercel, privacy-list entry (guest
      details go to the AI to answer), a spending cap; and clean versions of
      the few save steps it needs (today's take a form and redirect).
@@ -1213,7 +1215,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
      a week before), quiet hours, by notification or email. Couples should
      choose; default gentle.
   Badges (1) could be built any time; notifications (2–3) need the
-  scheduling piece. "Your planner" can later write the weekly summary.
+  scheduling piece. "Your assistant" can later write the weekly summary.
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

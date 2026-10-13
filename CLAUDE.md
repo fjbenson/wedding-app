@@ -1008,6 +1008,22 @@ additive — new tables hanging off `weddings`. None require changing the above.
     they're really about the day.
   - A supplier's card could show their next appointment as well as payments.
 
+- **Odd ones out (13 Oct 2026)** — owner asked for mismatches like Money's
+  old area drop-down (now the shared `FilterMenu`, `src/components/
+  filter-menu.tsx`, on Money, Plan's List and The Day). Parked for later:
+  1. **Add buttons**: still the old wide black bar, not the round black +
+     (`AddButton`) — The Day's "Add a moment" and "Add a car or coach",
+     Your notes' "Jot something down", Inspo's add.
+  2. **Page titles**: Your notes has no title drawing; Inspo and Settings
+     use a smaller plain title (34px) and no drawing — use `PageTitle`.
+  3. **Inspo's folders**: area chips that go black when picked; everywhere
+     else is the champagne Filter. Owner to choose: the Filter, or keep chips
+     but champagne.
+  4. **Forms in the old plain style**: car or coach, day/evening event,
+     Inspo save, jot a note, household edit (also in Next steps).
+  5. **Two places for one thing**: areas added from the ring's + but renamed
+     / reordered in Settings; day/evening events set up at the foot of the
+     guest list (also in the IA review list below).
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

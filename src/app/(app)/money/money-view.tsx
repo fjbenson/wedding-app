@@ -176,16 +176,19 @@ function ByArea({
           </div>
         </div>
         <AreaCards areas={byArea} open={open} />
-        <p className="mt-4 text-center">
-          <Link href="/money/budget" className="type-meta !text-champagne-600 hover:!text-ink">
-            {total.budget === null ? "Set budgets ›" : "Change budgets ›"}
-          </Link>
-        </p>
-        <p className="mt-6 text-xs leading-relaxed text-stone">
-          Agreed is what you&apos;ve signed up to: booked suppliers&apos; quotes, plus payments that aren&apos;t for a
-          supplier. Paid counts deposits recorded on a supplier and payments marked paid — so record a deposit in one
-          place, not both.
-        </p>
+        {/* Owner, 13 Oct 2026: no "Change budgets ›" link (the top card already
+            opens the budget page) and the explanation folded away (say less). */}
+        <details className="group mt-6 text-xs leading-relaxed text-stone">
+          <summary className="type-meta inline-flex cursor-pointer list-none items-center gap-1 !text-champagne-600 [&::-webkit-details-marker]:hidden">
+            What do these mean?
+            <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" strokeWidth={1.8} aria-hidden />
+          </summary>
+          <p className="mt-2">
+            Agreed is what you&apos;ve signed up to: booked suppliers&apos; quotes, plus payments that aren&apos;t for a
+            supplier. Paid counts deposits recorded on a supplier and payments marked paid — so record a deposit in one
+            place, not both.
+          </p>
+        </details>
       </section>
     </>
   );

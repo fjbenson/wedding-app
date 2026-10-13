@@ -3,7 +3,7 @@ import AddButton from "@/components/add-button";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
-import AreaFilter from "../plan/area-filter";
+import MoneyAreaFilter from "./money-area-filter";
 import PageTitle from "@/components/page-title";
 import type { AreaOption } from "@/lib/areas";
 import AreaCards, { type AreaCard } from "./area-cards";
@@ -70,15 +70,10 @@ export default function MoneyView({
   error?: string;
   detail?: string;
 }) {
-  // The area filter sits beside the round black + (owner, 13 Oct 2026: it
-  // was alone at the top right, under the corner switch).
+  // The area filter goes under the heading with the round black +, drawn like
+  // the guest list's Filter (owner, 13 Oct 2026, for harmony).
   const filter = (
-    <AreaFilter
-      areas={areas}
-      current={area}
-      base={view === "month" ? "/money?view=month" : "/money"}
-      label="Show the money for"
-    />
+    <MoneyAreaFilter areas={areas} current={area} base={view === "month" ? "/money?view=month" : "/money"} />
   );
   return (
     <main className="page pb-28 lg:pb-16">
@@ -170,12 +165,10 @@ function ByArea({
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">
           <h2 className="section-label">By area</h2>
-          <div className="flex items-center gap-2">
-            {filter}
-            {/* Opens on Budget; the same page as By month's +, switched. */}
-            <AddButton href="/money/budget/new" label="Add a budget or payment" />
-          </div>
+          {/* Opens on Budget; the same page as By month's +, switched. */}
+          <AddButton href="/money/budget/new" label="Add a budget or payment" />
         </div>
+        {filter}
         <AreaCards areas={byArea} open={open} />
         {/* Owner, 13 Oct 2026: no "Change budgets ›" link (the top card already
             opens the budget page) and the explanation folded away (say less). */}
@@ -362,11 +355,9 @@ function ByMonth({
 
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
-        <div className="flex items-center gap-2">
-          {filter}
-          <AddButton href="/money/payments/new" label="Add a payment or budget" />
-        </div>
+        <AddButton href="/money/payments/new" label="Add a payment or budget" />
       </div>
+      {filter}
       {chosen && (
         <Link
           href={base}

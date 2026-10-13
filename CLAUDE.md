@@ -1192,6 +1192,28 @@ additive — new tables hanging off `weddings`. None require changing the above.
      lift), and those become guest list filters ("Staying at the pub"),
      which then feed 2. Would need new tables (places to stay, and who's
      staying where) hanging off `weddings` — additive, no rebuild.
+- **Reminders and notifications** (owner, 13 Oct 2026: "not something we
+  thought about yet"). Two different things:
+  1. **Badges inside the app** (no new services): a small count where
+     something needs you — e.g. on the Plan tab and the Hub's This week for
+     overdue things ("1 overdue"); possibly the home-screen app icon's own
+     badge (iPhones allow it for a home-screen app once notifications are
+     allowed). Colour: the rose already used for overspend, used sparingly —
+     never alarming red everywhere.
+  2. **Notifications outside the app**: "today: florist deposit £250",
+     "tomorrow 2pm: venue visit", maybe a Monday "your week". On iPhone,
+     web-app notifications only work for the **home-screen app** and need the
+     person's permission; they need push keys, a service worker, and
+     **something that runs on a schedule** to send them — a daily Vercel Cron
+     job may be enough before the separate background worker (Architecture).
+     Email is the other route (needs the app's own web address, checklist
+     item 1).
+  3. **Settings › Reminders**: on/off per kind (to-dos, payments,
+     appointments, the weekly summary), when (on the day / the day before /
+     a week before), quiet hours, by notification or email. Couples should
+     choose; default gentle.
+  Badges (1) could be built any time; notifications (2–3) need the
+  scheduling piece. "Your planner" can later write the weekly summary.
 - **Journeys** (The Day's Transport, renamed; parked 12 Oct 2026, owner's
   "fun idea"): canvas 2 "The Day · Journeys". Owner's pick: **B** — the
   day's journeys down a gold thread in time order, a tiny map on each card,

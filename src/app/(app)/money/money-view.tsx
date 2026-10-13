@@ -70,6 +70,16 @@ export default function MoneyView({
   error?: string;
   detail?: string;
 }) {
+  // The area filter sits beside the round black + (owner, 13 Oct 2026: it
+  // was alone at the top right, under the corner switch).
+  const filter = (
+    <AreaFilter
+      areas={areas}
+      current={area}
+      base={view === "month" ? "/money?view=month" : "/money"}
+      label="Show the money for"
+    />
+  );
   return (
     <main className="page pb-28 lg:pb-16">
       <CornerSwitch
@@ -82,14 +92,6 @@ export default function MoneyView({
       <PageTitle drawing="money" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         {view === "area" ? "The budget" : "Payments"}
       </PageTitle>
-      <div className="mt-4 flex justify-end">
-        <AreaFilter
-          areas={areas}
-          current={area}
-          base={view === "month" ? "/money?view=month" : "/money"}
-          label="Show the money for"
-        />
-      </div>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -106,7 +108,7 @@ export default function MoneyView({
       )}
 
       {view === "area" ? (
-        <ByArea total={total} byArea={byArea} scope={scope} open={open} />
+        <ByArea total={total} byArea={byArea} scope={scope} open={open} filter={filter} />
       ) : (
         <ByMonth
           total={total}
@@ -115,6 +117,7 @@ export default function MoneyView({
           balances={balances}
           weddingDate={weddingDate}
           picked={month}
+          filter={filter}
           base={area ? `/money?view=month&area=${encodeURIComponent(area)}` : "/money?view=month"}
         />
       )}
@@ -136,11 +139,13 @@ function ByArea({
   byArea,
   scope,
   open,
+  filter,
 }: {
   total: Money;
   byArea: AreaCard[];
   scope: string | null;
   open: string | null;
+  filter: React.ReactNode;
 }) {
   return (
     <>
@@ -165,7 +170,10 @@ function ByArea({
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">
           <h2 className="section-label">By area</h2>
-          <AddButton href="/money/payments/new" label="Add a payment" />
+          <div className="flex items-center gap-2">
+            {filter}
+            <AddButton href="/money/payments/new" label="Add a payment" />
+          </div>
         </div>
         <AreaCards areas={byArea} open={open} />
         <p className="mt-4 text-center">
@@ -202,6 +210,7 @@ function ByMonth({
   weddingDate,
   picked,
   base,
+  filter,
 }: {
   total: Money;
   payments: Payment[];
@@ -211,6 +220,7 @@ function ByMonth({
   picked: string | null;
   /** This view's address without a month, keeping the area filter. */
   base: string;
+  filter: React.ReactNode;
 }) {
   const today = todayISO();
   const thisMonth = monthKey(today);
@@ -348,7 +358,10 @@ function ByMonth({
 
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
-        <AddButton href="/money/payments/new" label="Add a payment" />
+        <div className="flex items-center gap-2">
+          {filter}
+          <AddButton href="/money/payments/new" label="Add a payment" />
+        </div>
       </div>
       {chosen && (
         <Link

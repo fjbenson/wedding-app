@@ -31,7 +31,7 @@ export default function AreaFilter({
         onChange={(event) =>
           router.push(event.target.value ? `${base}${join}area=${encodeURIComponent(event.target.value)}` : base)
         }
-        className={`h-9 appearance-none rounded-full border py-0 pl-3.5 pr-8 text-[13px] focus:outline-none focus:ring-2 focus:ring-champagne-400/40 ${
+        className={`h-10 appearance-none rounded-full border py-0 pl-3.5 pr-8 text-[13px] focus:outline-none focus:ring-2 focus:ring-champagne-400/40 ${
           current ? "border-ink bg-ink text-ivory" : "border-champagne-400/70 bg-white text-ink"
         }`}
       >

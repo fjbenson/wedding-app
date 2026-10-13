@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, Images } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAppointments } from "@/lib/db/appointments";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
+import { countInspo } from "@/lib/db/inspo";
 import { listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
 import { STARTER_AREAS } from "@/lib/areas";
-import { todayISO } from "@/lib/dates";
 import Cover from "@/components/cover";
-import HomeNotes from "@/components/home-notes";
+import JotSheet from "@/components/jot-sheet";
 import ThisMonth from "@/components/this-month";
 
 export default async function HomePage() {
@@ -28,20 +28,25 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas, appointments, payments, unfiled] = await Promise.all([
+  const [milestones, areas, appointments, payments, unfiled, inspo] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
     listAppointments(wedding.id),
     listPayments(wedding.id),
     listNotes(wedding.id, { area: null }),
+    countInspo(wedding.id),
   ]);
+  const toSortCount = (unfiled ?? []).filter(toSort).length;
+  const ideas = inspo ? [...inspo.values()].reduce((a, b) => a + b, 0) : 0;
   // Empty: made before setup had an areas step, so send them to finish it.
   // null: the database hasn't got the areas table yet, so show the starter set.
   if (areas && areas.length === 0) redirect("/setup");
   const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
 
-  // Under the ring (canvas 2, "Home · Under the ring", option B): your
-  // notes, then what's coming up, then Inspo.
+  // Under the ring (canvas 2, "Home · Round 2 · Calm under the ring",
+  // option B, owner's pick 13 Oct 2026): a small "Jot something down" pill
+  // that brings up the jot sheet, your top three on one glass card, then
+  // Your notes and Inspo as two quiet lines.
   // Phone: the names and ring, then those under them.
   // Desktop: the ring fills the left, with those in a column beside it.
   return (
@@ -50,8 +55,8 @@ export default async function HomePage() {
       <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
-          <div className="mb-7">
-            <HomeNotes unfiled={unfiled.filter(toSort)} today={todayISO()} />
+          <div className="mb-6 flex justify-center">
+            <JotSheet />
           </div>
         )}
         <ThisMonth
@@ -60,21 +65,31 @@ export default async function HomePage() {
           payments={payments ?? []}
           hasDate={wedding.wedding_date !== null}
         />
-        {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
-        <Link
-          href="/inspo"
-          className="glass-card relative mx-5 mt-4 flex items-center gap-3 rounded-[22px] px-5 py-4 hover:border-champagne-400 lg:mx-0"
-        >
-          <Images className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.5} aria-hidden />
-          <span className="flex-1">
-            <span className="block font-display text-[19px] leading-tight text-ink">Inspo</span>
-            <span className="mt-1 block text-xs font-medium uppercase tracking-[0.2em] text-stone">Ideas you&apos;ve saved</span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
-        </Link>
+        <nav aria-label="More" className="relative mx-5 mt-4 lg:mx-0">
+          {unfiled && (
+            <QuietLine href="/inbox" label="Your notes" detail={toSortCount ? `${toSortCount} to sort` : "All sorted"} />
+          )}
+          {/* Inspo is reached from the Hub, not a tab of its own (the plan). */}
+          <QuietLine href="/inspo" label="Inspo" detail={ideas ? `${ideas} ${ideas === 1 ? "idea" : "ideas"}` : "Ideas you’ve saved"} last />
+        </nav>
         {email && <SignedIn email={email} />}
       </div>
     </main>
+  );
+}
+
+/** Your notes and Inspo under the top three: a plain line each, no card. */
+function QuietLine({ href, label, detail, last = false }: { href: string; label: string; detail: string; last?: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={`flex min-h-12 items-center gap-3 px-1.5 py-3 text-[15px] text-ink ${last ? "" : "border-b border-linen"}`}
+    >
+      <span className="flex-1">
+        {label} <span className="text-stone">· {detail}</span>
+      </span>
+      <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
+    </Link>
   );
 }
 

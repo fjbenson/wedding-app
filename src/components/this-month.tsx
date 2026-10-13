@@ -1,6 +1,6 @@
 import Link from "next/link";
 import StarterPlanCard from "@/components/starter-plan-card";
-import { formatMonthYear, formatTime, formatWeekdayDayMonth, isThisMonth, todayISO } from "@/lib/dates";
+import { formatMonthYear, formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone, Payment } from "@/types/db";
@@ -21,9 +21,10 @@ type Entry = {
 };
 
 /**
- * Under the notes: the next few to-dos, appointments and payments on a glass
- * card — the Plan agenda in miniature — each led by its day of the month in
- * dark gold, like Editorial's contents numbers.
+ * "Your top three" under the ring (canvas 2, "Home · Round 2", option B,
+ * owner's pick 13 Oct 2026): the next three to-dos, appointments and
+ * payments on one glass card — the Plan agenda in miniature — each led by
+ * its day of the month in dark gold, like Editorial's contents numbers.
  */
 export default function ThisMonth({
   milestones,
@@ -89,46 +90,41 @@ export default function ThisMonth({
     })
     .slice(0, LIST_LENGTH);
 
-  const nextDate = entries[0]?.date;
-  const label = nextDate && !isThisMonth(nextDate) ? "Coming up" : "This month";
-
   return (
     <section className="relative px-5 lg:px-0">
-      <div className="flex items-baseline justify-between px-1">
-        <p className="section-label">{label}</p>
-        <Link href="/plan" className="label hover:text-ink">
-          The plan
-        </Link>
-      </div>
-
-      {entries.length > 0 ? (
-        <ol className="glass-card mt-2.5 rounded-[22px] px-[18px] py-1.5">
-          {entries.map((e) => (
-            <li key={e.key} className="border-t border-linen first:border-t-0">
-              <Link href={e.href} className="flex items-center gap-3.5 py-3.5">
-                <span className="w-[34px] shrink-0 font-display text-[22px] font-light text-champagne-600">
-                  {e.date ? e.date.slice(8) : "—"}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
-                  {e.meta && <span className="type-meta mt-1 block">{e.meta}</span>}
-                </span>
-                {e.amount && <span className="type-figure shrink-0 text-[19px]">{e.amount}</span>}
-              </Link>
-            </li>
-          ))}
-        </ol>
-      ) : milestones.length === 0 ? (
-        <div className="mt-2.5">
-          <StarterPlanCard returnTo="/" hasDate={hasDate} glass />
-        </div>
+      {entries.length === 0 && milestones.length === 0 ? (
+        <StarterPlanCard returnTo="/" hasDate={hasDate} glass />
       ) : (
-        <Link
-          href="/plan/new"
-          className="glass-card mt-2.5 block rounded-[22px] px-[18px] py-4 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink"
-        >
-          Add a to-do
-        </Link>
+        <div className="glass-card rounded-[22px] px-[18px] pb-1.5 pt-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="section-label">Your top three</h2>
+            <Link href="/plan" className="label hover:text-ink">
+              The plan ›
+            </Link>
+          </div>
+          {entries.length > 0 ? (
+            <ol className="mt-1.5">
+              {entries.map((e) => (
+                <li key={e.key} className="border-t border-linen first:border-t-0">
+                  <Link href={e.href} className="flex items-center gap-3.5 py-3.5">
+                    <span className="w-[34px] shrink-0 font-display text-[22px] font-light text-champagne-600">
+                      {e.date ? e.date.slice(8) : "—"}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
+                      {e.meta && <span className="type-meta mt-1 block">{e.meta}</span>}
+                    </span>
+                    {e.amount && <span className="type-figure shrink-0 text-[19px]">{e.amount}</span>}
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <Link href="/plan/new" className="block py-4 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
+              Add a to-do
+            </Link>
+          )}
+        </div>
       )}
     </section>
   );

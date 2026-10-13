@@ -49,11 +49,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
 - **Hub** (`/`): names, hub ring, then under the ring (canvas 2, "Home ·
-  Under the ring", option B, owner's pick 11 Oct 2026): **Your notes** — a
-  jot box (with Link / Photo) that saves straight to the inbox, and the first
-  three notes still to sort, each with "File it" (`home-notes.tsx`,
-  `jot-form.tsx`) — then **coming up**: the next three to-dos, appointments
-  and payments (`this-month.tsx`), then Inspo. All on glass cards (design
+  Round 2 · Calm under the ring", option B, owner's pick 13 Oct 2026; was
+  "Home · Under the ring" B): a small glass **"Jot something down"** pill
+  that brings up the jot sheet (`jot-sheet.tsx` + `jot-form.tsx`: write,
+  Link, Photo, "Save to your notes"; closes on `?captured=1`) — no black
+  Save on the page any more — then **Your top three**, the next three
+  to-dos, appointments and payments on one glass card (`this-month.tsx`),
+  then **Your notes · N to sort ›** and **Inspo · N ideas ›** as two quiet
+  lines (`home-notes.tsx` is gone). All on glass cards (design
   settled 7 Oct 2026, round 15 — see `docs/DESIGN.md`). The ring's dots are the
   wedding's own **areas** (`areas` table, `0003_areas.sql`). Each dot opens
   its **area page** (`/area/[key]`, screens 5–6): key facts

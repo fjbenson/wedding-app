@@ -11,7 +11,8 @@ import { toSort } from "@/lib/notes";
 import { STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
 import HubTiles from "@/components/hub-tiles";
-import JotSheet from "@/components/jot-sheet";
+import AssistantSheet from "@/components/assistant/assistant-sheet";
+import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
 
 export default async function HomePage() {
@@ -45,8 +46,8 @@ export default async function HomePage() {
   const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
 
   // Under the ring (canvas 2, "Home · Round 2 · Calm under the ring",
-  // option B, owner's pick 13 Oct 2026): a small "Jot something down" pill
-  // that brings up the jot sheet, This week on one glass card (in place of
+  // option B, owner's pick 13 Oct 2026): a small pill — "Jot or ask…" since
+  // Your assistant (13 Oct 2026) — that brings up its panel, This week on one glass card (in place of
   // the top three, owner, 13 Oct 2026), then Your notes and Inspo as two
   // tiles side by side ("Home · Round 3", option A).
   // Phone: the names and ring, then those under them.
@@ -58,7 +59,12 @@ export default async function HomePage() {
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
           <div className="mb-6 flex justify-center">
-            <JotSheet />
+            <AssistantSheet
+              variant="hub"
+              subtitle={[wedding.name, wedding.wedding_date && `${formatDayMonth(wedding.wedding_date)} ${wedding.wedding_date.slice(0, 4)}`]
+                .filter(Boolean)
+                .join(" · ")}
+            />
           </div>
         )}
         <ThisWeek

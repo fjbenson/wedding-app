@@ -529,7 +529,7 @@ const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNo
   unset: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },
 };
 
-function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?: boolean }) {
+export function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?: boolean }) {
   const look = ICON[status ?? "unset"];
   return (
     <span

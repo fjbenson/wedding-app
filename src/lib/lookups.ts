@@ -100,6 +100,8 @@ export async function overview(): Promise<Lookup<Overview>> {
 // ── Guests ──────────────────────────────────────────────────────────────
 
 export interface GuestQuery {
+  /** One guest, by id. */
+  id?: string;
   /** Part of a name: "Ellen", "Daniels". */
   name?: string;
   /** Their answer for their own event. */
@@ -171,6 +173,7 @@ export async function findGuests(query: GuestQuery = {}): Promise<Lookup<{ count
 
     const matched = lines.filter((line) => {
       const g = byId.get(line.id)!;
+      if (query.id && line.id !== query.id) return false;
       if (query.name && !has(line.name, query.name)) return false;
       if (query.answer && line.answer !== query.answer) return false;
       if (query.eventId && ownEventId.get(line.id) !== query.eventId) return false;

@@ -1,0 +1,70 @@
+"use server";
+
+import { addGuest, addNote, addPayment, addTodo, setGuestAnswer } from "@/lib/jobs";
+import type { Proposal } from "@/lib/assistant/blocks";
+
+/**
+ * The Yes on one of Your assistant's cards: saves exactly what the card
+ * showed, through the same jobs as the forms (src/lib/jobs.ts), which find
+ * the signed-in person's own wedding and check every value again. Returns a
+ * message rather than throwing, so a failure shows on the card.
+ */
+export async function confirmProposalAction(
+  proposal: Proposal,
+): Promise<{ ok: true; link?: string } | { ok: false; error: string }> {
+  try {
+    switch (proposal.kind) {
+      case "add_guest": {
+        const p = proposal.input;
+        const r = await addGuest({
+          fullName: String(p.fullName ?? ""),
+          householdId: p.householdId ?? null,
+          newHousehold: p.newHousehold ?? null,
+          eventId: p.eventId ?? null,
+          roles: Array.isArray(p.roles) ? p.roles.map(String) : [],
+          email: p.email ?? null,
+          phone: p.phone ?? null,
+          isChild: Boolean(p.isChild),
+          meal: p.meal ?? null,
+          diet: p.diet ?? null,
+          notes: p.notes ?? null,
+        });
+        return r.ok ? { ok: true, link: `/people?guest=${r.id}` } : { ok: false, error: r.error };
+      }
+      case "set_guest_answer": {
+        const r = await setGuestAnswer(String(proposal.input.guestId), proposal.input.status);
+        return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "add_todo": {
+        const p = proposal.input;
+        const r = await addTodo({ title: String(p.title ?? ""), dueDate: p.dueDate ?? null, area: p.area ?? null, notes: p.notes ?? null });
+        return r.ok ? { ok: true, link: `/plan/${r.id}` } : { ok: false, error: r.error };
+      }
+      case "add_payment": {
+        const p = proposal.input;
+        const r = await addPayment({
+          description: String(p.description ?? ""),
+          amount: typeof p.amount === "number" ? p.amount : null,
+          supplierId: p.supplierId ?? null,
+          area: p.area ?? null,
+          dueDate: p.dueDate ?? null,
+          paid: Boolean(p.paid),
+          paidOn: p.paidOn ?? null,
+          notes: p.notes ?? null,
+        });
+        return r.ok ? { ok: true, link: "/money?view=month" } : { ok: false, error: r.error };
+      }
+      default:
+        return { ok: false, error: "That isn't something I can save." };
+    }
+  } catch (error) {
+    console.error("confirming proposal failed", error);
+    return { ok: false, error: "That didn't save. Try again." };
+  }
+}
+
+/** "Save it as a note" when the assistant couldn't answer, so nothing typed is lost. */
+export async function saveNoteAction(body: string): Promise<{ error?: string }> {
+  const r = await addNote({ body });
+  return r.ok ? {} : { error: r.error };
+}

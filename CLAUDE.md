@@ -50,10 +50,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   areas, here.
 - **Hub** (`/`): names, hub ring, then under the ring (canvas 2, "Home ·
   Round 2 · Calm under the ring", option B, owner's pick 13 Oct 2026; was
-  "Home · Under the ring" B): a small glass **"Jot something down"** pill
-  that brings up the jot sheet (`jot-sheet.tsx` + `jot-form.tsx`: write,
-  Link, Photo, "Save to your notes"; closes on `?captured=1`) — no black
-  Save on the page any more — then **This week** on one glass card
+  "Home · Under the ring" B): a small glass **"Jot or ask…"** pill (with
+  examples under it) that opens **Your assistant** (`AssistantSheet`,
+  13 Oct 2026; was the "Jot something down" jot sheet, removed) — then **This week** on one glass card
   (`this-week.tsx`; owner, 13 Oct 2026, replacing "Your top three": a week
   has an end you can reach): everything due by Sunday plus anything overdue,
   ticked off right there (to-dos done, payments paid, Undo note, the row
@@ -1060,9 +1059,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
      business cards side by side against the budget). Plus confirm cards
      for changes and suggested next steps as tap-able pills.
    - **Build plan (for the next chat):**
-     1. Owner: an Anthropic API key, added in Vercel as `ANTHROPIC_API_KEY`
-        (walk them through it); add "guest details go to the AI to answer"
-        to the privacy list; agree a monthly cap.
+     1. ~~Owner: an Anthropic API key~~ — **done 13 Oct 2026**: Claude
+        Console (separate from the owner's Claude subscription), key
+        `wedding-app` in the Default workspace, no expiry, prepaid credit
+        with auto-reload **off** (the credit is the cap for now), saved in
+        Vercel as a sensitive `ANTHROPIC_API_KEY` for Production and
+        Preview. **Still open:** the owner's OK to add "guest details go to
+        the AI to answer" to the privacy list (asked, not yet answered);
+        a per-wedding monthly cap and auto-reload before other couples use
+        it; a yearly new key then.
      2. ~~Clean actions~~ — **done 13 Oct 2026**: `src/lib/jobs.ts` —
         `addGuest`, `setGuestAnswer`, `addTodo`, `addPayment`, `addNote`.
         Plain inputs, no FormData or redirects, return `{ ok, … }` or
@@ -1079,14 +1084,29 @@ additive — new tables hanging off `weddings`. None require changing the above.
         the Hub's), `seating`, `findSuppliers`. Each finds the wedding
         itself and returns a `link` to the screen already filtered. Not yet
         used by any screen — the assistant's route will be the first.
-     4. A route (`src/app/api/planner/route.ts`) on Vercel: Anthropic SDK
-        (`claude-opus-5-5`), tool use, streaming; tools = the reading ones
-        (run at once) and the writing ones (return a confirm card; only run
-        after the person's Yes).
-     5. The panel: "Jot or ask…" on the Hub pill and the floating pen
-        (`jot-sheet.tsx`, `capture-button.tsx`), conversation in the app's
-        type, blocks drawn by the components that already exist; a plain
-        thought still saves as a note.
+     4. ~~A route~~ — **done 13 Oct 2026**: `src/app/api/assistant/route.ts`
+        (Anthropic SDK, `claude-opus-5-5`, effort low, streaming, up to 8
+        tool steps a turn, server-side refusal fallback, `drop_block` so a
+        trimmed or next-day conversation degrades instead of failing).
+        Instructions (`RULES`) set the voice: brief, British, never pushy,
+        never says a change is done before Yes, saves a plain thought with
+        `save_note`. Tools in `src/lib/assistant/tools.ts`: lookups run at
+        once and send an answer block; `add_guest`, `set_guest_answer`,
+        `add_todo`, `add_payment` only make a **confirm card** (ids checked
+        against the wedding); the Yes calls `confirmProposalAction`
+        (`src/app/(app)/assistant/actions.ts`), which runs the jobs. Stream
+        format and blocks: `src/lib/assistant/blocks.ts`. Usage is logged
+        ("assistant usage") in Vercel's logs.
+     5. ~~The panel~~ — **done 13 Oct 2026**: `src/components/assistant/
+        assistant-sheet.tsx` (the Hub's "Jot or ask…" pill and the floating
+        pen on the other tabs, `capture-button.tsx`; a sheet on phones, a
+        right panel on laptops; three starter questions; words first, then
+        the blocks from `answer-blocks.tsx` — guests, money, this week,
+        seating, suppliers, a saved note; confirm cards with Yes / Change;
+        if the assistant can't answer, "Save it as a note" / "Try again";
+        a camera button to Inspo). The conversation lasts while the page is
+        open. Not yet: suggested next-step pills, Compare (side-by-side
+        quotes), photos of quotes, the desktop sidebar's capture button.
      6. Tests: the assistant's tools in `supabase/tests/rls_isolation.sql`
         terms (another wedding's ids return nothing); try it on the demo
         wedding first.

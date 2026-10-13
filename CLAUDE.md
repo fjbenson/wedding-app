@@ -1026,6 +1026,22 @@ additive — new tables hanging off `weddings`. None require changing the above.
      opening at first; sent reminders need the background worker);
      7 **helping decide** (compare quotes against the budget). First
      version: 1 + 2 + take-me-there links.
+   - **Keeping each wedding's data separate (owner asked, 13 Oct 2026):**
+     it runs on the server as the signed-in person (no master key), so RLS
+     applies to every query; its actions have **no wedding setting** — the
+     server fills in `getCurrentWedding()`; only named actions, no SQL; a
+     Yes on a confirm card for every change, no deletes; text in notes or
+     files is data, never instructions; add its actions to
+     `supabase/tests/rls_isolation.sql`.
+   - **Design round 1 on canvas 2** ("Your planner · Round 1", 13 Oct 2026):
+     one front door — the Hub pill and the floating pen become **"Jot or
+     ask…"**, opening one panel; replies are short with **answer cards**
+     ("12 vegetarian guests · See them ›") and **confirm cards** (Add her /
+     Change); a plain thought is still saved as a note; three ways to
+     introduce it: "Your planner" (suggested), "Ask", or named with the app.
+     Before building: an Anthropic key in Vercel, privacy-list entry (guest
+     details go to the AI to answer), a spending cap; and clean versions of
+     the few save steps it needs (today's take a form and redirect).
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

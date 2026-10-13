@@ -287,6 +287,21 @@ Next.js scaffold. Built so far, against the plan's tabs:
   button beside Call · Email ("ellierose.co.uk" gets https:// added). Until
   0015 is run, saves quietly leave the website out (`missingWebsite()` retry
   in `supplier-actions.ts`); editing it on the card says to run 0015.
+  **Files on the supplier card** (13 Oct 2026; canvas 2 "Files · Round 1",
+  A, with round 2's option C for adding; `0018_files.sql`, run 13 Oct 2026
+  with the owner's OK): a **Documents** part (`supplier-files.tsx`) listing
+  their contract, quotes, invoices and receipts — tap to open (hour-long
+  signed link), ✕ to remove (asks). **"+ Add a file"** opens the phone's own
+  menu (Photo Library · Take Photo · Choose File), then a small **pop-up in
+  the middle**: the file, **What is it?** tiles (guessed from the name),
+  "We've signed it" for a contract, **Save the file**. Uploads go straight
+  from the phone to the private `files` bucket under `<wedding id>/…`
+  (`src/lib/db/files-upload.ts`, the second browser-side query; 20 MB, PDF,
+  photos, Word); rows in `files` (`src/lib/db/files.ts`,
+  `files/actions.ts`, which return messages). A removed supplier's files
+  stay, with no supplier. Still to come: **B**, one place for every file
+  (People › Files, grouped by area, Filter and +), files on payments and
+  area pages, and **C**, the assistant reading a file.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that
@@ -610,14 +625,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0017_run_sheet_area.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0018_files.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0017 are now in** (12 Oct
+only queries) needs no OK. **All migrations 0001–0018 are now in** (0018, files, run 13 Oct 2026) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

@@ -257,3 +257,20 @@ export interface InspoItem {
   note: string | null;
   created_at: string;
 }
+
+export type FileKind = "contract" | "quote" | "invoice" | "receipt" | "other";
+
+/** A contract, quote, invoice or receipt kept in the app (0018_files.sql). */
+export interface WeddingFile {
+  id: string;
+  wedding_id: string;
+  contact_id: string | null;
+  area_key: string | null;
+  kind: FileKind;
+  signed: boolean;
+  name: string;
+  path: string;
+  size_bytes: number | null;
+  mime_type: string | null;
+  created_at: string;
+}

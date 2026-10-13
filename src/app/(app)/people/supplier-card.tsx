@@ -13,6 +13,7 @@ import type { Payment, SupplierStatus } from "@/types/db";
 import { safely } from "./guest-card";
 import { deleteSupplierAction, saveSupplierCardAction, updateSupplierAction } from "./supplier-actions";
 import SupplierForm from "./supplier-form";
+import SupplierFiles from "@/components/supplier-files";
 
 export function supplierName(s: Supplier) {
   return s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" ");
@@ -182,6 +183,9 @@ export default function SupplierCard({
               </>
             }
           />
+
+          {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
+          <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
 
           <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import AddButton from "@/components/add-button";
 import type { AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Note } from "@/types/db";
@@ -42,7 +43,10 @@ export default function InboxView({
         <ChevronLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         Hub
       </Link>
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">Your notes</h1>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h1 className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">Your notes</h1>
+        <AddButton href="/capture?from=/inbox" label="Jot something down" />
+      </div>
       <p className="mt-2 text-sm text-stone">
         {(notes ?? []).length === 0
           ? "Jot something down and it waits here, until you file it under an area or make it a to-do."
@@ -62,13 +66,6 @@ export default function InboxView({
         </p>
       )}
 
-      <Link
-        href="/capture?from=/inbox"
-        className="mt-5 flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-[15px] text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Jot something down
-      </Link>
 
       {notes !== null && (
         <div className="mt-8">

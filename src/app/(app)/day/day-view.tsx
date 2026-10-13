@@ -1,6 +1,7 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
-import { ChevronRight, Plus, X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
+import AddButton from "@/components/add-button";
 import CornerSwitch from "@/components/corner-switch";
 import ViewTabs from "@/components/view-tabs";
 import { InlineSubmit } from "@/components/form-bits";
@@ -163,15 +164,13 @@ function RunSheet({
         <p className="mt-2 text-sm text-stone">Hour by hour — who needs to be where, and when. It gets printed and handed round.</p>
       )}
 
-      <div className="mt-5 flex gap-2.5 print:hidden">
-        <Link
-          href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
-          className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[14px] bg-ink px-4 text-sm text-ivory transition hover:bg-ink/90 sm:flex-none sm:px-6"
-        >
-          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Add a moment
-        </Link>
+      {/* The round black + like every tab (owner, 13 Oct 2026), Print beside it. */}
+      <div className="mt-5 flex items-center justify-end gap-2 print:hidden">
         {items.length > 0 && <PrintButton />}
+        <AddButton
+          href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
+          label="Add a moment"
+        />
       </div>
       {all.length > 0 && <FilterMenu base="/day" groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]} />}
       {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
@@ -413,17 +412,12 @@ function Transport({ data, guests }: { data: DayData; guests: Contact[] }) {
       <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
         Transport
       </PageTitle>
-      <p className="mt-2 text-sm text-stone">
-        {data.runs.length === 0 ? "Cars, the coach, pickups — and who travels with whom." : `${data.runs.length} ${data.runs.length === 1 ? "run" : "runs"} on the day`}
-      </p>
-
-      <Link
-        href="/day/transport/new"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-ivory transition hover:bg-ink/90 lg:w-fit lg:px-6"
-      >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Add a car or coach
-      </Link>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-sm text-stone">
+          {data.runs.length === 0 ? "Cars, the coach, pickups — and who travels with whom." : `${data.runs.length} ${data.runs.length === 1 ? "run" : "runs"} on the day`}
+        </p>
+        <AddButton href="/day/transport/new" label="Add a car or coach" />
+      </div>
 
       <div className="mt-8 space-y-4">
         {data.runs.map((run) => {

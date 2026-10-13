@@ -1011,9 +1011,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
 - **Odd ones out (13 Oct 2026)** — owner asked for mismatches like Money's
   old area drop-down (now the shared `FilterMenu`, `src/components/
   filter-menu.tsx`, on Money, Plan's List and The Day). Parked for later:
-  1. **Add buttons**: still the old wide black bar, not the round black +
-     (`AddButton`) — The Day's "Add a moment" and "Add a car or coach",
-     Your notes' "Jot something down", Inspo's add.
+  1. ~~**Add buttons**~~ — done 13 Oct 2026: The Day's run sheet (+ with a
+     40px Print beside it) and Transport, Your notes and Inspo (title row)
+     now use the round black + (`AddButton`).
   2. **Page titles**: Your notes has no title drawing; Inspo and Settings
      use a smaller plain title (34px) and no drawing — use `PageTitle`.
   3. **Inspo's folders**: area chips that go black when picked; everywhere

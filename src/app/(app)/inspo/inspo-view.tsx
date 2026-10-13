@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import AddButton from "@/components/add-button";
 import type { AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 
@@ -72,7 +73,10 @@ export default function InspoView({
   return (
     <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <p className="label">Inspo</p>
-      <h1 className="mt-3 text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">{total === 0 ? "Nothing saved yet." : title}</h1>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h1 className="text-[34px] leading-[1.05] tracking-[-0.02em] text-ink">{total === 0 ? "Nothing saved yet." : title}</h1>
+        <AddButton href={newHref} label="Save an idea" />
+      </div>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -93,12 +97,8 @@ export default function InspoView({
             Dresses, flowers, table ideas, a cake someone posted — save them here as you find them. A photo from your phone,
             or a link from Pinterest or anywhere else. File each under an area and it turns up on that area&apos;s page too.
           </p>
-          <Link
-            href="/inspo/new"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-3 text-ivory transition hover:bg-ink/90"
-          >
-            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Save your first idea
+          <Link href="/inspo/new" className="type-meta mt-4 inline-block !text-champagne-600 hover:!text-ink">
+            Save your first idea ›
           </Link>
         </div>
       ) : (
@@ -132,13 +132,6 @@ export default function InspoView({
             )}
           </nav>
 
-          <Link
-            href={newHref}
-            className="glass-card mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-ink hover:border-champagne-400"
-          >
-            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Save an idea
-          </Link>
 
           {items.length === 0 ? (
             <p className="mt-8 text-sm text-stone">Nothing in this folder yet.</p>

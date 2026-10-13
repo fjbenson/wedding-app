@@ -55,7 +55,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Setup** (`/setup`, screen 2): the couple's names and the date, then which
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
-- **Hub** (`/`): names, hub ring, then under the ring (canvas 2, "Home ·
+- **Hub** (`/`): names, hub ring (its heart — the days to go, "How it's
+  going ›" — opens **Where things stand**, `/standing`, 13 Oct 2026; see
+  Backlog), then under the ring (canvas 2, "Home ·
   Round 2 · Calm under the ring", option B, owner's pick 13 Oct 2026; was
   "Home · Under the ring" B): one quiet glass pill, the assistant's gold pen
   mark and **"Ask your assistant"** in italics (canvas 2 "Hub · How to reach
@@ -934,7 +936,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 13 Oct 2026 evening chat):** Your assistant
+   `calendar.tsx`). **Next up (end of the 13 Oct 2026 late chat):** the owner
+   tries **Where things stand** (`/standing`, built this chat) on the demo
+   wedding and says if any figure looks off; still to check on an iPhone
+   that the assistant no longer jumps; then the plan below.
+   **Earlier next-up (end of the 13 Oct 2026 evening chat):** Your assistant
    version 1 is **built and live** (step 8) and the owner loves it; its new
    skills are **parked** by the owner (ideas listed in step 8). First, the
    owner checks on an iPhone that the assistant no longer jumps when the

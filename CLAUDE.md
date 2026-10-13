@@ -1070,8 +1070,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
         (`getCurrentWedding()`). The add forms (guest, to-do, payment,
         capture) and the guest card's answer now go through them; edits
         still use their own actions. Add new jobs here.
-     3. Reading tools: guests by filter, money summary, this week, a table,
-        suppliers by area — each returns data for one answer block.
+     3. ~~Reading tools~~ — **done 13 Oct 2026**: `src/lib/lookups.ts` —
+        `overview` (names, date, areas, events and households with their
+        ids), `findGuests` (name, answer, day/evening, bridal party,
+        dietary, words in meal or diet, children, no address, household),
+        `moneySummary` (whole wedding or one area: budget, agreed, paid, to
+        pay, by month, next three, balances with no date), `thisWeek` (as
+        the Hub's), `seating`, `findSuppliers`. Each finds the wedding
+        itself and returns a `link` to the screen already filtered. Not yet
+        used by any screen — the assistant's route will be the first.
      4. A route (`src/app/api/planner/route.ts`) on Vercel: Anthropic SDK
         (`claude-opus-5-5`), tool use, streaming; tools = the reading ones
         (run at once) and the writing ones (return a confirm card; only run

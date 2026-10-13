@@ -89,3 +89,8 @@ export function areaKey(label: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/** The wedding's areas then Other (`none`), as rows for a Filter menu. */
+export function areaFilterRows(areas: AreaOption[]): { key: string; label: string }[] {
+  return [...areas.filter((a) => a.key !== "other").map((a) => ({ key: a.key, label: a.label })), { key: "none", label: "Other" }];
+}

@@ -1,5 +1,5 @@
-// Plan's List "when" filter choices. Kept out of when-filter.tsx: that's a
-// client file, and the server can't use plain values exported from one.
+// Plan's List "when" filter choices. Kept in a plain file: filter menus are
+// client files, and the server can't use plain values exported from one.
 export const WHEN_CHOICES = [
   ["overdue", "Overdue"],
   ["month", "This month"],

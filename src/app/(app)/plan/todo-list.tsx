@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { areaName, type AreaOption } from "@/lib/areas";
+import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone } from "@/types/db";
 import { AppointmentRow } from "./appointment-row";
-import AreaFilter from "./area-filter";
+import FilterMenu from "@/components/filter-menu";
 import { Fold, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
-import WhenFilter from "./when-filter";
 import { WHEN_CHOICES, type When } from "./when";
 
 /** "2026-10-12" → "2027-01-12": three months on, for "Next 3 months". */
@@ -73,7 +72,6 @@ export default function TodoList({
 
   const areaLabel = area === "none" ? "other" : area ? (areaName(area, areas) ?? area) : null;
   const whenLabel = WHEN_CHOICES.find(([key]) => key === when)?.[1].toLowerCase();
-  const param = (key: string, value: string | null) => (value ? `&${key}=${encodeURIComponent(value)}` : "");
 
   return (
     <FoldGroup initiallyOpen={[]}>
@@ -81,11 +79,14 @@ export default function TodoList({
         <h2 className="font-display text-[26px] leading-tight text-ink">
           {open.length} <span className="font-light italic text-champagne-600">to do</span>
         </h2>
-        <div className="flex gap-2">
-          <WhenFilter current={when} base={`/plan?view=list${param("area", area)}`} choices={WHEN_CHOICES} />
-          <AreaFilter areas={areas} current={area} base={`/plan?view=list${param("when", when)}`} />
-        </div>
       </div>
+      <FilterMenu
+        base="/plan?view=list"
+        groups={[
+          { param: "when", title: "When", current: when, rows: WHEN_CHOICES.map(([key, label]) => ({ key, label })) },
+          { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
+        ]}
+      />
 
       {open.length === 0 ? (
         <p className="mt-6 font-display text-xl italic text-ink">
@@ -174,7 +175,6 @@ function AppointmentList({
   const coming = shown.filter((a) => a.on_date >= today && isWhen(a)).sort(byTime);
   const been = shown.filter((a) => a.on_date < today).sort((x, y) => byTime(y, x));
   const areaLabel = area === "none" ? "other" : area ? (areaName(area, areas) ?? area) : null;
-  const param = (key: string, value: string | null) => (value ? `&${key}=${encodeURIComponent(value)}` : "");
   const base = "/plan?view=list&kind=appointments";
 
   return (
@@ -183,15 +183,19 @@ function AppointmentList({
         <h2 className="font-display text-[26px] leading-tight text-ink">
           {coming.length} <span className="font-light italic text-champagne-600">coming up</span>
         </h2>
-        <div className="flex gap-2">
-          <WhenFilter
-            current={when === "month" || when === "soon" ? when : null}
-            base={`${base}${param("area", area)}`}
-            choices={WHEN_CHOICES.filter(([k]) => k === "month" || k === "soon")}
-          />
-          <AreaFilter areas={areas} current={area} base={`${base}${param("when", when)}`} />
-        </div>
       </div>
+      <FilterMenu
+        base={base}
+        groups={[
+          {
+            param: "when",
+            title: "When",
+            current: when === "month" || when === "soon" ? when : null,
+            rows: WHEN_CHOICES.filter(([k]) => k === "month" || k === "soon").map(([key, label]) => ({ key, label })),
+          },
+          { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
+        ]}
+      />
 
       {coming.length === 0 ? (
         <p className="mt-6 font-display text-xl italic text-ink">

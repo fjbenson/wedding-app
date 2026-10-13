@@ -3,9 +3,9 @@ import AddButton from "@/components/add-button";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
-import MoneyAreaFilter from "./money-area-filter";
+import FilterMenu from "@/components/filter-menu";
 import PageTitle from "@/components/page-title";
-import type { AreaOption } from "@/lib/areas";
+import { areaFilterRows, type AreaOption } from "@/lib/areas";
 import AreaCards, { type AreaCard } from "./area-cards";
 import MoneyFigures from "./money-figures";
 import type { Money } from "@/lib/budget";
@@ -73,7 +73,10 @@ export default function MoneyView({
   // The area filter goes under the heading with the round black +, drawn like
   // the guest list's Filter (owner, 13 Oct 2026, for harmony).
   const filter = (
-    <MoneyAreaFilter areas={areas} current={area} base={view === "month" ? "/money?view=month" : "/money"} />
+    <FilterMenu
+      base={view === "month" ? "/money?view=month" : "/money"}
+      groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
+    />
   );
   return (
     <main className="page pb-28 lg:pb-16">

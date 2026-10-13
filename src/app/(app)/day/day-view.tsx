@@ -17,8 +17,8 @@ import {
   updateTableAction,
 } from "./actions";
 import FloorPlan from "./floor-plan";
-import AreaFilter from "../plan/area-filter";
-import { areaName, type AreaOption } from "@/lib/areas";
+import FilterMenu from "@/components/filter-menu";
+import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
 
 export type DayTab = "run-sheet" | "seating" | "transport";
@@ -172,12 +172,8 @@ function RunSheet({
           Add a moment
         </Link>
         {items.length > 0 && <PrintButton />}
-        {all.length > 0 && (
-          <div className="ml-auto flex items-center">
-            <AreaFilter areas={areas} current={area} base="/day" label="Show the run sheet for" />
-          </div>
-        )}
       </div>
+      {all.length > 0 && <FilterMenu base="/day" groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]} />}
       {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (

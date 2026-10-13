@@ -98,6 +98,7 @@ function Panel({
     };
   }, [onClose]);
   const drag = usePullToClose(onClose);
+  const view = useVisibleArea();
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: "end" });
@@ -224,7 +225,13 @@ function Panel({
   }
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Your assistant">
+    <div
+      className="fixed inset-x-0 top-0 z-50 h-dvh"
+      style={view ? { top: view.top, height: view.height } : undefined}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Your assistant"
+    >
       <button
         type="button"
         aria-label="Close"
@@ -234,7 +241,7 @@ function Panel({
       />
       <div
         style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-        className={`absolute inset-x-0 bottom-0 flex h-[92dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:h-auto lg:w-[460px] lg:rounded-none lg:rounded-l-[28px] ${
+        className={`absolute inset-x-0 bottom-0 flex h-[92dvh] max-h-full flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:h-auto lg:w-[460px] lg:rounded-none lg:rounded-l-[28px] ${
           drag.dragging ? "" : "transition-transform duration-200 ease-out"
         }`}
       >
@@ -353,7 +360,7 @@ function Panel({
                   }
                 }}
                 rows={1}
-                autoFocus={turns.length === 0}
+                autoFocus={turns.length === 0 && canHover()}
                 placeholder={hint ?? "Jot or ask…"}
                 className="block max-h-32 w-full resize-none bg-transparent py-2 font-display text-[17px] leading-snug text-ink [field-sizing:content] placeholder:italic placeholder:text-stone focus:outline-none"
               />
@@ -379,6 +386,34 @@ function Panel({
       </div>
     </div>
   );
+}
+
+/** A mouse and keyboard: safe to put the cursor in the box straight away. */
+function canHover() {
+  return typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
+}
+
+/**
+ * The part of the screen the keyboard leaves free. On an iPhone the keyboard
+ * doesn't shrink the page; Safari scrolls it up instead, pushing the panel's
+ * top off the screen. Sizing the panel to what's visible keeps the header
+ * on screen and the box just above the keyboard.
+ */
+function useVisibleArea() {
+  const [area, setArea] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setArea({ top: vv.offsetTop, height: vv.height });
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+  return area;
 }
 
 /** "Here's what I'll add:" — the details, then Yes and Change. Nothing saves before Yes. */

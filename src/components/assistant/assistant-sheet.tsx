@@ -41,9 +41,6 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
             <PenLine className="h-[18px] w-[18px] text-champagne-600" strokeWidth={1.7} aria-hidden />
             Jot or ask…
           </button>
-          <p className="mt-2.5 px-6 text-center text-[13px] text-stone">
-            “Add Amy to the guest list” · “How many vegetarians?” · or just a note
-          </p>
         </div>
       ) : (
         <button

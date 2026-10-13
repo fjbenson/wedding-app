@@ -979,6 +979,19 @@ additive — new tables hanging off `weddings`. None require changing the above.
      **Idea (13 Oct 2026): the Hub's jot box doubles as the assistant** —
      type "Add Amy Latham, vegan, Latham household" and it offers to do it
      instead of saving a note; one box for thoughts, pictures and jobs.
+   - **What it's for (owner, 13 Oct 2026):** 1 **answering** ("how many
+     guests are vegetarian?") with a "take me there" link that opens the
+     right screen already filtered; 2 **doing** (add a guest, record a
+     payment…). Also raised, in suggested order after those: 3 **messy
+     stuff into data** (paste a guest list from WhatsApp or a spreadsheet,
+     a photo of a quote or invoice → guests, supplier, payments — the
+     biggest admin saver); 4 **writing** (invitation wording, RSVP chasers,
+     supplier emails, thank-yous — ties to the group-emails backlog);
+     5 **advice** against their own date and budget; 6 **spotting
+     problems** (no meal choice, over budget, a balance due Friday — on
+     opening at first; sent reminders need the background worker);
+     7 **helping decide** (compare quotes against the budget). First
+     version: 1 + 2 + take-me-there links.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

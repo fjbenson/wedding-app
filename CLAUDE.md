@@ -1255,10 +1255,16 @@ additive — new tables hanging off `weddings`. None require changing the above.
      lift), and those become guest list filters ("Staying at the pub"),
      which then feed 2. Would need new tables (places to stay, and who's
      staying where) hanging off `weddings` — additive, no rebuild.
-- **"Where things stand"** (owner, 13 Oct 2026, from the assistant's
-  round 3 option C): the Hub answers *what's next*; nothing yet gives the
-  overall picture (replies waiting, money due, meals not picked…). A gap,
-  not designed — maybe a screen, maybe the assistant's opening.
+- ~~**"Where things stand"**~~ — **built 13 Oct 2026** (canvas 2 "Where
+  things stand · Round 2", option 1 + a cream line, owner's pick): the heart
+  of the hub ring ("How it's going ›") opens `/standing`. A cream line
+  ("34 things done so far · to-dos · payments · suppliers booked"), then a
+  glass card each for People · Money · Plan · The Day · Areas: what's done
+  as a big gold figure and a bar, what needs you (dashed "!", over budget a
+  rose ▲), and the rest of what's done folded at the foot. Every line opens
+  the screen filtered. Figures in `src/lib/where-things-stand.ts`, worked
+  out each time, nothing stored. Not yet: the assistant opening it ("how are
+  we doing?"); a "Lately" list would need booked/ready dates (no column yet).
 - **A card of their own for guests** (owner, 13 Oct 2026: suppliers got a
   business card, what for guests?). Canvas 2 "Guest card · Round 1 · A card
   of their own": **A** a place card (table at the top, name large, role and

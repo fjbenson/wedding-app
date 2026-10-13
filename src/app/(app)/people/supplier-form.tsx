@@ -83,7 +83,7 @@ export default function SupplierForm({
 
       <fieldset className="mt-7">
         <legend className="section-label">What they do</legend>
-        <AreaTiles name="category" areas={categories} otherValue="other" defaultValue={supplier ? (d?.category ?? undefined) : defaultCategory} />
+        <AreaTiles name="category" areas={categories} otherValue="other" defaultValue={supplier ? (d?.category ?? undefined) : defaultCategory} folded={!!supplier} />
       </fieldset>
 
       <fieldset className="mt-7">

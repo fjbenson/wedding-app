@@ -132,6 +132,7 @@ export function AreaTiles({
   value,
   defaultValue,
   onChange,
+  folded: startFolded = false,
 }: {
   name: string;
   areas: AreaOption[];
@@ -140,8 +141,16 @@ export function AreaTiles({
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
+  /**
+   * A saved item rather than a new one (owner, 13 Oct 2026: the grid "takes
+   * up way too much space" once it's chosen): the choice shows as one small
+   * pill — its icon and name — and tapping it opens the tiles to change it.
+   * Adding always shows the tiles.
+   */
+  folded?: boolean;
 }) {
   const [own, setOwn] = useState(defaultValue ?? "\u0000");
+  const [isFolded, setFolded] = useState(startFolded);
   const picked = value ?? own;
   const pick = (v: string) => {
     setOwn(v);
@@ -170,8 +179,31 @@ export function AreaTiles({
     };
   }, [adding]);
 
+  const options = areaTiles(all, otherValue);
+  const chosen = options.find((o) => o.value === picked);
+  if (isFolded && chosen) {
+    const Icon = chosen.icon;
+    return (
+      <>
+        {/* The radios aren't drawn while folded, so this carries the choice. */}
+        <input type="hidden" name={name} value={picked} />
+        <button
+          type="button"
+          onClick={() => setFolded(false)}
+          aria-label={`${chosen.label} — change the area`}
+          className="mt-3 inline-flex h-11 items-center gap-2 rounded-full border border-linen bg-white/80 pl-3.5 pr-3 text-[15px] text-ink transition hover:border-champagne-400"
+        >
+          <Icon aria-hidden className="h-[18px] w-[18px] text-champagne-600" strokeWidth={1.6} />
+          {chosen.label}
+          <span className="ml-1 text-[13px] text-stone">Change</span>
+          <ChevronDown aria-hidden className="h-4 w-4 text-stone" strokeWidth={1.8} />
+        </button>
+      </>
+    );
+  }
+
   return (
-    <Tiles name={name} options={areaTiles(all, otherValue)} value={picked} onChange={pick}>
+    <Tiles name={name} options={options} value={picked} onChange={pick}>
       <button
         ref={tile}
         type="button"

@@ -58,7 +58,7 @@ export function RunSheetForm({
       </Part>
 
       <Part label="Area">
-        <AreaTiles name="area_key" areas={areas} otherValue="" defaultValue={item ? (item.area_key ?? "") : defaultArea} />
+        <AreaTiles name="area_key" areas={areas} otherValue="" defaultValue={item ? (item.area_key ?? "") : defaultArea} folded={!!item} />
       </Part>
 
       <section className="mt-7">

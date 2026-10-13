@@ -790,6 +790,14 @@ access control is RLS. No column-level encryption is planned.
   back if the name matches), then picks it, without leaving the form. On the to-do,
   appointment, payment and add-a-supplier forms so far; still to do on the
   supplier card, capture, note filing and Inspo.
+- **Adding shows the tiles; a saved item shows the choice as a pill**
+  (owner, 13 Oct 2026: a form has two lives — filling it in, then an item
+  you look at — and the area grid "takes up way too much space" once it's
+  chosen). `AreaTiles` takes `folded`: the picked area as one small pill
+  (its icon, name, "Change ⌄"), tapping it opens the tiles. On the edit
+  forms of to-dos, appointments, payments, run sheet moments and the
+  supplier card. Other tile pickers on saved items (supplier stage, Paid
+  yet?) can follow the same rule.
 - **Amounts get a comma every thousand as you type** (owner, 12 Oct
   2026): use `MoneyInput` (`src/components/money-input.tsx`) or
   `withCommas()` (`src/lib/money.ts`) for any money box — supplier form and

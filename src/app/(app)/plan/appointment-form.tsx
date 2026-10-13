@@ -149,7 +149,7 @@ export default function AppointmentForm({
       </Part>
 
       <Part label="Area">
-        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} />
+        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} folded={!!appointment?.area_key} />
       </Part>
 
       <Folded label="Add notes" open={!!appointment?.notes}>

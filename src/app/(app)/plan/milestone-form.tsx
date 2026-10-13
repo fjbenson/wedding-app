@@ -68,7 +68,7 @@ export default function MilestoneForm({
 
       <Part label="Area">
         {/* Other is stored as no area, as before (owner: "always have that other option"). */}
-        <AreaTiles name="category" areas={options} otherValue="" defaultValue={current ?? defaultArea} />
+        <AreaTiles name="category" areas={options} otherValue="" defaultValue={current ?? defaultArea} folded={!!milestone} />
       </Part>
 
       <section className="mt-7">

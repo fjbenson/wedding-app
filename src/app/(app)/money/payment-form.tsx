@@ -157,7 +157,7 @@ export default function PaymentForm({
 
       <Part label="Area">
         {/* None picked means it follows the supplier's area, as before. */}
-        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} />
+        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} folded={!!payment?.area_key} />
       </Part>
 
       <Folded label="Add notes" open={!!payment?.notes}>

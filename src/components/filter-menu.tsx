@@ -21,7 +21,16 @@ export type FilterGroup = {
  * picking reloads the screen with the choice in the address, so Money, Plan's
  * List and The Day can still be linked to already narrowed.
  */
-export default function FilterMenu({ base, groups }: { base: string; groups: FilterGroup[] }) {
+export default function FilterMenu({
+  base,
+  groups,
+  end,
+}: {
+  base: string;
+  groups: FilterGroup[];
+  /** Buttons for the right of the Filter's row (The Day's Print and +). */
+  end?: React.ReactNode;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -52,66 +61,69 @@ export default function FilterMenu({ base, groups }: { base: string; groups: Fil
 
   return (
     <div className="mt-3 px-1 print:hidden">
-      <div ref={box} className="relative inline-block">
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-haspopup="true"
-          aria-label={on.length > 0 ? `Filter, ${on.length} on` : "Filter"}
-          onClick={() => setOpen((o) => !o)}
-          className={`flex h-9 items-center gap-1.5 rounded-full transition ${
-            on.length > 0
-              ? "border border-champagne-600 bg-champagne-100 pl-2.5 pr-3 text-[13px] font-medium text-champagne-600"
-              : "type-meta hover:text-ink"
-          }`}
-        >
-          <SlidersHorizontal className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
-          {on.length > 0 ? `Filter · ${on.length}` : "Filter"}
-        </button>
+      <div className="flex items-center justify-between gap-3">
+        <div ref={box} className="relative inline-block">
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-haspopup="true"
+            aria-label={on.length > 0 ? `Filter, ${on.length} on` : "Filter"}
+            onClick={() => setOpen((o) => !o)}
+            className={`flex h-9 items-center gap-1.5 rounded-full transition ${
+              on.length > 0
+                ? "border border-champagne-600 bg-champagne-100 pl-2.5 pr-3 text-[13px] font-medium text-champagne-600"
+                : "type-meta hover:text-ink"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+            {on.length > 0 ? `Filter · ${on.length}` : "Filter"}
+          </button>
 
-        {open && (
-          <div className="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-            <div className="flex items-baseline justify-between py-1">
-              <span className="section-label">Show only</span>
-              {on.length > 0 && (
-                <button type="button" onClick={() => go(null, null)} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-                  Clear
-                </button>
-              )}
-            </div>
-            {groups.map((g, gi) => (
-              <div key={g.param} className={gi > 0 ? "mt-1 border-t border-champagne-400 pt-1" : ""}>
-                {groups.length > 1 && g.title && <p className="type-meta pb-1 pt-2">{g.title}</p>}
-                <ul>
-                  {g.rows.map((r) => {
-                    const ticked = r.key === g.current;
-                    return (
-                      <li key={r.key} className="border-t border-linen first:border-t-0">
-                        <button
-                          type="button"
-                          role="menuitemradio"
-                          aria-checked={ticked}
-                          onClick={() => go(g.param, ticked ? null : r.key)}
-                          className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                        >
-                          <span
-                            aria-hidden
-                            className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                              ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                            }`}
-                          >
-                            {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                          </span>
-                          <span className="flex-1">{r.label}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+          {open && (
+            <div className="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+              <div className="flex items-baseline justify-between py-1">
+                <span className="section-label">Show only</span>
+                {on.length > 0 && (
+                  <button type="button" onClick={() => go(null, null)} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+                    Clear
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+              {groups.map((g, gi) => (
+                <div key={g.param} className={gi > 0 ? "mt-1 border-t border-champagne-400 pt-1" : ""}>
+                  {groups.length > 1 && g.title && <p className="type-meta pb-1 pt-2">{g.title}</p>}
+                  <ul>
+                    {g.rows.map((r) => {
+                      const ticked = r.key === g.current;
+                      return (
+                        <li key={r.key} className="border-t border-linen first:border-t-0">
+                          <button
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={ticked}
+                            onClick={() => go(g.param, ticked ? null : r.key)}
+                            className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                          >
+                            <span
+                              aria-hidden
+                              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                                ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                              }`}
+                            >
+                              {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                            </span>
+                            <span className="flex-1">{r.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {end && <div className="flex items-center gap-2">{end}</div>}
       </div>
 
       {on.length > 0 && (

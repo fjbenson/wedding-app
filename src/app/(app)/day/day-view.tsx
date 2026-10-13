@@ -164,15 +164,23 @@ function RunSheet({
         <p className="mt-2 text-sm text-stone">Hour by hour — who needs to be where, and when. It gets printed and handed round.</p>
       )}
 
-      {/* The round black + like every tab (owner, 13 Oct 2026), Print beside it. */}
-      <div className="mt-5 flex items-center justify-end gap-2 print:hidden">
-        {items.length > 0 && <PrintButton />}
-        <AddButton
-          href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
-          label="Add a moment"
-        />
-      </div>
-      {all.length > 0 && <FilterMenu base="/day" groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]} />}
+      {/* Filter on the left, Print and the round black + on its right (owner, 13 Oct 2026). */}
+      {(() => {
+        const buttons = (
+          <>
+            {items.length > 0 && <PrintButton />}
+            <AddButton
+              href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
+              label="Add a moment"
+            />
+          </>
+        );
+        return all.length > 0 ? (
+          <FilterMenu base="/day" groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]} end={buttons} />
+        ) : (
+          <div className="mt-5 flex items-center justify-end gap-2 print:hidden">{buttons}</div>
+        );
+      })()}
       {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (

@@ -22,6 +22,7 @@ export default function HouseholdView({
   guests,
   events,
   rsvps,
+  tables,
 }: {
   household: Household;
   /** Every household, for moving someone on their card. */
@@ -29,6 +30,7 @@ export default function HouseholdView({
   guests: Contact[];
   events: WeddingEvent[];
   rsvps: Rsvp[];
+  tables: Record<string, string>;
 }) {
   const [openId, setOpenId] = useState<string>();
   const close = useCallback(() => setOpenId(undefined), []);
@@ -113,6 +115,7 @@ export default function HouseholdView({
           households={households}
           events={events}
           rsvps={answersOf(open)}
+          table={tables[open.id] ?? null}
           onClose={close}
         />
       )}

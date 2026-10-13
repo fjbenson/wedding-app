@@ -202,7 +202,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  text/call/email, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
+  **since 13 Oct 2026 topped by a place card** (`PlaceCard`; canvas 2
+  "Guest card · Round 1", A, owner's pick: suppliers have a business card,
+  guests a place card): their table across the top (`tableNames()` in
+  `src/lib/db/day.ts`; "No table yet" links to Seating), the name large in
+  italics (tap to rename), role and "day guest", meal and allergies, the
+  answer stamped in the corner; then round Text · Call · Email, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
   Can't come) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
   Bridesmaid, Best man, Groomsman), and "More" to open the rest plus "Your
@@ -1254,8 +1259,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
   keepsake polaroid with an optional photo. Same card body under each
   (Guest of, RSVP, Role, Details, Contact). Photos, if built: optional,
   initials by default, private bucket like Inspo, **never for children**,
-  and on the privacy list. **Owner's pick: A, the place card** ("almost
-  there", 13 Oct 2026) — to build next.
+  and on the privacy list. **Owner's pick: A, the place card** — built
+  13 Oct 2026 (see People). No photos yet.
 - **Reminders and notifications** (owner, 13 Oct 2026: "not something we
   thought about yet"). Two different things:
   1. **Badges inside the app** (no new services): a small count where

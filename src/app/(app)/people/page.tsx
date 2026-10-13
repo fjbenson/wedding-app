@@ -4,6 +4,7 @@ import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { listPayments } from "@/lib/db/money";
 import { listAreas } from "@/lib/db/areas";
+import { tableNames } from "@/lib/db/day";
 import { areaOptions } from "@/lib/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import PeopleTabs from "./people-tabs";
@@ -41,6 +42,8 @@ export default async function PeoplePage({
   const current = tab === "suppliers" ? "suppliers" : "guests";
   // The supplier card shows each one's payments (null until 0006 is run).
   const payments = current === "suppliers" ? ((await listPayments(wedding.id)) ?? []) : [];
+  // The guest card's place card shows their table.
+  const tables = current === "guests" ? await tableNames(wedding.id) : {};
   const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
 
   return (
@@ -54,6 +57,7 @@ export default async function PeoplePage({
           households={households}
           events={events}
           rsvps={rsvps}
+          tables={tables}
           guestId={guest}
           filter={tab === "party" ? "party" : undefined}
           view={view === "households" ? "households" : undefined}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
+import { Check, ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -51,6 +51,7 @@ export default function GuestCard({
   households,
   events,
   rsvps,
+  table = null,
   onClose,
 }: {
   guest: Contact;
@@ -60,6 +61,8 @@ export default function GuestCard({
   events: WeddingEvent[];
   /** This guest's answers. */
   rsvps: Rsvp[];
+  /** The table they sit at, if they've been seated. */
+  table?: string | null;
   onClose: () => void;
 }) {
   const name = fullName(guest);
@@ -104,14 +107,13 @@ export default function GuestCard({
         </div>
 
         <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8">
-          <div onPointerDown={drag.start} className="flex touch-none items-start gap-3 lg:touch-auto">
+          <div onPointerDown={drag.start} className="flex touch-none items-center gap-3 lg:touch-auto">
             <div className="min-w-0 flex-1">
               {household && (
                 <Link href={`/people/household/${household.id}`} className="label hover:text-ink">
                   {household.name} ›
                 </Link>
               )}
-              <NameEditor guest={guest} onSave={save} />
             </div>
             <button
               type="button"
@@ -123,26 +125,13 @@ export default function GuestCard({
             </button>
           </div>
 
+          <PlaceCard guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
+
           {(phone || guest.email) && (
-            <div className="mt-5 flex gap-2.5">
-              {phone && (
-                <a href={`sms:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory hover:bg-ink/90">
-                  <MessageSquare className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                  Text
-                </a>
-              )}
-              {phone && (
-                <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400">
-                  <Phone className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                  Call
-                </a>
-              )}
-              {guest.email && (
-                <a href={`mailto:${guest.email}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400">
-                  <Mail className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                  Email
-                </a>
-              )}
+            <div className="mt-5 flex justify-center gap-8">
+              {phone && <RoundAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
+              {phone && <RoundAction href={`tel:${phone}`} label="Call" icon={Phone} />}
+              {guest.email && <RoundAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
             </div>
           )}
 
@@ -173,6 +162,110 @@ export default function GuestCard({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The top of the card, as a place card from a reception table (canvas 2
+ * "Guest card · Round 1", option A, owner's pick 13 Oct 2026 — suppliers
+ * have a business card, guests a place card): their table across the top,
+ * their name large, role and day or evening, meal and allergies, and their
+ * answer stamped in the corner. The parts are changed further down the card;
+ * the name is changed by tapping it, as before.
+ */
+function PlaceCard({
+  guest,
+  table,
+  own,
+  ownEvent,
+  onSave,
+}: {
+  guest: Contact;
+  table: string | null;
+  own?: Rsvp;
+  ownEvent?: WeddingEvent;
+  onSave: (edit: GuestEdit) => Promise<{ error?: string }>;
+}) {
+  const roles = rolesOf(guest);
+  const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
+  return (
+    <div className="relative mt-3 overflow-hidden rounded-md bg-[#FFFDF8] shadow-[0_22px_34px_-22px_rgb(60_45_20/0.55),0_0_0_1px_#EDE4D3]">
+      <span aria-hidden className="pointer-events-none absolute inset-2 rounded-[3px] border border-[#D8C7A4]" />
+      <div className="flex h-11 items-center justify-center border-b border-dashed border-[#E2D5BC] bg-gradient-to-b from-[#F7F0E2] to-[#FFFDF8]">
+        {table ? (
+          <span className="type-meta !text-champagne-600 !tracking-[0.3em]">{table}</span>
+        ) : (
+          <Link href="/day?tab=seating" className="type-meta !tracking-[0.2em] text-stone/80 hover:text-ink">
+            No table yet
+          </Link>
+        )}
+      </div>
+      <div className="relative px-5 pb-6 pt-10 text-center">
+        <Stamp status={own?.status} />
+        <NameEditor guest={guest} onSave={onSave} />
+        {(roles.length > 0 || kind) && (
+          <p className="mt-2.5 inline-flex flex-wrap items-center justify-center gap-1.5 text-sm text-champagne-600">
+            {roles.length > 0 && <Star className="h-3.5 w-3.5 fill-champagne-400 text-champagne-400" strokeWidth={1.4} aria-hidden />}
+            {roles.join(" · ")}
+            {roles.length > 0 && kind && " · "}
+            {kind && <em className="font-display">{kind}</em>}
+          </p>
+        )}
+        {(own?.meal_choice || own?.dietary_notes) && (
+          <>
+            <span aria-hidden className="mx-auto mt-4 block h-px w-10 bg-[#D8C7A4]" />
+            {own?.meal_choice && <p className="mt-3.5 font-display text-[17px] text-ink">{own.meal_choice}</p>}
+            {own?.dietary_notes && <p className="mt-1 text-[13px] text-[#9A3F2B]">{own.dietary_notes}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Their answer, stamped in the place card's corner. */
+function Stamp({ status }: { status?: Rsvp["status"] }) {
+  const look: Record<Rsvp["status"] | "unset", { word: string; className: string }> = {
+    attending: { word: "Coming", className: "border-champagne-600 text-champagne-600" },
+    pending: { word: "Invited", className: "border-champagne-400 text-champagne-600" },
+    to_invite: { word: "To invite", className: "border-dashed border-champagne-400 text-champagne-600" },
+    declined: { word: "Can't come", className: "border-[#8A837B] text-[#8A837B]" },
+    unset: { word: "Day or evening?", className: "border-dashed border-champagne-400 text-champagne-600" },
+  };
+  const l = look[status ?? "unset"];
+  return (
+    <span
+      className={`absolute right-4 top-3 inline-flex rotate-[8deg] items-center gap-1 rounded-md border-[1.5px] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${l.className}`}
+    >
+      {status === "attending" && <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden />}
+      {l.word}
+    </span>
+  );
+}
+
+/** Text · Call · Email under the place card, as round buttons with their word. */
+function RoundAction({
+  href,
+  label,
+  icon: Icon,
+  dark = false,
+}: {
+  href: string;
+  label: string;
+  icon: typeof Phone;
+  dark?: boolean;
+}) {
+  return (
+    <a href={href} className="flex flex-col items-center gap-1.5 text-[13px] text-ink">
+      <span
+        className={`flex h-[52px] w-[52px] items-center justify-center rounded-full ${
+          dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink hover:border-champagne-400"
+        }`}
+      >
+        <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+      </span>
+      {label}
+    </a>
   );
 }
 
@@ -236,8 +329,8 @@ function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdi
 
   if (!editing) {
     return (
-      <button type="button" onClick={start} className="group mt-1.5 block text-left" aria-label={`${fullName(guest)} — change name`}>
-        <span className="type-display text-[34px] leading-[1.05]">{fullName(guest)}</span>
+      <button type="button" onClick={start} className="group mt-1.5 block w-full text-center" aria-label={`${fullName(guest)} — change name`}>
+        <span className="font-display text-[38px] font-light italic leading-[1.05] text-ink">{fullName(guest)}</span>
         <Pencil className="ml-2 inline h-4 w-4 align-baseline text-stone/60 group-hover:text-ink" strokeWidth={1.6} aria-hidden />
       </button>
     );

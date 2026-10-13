@@ -15,6 +15,7 @@ export default function PeopleView({
   households,
   events,
   rsvps,
+  tables,
   guestId,
   filter,
   view,
@@ -25,6 +26,8 @@ export default function PeopleView({
   households: Household[];
   events: WeddingEvent[];
   rsvps: Rsvp[];
+  /** Guest id → the table they sit at. */
+  tables: Record<string, string>;
   guestId?: string;
   filter?: GuestFilter;
   view?: GuestView;
@@ -68,6 +71,7 @@ export default function PeopleView({
             }))}
             events={events}
             rsvps={rsvps}
+            tables={tables}
             initialGuestId={guestId}
             initialFilter={filter}
             initialView={view}

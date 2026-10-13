@@ -157,3 +157,20 @@ export async function removePassenger(runId: string, contactId: string): Promise
   const { error } = await supabase.from("transport_passengers").delete().eq("run_id", runId).eq("contact_id", contactId);
   if (error) throw error;
 }
+
+/**
+ * Which table each guest sits at, by name (guest id → table name), for the
+ * guest card's place card. Empty until 0009_the_day.sql is run.
+ */
+export async function tableNames(weddingId: string): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const [tables, seats] = await Promise.all([
+    supabase.from("seating_tables").select("id, name").eq("wedding_id", weddingId),
+    supabase.from("seats").select("contact_id, table_id").eq("wedding_id", weddingId),
+  ]);
+  if (tables.error || seats.error) return {};
+  const name = new Map((tables.data ?? []).map((t) => [t.id as string, t.name as string]));
+  return Object.fromEntries(
+    (seats.data ?? []).flatMap((s) => (name.has(s.table_id) ? [[s.contact_id as string, name.get(s.table_id)!]] : [])),
+  );
+}

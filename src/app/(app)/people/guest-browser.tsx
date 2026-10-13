@@ -87,6 +87,7 @@ export default function GuestBrowser({
   households,
   events,
   rsvps,
+  tables = {},
   initialGuestId,
   initialFilter,
   initialView = "az",
@@ -95,6 +96,7 @@ export default function GuestBrowser({
   households: HouseholdSummary[];
   events: WeddingEvent[];
   rsvps: Rsvp[];
+  tables?: Record<string, string>;
   initialGuestId?: string;
   initialFilter?: GuestFilter;
   initialView?: GuestView;
@@ -388,6 +390,7 @@ export default function GuestBrowser({
           households={households}
           events={events}
           rsvps={data.answers.get(open.id) ?? []}
+          table={tables[open.id] ?? null}
           onClose={close}
         />
       )}

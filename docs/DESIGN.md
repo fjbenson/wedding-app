@@ -171,9 +171,21 @@ refine later — it is all tokens, so changing it is cheap:
   Booked are gold (`champagne-600`) ticks at 26px, not black.
 - **Adding shows tiles; a saved item shows a pill** (the area picker folds
   to "📷 Photos · Change", opens on tap, folds back once picked).
-- **Hub, round 2–3**: "Jot something down" as a small glass pill opening a
-  sheet; **This week** with big gold dates down the left; Your notes and Inspo
+- **Hub, round 2–3**: one quiet glass pill, a gold pen in a ring and "Ask
+  your assistant" in italic (13 Oct 2026; was "Jot something down") — never
+  "AI", and nothing else under the ring; **This week** with big gold dates down the left; Your notes and Inspo
   as two tiles (a taped note, a picture collage).
+- **Your assistant** (13 Oct 2026): full screen; "What can I do for you?" in
+  Fraunces, the box in the middle, prompts grouped Ask · Do · Jot; once you
+  ask, a conversation in **Geist** (the sans) with answer blocks drawn by the
+  app (Fraunces only for big numbers and names) and confirm cards (Yes in ink,
+  Change in white).
+- **Guest card as a place card** (13 Oct 2026): cream card with an inset gold
+  line, the table across the top, the name large in italic, role and "day
+  guest" in gold, meal and allergy (rose), the answer stamped at an angle;
+  round Text (ink) · Call · Email under it.
+- **Overdue in rose**: on This week an overdue date is rose (month under it),
+  with "Overdue" under the title — not a label squeezed into the date column.
 - **Supplier card as a business card** (cream card, gold stage stamp, area
   tag, round Call · Email · Website), then Progress steps, one Money card,
   Documents, Contact.

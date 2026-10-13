@@ -934,7 +934,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 13 Oct 2026 chat): build "Your assistant", version 1**
+   `calendar.tsx`). **Next up (end of the 13 Oct 2026 evening chat):** Your assistant
+   version 1 is **built and live** (step 8) and the owner loves it; its new
+   skills are **parked** by the owner (ideas listed in step 8). First, the
+   owner checks on an iPhone that the assistant no longer jumps when the
+   keyboard opens or a message is sent (fixed blind — the keyboard can't be
+   tested here). Then back to the design pass: the forms still in the older
+   plain style (below), the Seating screen, Journeys. Open: the owner's OK
+   on Anthropic's DPA when real couples come; a look at Claude Console ›
+   Usage for what a chat costs. **Earlier:** build "Your assistant", version 1
    — see step 8 for the plan. **Earlier next-up (end of the 12 Oct 2026 late chat):** the Money
    budget's turn is done for now — area cards two to a row, an area's money
    card from the bottom, tappable month columns; the owner loves them. Next:
@@ -1021,7 +1029,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
    still until they can draw themselves in line by line (needs the vector
    version) or truly dance (an animator, in Rive). Open idea: a new home-screen app icon (offered options on
    the canvas, not started).
-8. **"Your assistant"** (agreed 7 Oct 2026 as "Brainstorm"; named
+8. **"Your assistant"** — **version 1 built 13 Oct 2026** (agreed 7 Oct 2026 as "Brainstorm"; named
    "Your planner" 13 Oct 2026, **renamed "Your assistant" by the owner 13 Oct
    2026: the couple are the planners — it just does the smaller jobs, so they
    stay in charge**; the canvas pages still say "Your planner"): a calm, organised friend — short,

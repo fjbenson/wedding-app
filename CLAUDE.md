@@ -967,7 +967,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 14 Oct 2026 naming chat):** no code
+   `calendar.tsx`). **Next up (end of the 14 Oct 2026 afternoon chat):**
+   built this chat — the household **envelope**, the guest card's **profile**
+   (canvas 3 round 2, A), and **groups of guests** with emailing / texting a
+   group (0019 run). The owner tries them on the phone (the envelope's turn,
+   and whether Mail opens with everyone in Bcc). Then: the four forms still
+   in the old plain style (car or coach, day/evening event, Inspo save, jot a
+   note — the owner wants to look at them first); "Ask your assistant to
+   write it" in the group email sheet; groups on Seating.
+   **Earlier next-up (end of the 14 Oct 2026 naming chat):** no code
    changed; the app has a **working name, Rondé** (Backlog, "The name"). The
    owner looks at canvas 2's "Name · Rondé" page and picks an icon (A twirl ·
    B accent · C ronde), tries the name on five friends, and runs the UK
@@ -1275,7 +1283,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
      else is the champagne Filter. Owner to choose: the Filter, or keep chips
      but champagne.
   4. **Forms in the old plain style**: car or coach, day/evening event,
-     Inspo save, jot a note, household edit (also in Next steps).
+     Inspo save, jot a note (also in Next steps; the household edit page is
+     gone since 14 Oct 2026 — the envelope edits in place).
   5. **Two places for one thing**: areas added from the ring's + but renamed
      / reordered in Settings; day/evening events set up at the foot of the
      guest list (also in the IA review list below).
@@ -1310,7 +1319,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
      from the app (then "sent" is recorded by itself), or a quick "mark
      these as sent" for a picked group, and a "who hasn't been sent one"
      view.
-  2. **Email a group of guests** — e.g. everyone staying at the pub, the
+  2. **Email a group of guests** — **first version built 14 Oct 2026**
+     (Groups of guests, under People: opens your own email with everyone
+     in Bcc). Original note: e.g. everyone staying at the pub, the
      evening guests, the bridal party. Builds on the guest list's Filter
      (pick a group, then "Email these people"). Sending from the app needs
      the app's own web address verified in Resend (checklist item 1) and
@@ -1345,7 +1356,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
   (Guest of, RSVP, Role, Details, Contact). Photos, if built: optional,
   initials by default, private bucket like Inspo, **never for children**,
   and on the privacy list. **Owner's pick: A, the place card** — built
-  13 Oct 2026 (see People). No photos yet.
+  13 Oct 2026, then **replaced 14 Oct 2026 by a social-style profile**
+  (canvas 3 "Guest card · Round 2", A; households got the envelope). No
+  photos yet.
 - **Reminders and notifications** (owner, 13 Oct 2026: "not something we
   thought about yet"). Two different things:
   1. **Badges inside the app** (no new services): a small count where
@@ -1408,9 +1421,8 @@ All private to the owner; open with the Artifact tool's `read` action.
 
 - **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
   envelope; Guest card round 2, the profile; Groups round 1 — built): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
-- **Design canvas 2** — from 11 Oct 2026; **now full too** (its 40th page,
-  "Name · Rondé", was added 14 Oct 2026), so **start a canvas 3** (a new
-  Design artifact) for the next round: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
+- **Design canvas 2** — from 11 Oct 2026; **full** (its 40th page,
+  "Name · Rondé", was added 14 Oct 2026); new rounds go on canvas 3: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Name Lab** — a this-or-that game for the name (`results` collection;
   not played yet): https://claude.ai/artifact/DAfW9wxPmNQLQEtGhgqZPP
 - **Design canvas (the first, full)** — every home-screen round, the area

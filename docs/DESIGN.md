@@ -193,3 +193,24 @@ refine later — it is all tokens, so changing it is cheap:
   phone's own picker.
 - Icon clashes are catalogued (icon audit) and parked; see `CLAUDE.md`.
 
+
+## 14 Oct 2026 — what changed
+
+- **A card of their own for each kind of person or thing**: a supplier has a
+  business card, a **household an envelope**, a **guest a profile**.
+- **Household envelope** (canvas 3 "Household · Round 3"): crisp white card
+  with only a few sparse flecks (a grain all over was rejected), a fine gold
+  double border; the name in calligraphy — **Pinyon Script**, the one place
+  it's used (`font-script`) — and the address in Fraunces italic (the script
+  alone wasn't legible enough). No stamp or postmark (tried, removed). Tap it:
+  it turns over (gold wax seal with the initial), the flap opens, the
+  invitation slides out with the details; "reduce motion" skips the movement.
+- **Guest profile** (canvas 3 "Guest card · Round 2", A, replacing the place
+  card): initials in a large champagne circle on the left, name in italic on
+  the right, then Answer · Table · Meal across in a row, then flat Text ·
+  Call · Email buttons.
+- **Lists inside a page sit on a glass card** (household's "Who's in it": small
+  initials, name, ›) — owner preferred it to the guest list's open rows there.
+- **Groups**: a group card takes the numbers card's place on the guest list;
+  "Email them" is the black main action; groups show as champagne pills on
+  the guest card.

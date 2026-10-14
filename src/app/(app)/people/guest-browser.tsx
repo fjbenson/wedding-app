@@ -326,9 +326,9 @@ export default function GuestBrowser({
 
   return (
     <>
-      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
+      <div className="mt-6 flex flex-col lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
         {group ? (
-          <div>
+          <div className="order-2 mt-4 lg:order-none lg:mt-0">
             <GroupCard
               group={group}
               people={filtered}
@@ -341,7 +341,7 @@ export default function GuestBrowser({
             </GroupCard>
           </div>
         ) : filters.length + guestOf.length > 0 ? (
-          <div>
+          <div className="order-2 mt-4 lg:order-none lg:mt-0">
             <SummaryCard
               icon={filters.includes("dietary") ? WheatOff : filters.includes("party") ? Star : filters.includes("children") ? Baby : filters.includes("noaddress") ? House : guestOf.length ? Sun : Users}
               title={[...ofCounted.filter((o) => guestOf.includes(o.id)).map((o) => o.label), ...filters.map((f) => FILTERS.find((o) => o.key === f)!.label)].join(" · ")}
@@ -349,7 +349,7 @@ export default function GuestBrowser({
             />
           </div>
         ) : events.length > 0 && (
-          <div>
+          <div className="order-2 mt-4 lg:order-none lg:mt-0">
             <AnswersCard
               total={filtered.length}
               homes={new Set(filtered.map((g) => g.household_id).filter(Boolean)).size}
@@ -365,7 +365,8 @@ export default function GuestBrowser({
           </div>
         )}
 
-        <div className="mt-5 lg:mt-0">
+        {/* Search and Filter above the card on phones (owner, 14 Oct 2026): the card grows when a filter is on, and the buttons mustn't move. */}
+        <div className="order-1 lg:order-none">
           <div className="flex items-center gap-2">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />

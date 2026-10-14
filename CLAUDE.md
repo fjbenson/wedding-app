@@ -348,7 +348,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   by"** switch picks which (`?by=`). Tapping a tally line narrows the list
   again (a dark pill, `?pick=`), and each row shows that detail under the
   name. Counts are of guests coming. A group's card keeps Email · Text · Edit
-  with the same body. Filters stay under the card (owner agreed).
+  with the same body. On phones search and Filter/Sort now sit **above** the
+  card (owner, 14 Oct 2026: the growing card pushed the Filter button away
+  mid-tap); laptops keep them side by side.
   **Dietary needs are picked from a list** (14 Oct 2026; `src/lib/dietary.ts`,
   `DietaryPicker`): Vegetarian, Vegan, Pescatarian, Gluten-free, Dairy-free,
   Nut, Shellfish and Egg allergy, Halal, Kosher — typing finds them ("veggie",

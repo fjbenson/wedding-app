@@ -10,6 +10,7 @@ import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
+import { GroupCard, type GroupSummary } from "./guest-groups";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
@@ -88,6 +89,8 @@ export default function GuestBrowser({
   events,
   rsvps,
   tables = {},
+  groups: guestGroups = [],
+  weddingName = "",
   initialGuestId,
   initialFilter,
   initialView = "az",
@@ -97,6 +100,9 @@ export default function GuestBrowser({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables?: Record<string, string>;
+  /** Groups of guests (0019): any number per guest; one can be shown at a time. */
+  groups?: GroupSummary[];
+  weddingName?: string;
   initialGuestId?: string;
   initialFilter?: GuestFilter;
   initialView?: GuestView;
@@ -114,15 +120,22 @@ export default function GuestBrowser({
   });
   /** "Day guests" / "Evening guests" in the Filter menu: event ids, any of. */
   const [guestOf, setGuestOf] = useState<string[]>(() => list("of").filter((id) => events.some((e) => e.id === id)));
+  /** One group at a time (?group=): its card takes the numbers card's place. */
+  const [groupId, setGroupId] = useState<string | undefined>(() => {
+    const asked = params.get("group");
+    return asked && guestGroups.some((g) => g.id === asked) ? asked : undefined;
+  });
+  const group = guestGroups.find((g) => g.id === groupId);
   useEffect(() => {
     replaceQuery({
       q: query.trim() || null,
       show: showing === "all" ? null : showing,
       f: filters.length ? filters.join(",") : null,
       of: guestOf.length ? guestOf.join(",") : null,
+      group: group?.id ?? null,
       tab: null,
     });
-  }, [query, showing, filters, guestOf]);
+  }, [query, showing, filters, guestOf, group]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
@@ -191,11 +204,17 @@ export default function GuestBrowser({
   const clearAll = () => {
     setFilters([]);
     setGuestOf([]);
+    setGroupId(undefined);
+  };
+  const pickGroup = (id: string) => {
+    setGroupId((on) => (on === id ? undefined : id));
+    setShowing("all");
   };
 
   // What the filters leave, before search and the numbers card: the card
   // counts these, so every filter narrows its numbers too.
   const filtered = guests
+    .filter((g) => !group || group.members.includes(g.id))
     .filter((g) => guestOf.length === 0 || guestOf.includes(ownEvent(g)?.id ?? ""))
     .filter((g) => filters.every((f) => tests[f](g)));
   const answerOf = (g: Contact) => statusFor(g, ownEvent(g));
@@ -254,7 +273,18 @@ export default function GuestBrowser({
   return (
     <>
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
-        {events.length > 0 && (
+        {group ? (
+          <div>
+            <GroupCard
+              group={group}
+              people={filtered}
+              answerOf={answerOf}
+              weddingName={weddingName}
+              onClear={() => setGroupId(undefined)}
+              onOpenGuest={setOpenId}
+            />
+          </div>
+        ) : events.length > 0 && (
           <div>
             <AnswersCard
               total={filtered.length}
@@ -293,6 +323,9 @@ export default function GuestBrowser({
               guestOf={ofCounted}
               ofOn={guestOf}
               onToggleOf={toggleOf}
+              groups={guestGroups.map((g) => ({ id: g.id, label: g.name, count: g.members.length }))}
+              groupOn={group?.id}
+              onPickGroup={pickGroup}
               filters={counted}
               on={filters}
               onToggle={toggle}
@@ -391,6 +424,11 @@ export default function GuestBrowser({
           events={events}
           rsvps={data.answers.get(open.id) ?? []}
           table={tables[open.id] ?? null}
+          groups={guestGroups}
+          onShowGroup={(id) => {
+            setOpenId(undefined);
+            setGroupId(id);
+          }}
           onClose={close}
         />
       )}
@@ -662,6 +700,9 @@ function FilterMenu({
   guestOf,
   ofOn,
   onToggleOf,
+  groups,
+  groupOn,
+  onPickGroup,
   filters,
   on,
   onToggle,
@@ -671,17 +712,32 @@ function FilterMenu({
   guestOf: { id: string; label: string; count: number }[];
   ofOn: string[];
   onToggleOf: (id: string) => void;
+  /** Groups of guests: pick one (picking it again takes it off). */
+  groups: { id: string; label: string; count: number }[];
+  groupOn?: string;
+  onPickGroup: (id: string) => void;
   filters: { key: GuestFilter; label: string; count: number }[];
   on: GuestFilter[];
   onToggle: (key: GuestFilter) => void;
   onClear: () => void;
 }) {
   const { open, setOpen, box } = useDropdown();
-  const active = on.length + ofOn.length;
+  const active = on.length + ofOn.length + (groupOn ? 1 : 0);
   const rows = [
     ...guestOf.map((o) => ({ key: o.id, label: o.label, count: o.count, ticked: ofOn.includes(o.id), flip: () => onToggleOf(o.id) })),
     ...filters.map((f) => ({ key: f.key, label: f.label, count: f.count, ticked: on.includes(f.key), flip: () => onToggle(f.key) })),
   ];
+  // Groups come last, under their own heading.
+  const groupRows = groups.map((g) => ({
+    key: `group-${g.id}`,
+    label: g.label,
+    count: g.count,
+    ticked: groupOn === g.id,
+    flip: () => {
+      onPickGroup(g.id);
+      setOpen(false);
+    },
+  }));
 
   return (
     <div ref={box} className="relative shrink-0">
@@ -739,6 +795,35 @@ function FilterMenu({
               );
             })}
           </ul>
+          {groupRows.length > 0 && (
+            <>
+              <p className="section-label mt-2 border-t border-champagne-400 pt-3">Groups</p>
+              <ul>
+                {groupRows.map((f) => (
+                  <li key={f.key} className="border-t border-linen first:border-t-0">
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={f.ticked}
+                      onClick={f.flip}
+                      className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                    >
+                      <span
+                        aria-hidden
+                        className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                          f.ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                        }`}
+                      >
+                        {f.ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                      </span>
+                      <span className="flex-1">{f.label}</span>
+                      <span className="text-[13px] text-stone">{f.count}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
     </div>

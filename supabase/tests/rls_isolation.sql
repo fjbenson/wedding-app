@@ -72,6 +72,15 @@ begin
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Peonies?'),
       ('bbbbbbbb-0000-0000-0000-000000000002', 'Secret plan');
   end if;
+  if to_regclass('public.guest_groups') is not null then
+    insert into guest_groups (id, wedding_id, name) values
+      ('aaaaaaaa-2222-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Staying at the pub'),
+      ('bbbbbbbb-2222-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Staying at the pub');
+    insert into guest_group_members (group_id, contact_id, wedding_id)
+      select 'aaaaaaaa-2222-0000-0000-000000000001', id, wedding_id from contacts where first_name = 'Alice';
+    insert into guest_group_members (group_id, contact_id, wedding_id)
+      select 'bbbbbbbb-2222-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
+  end if;
   if to_regclass('public.appointments') is not null then
     insert into appointments (wedding_id, title, on_date) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Dress fitting', '2027-01-10'),
@@ -326,6 +335,47 @@ begin
     -- And they can use their own folder.
     execute $q$insert into storage.objects (bucket_id, name)
              values ('inspo', 'aaaaaaaa-0000-0000-0000-000000000001/veil.jpg')$q$;
+  end if;
+
+  if to_regclass('public.guest_groups') is not null then
+    execute 'select count(*) from guest_groups' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % groups, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from guest_group_members' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % group members, expected 1', visible_contacts;
+    end if;
+    -- A group in wedding A can't hold wedding B's guest, even knowing the ids.
+    begin
+      execute $q$insert into guest_group_members (group_id, contact_id, wedding_id)
+               values ('aaaaaaaa-2222-0000-0000-000000000001',
+                       (select id from contacts where wedding_id = 'aaaaaaaa-0000-0000-0000-000000000001' limit 1)::uuid,
+                       'bbbbbbbb-0000-0000-0000-000000000002')$q$;
+      raise exception 'LEAK: couple A put a guest into a group in wedding B';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    begin
+      execute $q$insert into guest_groups (wedding_id, name)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A made a group in wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    execute $q$update guest_groups set name = 'Hacked' where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A renamed wedding B''s groups';
+    end if;
+    execute $q$delete from guest_group_members where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A emptied wedding B''s groups';
+    end if;
+    -- And they can use their own.
+    execute $q$insert into guest_groups (wedding_id, name)
+             values ('aaaaaaaa-0000-0000-0000-000000000001', 'Uni friends')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

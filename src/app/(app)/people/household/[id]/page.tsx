@@ -1,3 +1,4 @@
+import { listGroups } from "@/lib/db/groups";
 import { notFound } from "next/navigation";
 import { getHousehold, listGuests, listHouseholds } from "@/lib/db/contacts";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
@@ -15,12 +16,13 @@ export default async function HouseholdPage({ params }: { params: Promise<{ id: 
   const household = await getHousehold(id);
   if (!household) notFound();
 
-  const [guests, households, events, rsvps, tables] = await Promise.all([
+  const [guests, households, events, rsvps, tables, groups] = await Promise.all([
     listGuests(household.wedding_id),
     listHouseholds(household.wedding_id),
     listEvents(household.wedding_id),
     listRsvps(household.wedding_id),
     tableNames(household.wedding_id),
+    listGroups(household.wedding_id),
   ]);
 
   return (
@@ -31,6 +33,7 @@ export default async function HouseholdPage({ params }: { params: Promise<{ id: 
       events={events}
       rsvps={rsvps}
       tables={tables}
+      groups={groups.map((g) => ({ id: g.id, name: g.name, members: g.members }))}
     />
   );
 }

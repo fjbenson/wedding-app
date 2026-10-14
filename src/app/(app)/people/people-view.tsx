@@ -5,6 +5,7 @@ import { InlineSubmit } from "@/components/form-bits";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import { addStarterEventsAction } from "./rsvp-actions";
 import GuestBrowser, { type GuestFilter, type GuestView } from "./guest-browser";
+import type { GroupSummary } from "./guest-groups";
 
 /**
  * The Guests tab of People: the title, then the list itself (guest-browser.tsx),
@@ -16,6 +17,8 @@ export default function PeopleView({
   events,
   rsvps,
   tables,
+  groups,
+  weddingName,
   guestId,
   filter,
   view,
@@ -28,6 +31,8 @@ export default function PeopleView({
   rsvps: Rsvp[];
   /** Guest id → the table they sit at. */
   tables: Record<string, string>;
+  groups: GroupSummary[];
+  weddingName: string;
   guestId?: string;
   filter?: GuestFilter;
   view?: GuestView;
@@ -72,6 +77,8 @@ export default function PeopleView({
             events={events}
             rsvps={rsvps}
             tables={tables}
+            groups={groups}
+            weddingName={weddingName}
             initialGuestId={guestId}
             initialFilter={filter}
             initialView={view}

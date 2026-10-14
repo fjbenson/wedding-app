@@ -10,6 +10,7 @@ import { eventWord } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
 import HouseholdEnvelope from "./household-envelope";
+import type { GroupSummary } from "./guest-groups";
 import { updateGuestAction } from "./actions";
 
 /**
@@ -26,6 +27,7 @@ export default function HouseholdView({
   events,
   rsvps,
   tables,
+  groups,
 }: {
   household: Household;
   /** Every household, for moving someone on their card. */
@@ -34,6 +36,7 @@ export default function HouseholdView({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables: Record<string, string>;
+  groups: GroupSummary[];
 }) {
   const [openId, setOpenId] = useState<string>();
   const close = useCallback(() => setOpenId(undefined), []);
@@ -140,6 +143,7 @@ export default function HouseholdView({
           events={events}
           rsvps={answersOf(open)}
           table={tables[open.id] ?? null}
+          groups={groups}
           onClose={close}
         />
       )}

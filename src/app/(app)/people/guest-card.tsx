@@ -11,6 +11,7 @@ import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-a
 import { DetailLabel, fullName, initials } from "./guest-table";
 import { splitName } from "@/lib/names";
 import { usePullToClose } from "@/components/use-pull-to-close";
+import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 
 type Saver = () => Promise<{ error?: string } | void>;
 
@@ -52,6 +53,8 @@ export default function GuestCard({
   events,
   rsvps,
   table = null,
+  groups,
+  onShowGroup,
   onClose,
 }: {
   guest: Contact;
@@ -63,6 +66,9 @@ export default function GuestCard({
   rsvps: Rsvp[];
   /** The table they sit at, if they've been seated. */
   table?: string | null;
+  /** The wedding's groups of guests; the card shows theirs and adds to others. Left out, no Groups part. */
+  groups?: GroupSummary[];
+  onShowGroup?: (id: string) => void;
   onClose: () => void;
 }) {
   const name = fullName(guest);
@@ -139,6 +145,8 @@ export default function GuestCard({
           {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
 
           <Roles guest={guest} />
+
+          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
 
           {/* A hairline right across the card between sections. */}
           <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">

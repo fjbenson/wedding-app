@@ -86,7 +86,9 @@ begin
     ('Work friends · Theo', null, null, null, null, true),
     ('The Greens', '40 Stokes Croft', 'Bristol', 'BS1 3QD', 'United Kingdom', true),
     ('Neighbours', '16 Orchard Lane', 'Cheltenham', 'GL52 3AB', 'United Kingdom', true),
-    ('Football lot', null, null, null, null, false),
+    ('Rob Hayes', '22 Ashley Road', 'Bristol', 'BS6 5NL', 'United Kingdom', false),
+    ('Ollie Stone', '9 Cotham Brow', 'Bristol', 'BS6 6AW', 'United Kingdom', false),
+    ('Dev Mistry', '41 North Street', 'Bristol', 'BS3 1EN', 'United Kingdom', false),
     ('Evie Clarke', '3 Southville Road', 'Bristol', 'BS3 1DG', 'United Kingdom', true),
     ('Yoga friends', null, null, null, null, true)
   ) v(hn, ha, hc, hp, hco, sent);
@@ -130,7 +132,9 @@ begin
     ('Work friends · Theo', true),
     ('The Greens', true),
     ('Neighbours', true),
-    ('Football lot', false),
+    ('Rob Hayes', false),
+    ('Ollie Stone', false),
+    ('Dev Mistry', false),
     ('Evie Clarke', true),
     ('Yoga friends', true)
   ) v(hn, sent) on v.hn = hh.name where hh.wedding_id = w;
@@ -208,9 +212,9 @@ begin
     ('The Greens', 'Alex', 'Green', false, 'evening', 'attending', null, null, null, 'alex.green@example.com', '07700 900429', '2026-10-02'),
     ('Neighbours', 'Jean', 'Porter', false, 'evening', 'attending', null, null, null, 'jean.porter@example.com', '07700 900436', '2026-10-07'),
     ('Neighbours', 'Colin', 'Porter', false, 'evening', 'attending', null, null, null, 'colin.porter@example.com', '07700 900443', '2026-10-04'),
-    ('Football lot', 'Rob', 'Hayes', false, 'evening', 'to_invite', null, null, null, 'rob.hayes@example.com', null, null),
-    ('Football lot', 'Ollie', 'Stone', false, 'evening', 'to_invite', null, null, null, 'ollie.stone@example.com', '07700 900450', null),
-    ('Football lot', 'Dev', 'Mistry', false, 'evening', 'to_invite', null, null, null, 'dev.mistry@example.com', '07700 900457', null),
+    ('Rob Hayes', 'Rob', 'Hayes', false, 'evening', 'to_invite', null, null, null, 'rob.hayes@example.com', null, null),
+    ('Ollie Stone', 'Ollie', 'Stone', false, 'evening', 'to_invite', null, null, null, 'ollie.stone@example.com', '07700 900450', null),
+    ('Dev Mistry', 'Dev', 'Mistry', false, 'evening', 'to_invite', null, null, null, 'dev.mistry@example.com', '07700 900457', null),
     ('Evie Clarke', 'Evie', 'Clarke', false, 'evening', 'declined', null, null, null, null, '07700 900464', '2026-10-06'),
     ('Yoga friends', 'Lena', 'Fischer', false, 'evening', 'attending', null, 'Vegan', null, 'lena.fischer@example.com', '07700 900471', '2026-10-09'),
     ('Yoga friends', 'Sasha', 'Ivanova', false, 'evening', 'attending', null, null, null, 'sasha.ivanova@example.com', '07700 900478', '2026-10-09'),
@@ -229,6 +233,17 @@ begin
   left join households hh on hh.wedding_id = w and hh.name = g.hh
   left join invitations i on i.household_id = hh.id
   join events ev on ev.wedding_id = w and (ev.id = e_eve or g.kind = 'day');
+
+  -- Groups of guests (0019_guest_groups.sql): people who belong together, any number per guest.
+  if to_regclass('public.guest_groups') is not null then
+    insert into guest_groups (wedding_id, name) values (w, 'The football lot') returning id into c;
+    insert into guest_group_members (group_id, contact_id, wedding_id)
+      select c, g.id, w from demo_guests g where (g.first, g.last) in (('Rob','Hayes'),('Ollie','Stone'),('Dev','Mistry'));
+    insert into guest_groups (wedding_id, name) values (w, 'Staying at the pub') returning id into c;
+    insert into guest_group_members (group_id, contact_id, wedding_id)
+      select c, g.id, w from demo_guests g where (g.first, g.last) in
+        (('Callum','Reid'),('Leo','Grant'),('Kate','Lawson'),('Ruby','Evans'),('Aoife','O''Brien'),('Conor','O''Brien'),('Ella','Moss'),('Finn','Doyle'));
+  end if;
 
   -- Suppliers
   insert into contacts (wedding_id, contact_type, first_name, last_name, email, phone) values (w, 'supplier', 'Sarah', 'Lyle', 'hello@ashcombebarn.example.com', '07700 900485') returning id into c;

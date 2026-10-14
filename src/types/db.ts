@@ -53,6 +53,25 @@ export interface Household {
   created_at: string;
 }
 
+/**
+ * A group of guests (0019_guest_groups.sql): people who belong together —
+ * "The football lot", "Staying at the pub". Unlike a household, a guest can
+ * be in any number, and a group has no address.
+ */
+export interface GuestGroup {
+  id: string;
+  wedding_id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface GuestGroupMember {
+  group_id: string;
+  contact_id: string;
+  wedding_id: string;
+  created_at: string;
+}
+
 export interface Contact {
   id: string;
   wedding_id: string;

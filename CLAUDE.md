@@ -334,6 +334,28 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (People › Files, grouped by area, Filter and +), files on payments and
   area pages, and **C**, the assistant reading a file.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
+  **Groups of guests** (14 Oct 2026; canvas 3 "Groups · Round 1", all
+  three screens, owner's pick; `0019_guest_groups.sql`, run 14 Oct 2026
+  with the owner's OK): people who belong together — "The football lot",
+  "Staying at the pub". A guest is in **one household** (where the post
+  goes) and **any number of groups** (no address). Tables `guest_groups`
+  and `guest_group_members` (both tied to `(id, wedding_id)`, so a group
+  can't hold another wedding's guest; RLS like contacts; in
+  `rls_isolation.sql`). Queries `src/lib/db/groups.ts`, actions
+  `group-actions.ts` (return messages), screens `guest-groups.tsx`:
+  **Filter › Groups** on the guest list (one at a time, `?group=`) swaps the
+  numbers card for a **group card** — name, "8 people · 6 coming · 2
+  invited", **Email them** (black) · Text · Edit (rename / remove; people
+  stay). **Email them** opens a sheet: who, anyone with no email ("Add it"
+  opens their card), subject filled in, optional message, **Open in my
+  email** (mailto with everyone in **Bcc** — the app never sends or stores
+  it), "Copy the addresses instead"; **Text** the same (warns a group text
+  shows everyone's number). The **guest card's Groups** part (here and on
+  the household page): pills (tap to show that group, ✕ to take them out),
+  "+ Add to a group" with the others and a new-group box. Still to come:
+  the assistant writing the message, the app sending it itself (needs its
+  own web address), groups on Seating. Demo: "Football lot" became a group,
+  and Rob, Ollie and Dev got households; "Staying at the pub" has 8.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that
   area and its "Send the invitations" to-do already exist), not tracking
@@ -665,14 +687,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0018_files.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0019_guest_groups.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0018 are now in** (0018, files, run 13 Oct 2026) (12 Oct
+only queries) needs no OK. **All migrations 0001–0019 are now in** (0019, groups of guests, run 14 Oct 2026) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -740,7 +762,7 @@ satin (`public/icon-*.png`, `src/app/icon.png`, `apple-icon.png`).
 
 **Demo wedding (12 Oct 2026).** "Olivia & Theo", 12 Jun 2027, in the live
 database beside the owner's real wedding and on the owner's login: 79
-guests in 41 households (day and evening, every answer, meals, diets, a
+guests in 43 households, two groups (day and evening, every answer, meals, diets, a
 bridal party), 16 suppliers at every stage, budgets per area (venue over),
 payments, 28 to-dos, 8 appointments, a run sheet, a floor plan, transport and
 notes. All made up (phones in Ofcom's 07700 900xxx drama range, emails
@@ -1385,8 +1407,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 All private to the owner; open with the Artifact tool's `read` action.
 
 - **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
-  envelope; Guest card round 2, the profile; Groups round 1 — groups of
-  guests, e.g. "Staying at the pub", and emailing a group, not built yet): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+  envelope; Guest card round 2, the profile; Groups round 1 — built): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **now full too** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026), so **start a canvas 3** (a new
   Design artifact) for the next round: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB

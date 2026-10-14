@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { ChevronLeft, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
-import { GuestRow, eventWord } from "./guest-browser";
-import { fullName } from "./guest-table";
+import { eventWord } from "./guest-browser";
+import { fullName, initials } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
 import HouseholdEnvelope from "./household-envelope";
 import { updateGuestAction } from "./actions";
@@ -93,21 +93,37 @@ export default function HouseholdView({
         ))}
       </div>
 
-      <div className="mt-8 flex items-baseline justify-between border-b border-champagne-400 px-1 pb-1.5">
-        <h2 className="label">Who&apos;s in it</h2>
-        <span className="text-xs text-stone">{people.length}</span>
-      </div>
-      {people.length === 0 ? (
-        <p className="mt-4 px-1 text-sm text-stone">No one in this household yet.</p>
-      ) : (
-        <ul>
-          {people.map((g) => (
-            <li key={g.id} className="border-b-[0.5px] border-champagne-400">
-              <GuestRow guest={g} event={ownEvent(g)} status={statusOf(g)} showEvent onOpen={() => setOpenId(g.id)} />
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Who's in it, on a card of its own (canvas 3 "Household · Round 3"). */}
+      <section className="mt-7 rounded-[22px] border border-white/85 bg-white/60 px-5 pb-1.5 pt-4 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)] backdrop-blur-xl">
+        <div className="flex items-baseline justify-between">
+          <h2 className="label">Who&apos;s in it</h2>
+          <span className="text-xs text-stone">{people.length}</span>
+        </div>
+        {people.length === 0 ? (
+          <p className="py-3 text-sm text-stone">No one in this household yet.</p>
+        ) : (
+          <ul className="mt-1">
+            {people.map((g) => (
+              <li key={g.id} className="border-b border-linen last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => setOpenId(g.id)}
+                  className="flex min-h-[52px] w-full items-center gap-3 text-left text-[15px] text-ink hover:text-champagne-600"
+                >
+                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-[13px] font-semibold text-champagne-600">
+                    {initials(g)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {fullName(g)}
+                    {g.is_child && <em className="ml-1.5 font-display text-stone">child</em>}
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-champagne-400" strokeWidth={1.8} aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <AddSomeone
         household={household}
         others={guests.filter((g) => g.household_id !== household.id)}
@@ -273,9 +289,11 @@ function AddSomeone({
       <button
         type="button"
         onClick={() => setStep("choose")}
-        className="mt-4 inline-flex items-center gap-1.5 px-1 text-sm text-champagne-600 hover:text-ink"
+        className="mt-3 flex min-h-12 items-center gap-3 px-5 font-display text-[15px] italic text-stone hover:text-ink"
       >
-        <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600">
+          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        </span>
         Add someone to this household
       </button>
     );

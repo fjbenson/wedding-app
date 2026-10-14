@@ -204,12 +204,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   old tab is gone; `?tab=party` still opens on it). Laptops (`lg`) get a
   full table instead. Tapping anyone opens their **card**
   (`guest-card.tsx`: a sheet on phones, a right-hand panel on laptops) —
-  **since 13 Oct 2026 topped by a place card** (`PlaceCard`; canvas 2
-  "Guest card · Round 1", A, owner's pick: suppliers have a business card,
-  guests a place card): their table across the top (`tableNames()` in
-  `src/lib/db/day.ts`; "No table yet" links to Seating), the name large in
-  italics (tap to rename), role and "day guest", meal and allergies, the
-  answer stamped in the corner; then round Text · Call · Email, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
+  **since 14 Oct 2026 topped by a social-style profile** (`Profile`;
+  canvas 3 "Guest card · Round 2", A — households got the envelope, so a
+  person gets a profile; it replaced the 13 Oct place card): initials large
+  on the left (a photo could go there later — optional, never children,
+  privacy list), the name in italics on the right (tap to rename), role and
+  "day guest", then three figures across — Answer · Table (`tableNames()`
+  in `src/lib/db/day.ts`; "None yet" links to Seating) · Meal — and
+  allergies in rose; then flat Text · Call · Email buttons, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
   Can't come) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
   Bridesmaid, Best man, Groomsman), and "More" to open the rest plus "Your
@@ -359,9 +361,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `saveAddressAction`); "Put it back" reverses it; reduce motion skips the
   movement. Then "3 people · 1 child · day guests", round **Text · Call ·
   Email** (they reach the household's people — straight through if one has
-  a number, a pick-list if several, hidden if none), then "Who's in it" as
-  the guest list's own rows (`GuestRow`), each opening the guest card right
-  on this page. The **edit page is gone**; "Remove this household" at the
+  a number, a pick-list if several, hidden if none), then "Who's in it" on
+  a glass card (small initials, name, ›; owner preferred it to the guest
+  list's rows), each opening the guest card right on this page. The **edit page is gone**; "Remove this household" at the
   foot asks first (`removeHouseholdAction`). A "Sent · date" mark waits on
   invitation tracking (Backlog, "From talking to couples"). "Add someone to
   this household" asks first: **Someone new** (the guest form with it
@@ -1383,7 +1385,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 All private to the owner; open with the Artifact tool's `read` action.
 
 - **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
-  envelope): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+  envelope; Guest card round 2, the profile; Groups round 1 — groups of
+  guests, e.g. "Staying at the pub", and emailing a group, not built yet): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **now full too** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026), so **start a canvas 3** (a new
   Design artifact) for the next round: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB

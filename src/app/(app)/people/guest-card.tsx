@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Check, ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
+import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
 import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
-import { DetailLabel, fullName } from "./guest-table";
+import { DetailLabel, fullName, initials } from "./guest-table";
 import { splitName } from "@/lib/names";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
@@ -125,13 +125,13 @@ export default function GuestCard({
             </button>
           </div>
 
-          <PlaceCard guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
+          <Profile guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
 
           {(phone || guest.email) && (
-            <div className="mt-5 flex justify-center gap-8">
-              {phone && <RoundAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
-              {phone && <RoundAction href={`tel:${phone}`} label="Call" icon={Phone} />}
-              {guest.email && <RoundAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
+            <div className="mt-4 flex gap-2">
+              {phone && <FlatAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
+              {phone && <FlatAction href={`tel:${phone}`} label="Call" icon={Phone} />}
+              {guest.email && <FlatAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
             </div>
           )}
 
@@ -166,14 +166,15 @@ export default function GuestCard({
 }
 
 /**
- * The top of the card, as a place card from a reception table (canvas 2
- * "Guest card · Round 1", option A, owner's pick 13 Oct 2026 — suppliers
- * have a business card, guests a place card): their table across the top,
- * their name large, role and day or evening, meal and allergies, and their
- * answer stamped in the corner. The parts are changed further down the card;
- * the name is changed by tapping it, as before.
+ * The top of the card, as a social profile (canvas 3 "Guest card · Round 2 ·
+ * A profile", A, 14 Oct 2026 — households have the envelope; a person gets a
+ * profile, replacing the place card of 13 Oct): their initials large on the
+ * left, the name in italics on the right (tap to rename), role and day or
+ * evening under it, then three figures across — their answer, their table,
+ * their meal — and any allergies. Photos would go in the circle later
+ * (optional, never for children, on the privacy list).
  */
-function PlaceCard({
+function Profile({
   guest,
   table,
   own,
@@ -188,63 +189,63 @@ function PlaceCard({
 }) {
   const roles = rolesOf(guest);
   const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
+  const answer: Record<Rsvp["status"], string> = {
+    attending: "Coming",
+    pending: "Invited",
+    to_invite: "To invite",
+    declined: "Can't come",
+  };
   return (
-    <div className="relative mt-3 overflow-hidden rounded-md bg-[#FFFDF8] shadow-[0_22px_34px_-22px_rgb(60_45_20/0.55),0_0_0_1px_#EDE4D3]">
-      <span aria-hidden className="pointer-events-none absolute inset-2 rounded-[3px] border border-[#D8C7A4]" />
-      <div className="flex h-11 items-center justify-center border-b border-dashed border-[#E2D5BC] bg-gradient-to-b from-[#F7F0E2] to-[#FFFDF8]">
-        {table ? (
-          <span className="type-meta !text-champagne-600 !tracking-[0.3em]">{table}</span>
-        ) : (
-          <Link href="/day?tab=seating" className="type-meta !tracking-[0.2em] text-stone/80 hover:text-ink">
-            No table yet
-          </Link>
-        )}
+    <div className="mt-1">
+      <div className="flex items-center gap-[18px]">
+        <span
+          aria-hidden
+          className="flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-full bg-champagne-100 font-display text-[30px] text-champagne-600 shadow-[0_0_0_3px_#FFFFFF,0_0_0_4px_#D8C7A4]"
+        >
+          {initials(guest)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <NameEditor guest={guest} onSave={onSave} left />
+          {(roles.length > 0 || kind) && (
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-sm text-champagne-600">
+              {roles.length > 0 && <Star className="h-3.5 w-3.5 fill-champagne-400 text-champagne-400" strokeWidth={1.4} aria-hidden />}
+              {roles.join(" · ")}
+              {roles.length > 0 && kind && " · "}
+              {kind && <em className="font-display">{kind}</em>}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="relative px-5 pb-6 pt-10 text-center">
-        <Stamp status={own?.status} />
-        <NameEditor guest={guest} onSave={onSave} />
-        {(roles.length > 0 || kind) && (
-          <p className="mt-2.5 inline-flex flex-wrap items-center justify-center gap-1.5 text-sm text-champagne-600">
-            {roles.length > 0 && <Star className="h-3.5 w-3.5 fill-champagne-400 text-champagne-400" strokeWidth={1.4} aria-hidden />}
-            {roles.join(" · ")}
-            {roles.length > 0 && kind && " · "}
-            {kind && <em className="font-display">{kind}</em>}
+
+      <div className="mt-5 grid grid-cols-3 border-y border-linen py-3 text-center">
+        <div>
+          <p className={`font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
+            {own ? answer[own.status] : "Day or evening?"}
           </p>
-        )}
-        {(own?.meal_choice || own?.dietary_notes) && (
-          <>
-            <span aria-hidden className="mx-auto mt-4 block h-px w-10 bg-[#D8C7A4]" />
-            {own?.meal_choice && <p className="mt-3.5 font-display text-[17px] text-ink">{own.meal_choice}</p>}
-            {own?.dietary_notes && <p className="mt-1 text-[13px] text-[#9A3F2B]">{own.dietary_notes}</p>}
-          </>
-        )}
+          <p className="mt-0.5 text-xs text-stone">Answer</p>
+        </div>
+        <div className="border-x border-linen px-1">
+          <p className="truncate font-display text-lg text-ink">
+            {table ?? (
+              <Link href="/day?tab=seating" className="text-stone hover:text-ink">
+                None yet
+              </Link>
+            )}
+          </p>
+          <p className="mt-0.5 text-xs text-stone">Table</p>
+        </div>
+        <div className="px-1">
+          <p className={`truncate font-display text-lg ${own?.meal_choice ? "text-ink" : "text-stone"}`}>{own?.meal_choice || "—"}</p>
+          <p className="mt-0.5 text-xs text-stone">Meal</p>
+        </div>
       </div>
+      {own?.dietary_notes && <p className="mt-2.5 text-center text-[13px] text-[#9A3F2B]">Allergies: {own.dietary_notes}</p>}
     </div>
   );
 }
 
-/** Their answer, stamped in the place card's corner. */
-function Stamp({ status }: { status?: Rsvp["status"] }) {
-  const look: Record<Rsvp["status"] | "unset", { word: string; className: string }> = {
-    attending: { word: "Coming", className: "border-champagne-600 text-champagne-600" },
-    pending: { word: "Invited", className: "border-champagne-400 text-champagne-600" },
-    to_invite: { word: "To invite", className: "border-dashed border-champagne-400 text-champagne-600" },
-    declined: { word: "Can't come", className: "border-[#8A837B] text-[#8A837B]" },
-    unset: { word: "Day or evening?", className: "border-dashed border-champagne-400 text-champagne-600" },
-  };
-  const l = look[status ?? "unset"];
-  return (
-    <span
-      className={`absolute right-4 top-3 inline-flex rotate-[8deg] items-center gap-1 rounded-md border-[1.5px] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${l.className}`}
-    >
-      {status === "attending" && <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden />}
-      {l.word}
-    </span>
-  );
-}
-
-/** Text · Call · Email under the place card, as round buttons with their word. */
-function RoundAction({
+/** Text · Call · Email under the profile, as three flat buttons across the card. */
+function FlatAction({
   href,
   label,
   icon: Icon,
@@ -256,14 +257,13 @@ function RoundAction({
   dark?: boolean;
 }) {
   return (
-    <a href={href} className="flex flex-col items-center gap-1.5 text-[13px] text-ink">
-      <span
-        className={`flex h-[52px] w-[52px] items-center justify-center rounded-full ${
-          dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink hover:border-champagne-400"
-        }`}
-      >
-        <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-      </span>
+    <a
+      href={href}
+      className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-sm ${
+        dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink hover:border-champagne-400"
+      }`}
+    >
+      <Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden />
       {label}
     </a>
   );
@@ -310,7 +310,16 @@ export function SaveCancel({ pending, onCancel }: { pending: boolean; onCancel: 
 }
 
 /** Their name, large; tap it to change it. */
-function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
+function NameEditor({
+  guest,
+  onSave,
+  left = false,
+}: {
+  guest: Contact;
+  onSave: (edit: GuestEdit) => Promise<{ error?: string }>;
+  /** Beside the profile picture: left-aligned and a little smaller. */
+  left?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
   const [full, setFull] = useState(fullName(guest));
   const { pending, error, setError, run } = useSaver();
@@ -329,8 +338,13 @@ function NameEditor({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdi
 
   if (!editing) {
     return (
-      <button type="button" onClick={start} className="group mt-1.5 block w-full text-center" aria-label={`${fullName(guest)} — change name`}>
-        <span className="font-display text-[38px] font-light italic leading-[1.05] text-ink">{fullName(guest)}</span>
+      <button
+        type="button"
+        onClick={start}
+        className={`group block w-full ${left ? "text-left" : "mt-1.5 text-center"}`}
+        aria-label={`${fullName(guest)} — change name`}
+      >
+        <span className={`font-display font-light italic leading-[1.05] text-ink ${left ? "text-[28px]" : "text-[38px]"}`}>{fullName(guest)}</span>
         <Pencil className="ml-2 inline h-4 w-4 align-baseline text-stone/60 group-hover:text-ink" strokeWidth={1.6} aria-hidden />
       </button>
     );

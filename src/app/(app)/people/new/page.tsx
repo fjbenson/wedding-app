@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { listHouseholds } from "@/lib/db/contacts";
-import { listEvents } from "@/lib/db/rsvps";
+import { listEvents, listRsvps } from "@/lib/db/rsvps";
+import { ownNeeds } from "@/lib/dietary";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveGuestAction } from "../actions";
 import FormPage from "@/components/form-page";
@@ -17,7 +18,7 @@ export default async function NewGuestPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const [households, events] = await Promise.all([listHouseholds(wedding.id), listEvents(wedding.id)]);
+  const [households, events, rsvps] = await Promise.all([listHouseholds(wedding.id), listEvents(wedding.id), listRsvps(wedding.id)]);
 
   return (
     <FormPage backHref="/people" backLabel="People" title="Add a guest" error={error} detail={detail}>
@@ -25,6 +26,7 @@ export default async function NewGuestPage({
         action={saveGuestAction}
         households={households}
         events={events}
+        ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
         defaultHousehold={households.some((h) => h.id === household) ? household : undefined}
       />
     </FormPage>

@@ -5,6 +5,8 @@ import { useEffect, useOptimistic, useState, useTransition } from "react";
 import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
+import { joinNeeds, needsOf } from "@/lib/dietary";
+import DietaryPicker from "@/components/dietary-picker";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import { deleteGuestAction, setRolesAction, updateGuestAction, type GuestEdit } from "./actions";
 import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-actions";
@@ -55,6 +57,7 @@ export default function GuestCard({
   table = null,
   groups,
   onShowGroup,
+  ownNeeds = [],
   onClose,
 }: {
   guest: Contact;
@@ -69,6 +72,8 @@ export default function GuestCard({
   /** The wedding's groups of guests; the card shows theirs and adds to others. Left out, no Groups part. */
   groups?: GroupSummary[];
   onShowGroup?: (id: string) => void;
+  /** Dietary needs other guests have that aren't on the standard list — offered here too. */
+  ownNeeds?: string[];
   onClose: () => void;
 }) {
   const name = fullName(guest);
@@ -158,7 +163,7 @@ export default function GuestCard({
               {own && (
                 <>
                   <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
-                  <TextRow label="Allergies" value={own.dietary_notes} onSave={(v) => saveMealAction(own.id, own.meal_choice ?? "", v)} />
+                  <DietaryRow rsvp={own} own={ownNeeds} />
                 </>
               )}
               <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
@@ -247,7 +252,9 @@ function Profile({
           <p className="mt-0.5 text-xs text-stone">Meal</p>
         </div>
       </div>
-      {own?.dietary_notes && <p className="mt-2.5 text-center text-[13px] text-[#9A3F2B]">Allergies: {own.dietary_notes}</p>}
+      {needsOf(own?.dietary_notes).length > 0 && (
+        <p className="mt-2.5 text-center text-[13px] text-[#9A3F2B]">{needsOf(own?.dietary_notes).join(" · ")}</p>
+      )}
     </div>
   );
 }
@@ -426,6 +433,28 @@ export function TextRow({
             {value || <span className="text-stone/70">Add {label.toLowerCase()}</span>}
           </button>
         )}
+      </dd>
+    </div>
+  );
+}
+
+/** Dietary needs, picked from the standard list or their own; each change saves at once. */
+function DietaryRow({ rsvp, own }: { rsvp: Rsvp; own: string[] }) {
+  const [needs, setNeeds] = useOptimistic(needsOf(rsvp.dietary_notes));
+  const [, startTransition] = useTransition();
+  const [failed, setFailed] = useState<string>();
+  const change = (next: string[]) =>
+    startTransition(async () => {
+      setNeeds(next);
+      setFailed((await safely(() => saveMealAction(rsvp.id, rsvp.meal_choice ?? "", joinNeeds(next) ?? ""))).error);
+    });
+
+  return (
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+      <dt className="type-meta py-3.5"><DetailLabel label="Dietary" /></dt>
+      <dd className="min-w-0">
+        <DietaryPicker value={needs} onChange={change} own={own} />
+        {failed && <p role="alert" className="mb-2 text-sm text-ink">{failed}</p>}
       </dd>
     </div>
   );

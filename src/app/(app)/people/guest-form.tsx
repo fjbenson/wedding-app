@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { SubmitBar } from "@/components/form-bits";
 import { GUEST_ROLES } from "@/lib/guest-roles";
+import { joinNeeds } from "@/lib/dietary";
+import DietaryPicker from "@/components/dietary-picker";
 import type { Household, WeddingEvent } from "@/types/db";
 import { DetailLabel } from "./guest-table";
 
@@ -27,6 +29,7 @@ export default function GuestForm({
   households,
   events = [],
   defaultHousehold,
+  ownNeeds = [],
 }: {
   action: (formData: FormData) => void | Promise<void>;
   households: Household[];
@@ -34,11 +37,14 @@ export default function GuestForm({
   events?: Pick<WeddingEvent, "id" | "name">[];
   /** Adding from a household's page: start in that household, and go back there. */
   defaultHousehold?: string;
+  /** Dietary needs other guests have that aren't on the standard list. */
+  ownNeeds?: string[];
 }) {
   // Not in a household unless they're being added to one (owner's call, 9 Oct 2026).
   const [household, setHousehold] = useState(defaultHousehold ?? "none");
   const [moreRoles, setMoreRoles] = useState(false);
   const [child, setChild] = useState(false);
+  const [needs, setNeeds] = useState<string[]>([]);
 
   const word = (name: string) => name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
   const rest = GUEST_ROLES.filter((r) => !COMMON_ROLES.includes(r));
@@ -144,8 +150,11 @@ export default function GuestForm({
               <Row label="Meal">
                 <input name="meal_choice" aria-label="Meal" placeholder="Add meal" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
               </Row>
-              <Row label="Allergies">
-                <input name="dietary_notes" aria-label="Allergies" placeholder="Add allergies" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
+              <Row label="Dietary">
+                <input type="hidden" name="dietary_notes" value={joinNeeds(needs) ?? ""} />
+                <div className="-my-2">
+                  <DietaryPicker value={needs} onChange={setNeeds} own={ownNeeds} />
+                </div>
               </Row>
             </>
           )}

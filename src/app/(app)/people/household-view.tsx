@@ -1,5 +1,6 @@
 "use client";
 
+import { ownNeeds } from "@/lib/dietary";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
@@ -144,6 +145,7 @@ export default function HouseholdView({
           rsvps={answersOf(open)}
           table={tables[open.id] ?? null}
           groups={groups}
+          ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
           onClose={close}
         />
       )}

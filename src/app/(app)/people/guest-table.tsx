@@ -82,6 +82,7 @@ const DETAIL_ICONS: Record<string, LucideIcon> = {
   Email: Mail,
   Meal: UtensilsCrossed,
   Allergies: WheatOff,
+  Dietary: WheatOff,
   Notes: PenLine,
   Child: Baby,
 };

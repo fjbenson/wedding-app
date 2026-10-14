@@ -11,6 +11,7 @@
  * person's own. Inputs come from the AI, so each is checked here before use.
  */
 import type Anthropic from "@anthropic-ai/sdk";
+import { DIETARY_NEEDS } from "@/lib/dietary";
 import { addNote } from "@/lib/jobs";
 import { findGuests, findSuppliers, moneySummary, overview, seating, thisWeek, type Overview } from "@/lib/lookups";
 import { formatLongDate } from "@/lib/dates";
@@ -98,7 +99,7 @@ export const TOOLS: Tool[] = [
         phone: str,
         is_child: { type: "boolean" },
         meal: str,
-        diet: { ...str, description: "Dietary needs and allergies" },
+        diet: { ...str, description: `Dietary needs, joined with " · ", using these names where they fit: ${DIETARY_NEEDS.map((n) => n.name).join(", ")}. Anything else in their own words.` },
         notes: str,
       },
       required: ["full_name"],

@@ -707,7 +707,8 @@ a device until Sign out (Settings, and the foot of the Hub). The email box is
   address `onboarding@resend.dev`, which **only delivers to the owner's own
   email** — nobody else (a partner, other couples) can sign in until the app
   has its **own web address** (domain), verified in Resend and set as the
-  sender. Choosing the app's name/domain is the owner's open decision.
+  sender. **Working name: Rondé** (14 Oct 2026, see "The name" under
+  Backlog); the web address waits on the checks listed there.
 - Supabase templates **Magic Link**, **Confirm signup** and **Change Email
   Address** show `{{ .Token }}` (the code). Code length is Supabase's
   "Email OTP Length" (6 is the minimum).
@@ -936,7 +937,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 13 Oct 2026 late chat):** the owner
+   `calendar.tsx`). **Next up (end of the 14 Oct 2026 naming chat):** no code
+   changed; the app has a **working name, Rondé** (Backlog, "The name"). The
+   owner looks at canvas 2's "Name · Rondé" page and picks an icon (A twirl ·
+   B accent · C ronde), tries the name on five friends, and runs the UK
+   trademark search and a web-address check. Then the items below.
+   **Earlier next-up (end of the 13 Oct 2026 late chat):** the owner
    tries **Where things stand** (`/standing`, built this chat) on the demo
    wedding and says if any figure looks off; still to check on an iPhone
    that the assistant no longer jumps; then the plan below.
@@ -1182,6 +1188,35 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 ### Backlog (ideas parked by the owner)
 
+- **The name: working name Rondé** (owner, 14 Oct 2026, after two long
+  rounds). *Ronde* is French for **round** (the hub ring, the signature
+  circle) and *une ronde* is a **circle dance** (the dancing couple); said
+  "ron-DAY", it lands on the big day. The feeling it carries is the brand's:
+  **"Everything sorted. Ready to dance."** (the owner's 💃) — confident,
+  calm, then a flash of joy. Line under the name: *Ready to dance.* Mocked
+  on canvas 2 "Name · Rondé" (wordmark, three icons, sign-in, "All sorted.
+  Time to dance."). Still to do: friend test (what it brings to mind, how
+  they'd spell it — a faint "affair" echo comes from *rendezvous* and the
+  old play *La Ronde*), UK trademark search, web address (ronde.app or
+  similar; é can't go in it), App Store title like "Rondé: Wedding Planner".
+  The owner's rules for any name: sings wedding and "you're your own
+  planner"; dynamic, not past tense (that's Hitched); sounds like the app
+  looks (elegant, satisfying, no puns); for everyone (no church, aisle,
+  bride/groom, drink, "boss"); no negative reading; passes the phone test
+  (dictation types it right — "Junia" came out "junior", "Ordia" "oh
+  dear"); ideally ours alone. **Never:** confetti or anything built on it.
+  Taken or ruled out: Aisle (well-funded US AI wedding planner), Wedmin (an
+  app and a UK company), Weddingly, Cordia, Ordina, Concora, Simora.
+  Near misses kept: Cordia (the sound), Dovetail (the picture), Valsa
+  (Portuguese for waltz), Moonring (but echoes Mooncup).
+- **Business model** (talked through 14 Oct 2026): Hitched, Bridebook,
+  Zola are free because suppliers pay them; this app is **paid by couples**
+  (a one-off price per wedding, ~£30–50, may suit better than monthly),
+  which keeps it on the couple's side. Order: a free trial with 3–5
+  couples → charge on the website (Stripe) → App Store later (Capacitor
+  wrap; Apple keeps 15%). Suppliers could come later only if a couple's
+  details reach one solely when the couple sends them.
+
 - **From the information-architecture review (12 Oct 2026)** — the owner
   asked for the app's map ("Wedding App Map", a sitemap:
   https://claude.ai/artifact/GfcFVHZX4vuf1Ykzdk1i5B) and what doesn't line
@@ -1341,9 +1376,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 All private to the owner; open with the Artifact tool's `read` action.
 
-- **Design canvas 2** — **use this one for new work** (from 11 Oct 2026;
-  the first canvas reached its 40-page limit): starts with the guest
-  list's title drawings: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
+- **Design canvas 2** — from 11 Oct 2026; **now full too** (its 40th page,
+  "Name · Rondé", was added 14 Oct 2026), so **start a canvas 3** (a new
+  Design artifact) for the next round: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
+- **Name Lab** — a this-or-that game for the name (`results` collection;
+  not played yet): https://claude.ai/artifact/DAfW9wxPmNQLQEtGhgqZPP
 - **Design canvas (the first, full)** — every home-screen round, the area
   page, Hub icons, guest list rounds 1–15, household, Plan rounds 1–4 and
   the calendar: https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw

@@ -334,6 +334,27 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (People › Files, grouped by area, Filter and +), files on payments and
   area pages, and **C**, the assistant reading a file.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
+  **The card follows the filter** (14 Oct 2026; canvas 3 "Guest list · A
+  card for every filter", owner's pick): with a filter on, the numbers card
+  becomes a **summary card** (`guest-summary.tsx`): "13 coming" large, the
+  other answers under it (tap to show them), then a **tally** (label, dotted
+  line, number — no bars, owner: most lines are 1s) for what the filter has
+  kinds of: Dietary needs → each need, allergies apart under "must avoid",
+  plus Copy the list for the caterer; Bridal party → roles; Day guests →
+  meals ("Not picked yet" faded); Evening guests → adults / children;
+  Children or both events → day / evening. No address and groups show the
+  headline only (a tally would repeat the list; No address groups the list
+  by household). Filters always combine; when two have kinds, an **"Add up
+  by"** switch picks which (`?by=`). Tapping a tally line narrows the list
+  again (a dark pill, `?pick=`), and each row shows that detail under the
+  name. Counts are of guests coming. A group's card keeps Email · Text · Edit
+  with the same body. Filters stay under the card (owner agreed).
+  **Dietary needs are picked from a list** (14 Oct 2026; `src/lib/dietary.ts`,
+  `DietaryPicker`): Vegetarian, Vegan, Pescatarian, Gluten-free, Dairy-free,
+  Nut, Shellfish and Egg allergy, Halal, Kosher — typing finds them ("veggie",
+  "coeliac"), "+ Add '…'" only when nothing matches, and a couple's own are
+  offered to other guests. Stored in `rsvps.dietary_notes` joined with " · "
+  like roles (no migration). On the guest card ("Dietary") and Add a guest.
   **Groups of guests** (14 Oct 2026; canvas 3 "Groups · Round 1", all
   three screens, owner's pick; `0019_guest_groups.sql`, run 14 Oct 2026
   with the owner's OK): people who belong together — "The football lot",

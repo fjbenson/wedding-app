@@ -4,14 +4,15 @@ import Link from "next/link";
 import AddButton from "@/components/add-button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronRight, Mail, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { Baby, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, Users, WheatOff, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupCard, type GroupSummary } from "./guest-groups";
-import { ownNeeds } from "@/lib/dietary";
+import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
+import { SummaryBody, SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
@@ -127,6 +128,10 @@ export default function GuestBrowser({
     return asked && guestGroups.some((g) => g.id === asked) ? asked : undefined;
   });
   const group = guestGroups.find((g) => g.id === groupId);
+  /** Which filter the card adds up (?by=), when more than one has kinds. */
+  const [splitBy, setSplitBy] = useState<SplitKind | undefined>(() => (params.get("by") as SplitKind | null) ?? undefined);
+  /** A line tapped in the card's tally (?pick=, e.g. "diet:Vegan"): narrows the list again. */
+  const [pick, setPick] = useState<string | undefined>(() => params.get("pick") ?? undefined);
   useEffect(() => {
     replaceQuery({
       q: query.trim() || null,
@@ -134,9 +139,11 @@ export default function GuestBrowser({
       f: filters.length ? filters.join(",") : null,
       of: guestOf.length ? guestOf.join(",") : null,
       group: group?.id ?? null,
+      by: splitBy ?? null,
+      pick: pick ?? null,
       tab: null,
     });
-  }, [query, showing, filters, guestOf, group]);
+  }, [query, showing, filters, guestOf, group, splitBy, pick]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
   const close = useCallback(() => setOpenId(undefined), []);
@@ -206,6 +213,7 @@ export default function GuestBrowser({
     setFilters([]);
     setGuestOf([]);
     setGroupId(undefined);
+    setPick(undefined);
   };
   const pickGroup = (id: string) => {
     setGroupId((on) => (on === id ? undefined : id));
@@ -220,9 +228,27 @@ export default function GuestBrowser({
     .filter((g) => filters.every((f) => tests[f](g)));
   const answerOf = (g: Contact) => statusFor(g, ownEvent(g));
 
+  // What the card adds up: each filter with kinds, in the order picked.
+  const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
+  const mealOf = (g: Contact) => ownRsvp(g)?.meal_choice?.trim() || null;
+  const kinds: SplitKind[] = [];
+  if (guestOf.length === 1) kinds.push(guestOf[0] === events[0]?.id ? "meal" : "age");
+  else if (guestOf.length > 1) kinds.push("when");
+  for (const f of filters) {
+    const kind = ({ dietary: "diet", party: "role", children: "when", noaddress: undefined } as const)[f];
+    if (kind && !kinds.includes(kind)) kinds.push(kind);
+  }
+  const coming = filtered.filter((g) => answerOf(g) === "attending");
+  const splits = kinds.map((kind) => splitOf(kind, coming, { dietOf, mealOf, ownEvent }));
+  const split = splits.find((s) => s.kind === splitBy) ?? splits[splits.length - 1];
+  const picked = split && pick?.startsWith(`${split.kind}:`) ? pick : undefined;
+  const pickedLine = picked ? split?.sections.flatMap((s) => s.lines).find((l) => l.id === picked) : undefined;
+  const pickTest = (g: Contact) => !pickedLine || partOf(split!.kind, g, { dietOf, mealOf, ownEvent }).includes(pickedLine.label);
+
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const shown = filtered
     .filter((g) => showing === "all" || answerOf(g) === showing)
+    .filter(pickTest)
     .filter((g) => {
       if (words.length === 0) return true;
       const hay = [fullName(g), g.household_id && data.household.get(g.household_id)?.name, ...rolesOf(g)]
@@ -238,7 +264,7 @@ export default function GuestBrowser({
   if (filters.includes("party")) {
     const roles = [...new Set(shown.flatMap(rolesOf))].sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b));
     groups = roles.map((role) => ({ key: role, title: role, guests: shown.filter((g) => rolesOf(g).includes(role)) }));
-  } else if (sort === "type") {
+  } else if (sort === "type" && !filters.includes("noaddress")) {
     groups = events
       .map((e) => ({
         key: e.id,
@@ -248,7 +274,7 @@ export default function GuestBrowser({
       .filter((group) => group.guests.length > 0);
     const loose = shown.filter((g) => !ownEvent(g));
     if (loose.length > 0) groups.push({ key: "none", title: "Day or evening?", guests: loose });
-  } else if (sort === "household") {
+  } else if (sort === "household" || filters.includes("noaddress")) {
     groups = households
       .map((h) => ({
         key: h.id,
@@ -263,6 +289,33 @@ export default function GuestBrowser({
     groups = [{ key: "az", title: "", guests: shown }];
   }
 
+
+  const summary = {
+    counts: {
+      to_invite: filtered.filter((g) => answerOf(g) === "to_invite").length,
+      attending: coming.length,
+      pending: filtered.filter((g) => answerOf(g) === "pending").length,
+      declined: filtered.filter((g) => answerOf(g) === "declined").length,
+    },
+    total: filtered.length,
+    homes: new Set(filtered.map((g) => g.household_id).filter(Boolean)).size,
+    showing,
+    onShow: setShowing,
+    splits,
+    splitBy: split?.kind,
+    onSplit: (kind: SplitKind) => {
+      setSplitBy(kind);
+      setPick(undefined);
+    },
+    pick: picked,
+    onPick: setPick,
+  };
+  // Under each name, what the card is adding up: their diet, role, meal…
+  const detailOf = (g: Contact) => {
+    if (!split || split.kind === "when" || split.kind === "age") return undefined;
+    const parts = partOf(split.kind, g, { dietOf, mealOf, ownEvent }).filter((p) => p !== NOT_PICKED);
+    return parts.length ? { text: parts.join(" · "), rose: split.kind === "diet" && parts.some(isAllergy) } : undefined;
+  };
 
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
   const az = groups.length === 1 && groups[0].key === "az";
@@ -283,6 +336,16 @@ export default function GuestBrowser({
               weddingName={weddingName}
               onClear={() => setGroupId(undefined)}
               onOpenGuest={setOpenId}
+            >
+              <SummaryBody {...summary} />
+            </GroupCard>
+          </div>
+        ) : filters.length + guestOf.length > 0 ? (
+          <div>
+            <SummaryCard
+              icon={filters.includes("dietary") ? WheatOff : filters.includes("party") ? Star : filters.includes("children") ? Baby : filters.includes("noaddress") ? House : guestOf.length ? Sun : Users}
+              title={[...ofCounted.filter((o) => guestOf.includes(o.id)).map((o) => o.label), ...filters.map((f) => FILTERS.find((o) => o.key === f)!.label)].join(" · ")}
+              {...summary}
             />
           </div>
         ) : events.length > 0 && (
@@ -336,6 +399,17 @@ export default function GuestBrowser({
           </div>
           {filters.length + guestOf.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+              {pickedLine && (
+                <button
+                  type="button"
+                  onClick={() => setPick(undefined)}
+                  aria-label={`Take off ${pickedLine.label}`}
+                  className="flex h-8 items-center gap-1.5 rounded-full bg-ink pl-3 pr-2.5 text-[13px] text-ivory"
+                >
+                  {pickedLine.label}
+                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                </button>
+              )}
               {ofCounted
                 .filter((o) => guestOf.includes(o.id))
                 .map((o) => (
@@ -383,7 +457,7 @@ export default function GuestBrowser({
                   <ul>
                     {group.guests.map((g) => (
                       <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b-[0.5px] border-champagne-400">
-                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => setOpenId(g.id)} />
+                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} detail={detailOf(g)} onOpen={() => setOpenId(g.id)} />
                       </li>
                     ))}
                   </ul>
@@ -620,9 +694,12 @@ export function GuestRow({
   event,
   status,
   showEvent,
+  detail,
   onOpen,
 }: {
   guest: Contact;
+  /** A line under the name: what the summary card is adding up (their diet, role…). */
+  detail?: { text: string; rose: boolean };
   /** Off when the list is already grouped into day and evening guests. */
   showEvent: boolean;
   /** The event they're a guest of — their first invitation. */
@@ -660,6 +737,7 @@ export function GuestRow({
             <Star aria-hidden className="ml-1.5 inline h-3 w-3 fill-champagne-400 align-baseline text-champagne-400 min-[360px]:hidden" strokeWidth={1.4} />
           )}
         </span>
+        {detail && <span className={`mt-0.5 block text-xs ${detail.rose ? "text-[#9A3F2B]" : "text-champagne-600"}`}>{detail.text}</span>}
         {roles.length > 0 && <span className="sr-only">Role: {roles.join(", ")}</span>}
       </span>
       <AnswerIcon status={status} />
@@ -966,4 +1044,80 @@ function GuestTable({
       </table>
     </div>
   );
+}
+
+const NOT_PICKED = "Not picked yet";
+const isAllergy = (need: string) => /allerg/i.test(need);
+
+interface Lookups {
+  dietOf: (g: Contact) => string | null;
+  mealOf: (g: Contact) => string | null;
+  ownEvent: (g: Contact) => WeddingEvent | undefined;
+}
+
+/** Which kinds a guest counts under, for one way of adding up. */
+function partOf(kind: SplitKind, g: Contact, look: Lookups): string[] {
+  switch (kind) {
+    case "diet":
+      return needsOf(look.dietOf(g));
+    case "role":
+      return rolesOf(g);
+    case "meal":
+      return [look.mealOf(g) ?? NOT_PICKED];
+    case "age":
+      return [g.is_child ? "Children" : "Adults"];
+    case "when": {
+      const e = look.ownEvent(g);
+      return e ? [eventWord(e).replace(/^\w/, (c) => c.toUpperCase())] : [];
+    }
+  }
+}
+
+/** The card's tally for one way of adding up, over the guests coming. */
+function splitOf(kind: SplitKind, coming: Contact[], look: Lookups): Split {
+  const tally = new Map<string, Contact[]>();
+  for (const g of coming) for (const part of partOf(kind, g, look)) tally.set(part, [...(tally.get(part) ?? []), g]);
+  const line = (label: string): TallyLine => ({
+    id: `${kind}:${label}`,
+    label,
+    count: tally.get(label)!.length,
+    rose: kind === "diet" && isAllergy(label),
+    faded: label === NOT_PICKED,
+  });
+  const most = (a: string, b: string) => tally.get(b)!.length - tally.get(a)!.length || a.localeCompare(b);
+  const labels = [...tally.keys()];
+
+  switch (kind) {
+    case "diet": {
+      const order = (a: string, b: string) => needRank(a) - needRank(b) || a.localeCompare(b);
+      const diets = labels.filter((l) => !isAllergy(l)).sort(order);
+      const allergies = labels.filter(isAllergy).sort(order);
+      const names = (l: string) => tally.get(l)!.map(fullName).join(", ");
+      const copy = [
+        `Dietary needs — ${coming.length} coming`,
+        "",
+        ...diets.map((l) => `${l} (${tally.get(l)!.length}): ${names(l)}`),
+        ...(allergies.length ? ["", "Allergies — must avoid", ...allergies.map((l) => `${l} (${tally.get(l)!.length}): ${names(l)}`)] : []),
+      ].join("\n");
+      return {
+        kind,
+        word: "Diet",
+        sections: [
+          { title: "Diets", lines: diets.map(line) },
+          { title: "Allergies · must avoid", rose: true, lines: allergies.map(line) },
+        ],
+        copy,
+      };
+    }
+    case "role":
+      return { kind, word: "Role", sections: [{ lines: labels.sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b)).map(line) }] };
+    case "meal": {
+      const meals = labels.filter((l) => l !== NOT_PICKED).sort(most);
+      return { kind, word: "Meal", sections: [{ title: "Meals", lines: [...meals, ...labels.filter((l) => l === NOT_PICKED)].map(line) }] };
+    }
+    case "age":
+      return { kind, word: "Age", sections: [{ lines: ["Adults", "Children"].filter((l) => tally.has(l)).map(line) }] };
+    case "when":
+      return { kind, word: "Day or evening", sections: [{ lines: labels.map(line) }] };
+  }
 }

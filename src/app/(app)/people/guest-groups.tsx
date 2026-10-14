@@ -170,6 +170,7 @@ export function GroupCard({
   weddingName,
   onClear,
   onOpenGuest,
+  children,
 }: {
   group: GroupSummary;
   people: Contact[];
@@ -177,6 +178,8 @@ export function GroupCard({
   weddingName: string;
   onClear: () => void;
   onOpenGuest: (id: string) => void;
+  /** Its numbers, from the guest list's summary card; left out, a one-line count. */
+  children?: React.ReactNode;
 }) {
   const [sheet, setSheet] = useState<"email" | "text" | null>(null);
   const [editing, setEditing] = useState(false);
@@ -198,11 +201,13 @@ export function GroupCard({
           <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
         </button>
       </div>
-      <p className="mt-3 text-sm text-[#3A342E]">
-        <span className="type-figure mr-1 text-[26px]">{people.length}</span>
-        {people.length === 1 ? "person" : "people"}
-        {people.length > 0 && ` · ${counts}`}
-      </p>
+      {children ?? (
+        <p className="mt-3 text-sm text-[#3A342E]">
+          <span className="type-figure mr-1 text-[26px]">{people.length}</span>
+          {people.length === 1 ? "person" : "people"}
+          {people.length > 0 && ` · ${counts}`}
+        </p>
+      )}
 
       {editing ? (
         <EditGroup group={group} onDone={() => setEditing(false)} onRemoved={onClear} />

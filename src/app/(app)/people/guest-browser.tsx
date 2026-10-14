@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Baby, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, Users, WheatOff, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
+import { usePullToClose } from "@/components/use-pull-to-close";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { RolePill, fullName, initials } from "./guest-table";
@@ -326,9 +327,9 @@ export default function GuestBrowser({
 
   return (
     <>
-      <div className="mt-6 flex flex-col lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
+      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
         {group ? (
-          <div className="order-2 mt-4 lg:order-none lg:mt-0">
+          <div>
             <GroupCard
               group={group}
               people={filtered}
@@ -341,7 +342,7 @@ export default function GuestBrowser({
             </GroupCard>
           </div>
         ) : filters.length + guestOf.length > 0 ? (
-          <div className="order-2 mt-4 lg:order-none lg:mt-0">
+          <div>
             <SummaryCard
               icon={filters.includes("dietary") ? WheatOff : filters.includes("party") ? Star : filters.includes("children") ? Baby : filters.includes("noaddress") ? House : guestOf.length ? Sun : Users}
               title={[...ofCounted.filter((o) => guestOf.includes(o.id)).map((o) => o.label), ...filters.map((f) => FILTERS.find((o) => o.key === f)!.label)].join(" · ")}
@@ -349,7 +350,7 @@ export default function GuestBrowser({
             />
           </div>
         ) : events.length > 0 && (
-          <div className="order-2 mt-4 lg:order-none lg:mt-0">
+          <div>
             <AnswersCard
               total={filtered.length}
               homes={new Set(filtered.map((g) => g.household_id).filter(Boolean)).size}
@@ -365,8 +366,7 @@ export default function GuestBrowser({
           </div>
         )}
 
-        {/* Search and Filter above the card on phones (owner, 14 Oct 2026): the card grows when a filter is on, and the buttons mustn't move. */}
-        <div className="order-1 lg:order-none">
+        <div className="mt-5 lg:mt-0">
           <div className="flex items-center gap-2">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
@@ -395,6 +395,7 @@ export default function GuestBrowser({
               on={filters}
               onToggle={toggle}
               onClear={clearAll}
+              results={filtered.length}
             />
             <SortMenu sort={sort} onSort={setSort} />
           </div>
@@ -788,7 +789,10 @@ function FilterMenu({
   on,
   onToggle,
   onClear,
+  results,
 }: {
+  /** How many guests the filters leave, for the sheet's "Show …" button. */
+  results: number;
   /** Day guests, evening guests: one per event. */
   guestOf: { id: string; label: string; count: number }[];
   ofOn: string[];
@@ -803,7 +807,18 @@ function FilterMenu({
   onClear: () => void;
 }) {
   const { open, setOpen, box } = useDropdown();
+  const close = useCallback(() => setOpen(false), [setOpen]);
+  const drag = usePullToClose(close);
   const active = on.length + ofOn.length + (groupOn ? 1 : 0);
+  // On a phone it's a sheet from the bottom: the list behind stays still while it's open.
+  useEffect(() => {
+    if (!open || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
   const rows = [
     ...guestOf.map((o) => ({ key: o.id, label: o.label, count: o.count, ticked: ofOn.includes(o.id), flip: () => onToggleOf(o.id) })),
     ...filters.map((f) => ({ key: f.key, label: f.label, count: f.count, ticked: on.includes(f.key), flip: () => onToggle(f.key) })),
@@ -819,6 +834,76 @@ function FilterMenu({
       setOpen(false);
     },
   }));
+
+  const content = (
+    <>
+      <div className="flex items-baseline justify-between py-1">
+        <span className="section-label">Show only</span>
+        {active > 0 && (
+          <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+            Clear
+          </button>
+        )}
+      </div>
+      <ul>
+        {rows.map((f, i) => {
+          const ticked = f.ticked;
+          return (
+            // A firmer line between "day / evening" and the rest.
+            <li key={f.key} className={`border-t first:border-t-0 ${i === guestOf.length && i > 0 ? "border-champagne-400" : "border-linen"}`}>
+              <button
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={ticked}
+                onClick={f.flip}
+                className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+              >
+                <span
+                  aria-hidden
+                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                    ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                  }`}
+                >
+                  {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                </span>
+                <span className="flex-1">{f.label}</span>
+                <span className="text-[13px] text-stone">{f.count}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {groupRows.length > 0 && (
+        <>
+          <p className="section-label mt-2 border-t border-champagne-400 pt-3">Groups</p>
+          <ul>
+            {groupRows.map((f) => (
+              <li key={f.key} className="border-t border-linen first:border-t-0">
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={f.ticked}
+                  onClick={f.flip}
+                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                >
+                  <span
+                    aria-hidden
+                    className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                      f.ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                    }`}
+                  >
+                    {f.ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                  </span>
+                  <span className="flex-1">{f.label}</span>
+                  <span className="text-[13px] text-stone">{f.count}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
 
   return (
     <div ref={box} className="relative shrink-0">
@@ -839,73 +924,38 @@ function FilterMenu({
       </button>
 
       {open && (
-        <div className={`${MENU.replace("right-0", "left-0")} w-[17rem] pb-2 pt-2.5`}>
-          <div className="flex items-baseline justify-between py-1">
-            <span className="section-label">Show only</span>
-            {active > 0 && (
-              <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-                Clear
-              </button>
-            )}
+        <>
+          {/* Laptops: a small menu under the button. */}
+          <div className={`${MENU.replace("right-0", "left-0")} hidden w-[17rem] pb-2 pt-2.5 lg:block`}>{content}</div>
+
+          {/* Phones: a sheet from the bottom (owner, 14 Oct 2026). The card above the
+              list grows as filters go on; a menu hanging off the button moved with it. */}
+          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Filter">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={close}
+              style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+              className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+            />
+            <div
+              style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+              className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] ${
+                drag.dragging ? "" : "transition-transform duration-200 ease-out"
+              }`}
+            >
+              <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center">
+                <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
+              </div>
+              <div className="overflow-y-auto overscroll-contain px-[22px] pb-3">{content}</div>
+              <div className="shrink-0 border-t border-linen px-[22px] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+                <button type="button" onClick={close} className="h-12 w-full rounded-full bg-ink text-[15px] text-ivory">
+                  Show {results} {results === 1 ? "guest" : "guests"}
+                </button>
+              </div>
+            </div>
           </div>
-          <ul>
-            {rows.map((f, i) => {
-              const ticked = f.ticked;
-              return (
-                // A firmer line between "day / evening" and the rest.
-                <li key={f.key} className={`border-t first:border-t-0 ${i === guestOf.length && i > 0 ? "border-champagne-400" : "border-linen"}`}>
-                  <button
-                    type="button"
-                    role="menuitemcheckbox"
-                    aria-checked={ticked}
-                    onClick={f.flip}
-                    className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                  >
-                    <span
-                      aria-hidden
-                      className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                        ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                      }`}
-                    >
-                      {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                    </span>
-                    <span className="flex-1">{f.label}</span>
-                    <span className="text-[13px] text-stone">{f.count}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          {groupRows.length > 0 && (
-            <>
-              <p className="section-label mt-2 border-t border-champagne-400 pt-3">Groups</p>
-              <ul>
-                {groupRows.map((f) => (
-                  <li key={f.key} className="border-t border-linen first:border-t-0">
-                    <button
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={f.ticked}
-                      onClick={f.flip}
-                      className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                    >
-                      <span
-                        aria-hidden
-                        className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                          f.ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                        }`}
-                      >
-                        {f.ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                      </span>
-                      <span className="flex-1">{f.label}</span>
-                      <span className="text-[13px] text-stone">{f.count}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

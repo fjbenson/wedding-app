@@ -34,6 +34,7 @@ export default {
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
+        script: ["var(--font-script)", "var(--font-display)", "Georgia", "serif"],
       },
       letterSpacing: {
         label: "0.3em", // the widely spaced small capitals (.label, .section-label)

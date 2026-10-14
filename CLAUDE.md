@@ -347,20 +347,26 @@ Next.js scaffold. Built so far, against the plan's tabs:
   0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`
   retries on error 22P02). Guests from before "Guest of" show "Day or
   evening?" and their card asks which (`setGuestOfAction`).
-  **Household page** (`/people/household/[id]`, screen 9; canvas
-  "Household · Round 1", A plus contact buttons, 9 Oct 2026): back arrow,
-  and phone / email buttons top right (they reach the household's people —
-  straight through if one has a number, a pick-list if several, hidden if
-  none); the name as the italic title with "3 people · 1 child · day
-  guests"; an address card (Copy, tap to change in place via
-  `saveAddressAction`); then "Who's in it" as the guest list's own rows
-  (`GuestRow`), each opening the guest card right on this page. Tap the
-  name to rename it in place (`renameHouseholdAction`). "Add someone to
+  **Household page** (`/people/household/[id]`, screen 9): **since 14 Oct
+  2026 topped by an envelope** (canvas 3 "Household · Round 3 · Turn it
+  over", owner's pick; `household-envelope.tsx`): crisp white card with a
+  few flecks and a gold double border, the name in calligraphy (Pinyon
+  Script, `font-script`, loaded in `layout.tsx` for this alone) and the
+  address in plain italic. Tap it: it turns over (wax seal with the
+  initial), the flap opens and **the invitation** slides out — first names,
+  "to the day · date", each person's answer (tap one for their card), and
+  Name / Address rows with Change, Copy (`renameHouseholdAction`,
+  `saveAddressAction`); "Put it back" reverses it; reduce motion skips the
+  movement. Then "3 people · 1 child · day guests", round **Text · Call ·
+  Email** (they reach the household's people — straight through if one has
+  a number, a pick-list if several, hidden if none), then "Who's in it" as
+  the guest list's own rows (`GuestRow`), each opening the guest card right
+  on this page. The **edit page is gone**; "Remove this household" at the
+  foot asks first (`removeHouseholdAction`). A "Sent · date" mark waits on
+  invitation tracking (Backlog, "From talking to couples"). "Add someone to
   this household" asks first: **Someone new** (the guest form with it
   picked, coming back after) or **Already on the list** (search, tap to
-  move them in, leaving any household they were in). "Remove this
-  household" is the old edit page. The
-  separate dietary box is gone.
+  move them in, leaving any household they were in).
 - **Plan** (`/plan`): **two views, owner's call 11 Oct 2026** — a corner
   switch **Calendar | List** (`CornerSwitch`, shared with People), the
   title, then **one round black +** (owner, 12 Oct 2026, like People's;
@@ -1376,6 +1382,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 All private to the owner; open with the Artifact tool's `read` action.
 
+- **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
+  envelope): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **now full too** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026), so **start a canvas 3** (a new
   Design artifact) for the next round: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB

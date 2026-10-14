@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { Check, ChevronLeft, Copy, Mail, MapPin, Pencil, Phone, Plus, Search } from "lucide-react";
+import { ChevronLeft, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import { GuestRow, eventWord } from "./guest-browser";
 import { fullName } from "./guest-table";
-import { renameHouseholdAction, saveAddressAction } from "./household-actions";
+import { removeHouseholdAction } from "./household-actions";
+import HouseholdEnvelope from "./household-envelope";
 import { updateGuestAction } from "./actions";
 
 /**
- * One household (screen 9), settled on the canvas as "Household · Round 1",
- * option A with phone and email in the top corner (9 Oct 2026): where the
- * envelope goes, and who's in it — the guest list's own rows, opening each
- * person's card right here.
+ * One household (screen 9). Since 14 Oct 2026 topped by its envelope
+ * (`household-envelope.tsx`, canvas 3 "Household · Round 3"): the address on
+ * the front, the invitation and answers inside. Then Text · Call · Email, and
+ * who's in it — the guest list's own rows, opening each person's card right
+ * here.
  */
 export default function HouseholdView({
   household,
@@ -64,22 +67,31 @@ export default function HouseholdView({
         <Link href="/people" aria-label="Back to the guest list" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream">
           <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />
         </Link>
-        <span className="flex gap-2">
-          <ContactMenu
-            kind="phone"
-            people={people.filter((p) => p.phone).map((p) => ({ id: p.id, name: fullName(p), value: p.phone! }))}
-          />
-          <ContactMenu
-            kind="email"
-            people={people.filter((p) => p.email).map((p) => ({ id: p.id, name: fullName(p), value: p.email! }))}
-          />
-        </span>
+        <span className="label">Household</span>
+        <span className="w-11" aria-hidden />
       </div>
 
-      <HouseholdName household={household} />
-      <p className="type-meta mt-2">{summary}</p>
+      <HouseholdEnvelope
+        household={household}
+        people={people}
+        events={events}
+        ownEvent={ownEvent}
+        statusOf={statusOf}
+        onOpenGuest={setOpenId}
+      />
+      <p className="mt-3.5 text-center text-[13px] text-stone">{summary}</p>
 
-      <AddressCard household={household} />
+      <div className="mt-5 flex justify-center gap-8">
+        {(["text", "phone", "email"] as const).map((kind) => (
+          <ContactMenu
+            key={kind}
+            kind={kind}
+            people={people
+              .filter((p) => (kind === "email" ? p.email : p.phone))
+              .map((p) => ({ id: p.id, name: fullName(p), value: (kind === "email" ? p.email : p.phone)! }))}
+          />
+        ))}
+      </div>
 
       <div className="mt-8 flex items-baseline justify-between border-b border-champagne-400 px-1 pb-1.5">
         <h2 className="label">Who&apos;s in it</h2>
@@ -102,11 +114,7 @@ export default function HouseholdView({
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
 
-      <p className="mt-10 text-center">
-        <Link href={`/people/household/${household.id}/edit`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-          Remove this household
-        </Link>
-      </p>
+      <RemoveHousehold household={household} />
 
       {open && (
         <GuestCard
@@ -124,11 +132,12 @@ export default function HouseholdView({
 }
 
 /**
- * Phone or email for the household. A household has no number of its own, so
- * this reaches its people: one with a number and the button goes straight to
- * them; several and it asks who. Hidden when no one has one.
+ * Text · Call · Email for the household, as round buttons with their word
+ * (like the guest card's). A household has no number of its own, so these
+ * reach its people: one with a number and the button goes straight to them;
+ * several and it asks who. Hidden when no one has one.
  */
-function ContactMenu({ kind, people }: { kind: "phone" | "email"; people: { id: string; name: string; value: string }[] }) {
+function ContactMenu({ kind, people }: { kind: "text" | "phone" | "email"; people: { id: string; name: string; value: string }[] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLSpanElement>(null);
 
@@ -142,38 +151,43 @@ function ContactMenu({ kind, people }: { kind: "phone" | "email"; people: { id: 
   }, [open]);
 
   if (people.length === 0) return null;
-  const Icon = kind === "phone" ? Phone : Mail;
-  const label = kind === "phone" ? "Call or text" : "Email";
-  const href = (value: string) => (kind === "phone" ? `tel:${value.replace(/\s+/g, "")}` : `mailto:${value}`);
-  const button = "flex h-11 w-11 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
+  const Icon = { text: MessageSquare, phone: Phone, email: Mail }[kind];
+  const word = { text: "Text", phone: "Call", email: "Email" }[kind];
+  const href = (value: string) =>
+    kind === "email" ? `mailto:${value}` : `${kind === "text" ? "sms" : "tel"}:${value.replace(/\s+/g, "")}`;
+  const circle = `flex h-[52px] w-[52px] items-center justify-center rounded-full ${
+    kind === "text" ? "bg-ink text-ivory" : "border border-linen bg-white text-ink hover:border-champagne-400"
+  }`;
+  const face = (
+    <>
+      <span className={circle}>
+        <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+      </span>
+      {word}
+    </>
+  );
+  const look = "flex flex-col items-center gap-1.5 text-[13px] text-ink";
 
   if (people.length === 1) {
     return (
-      <a href={href(people[0].value)} aria-label={`${label} ${people[0].name}`} className={button}>
-        <Icon className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />
+      <a href={href(people[0].value)} aria-label={`${word} ${people[0].name}`} className={look}>
+        {face}
       </a>
     );
   }
   return (
     <span ref={box} className="relative">
-      <button type="button" aria-expanded={open} aria-label={label} onClick={() => setOpen((o) => !o)} className={button}>
-        <Icon className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={look}>
+        {face}
       </button>
       {open && (
-        <span className="absolute right-0 top-[calc(100%+8px)] z-30 block w-64 rounded-[20px] border border-linen bg-white px-4 py-2 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-          <span className="section-label block py-1">{kind === "phone" ? "Call" : "Email"}</span>
+        <span className="absolute left-1/2 top-[calc(100%+8px)] z-30 block w-64 -translate-x-1/2 rounded-[20px] border border-linen bg-white px-4 py-2 text-left shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <span className="section-label block py-1">{word}</span>
           {people.map((p) => (
-            <span key={p.id} className="flex min-h-11 items-center gap-2 border-t border-linen first:border-t-0">
-              <a href={href(p.value)} className="min-w-0 flex-1 py-2 hover:text-champagne-600">
-                <span className="block truncate text-sm text-ink">{p.name}</span>
-                <span className="block truncate text-xs text-stone">{p.value}</span>
-              </a>
-              {kind === "phone" && (
-                <a href={`sms:${p.value.replace(/\s+/g, "")}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-                  Text
-                </a>
-              )}
-            </span>
+            <a key={p.id} href={href(p.value)} className="flex min-h-11 flex-col justify-center border-t border-linen py-2 first-of-type:border-t-0 hover:text-champagne-600">
+              <span className="block truncate text-sm text-ink">{p.name}</span>
+              <span className="block truncate text-xs text-stone">{p.value}</span>
+            </a>
           ))}
         </span>
       )}
@@ -181,168 +195,37 @@ function ContactMenu({ kind, people }: { kind: "phone" | "email"; people: { id: 
   );
 }
 
-const FIELD =
-  "w-full rounded-xl border border-linen bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
-
-/** Where the envelope goes: Copy for writing it out, tap the address to change it. */
-function AddressCard({ household }: { household: Household }) {
-  const lines = [household.address_line1, household.address_line2, household.city, household.postcode].filter(Boolean) as string[];
-  const [editing, setEditing] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
-  const [draft, setDraft] = useState({ address_line1: "", address_line2: "", city: "", postcode: "" });
-
-  const start = () => {
-    setDraft({
-      address_line1: household.address_line1 ?? "",
-      address_line2: household.address_line2 ?? "",
-      city: household.city ?? "",
-      postcode: household.postcode ?? "",
-    });
-    setError(undefined);
-    setEditing(true);
-  };
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText([household.name, ...lines].join("\n"));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      // Some browsers won't let a page copy; the address is there to select by hand.
-    }
-  };
-
-  return (
-    <section className="mt-6 rounded-[22px] border border-white/85 bg-white/45 px-[18px] py-4 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] backdrop-blur-xl">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="section-label flex items-center gap-2">
-          <MapPin className="h-3.5 w-3.5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-          Address
-        </h2>
-        {lines.length > 0 && !editing && (
-          <button type="button" onClick={copy} className="flex h-8 items-center gap-1.5 rounded-full border border-linen bg-white px-3 text-[13px] text-ink hover:border-champagne-400">
-            {copied ? <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden /> : <Copy className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />}
-            {copied ? "Copied" : "Copy"}
-          </button>
-        )}
-      </div>
-
-      {editing ? (
-        <form
-          className="mt-3 space-y-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            startTransition(async () => {
-              try {
-                const result = await saveAddressAction(household.id, draft);
-                setError(result.error);
-                if (!result.error) setEditing(false);
-              } catch {
-                setError("That didn't save — the app may have just been updated. Pull down to refresh, then try again.");
-              }
-            });
-          }}
-        >
-          <input autoFocus value={draft.address_line1} onChange={(e) => setDraft({ ...draft, address_line1: e.target.value })} placeholder="House and street" aria-label="House and street" className={FIELD} />
-          <input value={draft.address_line2} onChange={(e) => setDraft({ ...draft, address_line2: e.target.value })} placeholder="Second line (optional)" aria-label="Second line" className={FIELD} />
-          <div className="grid grid-cols-[1fr_8rem] gap-2">
-            <input value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} placeholder="Town" aria-label="Town" className={FIELD} />
-            <input value={draft.postcode} onChange={(e) => setDraft({ ...draft, postcode: e.target.value.toUpperCase() })} placeholder="Postcode" aria-label="Postcode" className={FIELD} />
-          </div>
-          {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-          <span className="flex items-center gap-2 pt-1">
-            <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90 disabled:opacity-60">
-              {pending ? "Saving…" : "Save"}
-            </button>
-            <button type="button" onClick={() => setEditing(false)} className="h-9 px-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
-              Cancel
-            </button>
-          </span>
-        </form>
-      ) : (
-        <button type="button" onClick={start} className="mt-2.5 block w-full text-left">
-          {lines.length > 0 ? (
-            <address className="text-base not-italic leading-relaxed text-ink">
-              {lines.map((line) => (
-                <span key={line} className="block">
-                  {line}
-                </span>
-              ))}
-            </address>
-          ) : (
-            <span className="block text-[15px] text-champagne-600">Add their address — you&apos;ll need it for the invitation.</span>
-          )}
-          {lines.length > 0 && <span className="mt-1.5 block text-xs text-stone">Tap to change</span>}
-        </button>
-      )}
-    </section>
-  );
-}
-
 /** What a failed save says, rather than taking the page down (see guest-card.tsx). */
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
-/** The household's name, large; tap it to change it in place. */
-function HouseholdName({ household }: { household: Household }) {
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(household.name);
+/** "Remove this household", asking first. Its people stay on the guest list. */
+function RemoveHousehold({ household }: { household: Household }) {
+  const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
-
-  if (!editing) {
-    return (
+  return (
+    <div className="mt-10 text-center">
       <button
         type="button"
+        disabled={pending}
         onClick={() => {
-          setName(household.name);
-          setError(undefined);
-          setEditing(true);
+          if (!confirm(`Remove ${household.name}? The people in it stay on the guest list.`)) return;
+          startTransition(async () => {
+            try {
+              const result = await removeHouseholdAction(household.id);
+              setError(result.error);
+              if (!result.error) router.push("/people");
+            } catch {
+              setError(UNSAVED);
+            }
+          });
         }}
-        aria-label={`${household.name} — change name`}
-        className="group mt-3 block text-left"
+        className="text-xs text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
       >
-        <span className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">{household.name}</span>
-        <Pencil className="ml-2 inline h-4 w-4 align-baseline text-stone/60 group-hover:text-ink" strokeWidth={1.6} aria-hidden />
+        {pending ? "Removing…" : "Remove this household"}
       </button>
-    );
-  }
-  return (
-    <form
-      className="mt-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        startTransition(async () => {
-          try {
-            const result = await renameHouseholdAction(household.id, name);
-            setError(result.error);
-            if (!result.error) setEditing(false);
-          } catch {
-            setError(UNSAVED);
-          }
-        });
-      }}
-    >
-      <input
-        autoFocus
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
-        aria-label="Household name"
-        placeholder="e.g. The Bensons"
-        className={FIELD}
-      />
       {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
-      <span className="mt-2 flex items-center gap-2">
-        <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90 disabled:opacity-60">
-          {pending ? "Saving…" : "Save"}
-        </button>
-        <button type="button" onClick={() => setEditing(false)} className="h-9 px-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
-          Cancel
-        </button>
-      </span>
-    </form>
+    </div>
   );
 }
 

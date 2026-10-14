@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist } from "next/font/google";
+import { Fraunces, Geist, Pinyon_Script } from "next/font/google";
 import "./globals.css";
 
 // Fraunces Light for headlines and big numbers; Geist for everything else.
@@ -16,6 +16,15 @@ const display = Fraunces({
 const body = Geist({
   subsets: ["latin"],
   variable: "--font-body",
+});
+
+// Calligraphy, for a household's name on the front of its envelope only
+// (canvas 3 "Household · Round 3", 14 Oct 2026). Not preloaded: one screen uses it.
+const script = Pinyon_Script({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-script",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -46,7 +55,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${script.variable}`}>
       <body className="min-h-dvh bg-ivory font-body text-ink antialiased">
         {children}
       </body>

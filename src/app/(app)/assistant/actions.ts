@@ -2,6 +2,7 @@
 
 import { addGuest, addNote, addPayment, addTodo, setGuestAnswer } from "@/lib/jobs";
 import type { Proposal } from "@/lib/assistant/blocks";
+import { draftGroupMessage } from "@/lib/assistant/draft";
 
 /**
  * The Yes on one of Your assistant's cards: saves exactly what the card
@@ -67,4 +68,17 @@ export async function confirmProposalAction(
 export async function saveNoteAction(body: string): Promise<{ error?: string }> {
   const r = await addNote({ body });
   return r.ok ? {} : { error: r.error };
+}
+
+/** Your assistant drafts a message to a group (see `draftGroupMessage`). Never throws. */
+export async function draftGroupMessageAction(input: {
+  groupName: string;
+  kind: "email" | "text";
+  about: string;
+}): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  try {
+    return await draftGroupMessage(input);
+  } catch {
+    return { ok: false, error: "That didn't work just now. Try again." };
+  }
 }

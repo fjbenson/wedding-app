@@ -396,8 +396,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   a dashed pill per group with people still to seat ("Football lot 4");
   tap it (its people light up), then a table, and they're all sat there
   (`seatGroup` in `floor-plan.tsx`; groups load only on the Seating tab).
-  Still to come: the assistant writing the message, the app sending it
-  itself (needs its own web address). Demo: "Football lot" became a group,
+  **"Ask your assistant to write it"** (15 Oct 2026) under the message box
+  in the email / text sheet: type what it's about, a draft fills the box to
+  change (`draftGroupMessage` in `src/lib/assistant/draft.ts`, one
+  non-streaming call, effort low; `draftGroupMessageAction`). Only the
+  couple's names, the date, the group's name and what they typed go to
+  Anthropic — never the guests' names, emails or numbers; the sheet says so.
+  Still to come: the app sending it itself (needs its own web address). Demo: "Football lot" became a group,
   and Rob, Ollie and Dev got households; "Staying at the pub" has 8.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that

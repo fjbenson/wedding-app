@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Check, Copy, Mail, MessageSquare, Plus, Users, X } from "lucide-react";
+import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Users, X } from "lucide-react";
+import { draftGroupMessageAction } from "../assistant/actions";
 import type { Contact, Rsvp } from "@/types/db";
 import { addToGroupAction, createGroupAction, deleteGroupAction, removeFromGroupAction, renameGroupAction } from "./group-actions";
 import { fullName, initials } from "./guest-table";
@@ -327,6 +328,26 @@ function MessageSheet({
   const [subject, setSubject] = useState(`${weddingName}${/s$/i.test(weddingName) ? "'" : "'s"} wedding · ${group.name}`);
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+  // Your assistant writing it: what it's about, then a draft in the message box to change.
+  const [asking, setAsking] = useState(false);
+  const [about, setAbout] = useState("");
+  const [writing, setWriting] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
+
+  const draft = async () => {
+    setWriting(true);
+    setDraftError(null);
+    try {
+      const result = await draftGroupMessageAction({ groupName: group.name, kind, about });
+      if (result.ok) {
+        setMessage(result.text);
+        setAsking(false);
+      } else setDraftError(result.error);
+    } catch {
+      setDraftError("That didn't work — the app may have just been updated. Pull down to refresh, then try again.");
+    }
+    setWriting(false);
+  };
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
@@ -412,6 +433,54 @@ function MessageSheet({
             className="mt-1.5 w-full rounded-[14px] border border-linen bg-white px-3.5 py-3 text-base text-ink placeholder:italic placeholder:text-stone/70 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
           />
         </label>
+        {asking ? (
+          <div className="mt-2.5 rounded-[14px] border border-champagne-400/70 bg-cream/60 p-3">
+            <label className="block">
+              <span className="flex items-center gap-1.5 text-[13px] text-ink">
+                <PenLine className="h-4 w-4 text-champagne-600" strokeWidth={1.4} aria-hidden />
+                What&apos;s it about?
+              </span>
+              <input
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && about.trim() && !writing && (e.preventDefault(), draft())}
+                autoFocus
+                placeholder="e.g. The coach leaves the pub at 1pm"
+                className="mt-1.5 h-11 w-full rounded-[12px] border border-linen bg-white px-3 text-base text-ink placeholder:italic placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
+              />
+            </label>
+            {draftError && (
+              <p role="alert" className="mt-2 text-[13px] text-ink">
+                {draftError}
+              </p>
+            )}
+            <div className="mt-2.5 flex items-center justify-between gap-2">
+              <span className="text-xs leading-snug text-stone">Only this, the group&apos;s name and your names go to the assistant.</span>
+              <span className="flex shrink-0 gap-2">
+                <button type="button" onClick={() => setAsking(false)} className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={draft}
+                  disabled={!about.trim() || writing}
+                  className="h-9 rounded-full bg-ink px-3.5 text-[13px] text-ivory disabled:opacity-50"
+                >
+                  {writing ? "Writing…" : message ? "Write it again" : "Write it"}
+                </button>
+              </span>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAsking(true)}
+            className="mt-2 inline-flex h-10 items-center gap-1.5 text-[13px] italic text-champagne-600 hover:text-ink"
+          >
+            <PenLine className="h-4 w-4" strokeWidth={1.4} aria-hidden />
+            Ask your assistant to write it
+          </button>
+        )}
 
         {reachable.length > 0 ? (
           <>

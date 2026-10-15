@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { Check, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import { DateInput } from "@/components/form-bits";
+import { AreaTiles } from "@/components/visual-form";
 import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
@@ -177,6 +178,7 @@ function NotePanel({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [area, setArea] = useState(note.area_key ?? "");
+  const [pickingArea, setPickingArea] = useState(false);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.body ?? "");
   // Making it a to-do asks when, like the to-do form: done by, start around, or no date yet.
@@ -200,7 +202,7 @@ function NotePanel({
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center lg:items-center" role="dialog" aria-modal="true" aria-label="Note">
       <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-ink/30" />
-      <div className="relative w-full max-w-lg rounded-t-[28px] bg-ivory px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_40px_rgb(30_27_24/0.2)] lg:rounded-[28px] lg:pb-6">
+      <div className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-ivory px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_40px_rgb(30_27_24/0.2)] lg:rounded-[28px] lg:pb-6">
         <div aria-hidden className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#E0D3BC] lg:hidden" />
 
         {editing ? (
@@ -240,36 +242,50 @@ function NotePanel({
           </p>
         )}
 
-        <form
-          className="mt-4 flex min-h-14 items-center gap-2 border-t border-linen px-1"
-          onSubmit={(event) => {
-            event.preventDefault();
-            run(() => fileInboxNoteAction(note.id, area));
-          }}
-        >
-          <label htmlFor="file-under" className="flex-1 text-base text-ink">
-            {note.area_key ? "Filed under" : "File under"}
-          </label>
-          <select
-            id="file-under"
-            value={area}
-            onChange={(event) => setArea(event.target.value)}
-            className="h-10 max-w-[45%] rounded-full border border-[#E0D3BC] bg-white px-3 text-[15px] text-ink focus:border-champagne-400 focus:outline-none"
-          >
-            <option value="">{note.area_key ? "Not filed" : "Choose an area"}</option>
-            {areas.map((a) => (
-              <option key={a.key} value={a.key}>
-                {a.label}
-              </option>
-            ))}
-            <option value="other">Other</option>
-          </select>
-          {area !== (note.area_key ?? "") && (
-            <button type="submit" disabled={pending} className="h-10 rounded-full bg-ink px-4 text-sm text-ivory disabled:opacity-60">
-              {area ? "File" : "Save"}
+        {/* Filing: the area as a pill; tap it for the area tiles (with + Add an area), and a tap files it. */}
+        <div className="mt-4 border-t border-linen px-1 py-3">
+          <div className="flex min-h-11 items-center gap-2">
+            <span className="flex-1 text-base text-ink">{note.area_key ? "Filed under" : "File under"}</span>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => setPickingArea((open) => !open)}
+              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-linen bg-white/80 px-3.5 text-[15px] text-ink transition hover:border-champagne-400 disabled:opacity-60"
+            >
+              {note.area_key ? areaName(note.area_key, areas) : "Choose an area"}
+              <ChevronDown className={`h-4 w-4 text-stone transition ${pickingArea ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
             </button>
+          </div>
+          {pickingArea && (
+            <>
+              <AreaTiles
+                name="file_under"
+                areas={areas}
+                otherValue="other"
+                value={area || "\u0000"}
+                onChange={(value) => {
+                  setArea(value);
+                  setPickingArea(false);
+                  run(() => fileInboxNoteAction(note.id, value));
+                }}
+              />
+              {note.area_key && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    setArea("");
+                    setPickingArea(false);
+                    run(() => fileInboxNoteAction(note.id, ""));
+                  }}
+                  className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink"
+                >
+                  Set it back to Not filed
+                </button>
+              )}
+            </>
           )}
-        </form>
+        </div>
         {note.milestone_id ? (
           <Link href={`/plan/${note.milestone_id}`} className={ROW}>
             <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />

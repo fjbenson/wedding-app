@@ -391,9 +391,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   it), "Copy the addresses instead"; **Text** the same (warns a group text
   shows everyone's number). The **guest card's Groups** part (here and on
   the household page): pills (tap to show that group, ✕ to take them out),
-  "+ Add to a group" with the others and a new-group box. Still to come:
-  the assistant writing the message, the app sending it itself (needs its
-  own web address), groups on Seating. Demo: "Football lot" became a group,
+  "+ Add to a group" with the others and a new-group box. **Groups on
+  Seating** (15 Oct 2026): on the floor plan, "Not seated yet" starts with
+  a dashed pill per group with people still to seat ("Football lot 4");
+  tap it (its people light up), then a table, and they're all sat there
+  (`seatGroup` in `floor-plan.tsx`; groups load only on the Seating tab).
+  Still to come: the assistant writing the message, the app sending it
+  itself (needs its own web address). Demo: "Football lot" became a group,
   and Rob, Ollie and Dev got households; "Staying at the pub" has 8.
   **Invitations page removed** (9 Oct 2026, owner's call): sending
   invitations is done by post, so it's a **Stationery** area job (that
@@ -927,9 +931,10 @@ access control is RLS. No column-level encryption is planned.
   in `visual-form.tsx` opens **the same three steps as the ring's +**
   (`AreaSteps` with `sheet`, full screen over the form, no form of its own),
   saves through `quickAddAreaAction` (`area/actions.ts`; brings an old one
-  back if the name matches), then picks it, without leaving the form. On the to-do,
-  appointment, payment and add-a-supplier forms so far; still to do on the
-  supplier card, capture, note filing and Inspo.
+  back if the name matches), then picks it, without leaving the form. On every area
+  picker since 15 Oct 2026: to-do, appointment, payment, supplier form and
+  card, capture, Inspo save, and note filing (the notes panel's "File under"
+  is now a pill opening the tiles; a tap files it).
 - **Adding shows the tiles; a saved item shows the choice as a pill**
   (owner, 13 Oct 2026: a form has two lives — filling it in, then an item
   you look at — and the area grid "takes up way too much space" once it's
@@ -1333,11 +1338,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
   1. ~~**Add buttons**~~ — done 13 Oct 2026: The Day's run sheet (+ with a
      40px Print beside it) and Transport, Your notes and Inspo (title row)
      now use the round black + (`AddButton`).
-  2. **Page titles**: Your notes has no title drawing; Inspo and Settings
-     use a smaller plain title (34px) and no drawing — use `PageTitle`.
-  3. **Inspo's folders**: area chips that go black when picked; everywhere
-     else is the champagne Filter. Owner to choose: the Filter, or keep chips
-     but champagne.
+  2. **Page titles**: Inspo and Settings now use the tabs' 40px display
+     title (15 Oct 2026). Still no title drawing on Your notes, Inspo or
+     Settings — new artwork, so the owner's call (options could be made in
+     Canva like the others).
+  3. ~~**Inspo's folders**~~ — chips now go champagne when picked, not
+     black (15 Oct 2026, black is for the main action). Switching them to
+     the shared Filter instead is still open if the owner prefers.
   4. ~~**Forms in the old plain style**~~ — done 15 Oct 2026 (Claude, under
      the new delegation): the journey (car or coach), day/evening event,
      Inspo save and jot a note now use the visual pieces — name large with

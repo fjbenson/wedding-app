@@ -48,6 +48,7 @@ const pill =
 export default function DayView({
   tab,
   stays,
+  groups,
   open,
   seatingView,
   coupleName,
@@ -63,6 +64,8 @@ export default function DayView({
   tab: DayTab;
   /** Travel's places to stay (empty until 0020_travel.sql is run). */
   stays: Stay[];
+  /** Groups of guests, for seating a group together (Seating only). */
+  groups: { id: string; name: string; members: string[] }[];
   /** Travel's open card (`?open=`). */
   open: string | null;
   seatingView: "plan" | "list";
@@ -107,7 +110,7 @@ export default function DayView({
       )}
 
       {tab === "seating" ? (
-        <Seating data={data} guests={guests} rsvps={rsvps} view={seatingView} />
+        <Seating data={data} guests={guests} rsvps={rsvps} groups={groups} view={seatingView} />
       ) : tab === "travel" ? (
         <Travel
           stays={stays}
@@ -282,7 +285,19 @@ function comingGuests(guests: Contact[], rsvps: Rsvp[]): Contact[] {
   });
 }
 
-function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact[]; rsvps: Rsvp[]; view: "plan" | "list" }) {
+function Seating({
+  data,
+  guests,
+  rsvps,
+  groups,
+  view,
+}: {
+  data: DayData;
+  guests: Contact[];
+  rsvps: Rsvp[];
+  groups: { id: string; name: string; members: string[] }[];
+  view: "plan" | "list";
+}) {
   const coming = comingGuests(guests, rsvps);
   const tableOf = new Map(data.seats.map((s) => [s.contact_id, s.table_id]));
   const unseated = coming.filter((g) => !tableOf.has(g.id));
@@ -336,7 +351,7 @@ function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact
       />
 
       {view === "plan" ? (
-        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} />
+        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} />
       ) : (
         <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} />
       )}

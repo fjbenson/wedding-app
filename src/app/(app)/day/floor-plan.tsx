@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { UsersRound, X } from "lucide-react";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
 import { moveTableAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
 
@@ -61,11 +61,14 @@ export default function FloorPlan({
   tables,
   seats,
   guests,
+  groups = [],
 }: {
   tables: SeatingTable[];
   seats: Seat[];
   /** Everyone who's coming (or hasn't said they aren't). */
   guests: Contact[];
+  /** Groups of guests: tap one, then a table, to sit them together. */
+  groups?: { id: string; name: string; members: string[] }[];
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -76,6 +79,7 @@ export default function FloorPlan({
   const [tableOf, setTableOf] = useState<Map<string, string>>(new Map());
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** The table under a finger right now — drawn on top of the others. */
   const [lifted, setLifted] = useState<string | null>(null);
@@ -102,6 +106,13 @@ export default function FloorPlan({
 
   const unseated = guests.filter((g) => !tableOf.has(g.id));
   const atTable = (id: string) => guests.filter((g) => tableOf.get(g.id) === id);
+  const groupUnseated = (groupId: string) => {
+    const members = new Set(groups.find((g) => g.id === groupId)?.members ?? []);
+    return unseated.filter((g) => members.has(g.id));
+  };
+  // Groups with someone coming still to seat.
+  const openGroups = groups.map((g) => ({ ...g, waiting: groupUnseated(g.id).length })).filter((g) => g.waiting > 0);
+  const inPickedGroup = new Set(selectedGroup ? groupUnseated(selectedGroup).map((g) => g.id) : []);
 
   function seat(contactId: string, tableId: string) {
     setTableOf((m) => new Map(m).set(contactId, tableId));
@@ -119,8 +130,28 @@ export default function FloorPlan({
     save(() => unseatOnPlanAction(contactId));
   }
 
+  /** Sits everyone in the group who isn't seated yet at one table. */
+  function seatGroup(groupId: string, tableId: string) {
+    const ids = groupUnseated(groupId).map((g) => g.id);
+    setTableOf((m) => {
+      const next = new Map(m);
+      ids.forEach((id) => next.set(id, tableId));
+      return next;
+    });
+    setSelectedGroup(null);
+    setSelectedTable(tableId);
+    save(async () => {
+      for (const id of ids) {
+        const message = await seatOnPlanAction(id, tableId);
+        if (message) return message;
+      }
+      return null;
+    });
+  }
+
   function tapTable(id: string) {
-    if (selectedGuest) seat(selectedGuest, id);
+    if (selectedGroup) seatGroup(selectedGroup, id);
+    else if (selectedGuest) seat(selectedGuest, id);
     else setSelectedTable((current) => (current === id ? null : id));
   }
 
@@ -174,6 +205,7 @@ export default function FloorPlan({
   }
 
   const picked = guests.find((g) => g.id === selectedGuest);
+  const pickedGroup = openGroups.find((g) => g.id === selectedGroup);
   const table = tables.find((t) => t.id === selectedTable);
 
   return (
@@ -185,7 +217,9 @@ export default function FloorPlan({
       )}
 
       <p className="mb-3 text-sm text-stone" aria-live="polite">
-        {picked
+        {pickedGroup
+          ? <>Now tap a table to sit <span className="text-ink">{pickedGroup.name}</span> together ({pickedGroup.waiting}).</>
+          : picked
           ? <>Now tap a table to sit <span className="text-ink">{fullName(picked)}</span>.</>
           : "Drag tables to set out the room. Tap one to see who's sitting there."}
       </p>
@@ -240,7 +274,7 @@ export default function FloorPlan({
                   shape === "round" ? "rounded-full" : "rounded-lg"
                 } ${full ? "bg-champagne-100" : "bg-cream"} ${
                   active ? "border-ink shadow-[0_0_0_2px_#1E1B18]" : "border-champagne-400"
-                } ${selectedGuest ? "cursor-copy" : "cursor-grab active:cursor-grabbing"}`}
+                } ${selectedGuest || selectedGroup ? "cursor-copy" : "cursor-grab active:cursor-grabbing"}`}
               >
                 {seatDots(shape, t.capacity).map((d, i) => (
                   <span
@@ -268,15 +302,43 @@ export default function FloorPlan({
       {tables.length > 0 && unseated.length > 0 && (
         <section className="mt-6">
           <p className="label">Not seated yet · {unseated.length}</p>
+          {openGroups.length > 0 && (
+            <ul aria-label="Groups" className="mt-3 flex flex-wrap gap-2">
+              {openGroups.map((g) => (
+                <li key={g.id}>
+                  <button
+                    type="button"
+                    aria-pressed={selectedGroup === g.id}
+                    onClick={() => {
+                      setSelectedGuest(null);
+                      setSelectedGroup((current) => (current === g.id ? null : g.id));
+                    }}
+                    className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition ${
+                      selectedGroup === g.id
+                        ? "border-ink bg-ink text-ivory"
+                        : "border-dashed border-champagne-400 bg-champagne-100/60 text-ink hover:border-champagne-600"
+                    }`}
+                  >
+                    <UsersRound className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                    {g.name}
+                    <span className="opacity-60">{g.waiting}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
           <ul className="mt-3 flex flex-wrap gap-2">
             {unseated.map((g) => (
               <li key={g.id}>
                 <button
                   type="button"
                   aria-pressed={selectedGuest === g.id}
-                  onClick={() => setSelectedGuest((current) => (current === g.id ? null : g.id))}
+                  onClick={() => {
+                    setSelectedGroup(null);
+                    setSelectedGuest((current) => (current === g.id ? null : g.id));
+                  }}
                   className={`h-9 rounded-full border px-3 text-sm transition ${
-                    selectedGuest === g.id
+                    selectedGuest === g.id || inPickedGroup.has(g.id)
                       ? "border-ink bg-ink text-ivory"
                       : "border-linen bg-white text-ink hover:border-champagne-400"
                   }`}

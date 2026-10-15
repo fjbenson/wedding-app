@@ -81,6 +81,13 @@ begin
     insert into guest_group_members (group_id, contact_id, wedding_id)
       select 'bbbbbbbb-2222-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
   end if;
+  if to_regclass('public.stays') is not null then
+    insert into stays (id, wedding_id, name) values
+      ('aaaaaaaa-3333-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'The Swan'),
+      ('bbbbbbbb-3333-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'The Swan');
+    update contacts set staying = 'yes', stay_id = 'aaaaaaaa-3333-0000-0000-000000000001' where first_name = 'Alice';
+    update contacts set staying = 'yes', stay_id = 'bbbbbbbb-3333-0000-0000-000000000002' where first_name = 'Bob';
+  end if;
   if to_regclass('public.appointments') is not null then
     insert into appointments (wedding_id, title, on_date) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Dress fitting', '2027-01-10'),
@@ -376,6 +383,44 @@ begin
     -- And they can use their own.
     execute $q$insert into guest_groups (wedding_id, name)
              values ('aaaaaaaa-0000-0000-0000-000000000001', 'Uni friends')$q$;
+  end if;
+
+  if to_regclass('public.stays') is not null then
+    execute 'select count(*) from stays' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % places to stay, expected 1', visible_contacts;
+    end if;
+    -- A guest of wedding A can't be put up at wedding B's place, even knowing its id.
+    begin
+      execute $q$update contacts set staying = 'yes', stay_id = 'bbbbbbbb-3333-0000-0000-000000000002'
+               where wedding_id = 'aaaaaaaa-0000-0000-0000-000000000001'$q$;
+      raise exception 'LEAK: couple A put a guest in wedding B''s place to stay';
+    exception
+      when foreign_key_violation then null;  -- expected
+    end;
+    begin
+      execute $q$insert into stays (wedding_id, name)
+               values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added a place to stay in wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    execute $q$update stays set name = 'Hacked' where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A renamed wedding B''s places to stay';
+    end if;
+    execute $q$delete from stays where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s places to stay';
+    end if;
+    -- Removing their own place keeps the guest, staying but not sure where.
+    execute $q$delete from stays where id = 'aaaaaaaa-3333-0000-0000-000000000001'$q$;
+    execute $q$select count(*) from contacts where first_name = 'Alice' and staying = 'yes' and stay_id is null$q$ into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'Removing a place to stay lost its guest (or their wedding)';
+    end if;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { TravelInfo } from "./guest-travel";
 import PageTitle from "@/components/page-title";
 import { Plus } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
@@ -17,6 +18,7 @@ export default function PeopleView({
   events,
   rsvps,
   tables,
+  travel,
   groups,
   weddingName,
   guestId,
@@ -31,6 +33,8 @@ export default function PeopleView({
   rsvps: Rsvp[];
   /** Guest id → the table they sit at. */
   tables: Record<string, string>;
+  /** Places to stay and each guest's journeys, for the guest card's Travel part. */
+  travel?: TravelInfo;
   groups: GroupSummary[];
   weddingName: string;
   guestId?: string;
@@ -77,6 +81,7 @@ export default function PeopleView({
             events={events}
             rsvps={rsvps}
             tables={tables}
+            travel={travel}
             groups={groups}
             weddingName={weddingName}
             initialGuestId={guestId}

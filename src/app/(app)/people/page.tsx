@@ -6,6 +6,7 @@ import { listPayments } from "@/lib/db/money";
 import { listAreas } from "@/lib/db/areas";
 import { tableNames } from "@/lib/db/day";
 import { listGroups } from "@/lib/db/groups";
+import { travelForGuests } from "@/lib/db/stays";
 import { areaOptions } from "@/lib/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import PeopleTabs from "./people-tabs";
@@ -46,6 +47,8 @@ export default async function PeoplePage({
   // The guest card's place card shows their table.
   const tables = current === "guests" ? await tableNames(wedding.id) : {};
   const groups = current === "guests" ? await listGroups(wedding.id) : [];
+  // The guest card's Travel part: where they're staying, their journeys.
+  const travel = current === "guests" ? await travelForGuests(wedding.id) : undefined;
   const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
 
   return (
@@ -60,6 +63,7 @@ export default async function PeoplePage({
           events={events}
           rsvps={rsvps}
           tables={tables}
+          travel={travel}
           groups={groups.map((g) => ({ id: g.id, name: g.name, members: g.members }))}
           weddingName={wedding.name}
           guestId={guest}

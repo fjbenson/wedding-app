@@ -11,7 +11,7 @@ export default async function NewTransportPage({
 }) {
   const { error, detail } = await searchParams;
   return (
-    <FormPage backHref="/day?tab=transport" backLabel="The Day" title="Add a car or coach" error={error} detail={detail}>
+    <FormPage backHref="/day?tab=travel" backLabel="Travel" title="Add a journey" error={error} detail={detail}>
       <TransportForm action={saveTransportRunAction.bind(null, null)} />
     </FormPage>
   );

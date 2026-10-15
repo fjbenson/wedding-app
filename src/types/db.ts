@@ -85,6 +85,23 @@ export interface Contact {
   is_child: boolean;
   /** Bridesmaid, best man, usher… (0004_guest_roles.sql). Null for a plain guest. */
   role_on_the_day: string | null;
+  /** Staying over? 'yes' / 'no', null = not asked yet (0020_travel.sql; missing until it's run). */
+  staying?: "yes" | "no" | null;
+  /** Where they're staying (only with 'yes'); null = not sure where. */
+  stay_id?: string | null;
+  /** Making their own way, so they don't count as having no lift. */
+  own_way?: boolean;
+  created_at: string;
+}
+
+/** A place guests stay — a hotel, the pub, a rented cottage (0020_travel.sql). */
+export interface Stay {
+  id: string;
+  wedding_id: string;
+  name: string;
+  /** Anything to remember: the address, a booking code. */
+  note: string | null;
+  sort_order: number;
   created_at: string;
 }
 

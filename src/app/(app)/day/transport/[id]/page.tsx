@@ -22,7 +22,7 @@ export default async function TransportRunPage({
   if (!run) notFound();
 
   return (
-    <FormPage backHref="/day?tab=transport" backLabel="The Day" title={run.vehicle} error={error} detail={detail}>
+    <FormPage backHref="/day?tab=travel" backLabel="Travel" title={run.vehicle} error={error} detail={detail}>
       <TransportForm action={saveTransportRunAction.bind(null, run.id)} run={run} />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton action={deleteTransportRunAction.bind(null, run.id)} label="Remove this run" question={`Remove ${run.vehicle}?`} />

@@ -1,16 +1,14 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
-import { ChevronRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import CornerSwitch from "@/components/corner-switch";
 import ViewTabs from "@/components/view-tabs";
 import { InlineSubmit } from "@/components/form-bits";
 import { coupleName as setCoupleName } from "@/lib/couple-name";
-import { formatClock, formatLongDate, formatTime, nowInLondon } from "@/lib/dates";
-import type { Contact, Rsvp, RunSheetItem, Seat, SeatingTable, TransportPassenger, TransportRun } from "@/types/db";
+import { formatClock, formatLongDate, nowInLondon } from "@/lib/dates";
+import type { Contact, Rsvp, RunSheetItem, Seat, SeatingTable, Stay, TransportPassenger, TransportRun } from "@/types/db";
 import {
-  addPassengerAction,
-  removePassengerAction,
   addTableAction,
   deleteTableAction,
   seatGuestAction,
@@ -21,8 +19,9 @@ import FloorPlan from "./floor-plan";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
+import Travel from "./travel";
 
-export type DayTab = "run-sheet" | "seating" | "transport";
+export type DayTab = "run-sheet" | "seating" | "travel";
 
 interface DayData {
   runSheet: RunSheetItem[];
@@ -48,6 +47,8 @@ const pill =
  */
 export default function DayView({
   tab,
+  stays,
+  open,
   seatingView,
   coupleName,
   weddingDate,
@@ -60,6 +61,10 @@ export default function DayView({
   detail,
 }: {
   tab: DayTab;
+  /** Travel's places to stay (empty until 0020_travel.sql is run). */
+  stays: Stay[];
+  /** Travel's open card (`?open=`). */
+  open: string | null;
   seatingView: "plan" | "list";
   coupleName: string;
   weddingDate: string | null;
@@ -83,7 +88,7 @@ export default function DayView({
           tabs={[
             { label: "Run sheet", href: "/day", active: tab === "run-sheet" },
             { label: "Seating", href: "/day?tab=seating", active: tab === "seating" },
-            { label: "Transport", href: "/day?tab=transport", active: tab === "transport" },
+            { label: "Travel", href: "/day?tab=travel", active: tab === "travel" },
           ]}
         />
       </div>
@@ -103,8 +108,15 @@ export default function DayView({
 
       {tab === "seating" ? (
         <Seating data={data} guests={guests} rsvps={rsvps} view={seatingView} />
-      ) : tab === "transport" ? (
-        <Transport data={data} guests={guests} />
+      ) : tab === "travel" ? (
+        <Travel
+          stays={stays}
+          runs={data.runs}
+          passengers={data.passengers}
+          guests={comingGuests(guests, rsvps)}
+          open={open}
+          ready={guests.length === 0 || guests[0].own_way !== undefined}
+        />
       ) : (
         <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} areas={areas} area={area} />
       )}
@@ -262,12 +274,16 @@ function Flourish() {
   );
 }
 
-function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact[]; rsvps: Rsvp[]; view: "plan" | "list" }) {
-  // Everyone except those who've said no to everything they were asked to.
-  const coming = guests.filter((g) => {
+/** Everyone except those who've said no to everything they were asked to. */
+function comingGuests(guests: Contact[], rsvps: Rsvp[]): Contact[] {
+  return guests.filter((g) => {
     const theirs = rsvps.filter((r) => r.contact_id === g.id);
     return theirs.length === 0 || theirs.some((r) => r.status !== "declined");
   });
+}
+
+function Seating({ data, guests, rsvps, view }: { data: DayData; guests: Contact[]; rsvps: Rsvp[]; view: "plan" | "list" }) {
+  const coming = comingGuests(guests, rsvps);
   const tableOf = new Map(data.seats.map((s) => [s.contact_id, s.table_id]));
   const unseated = coming.filter((g) => !tableOf.has(g.id));
   const seats = data.tables.reduce((sum, t) => sum + t.capacity, 0);
@@ -406,75 +422,6 @@ function SeatingList({
                   </button>
                 </form>
               </details>
-            </section>
-          );
-        })}
-      </div>
-    </>
-  );
-}
-
-function Transport({ data, guests }: { data: DayData; guests: Contact[] }) {
-  return (
-    <>
-      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
-        Transport
-      </PageTitle>
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="text-sm text-stone">
-          {data.runs.length === 0 ? "Cars, the coach, pickups — and who travels with whom." : `${data.runs.length} ${data.runs.length === 1 ? "run" : "runs"} on the day`}
-        </p>
-        <AddButton href="/day/transport/new" label="Add a car or coach" />
-      </div>
-
-      <div className="mt-8 space-y-4">
-        {data.runs.map((run) => {
-          const aboard = guests.filter((g) => data.passengers.some((p) => p.run_id === run.id && p.contact_id === g.id));
-          const others = guests.filter((g) => !aboard.includes(g));
-          return (
-            <section key={run.id} className="rounded-2xl border border-linen bg-white p-4">
-              <Link href={`/day/transport/${run.id}`} className="flex items-baseline gap-4 hover:opacity-80">
-                <span className="w-20 shrink-0 font-display text-2xl leading-tight text-champagne-600">{formatTime(run.at_time)}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] text-ink">{run.vehicle}</span>
-                  {(run.from_place || run.to_place) && (
-                    <span className="block text-sm text-stone">{[run.from_place, run.to_place].filter(Boolean).join(" → ")}</span>
-                  )}
-                  {run.notes && <span className="mt-1 block text-sm text-stone">{run.notes}</span>}
-                </span>
-                <ChevronRight className="h-4 w-4 shrink-0 self-center text-stone" strokeWidth={1.8} aria-hidden />
-              </Link>
-
-              {aboard.length > 0 && (
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {aboard.map((g) => (
-                    <li key={g.id} className="flex items-center gap-1 rounded-full bg-cream py-1 pl-3 pr-1 text-sm text-ink">
-                      {fullName(g)}
-                      <form action={removePassengerAction.bind(null, run.id, g.id)}>
-                        <button type="submit" aria-label={`Take ${g.first_name} off ${run.vehicle}`} className="p-1 text-stone hover:text-ink">
-                          <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                        </button>
-                      </form>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {others.length > 0 && (
-                <form action={addPassengerAction.bind(null, run.id)} className="mt-3 flex gap-2">
-                  <select name="guest" required defaultValue="" aria-label={`Add someone to ${run.vehicle}`} className={`${pill} flex-1`}>
-                    <option value="" disabled>
-                      Who&apos;s travelling?
-                    </option>
-                    {others.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {fullName(g)}
-                      </option>
-                    ))}
-                  </select>
-                  <InlineSubmit label="Add" pendingLabel="…" />
-                </form>
-              )}
             </section>
           );
         })}

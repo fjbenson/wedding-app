@@ -14,6 +14,7 @@ import { DetailLabel, fullName, initials } from "./guest-table";
 import { splitName } from "@/lib/names";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
+import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 
 type Saver = () => Promise<{ error?: string } | void>;
 
@@ -55,6 +56,7 @@ export default function GuestCard({
   events,
   rsvps,
   table = null,
+  travel,
   groups,
   onShowGroup,
   ownNeeds = [],
@@ -69,6 +71,8 @@ export default function GuestCard({
   rsvps: Rsvp[];
   /** The table they sit at, if they've been seated. */
   table?: string | null;
+  /** Places to stay and their journeys (0020_travel.sql). Left out, no Travel part. */
+  travel?: TravelInfo;
   /** The wedding's groups of guests; the card shows theirs and adds to others. Left out, no Groups part. */
   groups?: GroupSummary[];
   onShowGroup?: (id: string) => void;
@@ -150,6 +154,8 @@ export default function GuestCard({
           {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
 
           <Roles guest={guest} />
+
+          {travel && <GuestTravelSection guest={guest} travel={travel} />}
 
           {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
 

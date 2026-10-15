@@ -227,8 +227,8 @@ export function whereThingsStand(data: {
     if (data.day.runs.length) {
       const facts = areaGuestFacts("transport", { guests, households: data.households, events, rsvps, runs: data.day.runs, passengers: data.day.passengers });
       if (facts.kind === "transport") {
-        if (facts.withoutLift) day.needs.push({ figure: String(facts.withoutLift), text: "day guests without a lift", href: "/day?tab=transport" });
-        if (facts.travelling) day.done.push({ text: `${plural(facts.travelling, "guest")} with a lift`, href: "/day?tab=transport" });
+        if (facts.withoutLift) day.needs.push({ figure: String(facts.withoutLift), text: "day guests without a lift", href: "/day?tab=travel" });
+        if (facts.travelling) day.done.push({ text: `${plural(facts.travelling, "guest")} with a lift`, href: "/day?tab=travel" });
       }
     }
     if (data.day.runSheet.length) day.done.push({ text: `Run sheet · ${plural(data.day.runSheet.length, "moment")}`, href: "/day" });

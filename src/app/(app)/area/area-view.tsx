@@ -494,7 +494,7 @@ function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: Run
       )}
       {transport && transport.withoutLift > 0 && (
         <FactRow
-          href="/day?tab=transport"
+          href="/day?tab=travel"
           title={transport.withoutLift === 1 ? "1 day guest without a lift" : `${transport.withoutLift} day guests without a lift`}
           line="Tap to put them on a car"
           dashed

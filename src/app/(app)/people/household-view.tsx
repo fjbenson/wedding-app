@@ -13,6 +13,7 @@ import { removeHouseholdAction } from "./household-actions";
 import HouseholdEnvelope from "./household-envelope";
 import type { GroupSummary } from "./guest-groups";
 import { updateGuestAction } from "./actions";
+import type { TravelInfo } from "./guest-travel";
 
 /**
  * One household (screen 9). Since 14 Oct 2026 topped by its envelope
@@ -28,6 +29,7 @@ export default function HouseholdView({
   events,
   rsvps,
   tables,
+  travel,
   groups,
 }: {
   household: Household;
@@ -37,6 +39,7 @@ export default function HouseholdView({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables: Record<string, string>;
+  travel?: TravelInfo;
   groups: GroupSummary[];
 }) {
   const [openId, setOpenId] = useState<string>();
@@ -144,6 +147,7 @@ export default function HouseholdView({
           events={events}
           rsvps={answersOf(open)}
           table={tables[open.id] ?? null}
+          travel={travel}
           groups={groups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
           onClose={close}

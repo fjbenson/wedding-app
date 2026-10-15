@@ -14,6 +14,7 @@ import { RolePill, fullName, initials } from "./guest-table";
 import { GroupCard, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
 import { SummaryBody, SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
+import type { TravelInfo } from "./guest-travel";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
@@ -92,6 +93,7 @@ export default function GuestBrowser({
   events,
   rsvps,
   tables = {},
+  travel,
   groups: guestGroups = [],
   weddingName = "",
   initialGuestId,
@@ -103,6 +105,7 @@ export default function GuestBrowser({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables?: Record<string, string>;
+  travel?: TravelInfo;
   /** Groups of guests (0019): any number per guest; one can be shown at a time. */
   groups?: GroupSummary[];
   weddingName?: string;
@@ -501,6 +504,7 @@ export default function GuestBrowser({
           events={events}
           rsvps={data.answers.get(open.id) ?? []}
           table={tables[open.id] ?? null}
+          travel={travel}
           groups={guestGroups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
           onShowGroup={(id) => {

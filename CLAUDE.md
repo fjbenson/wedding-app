@@ -611,8 +611,25 @@ Next.js scaffold. Built so far, against the plan's tabs:
   earmarked for the printed copy and for guests later.
   **Seating** (`?tab=seating`: tables with seat counts, sit guests from an
   unseated list, "over" flagged; guests who declined everything are left
-  out) and **Transport** (`?tab=transport`: each car/coach run and who's in
-  it). Seats and passengers can only point at guests, tables and runs of
+  out) and **Travel** (`?tab=travel`; was Transport, old links land there —
+  **built 15 Oct 2026**, canvas 3 "Travel · First version", owner's pick
+  after "Travel · Round 1" was judged likely to grow like the guest list:
+  it answers two questions only, *where is everyone sleeping* and *how is
+  everyone getting there and back*; `travel.tsx`, `travel-actions.ts`,
+  `src/lib/db/stays.ts`, `0020_travel.sql`, run 15 Oct 2026 with the owner's
+  OK). Two figures (staying over · have a lift), **Staying** (each place
+  with faces and a count; + adds one) and **Getting there and back** (each
+  journey = a `transport_runs` row: time, from → to, how many aboard), each
+  with a dashed "still to sort" card (staying, not sure where · no lift
+  yet). Places, journeys and the two lists open as cards (`?open=stay:<id>`,
+  `run:<id>`, `unsure`, `nolift`, `stay:new`); add people by search with the
+  unsorted ones first. A guest has `staying` ('yes' / 'no' / null),
+  `stay_id` (removing a place leaves them "not sure where") and `own_way`.
+  The **guest card** has a Travel part (`guest-travel.tsx`). Left out on
+  purpose until a couple asks: the map, nights, rooms, booking codes,
+  vehicle types, texting times, hotels as suppliers (all on canvas 3
+  "Travel · Round 1"). Adding or editing a journey still uses the old plain
+  form (`/day/transport/…`). Seats and passengers can only point at guests, tables and runs of
   the same wedding (composite foreign keys on `(id, wedding_id)`). The
   agenda's wedding-day line links here. Seating opens on the **floor plan**
   (screen 26, `floor-plan.tsx`, `0011_floor_plan.sql`): drag tables about a
@@ -711,14 +728,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0019_guest_groups.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0020_travel.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0019 are now in** (0019, groups of guests, run 14 Oct 2026) (12 Oct
+only queries) needs no OK. **All migrations 0001–0020 are now in** (0020, Travel's places to stay, run 15 Oct 2026) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

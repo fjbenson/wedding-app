@@ -205,7 +205,7 @@ export async function unseatOnPlanAction(contactId: string): Promise<string | nu
 
 // Transport ------------------------------------------------------------------
 
-const TRANSPORT = "/day?tab=transport";
+const TRANSPORT = "/day?tab=travel";
 
 export async function saveTransportRunAction(id: string | null, formData: FormData) {
   const back = id ? `/day/transport/${id}` : "/day/transport/new";

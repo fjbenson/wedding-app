@@ -344,6 +344,26 @@ export function DateCard({
   );
 }
 
+/** One-tap ideas under a title box: tap one to fill it in. Wraps rather than scrolls. */
+export function Ideas({ ideas, value, onPick }: { ideas: string[]; value: string; onPick: (idea: string) => void }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {ideas.map((idea) => (
+        <button
+          key={idea}
+          type="button"
+          onClick={() => onPick(idea)}
+          className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
+            value === idea ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+          }`}
+        >
+          {idea}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Extras folded under one line until asked for. */
 export function Folded({ label, open: startOpen = false, children }: { label: string; open?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(startOpen);

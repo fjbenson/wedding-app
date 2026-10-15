@@ -1,9 +1,10 @@
 "use client";
 
-import { Field, INPUT, SubmitBar } from "@/components/form-bits";
-import { Clock, MapPin, NotebookPen, UserRound } from "lucide-react";
+import { useState } from "react";
+import { SubmitBar } from "@/components/form-bits";
+import { Clock, Flag, MapPin, NotebookPen, UserRound } from "lucide-react";
 import { ReturnTo } from "@/components/back-link";
-import { AreaTiles, BARE, CARD, Line, Part, TITLE_INPUT } from "@/components/visual-form";
+import { AreaTiles, BARE, CARD, Folded, Ideas, Line, Part, TITLE_INPUT } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import type { RunSheetItem, TransportRun } from "@/types/db";
 
@@ -93,30 +94,95 @@ export function RunSheetForm({
   );
 }
 
-/** One run of a car or coach (screen 28). Passengers are added on the Transport tab. */
+/** Tap one to name the journey. */
+const VEHICLES = ["The coach", "Minibus", "Wedding car", "Car 1", "Car 2", "Taxis"];
+
+/** The usual times on the day, for the time card. */
+const DAY_TIMES = ["11:00", "12:30", "14:00", "17:00", "23:00", "00:00"];
+
+/**
+ * One journey on the day (screen 28; passengers are added on Travel). Laid
+ * out like the other visual forms (15 Oct 2026): the vehicle large with
+ * one-tap ideas, the time as a card with quick taps, the route From → To on
+ * one card, notes folded unless there are some.
+ */
 export function TransportForm({ action, run }: { action: Action; run?: TransportRun }) {
+  const [vehicle, setVehicle] = useState(run?.vehicle ?? "");
+  const [time, setTime] = useState(run?.at_time.slice(0, 5) ?? "");
   return (
-    <form action={action} className="space-y-5">
-      <div className="grid grid-cols-[7.5rem_1fr] items-end gap-3">
-        <Field label="Leaves at">
-          <input name="at_time" type="time" required defaultValue={run?.at_time.slice(0, 5) ?? ""} className={INPUT} />
-        </Field>
-        <Field label="Vehicle">
-          <input name="vehicle" required defaultValue={run?.vehicle} placeholder="e.g. Car 2, The coach" className={INPUT} />
-        </Field>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="From" hint="optional">
-          <input name="from_place" defaultValue={run?.from_place ?? ""} placeholder="e.g. The Bensons' house" className={INPUT} />
-        </Field>
-        <Field label="To" hint="optional">
-          <input name="to_place" defaultValue={run?.to_place ?? ""} placeholder="e.g. St Mary's" className={INPUT} />
-        </Field>
-      </div>
-      <Field label="Notes" hint="optional">
-        <textarea name="notes" rows={3} defaultValue={run?.notes ?? ""} placeholder="e.g. Driver: Mike, 07700 900555" className={INPUT} />
-      </Field>
-      <SubmitBar label={run ? "Save changes" : "Add"} whenChanged={!!run} />
+    <form action={action}>
+      <input
+        name="vehicle"
+        required
+        autoFocus={!run}
+        autoComplete="off"
+        value={vehicle}
+        onChange={(e) => setVehicle(e.target.value)}
+        aria-label="What's taking them"
+        placeholder="What's taking them?"
+        className={TITLE_INPUT}
+      />
+      {!run && <Ideas ideas={VEHICLES} value={vehicle} onPick={setVehicle} />}
+
+      <Part label="Leaves at">
+        <div className={CARD}>
+          <Line icon={Clock} label="Time">
+            <input
+              name="at_time"
+              type="time"
+              required
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className={`${BARE} font-display !text-[21px] font-light ${time ? "" : "text-stone/60"}`}
+            />
+          </Line>
+          {!run && (
+            <div className="flex flex-wrap gap-2 border-t border-linen px-4 py-3">
+              {DAY_TIMES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTime(t)}
+                  className={`h-9 rounded-full border px-3.5 text-[13px] tabular-nums transition ${
+                    time === t ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </Part>
+
+      <Part label="The route">
+        <div className={CARD}>
+          <Line icon={MapPin} label="From">
+            <input name="from_place" autoComplete="off" defaultValue={run?.from_place ?? ""} placeholder="From — e.g. The Bell Inn" className={BARE} />
+          </Line>
+          <Line icon={Flag} label="To">
+            <input name="to_place" autoComplete="off" defaultValue={run?.to_place ?? ""} placeholder="To — e.g. St Mary's" className={BARE} />
+          </Line>
+        </div>
+      </Part>
+
+      <Folded label="Add notes" open={!!run?.notes}>
+        <Part label="Notes">
+          <div className={CARD}>
+            <Line icon={NotebookPen} label="Notes" top>
+              <textarea
+                name="notes"
+                rows={3}
+                defaultValue={run?.notes ?? ""}
+                placeholder="e.g. Driver: Mike, 07700 900555"
+                className={`${BARE} w-full resize-none`}
+              />
+            </Line>
+          </div>
+        </Part>
+      </Folded>
+
+      <SubmitBar label={run ? "Save changes" : "Add the journey"} whenChanged={!!run} />
     </form>
   );
 }

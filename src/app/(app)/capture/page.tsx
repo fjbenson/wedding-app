@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
-import { Field, SubmitButton } from "@/components/form-bits";
-import { INPUT } from "@/components/form-styles";
 import { areaOptions } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { captureAction } from "./actions";
+import CaptureForm from "./capture-form";
 
 export const metadata = { title: "Capture — Wedding App" };
 
@@ -26,38 +25,13 @@ export default async function CapturePage({
   const back = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
 
   return (
-    <FormPage backHref={back} backLabel="Back" title="Capture something" error={error} detail={detail}>
-      <form action={captureAction} className="space-y-5">
-        <input type="hidden" name="return_to" value={back} />
-        <label className="block">
-          <span className="sr-only">What&apos;s on your mind?</span>
-          <textarea
-            name="body"
-            rows={5}
-            autoFocus
-            placeholder="What's on your mind? An idea, a name, something someone said…"
-            className={`${INPUT} mt-0 text-[16px] leading-relaxed`}
-          />
-        </label>
-
-        <Field label="A link" hint="optional">
-          <input name="url" inputMode="url" placeholder="Paste a link — Pinterest, a supplier, a recipe" className={INPUT} />
-        </Field>
-
-        <Field label="File it under" hint="or leave it for later">
-          <select name="area" defaultValue={areas.some((a) => a.key === area) ? area : ""} className={INPUT}>
-            <option value="">Leave it in the inbox</option>
-            {areas.map((a) => (
-              <option key={a.key} value={a.key}>
-                {a.label}
-              </option>
-            ))}
-            <option value="other">Other</option>
-          </select>
-        </Field>
-
-        <SubmitButton label="Save" />
-      </form>
+    <FormPage backHref={back} backLabel="Back" title="Jot a note" error={error} detail={detail}>
+      <CaptureForm
+        action={captureAction}
+        areas={areas}
+        defaultArea={areas.some((a) => a.key === area) ? area : undefined}
+        returnTo={back}
+      />
 
       <div className="mt-6 flex justify-center gap-6 text-sm">
         <Link href={`/inspo/new?from=${encodeURIComponent(back)}`} className="text-stone underline underline-offset-4 hover:text-ink">

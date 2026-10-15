@@ -11,6 +11,21 @@ A wedding planning app, built to eventually serve other couples, not just one.
 The owner is new to development — explain things plainly, avoid jargon where a
 normal word will do, and keep answers short unless asked to go deeper.
 
+## What Claude decides alone (owner, 15 Oct 2026)
+
+The owner delegates. Rule one above still comes first.
+
+- **Just do it, tell the owner after:** bringing older screens and forms
+  into line with settled patterns and `docs/DESIGN.md`; the backlog's small
+  odd-ones-out; fixes, tidying, speed.
+- **Build it, then the owner checks on their phone:** new pieces that
+  follow a pattern that already exists (e.g. groups on Seating, the
+  assistant writing a group email).
+- **Always the owner's call:** anything about people's data (who sees it,
+  where it goes, how long it's kept); any database change; anything that
+  costs money; new tabs or big changes to how the app is organised; the
+  Hub's look, the brand and the name; choosing between design options.
+
 ## Project notes live in Notion
 
 The owner's planning notes, task list and strategy framework are here:
@@ -1323,9 +1338,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
   3. **Inspo's folders**: area chips that go black when picked; everywhere
      else is the champagne Filter. Owner to choose: the Filter, or keep chips
      but champagne.
-  4. **Forms in the old plain style**: car or coach, day/evening event,
-     Inspo save, jot a note (also in Next steps; the household edit page is
-     gone since 14 Oct 2026 — the envelope edits in place).
+  4. ~~**Forms in the old plain style**~~ — done 15 Oct 2026 (Claude, under
+     the new delegation): the journey (car or coach), day/evening event,
+     Inspo save and jot a note now use the visual pieces — name large with
+     one-tap ideas (`Ideas` in `visual-form.tsx`), glass cards, area tiles
+     (with "Leave it unsorted / to sort later"), notes folded. The jot page
+     writes on a slip of paper like the notes wall (`capture-form.tsx`).
   5. **Two places for one thing**: areas added from the ring's + but renamed
      / reordered in Settings; day/evening events set up at the foot of the
      guest list (also in the IA review list below).

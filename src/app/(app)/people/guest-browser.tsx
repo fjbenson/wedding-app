@@ -62,7 +62,7 @@ const SORTS: { key: SortBy; label: string; short: string }[] = [
   { key: "first", label: "First name, A–Z", short: "by first name" },
   { key: "last", label: "Surname, A–Z", short: "by surname" },
   { key: "household", label: "Household", short: "by household" },
-  { key: "type", label: "Day guests, then evening", short: "day, then evening" },
+  { key: "type", label: "Event", short: "by event" },
 ];
 
 /** How each answer reads at the end of a row. */

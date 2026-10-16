@@ -56,6 +56,7 @@ function snapshot(form: HTMLFormElement) {
  * form is different from how it opened — and goes again if it's put back
  * (owner: just looking at a to-do shouldn't show a big Save) — with a
  * Cancel beside it that puts the form back how it opened, staying on it.
+ * Adding has the same Cancel on the left (owner, 17 Oct 2026); it goes back.
  */
 export function SubmitBar({
   label,
@@ -101,23 +102,28 @@ export function SubmitBar({
           : "hidden"
       }
     >
-      {whenChanged ? (
-        <div className="flex gap-2.5">
-          <button
-            type="button"
-            // Puts the form back how it opened, staying on it (owner, 12 Oct 2026).
-            onClick={() => (onCancel ? onCancel() : reset ? reset() : window.history.length > 1 ? router.back() : router.push("/"))}
-            className="h-[52px] w-[34%] shrink-0 rounded-2xl border border-champagne-400/70 bg-white text-ink transition hover:bg-cream"
-          >
-            Cancel
-          </button>
-          <div className="flex-1">
-            <SubmitButton label={label} />
-          </div>
+      <div className="flex gap-2.5">
+        <button
+          type="button"
+          // Editing: puts the form back how it opened, staying on it (owner, 12 Oct 2026).
+          // Adding: leaves without saving (owner, 17 Oct 2026: a Cancel beside every main button).
+          onClick={() =>
+            onCancel
+              ? onCancel()
+              : whenChanged && reset
+                ? reset()
+                : window.history.length > 1
+                  ? router.back()
+                  : router.push("/")
+          }
+          className="h-[52px] w-[34%] shrink-0 rounded-2xl border border-champagne-400/70 bg-white text-ink transition hover:bg-cream"
+        >
+          Cancel
+        </button>
+        <div className="flex-1">
+          <SubmitButton label={label} />
         </div>
-      ) : (
-        <SubmitButton label={label} />
-      )}
+      </div>
     </div>
   );
 }

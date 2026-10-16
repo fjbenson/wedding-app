@@ -10,6 +10,8 @@
  */
 import { revalidatePath } from "next/cache";
 import { createContact, createHousehold } from "@/lib/db/contacts";
+import { addToGroup, listGroups } from "@/lib/db/groups";
+import { listStays, setGuestStay } from "@/lib/db/stays";
 import { createMilestone } from "@/lib/db/milestones";
 import { createPayment } from "@/lib/db/money";
 import { createNote } from "@/lib/db/notes";
@@ -57,9 +59,13 @@ export interface NewGuest {
   eventId?: string | null;
   meal?: string | null;
   diet?: string | null;
+  /** Groups to put them in; ones that aren't this wedding's are ignored. */
+  groupIds?: string[];
+  /** A place they're staying; one that isn't this wedding's is ignored. */
+  stayId?: string | null;
 }
 
-export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string }>> {
+export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string; note?: string }>> {
   const wedding = await getCurrentWedding();
   if (!wedding) return NO_WEDDING;
 
@@ -116,8 +122,26 @@ export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string 
       }
     }
 
+    // Groups and a place to stay come after the guest exists. If either fails
+    // the guest is still added, and the caller says so.
+    let note: string | undefined;
+    try {
+      const groupIds = [...new Set(input.groupIds ?? [])];
+      if (groupIds.length > 0) {
+        const mine = new Set((await listGroups(wedding.id)).map((g) => g.id));
+        for (const id of groupIds.filter((g) => mine.has(g))) await addToGroup(wedding.id, id, created.id);
+      }
+      if (input.stayId) {
+        const mine = (await listStays(wedding.id)).some((s) => s.id === input.stayId);
+        if (mine) await setGuestStay(created.id, "yes", input.stayId);
+      }
+    } catch (error) {
+      console.error("adding guest to groups or a stay failed", error);
+      note = "Added, but not to their group or place to stay. Do that on their card.";
+    }
+
     revalidatePath("/people");
-    return { ok: true, id: created.id };
+    return { ok: true, id: created.id, note };
   } catch (error) {
     return failed("adding guest failed", error);
   }

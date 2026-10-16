@@ -13,6 +13,8 @@
 import { listAppointments } from "@/lib/db/appointments";
 import { listAreas } from "@/lib/db/areas";
 import { listGuests, listHouseholds } from "@/lib/db/contacts";
+import { listGroups } from "@/lib/db/groups";
+import { listStays } from "@/lib/db/stays";
 import { getDay } from "@/lib/db/day";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
@@ -51,6 +53,28 @@ function href(path: string, params: Record<string, string | null | undefined>): 
     .map(([k, v]) => `${k}=${encodeURIComponent(v!)}`)
     .join("&");
   return query ? `${path}?${query}` : path;
+}
+
+// ── The choices for a new guest's steps ─────────────────────────────────
+
+/** The wedding's groups and places to stay: for the steps that add a guest. Not sent to the AI. */
+export async function guestChoices(): Promise<
+  Lookup<{ groups: { id: string; name: string }[]; stays: { id: string; name: string }[] }>
+> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const [groups, stays] = await Promise.all([listGroups(wedding.id), listStays(wedding.id)]);
+    return {
+      ok: true,
+      groups: groups.map((g) => ({ id: g.id, name: g.name })),
+      stays: stays.map((s) => ({ id: s.id, name: s.name })),
+    };
+  } catch (error) {
+    // The steps still work without them.
+    console.error("guest choices failed", error);
+    return { ok: true, groups: [], stays: [] };
+  }
 }
 
 // ── The wedding at a glance ─────────────────────────────────────────────

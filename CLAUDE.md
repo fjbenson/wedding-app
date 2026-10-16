@@ -1057,6 +1057,9 @@ access control is RLS. No column-level encryption is planned.
   `form-bits.tsx` keeps the main button at the foot of the screen while the
   form scrolls, then it settles at the end of the form. On the to-do,
   appointment, payment, budget, guest and supplier forms; use it on new ones.
+  **Every form has a Cancel on the left of its main button** (owner,
+  17 Oct 2026): adding leaves without saving (goes back a screen); editing
+  puts the form back as before (below).
   Editing says "Save changes". **When editing it only rises into view once something is
   changed** (`whenChanged`; it compares the form with how it opened, so
   putting it back hides it again) — owner, 12 Oct 2026: just looking at a
@@ -1445,6 +1448,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
      6. Tests: the assistant's tools in `supabase/tests/rls_isolation.sql`
         terms (another wedding's ids return nothing); try it on the demo
         wedding first.
+   - **Add a guest, a step at a time** (17 Oct 2026, owner; canvas 3 "Your
+     assistant · Steps in the chat"): `add_guest` no longer asks questions
+     in words. It starts steps **inside the chat** (`guest-steps.tsx`): a
+     card rises where the message box is, with a step marker, one question
+     and Back · Skip · Next ("Skip the rest and review"); each answer
+     becomes a message, a skipped step a faded "Skipped". Steps: day or
+     evening (only if the wedding has both), household (a drop-down, "New
+     household…"), dietary needs (always asked, what was said already
+     ticked), contact details (phone + email), anything else (groups and
+     where they're staying, only if the wedding has any). Anything the
+     assistant already heard is answered for you. Then a check card (tap a
+     line to change it) and **Yes saves** (`confirmProposalAction`, now with
+     `groupIds` / `stayId`; `addGuest` checks both belong to the wedding and,
+     if adding to a group or stay fails, still adds the guest and says so).
+     The steps run on the phone with **no further calls to the AI**; their
+     choices (groups, places to stay) are sent to the screen only, never
+     back to Anthropic (`guestChoices()` in `lookups.ts`). Other jobs (a
+     to-do, a payment, an appointment) still use the confirm card; stepping
+     them is next. Role, child and meal are not steps yet.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

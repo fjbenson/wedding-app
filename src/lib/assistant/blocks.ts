@@ -23,6 +23,9 @@ export type Proposal =
         meal?: string | null;
         diet?: string | null;
         notes?: string | null;
+        /** Groups to put them in, and a place they're staying (both checked against the wedding when saved). */
+        groupIds?: string[];
+        stayId?: string | null;
       };
     }
   | { kind: "set_guest_answer"; input: { guestId: string; status: "to_invite" | "pending" | "attending" | "declined" } }
@@ -41,7 +44,35 @@ export type Proposal =
       };
     };
 
+/** What the steps for a new guest start from, and the choices they offer. Built by the server; the answers never go back to the AI. */
+export interface GuestStepsBlock {
+  type: "guest_steps";
+  /** Ties the steps to the tool call, so a second tap can't save it twice. */
+  id: string;
+  prefill: {
+    fullName: string;
+    eventId: string | null;
+    householdId: string | null;
+    newHousehold: string | null;
+    diet: string[];
+    phone: string | null;
+    email: string | null;
+    roles: string[];
+    isChild: boolean;
+    meal: string | null;
+    notes: string | null;
+  };
+  options: {
+    /** Day and evening, in date order. */
+    events: { id: string; word: string }[];
+    households: { id: string; name: string }[];
+    groups: { id: string; name: string }[];
+    stays: { id: string; name: string }[];
+  };
+}
+
 export type Block =
+  | GuestStepsBlock
   | { type: "guests"; title: string; count: number; guests: GuestLine[]; link: string }
   | { type: "money"; summary: MoneySummary }
   | { type: "week"; from: string; to: string; items: WeekItem[]; link: string }

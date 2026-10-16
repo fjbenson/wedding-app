@@ -12,7 +12,7 @@ import { draftGroupMessage } from "@/lib/assistant/draft";
  */
 export async function confirmProposalAction(
   proposal: Proposal,
-): Promise<{ ok: true; link?: string } | { ok: false; error: string }> {
+): Promise<{ ok: true; link?: string; note?: string } | { ok: false; error: string }> {
   try {
     switch (proposal.kind) {
       case "add_guest": {
@@ -29,8 +29,10 @@ export async function confirmProposalAction(
           meal: p.meal ?? null,
           diet: p.diet ?? null,
           notes: p.notes ?? null,
+          groupIds: Array.isArray(p.groupIds) ? p.groupIds.map(String) : [],
+          stayId: p.stayId ?? null,
         });
-        return r.ok ? { ok: true, link: `/people?guest=${r.id}` } : { ok: false, error: r.error };
+        return r.ok ? { ok: true, link: `/people?guest=${r.id}`, note: r.note } : { ok: false, error: r.error };
       }
       case "set_guest_answer": {
         const r = await setGuestAnswer(String(proposal.input.guestId), proposal.input.status);

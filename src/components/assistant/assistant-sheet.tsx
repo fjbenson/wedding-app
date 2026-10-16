@@ -6,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowUp, Camera, Check, PenLine, X } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
-import type { Block, StreamEvent } from "@/lib/assistant/blocks";
+import { GuestStepsChat, GuestStepsTray, buildProposal, initialSteps, stepKeys, type StepKey, type StepsState } from "@/components/assistant/guest-steps";
+import type { Block, GuestStepsBlock, StreamEvent } from "@/lib/assistant/blocks";
 
 /**
  * Your assistant (CLAUDE.md, Next steps 8; canvas 2 "Your planner · Round
@@ -21,7 +22,7 @@ import type { Block, StreamEvent } from "@/lib/assistant/blocks";
 
 type Part = { kind: "text"; text: string } | { kind: "block"; block: Block };
 type Turn = { role: "user"; text: string } | { role: "assistant"; parts: Part[]; error?: string; failedText?: string };
-type CardState = { state: "saving" } | { state: "saved"; link?: string } | { state: "changed" } | { state: "error"; message: string };
+type CardState = { state: "saving" } | { state: "saved"; link?: string; note?: string } | { state: "changed" } | { state: "error"; message: string };
 
 export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "fab"; subtitle?: string }) {
   const [open, setOpen] = useState(false);
@@ -59,10 +60,11 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
 function useConversation() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [cards, setCards] = useState<Record<string, CardState>>({});
+  const [steps, setSteps] = useState<Record<string, StepsState>>({});
   const [busy, setBusy] = useState(false);
   /** What Claude has seen so far, sent back each turn (the API keeps nothing). */
   const history = useRef<unknown[]>([]);
-  return { turns, setTurns, cards, setCards, busy, setBusy, history };
+  return { turns, setTurns, cards, setCards, steps, setSteps, busy, setBusy, history };
 }
 
 function Panel({
@@ -74,7 +76,7 @@ function Panel({
   subtitle?: string;
   conversation: ReturnType<typeof useConversation>;
 }) {
-  const { turns, setTurns, cards, setCards, busy, setBusy, history } = conversation;
+  const { turns, setTurns, cards, setCards, steps, setSteps, busy, setBusy, history } = conversation;
   const router = useRouter();
   const pathname = usePathname();
   const [draft, setDraft] = useState("");
@@ -99,7 +101,7 @@ function Panel({
     // Scroll the conversation only: scrollIntoView would also nudge the page on an iPhone.
     const list = bottom.current?.parentElement;
     if (list) list.scrollTop = list.scrollHeight;
-  }, [turns, cards]);
+  }, [turns, cards, steps]);
 
   /** Adds to the assistant's turn being written. */
   const addPart = useCallback(
@@ -193,7 +195,7 @@ function Panel({
       result = { ok: false, error: "That didn't save. Reload the page and try again." };
     }
     if (result.ok) {
-      setCards((c) => ({ ...c, [card.id]: { state: "saved", link: result.link } }));
+      setCards((c) => ({ ...c, [card.id]: { state: "saved", link: result.link, note: result.note } }));
       remember(`[They tapped Yes on "${card.title}" — saved.]`);
       router.refresh();
     } else {
@@ -206,6 +208,50 @@ function Panel({
     remember(`[They tapped Change on "${card.title}" — not saved.]`);
     setHint("What should I change?");
     input.current?.focus();
+  }
+
+  // ── Adding a guest a step at a time (guest-steps.tsx) ──
+  /** Only the latest set of steps can still be answered; an older one left half done reads as cancelled. */
+  let latestSteps: GuestStepsBlock | null = null;
+  for (const turn of turns) {
+    if (turn.role !== "assistant") continue;
+    for (const part of turn.parts) if (part.kind === "block" && part.block.type === "guest_steps") latestSteps = part.block;
+  }
+  const stepsFor = (block: GuestStepsBlock): StepsState => {
+    const state = steps[block.id] ?? initialSteps(block);
+    return state.phase === "asking" && block.id !== latestSteps?.id ? { ...state, phase: "cancelled" } : state;
+  };
+  const updateSteps = (block: GuestStepsBlock, change: (state: StepsState) => StepsState) =>
+    setSteps((all) => ({ ...all, [block.id]: change(all[block.id] ?? initialSteps(block)) }));
+  const activeSteps = latestSteps && stepsFor(latestSteps).phase === "asking" ? latestSteps : null;
+
+  function cancelSteps(block: GuestStepsBlock) {
+    updateSteps(block, (s) => ({ ...s, phase: "cancelled" }));
+    remember(`[They cancelled adding "${block.prefill.fullName}" — not saved.]`);
+  }
+
+  function editStep(block: GuestStepsBlock, key: StepKey) {
+    const index = Math.max(0, stepKeys(block).indexOf(key));
+    updateSteps(block, (s) => ({ ...s, phase: "asking", editing: true, index }));
+  }
+
+  async function yesSteps(block: GuestStepsBlock) {
+    const values = stepsFor(block).values;
+    updateSteps(block, (s) => ({ ...s, phase: "saving", error: undefined }));
+    let result: Awaited<ReturnType<typeof confirmProposalAction>>;
+    try {
+      result = await confirmProposalAction(buildProposal(block, values));
+    } catch {
+      // A page left open across an update can call an action that's gone.
+      result = { ok: false, error: "That didn't save. Reload the page and try again." };
+    }
+    if (result.ok) {
+      updateSteps(block, (s) => ({ ...s, phase: "saved", link: result.link, note: result.note }));
+      remember(`[They tapped Yes on "${block.prefill.fullName}" — saved.]`);
+      router.refresh();
+    } else {
+      updateSteps(block, (s) => ({ ...s, phase: "error", error: result.error }));
+    }
   }
 
   async function keepAsNote(text: string) {
@@ -353,7 +399,17 @@ function Panel({
                     </p>
                   )}
                   {turn.parts.map((part, j) =>
-                    part.kind === "text" ? null : part.block.type === "confirm" ? (
+                    part.kind === "text" ? null : part.block.type === "guest_steps" ? (
+                      <GuestStepsChat
+                        key={j}
+                        block={part.block}
+                        state={stepsFor(part.block)}
+                        onYes={() => yesSteps(part.block as GuestStepsBlock)}
+                        onCancel={() => cancelSteps(part.block as GuestStepsBlock)}
+                        onEdit={(key) => editStep(part.block as GuestStepsBlock, key)}
+                        onGo={onClose}
+                      />
+                    ) : part.block.type === "confirm" ? (
                       <ConfirmCard key={j} card={part.block} state={cards[part.block.id]} onYes={yes} onChange={change} onGo={onClose} />
                     ) : (
                       <AnswerBlock key={j} block={part.block} onGo={onClose} />
@@ -384,7 +440,16 @@ function Panel({
             )}
               <div ref={bottom} />
             </div>
-            {composer(false)}
+            {activeSteps ? (
+              <GuestStepsTray
+                block={activeSteps}
+                state={stepsFor(activeSteps)}
+                update={(change) => updateSteps(activeSteps, change)}
+                onCancel={() => cancelSteps(activeSteps)}
+              />
+            ) : (
+              composer(false)
+            )}
           </>
         )}
       </div>
@@ -540,6 +605,7 @@ function ConfirmCard({
           )}
         </p>
       )}
+      {state?.state === "saved" && state.note && <p className="mt-1.5 text-sm text-stone">{state.note}</p>}
       {state?.state === "error" && <p className="mt-2 text-sm text-[#9A3F2B]">{state.message}</p>}
     </div>
   );

@@ -11,12 +11,12 @@
  * person's own. Inputs come from the AI, so each is checked here before use.
  */
 import type Anthropic from "@anthropic-ai/sdk";
-import { DIETARY_NEEDS } from "@/lib/dietary";
+import { DIETARY_NEEDS, needsOf } from "@/lib/dietary";
 import { addNote } from "@/lib/jobs";
-import { findGuests, findSuppliers, moneySummary, overview, seating, thisWeek, type Overview } from "@/lib/lookups";
+import { findGuests, findSuppliers, guestChoices, moneySummary, overview, seating, thisWeek, type Overview } from "@/lib/lookups";
 import { formatLongDate } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
-import type { Block, Proposal } from "./blocks";
+import type { Block, GuestStepsBlock, Proposal } from "./blocks";
 
 type Tool = Anthropic.Beta.BetaTool;
 
@@ -86,7 +86,7 @@ export const TOOLS: Tool[] = [
   {
     name: "add_guest",
     description:
-      "Propose adding a guest. Shows the couple a card; nothing is saved until they tap Yes. Ask first if you don't know whether they're a day or evening guest (when the wedding has both). Use an existing household's id when one fits, or new_household to make one.",
+      "Start adding a guest. Call it straight away with the name and anything the couple already said (a diet, a household, a phone number); do NOT ask them anything first. The app then asks the couple the rest, one short step at a time on screen (day or evening, household, dietary needs, contact details, groups, where they're staying), and shows a card to confirm. Nothing is saved until they tap Yes. Use an existing household's id when one fits, or new_household to make one.",
     input_schema: {
       type: "object",
       properties: {
@@ -182,6 +182,10 @@ export interface ToolOutcome {
 }
 
 const fail = (message: string): ToolOutcome => ({ result: JSON.stringify({ error: message }), isError: true });
+const GUEST_STEPS_STARTED = JSON.stringify({
+  status:
+    "The couple is now being asked the remaining details on screen, step by step, and will confirm with a card. Don't ask them anything yourself, don't list the details, and don't say the guest is added. Reply with at most a few words, or nothing.",
+});
 const WAITING = JSON.stringify({
   status: "Shown to the couple as a card. Nothing is saved until they tap Yes; you'll hear if they do. Don't say it's done.",
 });
@@ -259,7 +263,14 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
       return { result: JSON.stringify({ saved: true }), block: { type: "note", body, url } };
     }
 
-    case "add_guest":
+    case "add_guest": {
+      const o = await overview();
+      if (!o.ok) return fail(o.error);
+      const step = await guestSteps(input, id, o);
+      if ("error" in step) return fail(step.error);
+      return { result: GUEST_STEPS_STARTED, block: step };
+    }
+
     case "set_guest_answer":
     case "add_todo":
     case "add_payment": {
@@ -275,6 +286,45 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
   }
 }
 
+// ── Steps for a new guest ───────────────────────────────────────────────
+
+/** Checks what the AI knew about the guest, and gathers the choices the steps offer. */
+async function guestSteps(input: Input, id: string, o: Overview): Promise<GuestStepsBlock | { error: string }> {
+  const fullName = text(input.full_name);
+  if (!fullName) return { error: "A guest needs a name." };
+  const eventId = text(input.event_id);
+  const event = eventId ? o.events.find((e) => e.id === eventId) : undefined;
+  if (eventId && !event) return { error: "That event id isn't one of this wedding's." };
+  const householdId = text(input.household_id);
+  const household = householdId ? o.households.find((h) => h.id === householdId) : undefined;
+  if (householdId && !household) return { error: "That household id isn't one of this wedding's." };
+  const roles = Array.isArray(input.roles) ? input.roles.map(text).filter((r): r is string => !!r) : [];
+  const choices = await guestChoices();
+  return {
+    type: "guest_steps",
+    id,
+    prefill: {
+      fullName,
+      eventId: event?.id ?? null,
+      householdId: household?.id ?? null,
+      newHousehold: household ? null : text(input.new_household),
+      diet: needsOf(text(input.diet)),
+      phone: text(input.phone),
+      email: text(input.email),
+      roles,
+      isChild: flag(input.is_child) ?? false,
+      meal: text(input.meal),
+      notes: text(input.notes),
+    },
+    options: {
+      events: o.events.map((e) => ({ id: e.id, word: e.word })),
+      households: o.households,
+      groups: choices.ok ? choices.groups : [],
+      stays: choices.ok ? choices.stays : [],
+    },
+  };
+}
+
 // ── Confirm cards ───────────────────────────────────────────────────────
 
 type Confirm = Extract<Block, { type: "confirm" }>;
@@ -283,48 +333,6 @@ async function proposalCard(name: string, input: Input, id: string, o: Overview)
   const areaLabel = (key: string | null) =>
     key ? (key === "other" ? "Other" : (o.areas.find((a) => a.key === key)?.label ?? null)) : null;
   const checkArea = (key: string | null) => (key && !areaLabel(key) ? `There's no area "${key}".` : null);
-
-  if (name === "add_guest") {
-    const fullName = text(input.full_name);
-    if (!fullName) return { error: "A guest needs a name." };
-    const eventId = text(input.event_id);
-    const event = eventId ? o.events.find((e) => e.id === eventId) : undefined;
-    if (eventId && !event) return { error: "That event id isn't one of this wedding's." };
-    const householdId = text(input.household_id);
-    const household = householdId ? o.households.find((h) => h.id === householdId) : undefined;
-    if (householdId && !household) return { error: "That household id isn't one of this wedding's." };
-    const newHousehold = text(input.new_household);
-    const roles = Array.isArray(input.roles) ? input.roles.map(text).filter((r): r is string => !!r) : [];
-    const proposal: Proposal = {
-      kind: "add_guest",
-      input: {
-        fullName,
-        householdId: household?.id ?? null,
-        newHousehold: household ? null : newHousehold,
-        eventId: event?.id ?? null,
-        roles,
-        email: text(input.email),
-        phone: text(input.phone),
-        isChild: flag(input.is_child) ?? false,
-        meal: text(input.meal),
-        diet: text(input.diet),
-        notes: text(input.notes),
-      },
-    };
-    const p = proposal.input;
-    const rows: [string, string][] = [];
-    rows.push(["Household", household?.name ?? (newHousehold ? `${newHousehold} (new)` : "Not in a household")]);
-    if (o.events.length) rows.push(["Guest of", event ? event.word.replace(/^\w/, (c) => c.toUpperCase()) : "Not on a list yet"]);
-    if (roles.length) rows.push(["Role", roles.join(" · ")]);
-    if (p.meal) rows.push(["Meal", p.meal]);
-    if (p.diet) rows.push(["Dietary", p.diet]);
-    if (p.phone) rows.push(["Phone", p.phone]);
-    if (p.email) rows.push(["Email", p.email]);
-    if (p.isChild) rows.push(["Child", "Yes"]);
-    if (p.notes) rows.push(["Notes", p.notes]);
-    if (event) rows.push(["RSVP", "To invite"]);
-    return { type: "confirm", id, title: fullName, action: "Add to the guest list", rows, yes: "Add them", proposal };
-  }
 
   if (name === "set_guest_answer") {
     const guestId = text(input.guest_id);

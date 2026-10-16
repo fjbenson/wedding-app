@@ -1001,8 +1001,13 @@ access control is RLS. No column-level encryption is planned.
 - **Pick what to add first, then its form** (owner, 16 Oct 2026). Where a
   tab can add more than one kind of thing, the round black + opens a small
   card of choices (`AddMenu`, `src/components/add-menu.tsx`): Guests → a
-  guest · a household · a group · a part of the day (a household or group
-  needs only a name, asked right there, then opens; `createHouseholdAction`);
+  guest · a household · a group · a part of the day — **each its own full
+  screen** (owner, 16 Oct 2026: *adding is a full screen, a card is for what
+  already exists*): `/people/households/new` (name large, address, "Who lives
+  there" — tick people already on the list, they move in; then its card
+  opens; `saveNewHouseholdAction`) and `/people/groups/new` (name with
+  one-tap ideas, "Who's in it"; then the list shows that group;
+  `saveNewGroupAction`), sharing `PeoplePicker` (`people-picker.tsx`);
   Plan (calendar, List, area pages) → a to-do · an appointment; Money → a
   payment · a budget (`add-choices.tsx`). The To-do | Appointment and
   Payment | Budget switches on the add forms are gone; their pages are

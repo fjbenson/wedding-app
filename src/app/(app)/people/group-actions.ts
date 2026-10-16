@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { addToGroup, createGroup, deleteGroup, removeFromGroup, renameGroup } from "@/lib/db/groups";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
@@ -85,4 +86,29 @@ export async function deleteGroupAction(groupId: string): Promise<Result> {
   } catch (error) {
     return failed("removing group", error);
   }
+}
+
+/**
+ * A new group from its own screen (`/people/groups/new`, owner, 16 Oct 2026:
+ * adding gets a full screen): its name and who's in it. Then the guest list
+ * opens showing that group.
+ */
+export async function saveNewGroupAction(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim();
+  const back = (error: string) => redirect(`/people/groups/new?error=${encodeURIComponent(error)}`);
+  if (!name) back("Give the group a name.");
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+
+  let id = "";
+  try {
+    const group = await createGroup(wedding.id, name);
+    id = group.id;
+    for (const member of new Set(formData.getAll("member").map(String))) await addToGroup(wedding.id, id, member);
+  } catch (error) {
+    if (!id) back(failed("creating group", error).error ?? "That didn't save.");
+    console.error("adding people to a new group failed", error);
+  }
+  done();
+  redirect(`/people?group=${id}`);
 }

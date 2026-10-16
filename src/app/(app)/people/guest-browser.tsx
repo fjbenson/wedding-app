@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
-import { createHouseholdAction } from "./household-actions";
-import { createGroupAction } from "./group-actions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Baby, CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, UserRound, Users, WheatOff, X } from "lucide-react";
@@ -398,29 +396,14 @@ export default function GuestBrowser({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            {/* Pick what to add first (owner, 16 Oct 2026): a guest has its form; a
-                household or a group needs only a name, then opens. */}
+            {/* Pick what to add first, then its own full screen (owner, 16 Oct 2026). */}
             <AddMenu
               label="Add to the guest list"
               title="Add to the guest list"
               choices={[
                 { icon: <UserRound />, title: "A guest", line: "Someone on the list", href: "/people/new" },
-                {
-                  icon: <House />,
-                  title: "A household",
-                  line: "People at one address",
-                  ask: { label: "The household's name", placeholder: "e.g. The Reids", button: "Add the household" },
-                  save: createHouseholdAction,
-                  done: (id) => setHouseholdId(id),
-                },
-                {
-                  icon: <Users />,
-                  title: "A group",
-                  line: "Like the football lot",
-                  ask: { label: "The group's name", placeholder: "e.g. Staying at the pub", button: "Add the group" },
-                  save: (name) => createGroupAction(name),
-                  done: (id) => setGroupId(id),
-                },
+                { icon: <House />, title: "A household", line: "People at one address", href: "/people/households/new" },
+                { icon: <Users />, title: "A group", line: "Like the football lot", href: "/people/groups/new" },
                 { icon: <CalendarHeart />, title: "A part of the day", line: "Like the evening do", href: "/people/events/new" },
               ]}
             />

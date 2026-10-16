@@ -33,10 +33,17 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
     };
   }, [open]);
 
-  const pick = (name: string) =>
+  // The card closes the moment an icon is tapped and the new one shows at
+  // once; it saves behind (16 Oct 2026 bug: waiting for the save left a
+  // second or so where nothing seemed to happen, a second tap fell through
+  // the closing card onto a supplier row). If the save fails, the card
+  // comes back with the old icon and says so.
+  const pick = (name: string) => {
+    const before = current;
+    setCurrent(name);
+    setError(undefined);
+    setOpen(false);
     start(async () => {
-      const before = current;
-      setCurrent(name);
       let result: { error?: string };
       try {
         result = await setAreaIconAction(id, areaKey, name);
@@ -46,11 +53,10 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
       if (result.error) {
         setCurrent(before);
         setError(result.error);
-      } else {
-        setError(undefined);
-        setOpen(false);
+        setOpen(true);
       }
     });
+  };
 
   return (
     <>

@@ -220,8 +220,9 @@ export async function saveTransportRunAction(id: string | null, formData: FormDa
   const vehicle = text(formData, "vehicle");
   if (!at || !vehicle) redirect(`${back}?error=${encodeURIComponent("Please give it a time and a vehicle.")}`);
 
+  let runId: string | null = null;
   try {
-    await saveTransportRun(wid, id, {
+    runId = await saveTransportRun(wid, id, {
       at_time: at,
       vehicle,
       from_place: text(formData, "from_place"),
@@ -230,6 +231,16 @@ export async function saveTransportRunAction(id: string | null, formData: FormDa
     });
   } catch (error) {
     failed(back, "That didn't save.", error);
+  }
+  // A new journey's "Who's going": the database only links guests of this wedding.
+  if (!id && runId) {
+    for (const guest of formData.getAll("member").map(String).filter((v) => /^[0-9a-f-]{36}$/i.test(v))) {
+      try {
+        await addPassenger(wid, runId, guest);
+      } catch (error) {
+        console.error("adding a passenger to a new journey failed", error);
+      }
+    }
   }
   refresh();
   redirect(id ? stayAfterSave(`/day/transport/${id}`) : TRANSPORT);

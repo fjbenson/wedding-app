@@ -130,12 +130,17 @@ export async function getTransportRun(id: string): Promise<TransportRun | null> 
   return data;
 }
 
-export async function saveTransportRun(weddingId: string, id: string | null, fields: RunFields): Promise<void> {
+/** Adds or changes a journey; gives back its id (a new one's passengers are added next). */
+export async function saveTransportRun(weddingId: string, id: string | null, fields: RunFields): Promise<string> {
   const supabase = await createClient();
-  const { error } = id
-    ? await supabase.from("transport_runs").update(fields).eq("id", id)
-    : await supabase.from("transport_runs").insert({ wedding_id: weddingId, ...fields });
+  if (id) {
+    const { error } = await supabase.from("transport_runs").update(fields).eq("id", id);
+    if (error) throw error;
+    return id;
+  }
+  const { data, error } = await supabase.from("transport_runs").insert({ wedding_id: weddingId, ...fields }).select("id").single();
   if (error) throw error;
+  return data.id as string;
 }
 
 export async function deleteTransportRun(id: string): Promise<void> {

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { SubmitBar } from "@/components/form-bits";
-import { Clock, Flag, MapPin, NotebookPen, UserRound } from "lucide-react";
+import { Bus, BusFront, Car, CarFront, CarTaxiFront, Clock, Flag, Footprints, MapPin, NotebookPen, UserRound } from "lucide-react";
+import PeoplePicker from "../people/people-picker";
 import { ReturnTo } from "@/components/back-link";
-import { AreaTiles, BARE, CARD, Folded, Ideas, Line, Part, TITLE_INPUT } from "@/components/visual-form";
+import { AreaTiles, BARE, CARD, Folded, Line, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import type { RunSheetItem, TransportRun } from "@/types/db";
 
@@ -94,19 +95,24 @@ export function RunSheetForm({
   );
 }
 
-/** Tap one to name the journey. */
-const VEHICLES = ["The coach", "Minibus", "Wedding car", "Car 1", "Car 2", "Taxis"];
-
-/** The usual times on the day, for the time card. */
-const DAY_TIMES = ["11:00", "12:30", "14:00", "17:00", "23:00", "00:00"];
+/** What's taking them, as picture tiles; a tap names the journey (it can still be typed). */
+const VEHICLES = [
+  { value: "The coach", label: "Coach", icon: Bus },
+  { value: "Minibus", label: "Minibus", icon: BusFront },
+  { value: "Wedding car", label: "Wedding car", icon: Car },
+  { value: "Taxis", label: "Taxi", icon: CarTaxiFront },
+  { value: "A lift", label: "A lift", icon: CarFront },
+  { value: "On foot", label: "On foot", icon: Footprints },
+];
 
 /**
- * One journey on the day (screen 28; passengers are added on Travel). Laid
- * out like the other visual forms (15 Oct 2026): the vehicle large with
- * one-tap ideas, the time as a card with quick taps, the route From → To on
- * one card, notes folded unless there are some.
+ * One journey on the day (screen 28). Laid out like the other visual forms:
+ * the vehicle large, with picture tiles to name it in a tap (17 Oct 2026, as
+ * the canvas's "Journeys" round had them); the time as a card (no quick taps,
+ * like appointments since 16 Oct 2026); the route From → To; who's going
+ * (a new journey only — after that they're added on its card); notes folded.
  */
-export function TransportForm({ action, run }: { action: Action; run?: TransportRun }) {
+export function TransportForm({ action, run, guests = [] }: { action: Action; run?: TransportRun; guests?: { id: string; name: string }[] }) {
   const [vehicle, setVehicle] = useState(run?.vehicle ?? "");
   const [time, setTime] = useState(run?.at_time.slice(0, 5) ?? "");
   return (
@@ -122,7 +128,15 @@ export function TransportForm({ action, run }: { action: Action; run?: Transport
         placeholder="What's taking them?"
         className={TITLE_INPUT}
       />
-      {!run && <Ideas ideas={VEHICLES} value={vehicle} onPick={setVehicle} />}
+      {!run && (
+        <Tiles
+          name="kind"
+          options={VEHICLES}
+          value={VEHICLES.some((v) => v.value === vehicle) ? vehicle : ""}
+          onChange={setVehicle}
+          columns="grid-cols-3"
+        />
+      )}
 
       <Part label="Leaves at">
         <div className={CARD}>
@@ -136,22 +150,6 @@ export function TransportForm({ action, run }: { action: Action; run?: Transport
               className={`${BARE} font-display !text-[21px] font-light ${time ? "" : "text-stone/60"}`}
             />
           </Line>
-          {!run && (
-            <div className="flex flex-wrap gap-2 border-t border-linen px-4 py-3">
-              {DAY_TIMES.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTime(t)}
-                  className={`h-9 rounded-full border px-3.5 text-[13px] tabular-nums transition ${
-                    time === t ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </Part>
 
@@ -165,6 +163,14 @@ export function TransportForm({ action, run }: { action: Action; run?: Transport
           </Line>
         </div>
       </Part>
+
+      {!run && guests.length > 0 && (
+        <Part label="Who's going (optional)">
+          <div className="mt-1">
+            <PeoplePicker people={guests} />
+          </div>
+        </Part>
+      )}
 
       <Folded label="Add notes" open={!!run?.notes}>
         <Part label="Notes">

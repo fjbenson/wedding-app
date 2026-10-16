@@ -892,8 +892,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   The **guest card** has a Travel part (`guest-travel.tsx`). Left out on
   purpose until a couple asks: the map, nights, rooms, booking codes,
   vehicle types, texting times, hotels as suppliers (all on canvas 3
-  "Travel · Round 1"). Adding or editing a journey still uses the old plain
-  form (`/day/transport/…`). Seats and passengers can only point at guests, tables and runs of
+  "Travel · Round 1"). Editing a journey is done on its Travel card. Seats and passengers can only point at guests, tables and runs of
   the same wedding (composite foreign keys on `(id, wedding_id)`). The
   agenda's wedding-day line links here. Seating opens on the **floor plan**
   (screen 26, `floor-plan.tsx`, `0011_floor_plan.sql`): drag tables about a
@@ -921,6 +920,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   asks A place to stay (`?open=stay:new`) · A journey. Its section headings
   lost their own black +. Travel's open card now follows the address
   (`useSearchParams`, closing with `replaceQuery(…, { sync: true })`).
+  **New journey** (`/day/transport/new`, `TransportForm` in `day-forms.tsx`,
+  17 Oct 2026): the vehicle large with **picture tiles** that name it in a
+  tap (Coach · Minibus · Wedding car · Taxi · A lift · On foot), the time
+  card (quick-time chips taken out, like appointments), From → To, **Who's
+  going** (`PeoplePicker`, everyone coming; saved as passengers after the
+  journey, `saveTransportRun` now returns the id), notes folded.
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an

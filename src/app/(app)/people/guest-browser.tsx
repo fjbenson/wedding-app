@@ -22,7 +22,7 @@ import type { TravelInfo } from "./guest-travel";
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
 /** How the list is ordered (the Sort button). */
-type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role";
+type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role" | "rsvp" | "age" | "table" | "staying";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
@@ -65,15 +65,19 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
  * Bridal party filter on, Dietary needs the Dietary needs one. The filter
  * shows as a pill and can be taken off or joined by others.
  */
-const SORTS: { key: SortBy; label: string; short: string }[] = [
-  { key: "first", label: "First name, A–Z", short: "by first name" },
-  { key: "last", label: "Surname, A–Z", short: "by surname" },
-  { key: "household", label: "Household", short: "by household" },
-  { key: "group", label: "Group", short: "by group" },
-  { key: "type", label: "Event", short: "by event" },
-  { key: "role", label: "Bridal party", short: "by bridal party" },
-  { key: "diet", label: "Dietary needs", short: "by dietary needs" },
-  { key: "meal", label: "Meal choice", short: "by meal" },
+const SORTS: { key: SortBy; label: string; short: string; section: string }[] = [
+  { key: "first", label: "First name, A–Z", short: "by first name", section: "Order" },
+  { key: "last", label: "Surname, A–Z", short: "by surname", section: "Order" },
+  { key: "household", label: "Household", short: "by household", section: "Group by" },
+  { key: "group", label: "Group", short: "by group", section: "Group by" },
+  { key: "type", label: "Event", short: "by event", section: "Group by" },
+  { key: "rsvp", label: "RSVP", short: "by RSVP", section: "Group by" },
+  { key: "age", label: "Age group", short: "by age group", section: "Group by" },
+  { key: "table", label: "Table", short: "by table", section: "Group by" },
+  { key: "staying", label: "Staying", short: "by where they're staying", section: "Group by" },
+  { key: "meal", label: "Meal choice", short: "by meal", section: "Group by" },
+  { key: "role", label: "Bridal party", short: "by bridal party", section: "Show only" },
+  { key: "diet", label: "Dietary needs", short: "by dietary needs", section: "Show only" },
 ];
 
 /** The filter a view switches on with it. */
@@ -1087,10 +1091,10 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
 
       {open && (
         <div className={`${MENU} !left-0 !right-auto w-[16rem] pb-1.5 pt-2.5`}>
-          <span className="section-label block py-1">View</span>
           <ul>
-            {SORTS.map((o) => (
-              <li key={o.key} className="border-t border-linen first:border-t-0">
+            {SORTS.map((o, i) => (
+              <li key={o.key} className={i > 0 && SORTS[i - 1].section === o.section ? "border-t border-linen" : ""}>
+                {(i === 0 || SORTS[i - 1].section !== o.section) && <span className={`section-label block pb-0.5 ${i === 0 ? "pt-1" : "pt-3"}`}>{o.section}</span>}
                 <button
                   type="button"
                   role="menuitemradio"

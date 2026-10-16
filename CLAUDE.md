@@ -402,7 +402,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Household. So Filter › Dietary needs, then Sort › Dietary needs, reads
   "Vegetarian · 5 guests", "Vegan · 3 guests"… with the people underneath.
   **Sort became "View" (17 Oct 2026, owner):** one pick sets how the rows
-  are grouped and, for two of them, the filter behind it — **Bridal party**
+  are grouped and, for two of them, the filter behind it. The menu has three
+  small headings — **Order** (First name, Surname), **Group by** (Household,
+  Group, Event, **RSVP**, **Age group**, **Table**, **Staying**, Meal choice)
+  and **Show only** (Bridal party, Dietary needs) — **Bridal party**
   switches the Bridal party filter on (grouped by role) and **Dietary needs**
   the Dietary needs filter (grouped by need); First name, Surname, Household,
   Group, Event and Meal choice just group. The filter shows as a pill, can be

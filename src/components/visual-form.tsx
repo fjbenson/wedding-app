@@ -18,7 +18,7 @@ import AreaSteps from "@/app/(app)/area/new/area-steps";
 
 /** A glass card holding a few lines. */
 export const CARD =
-  "mt-2.5 overflow-hidden rounded-[22px] border border-white/85 bg-white/60 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)]";
+  "mt-2.5 overflow-hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 shadow-[0_0_0_0.5px_rgb(60_50_40/0.06),0_18px_40px_-24px_rgb(60_50_40/0.32)]";
 
 /** A box inside one of the cards: no border of its own, the card is the frame. */
 export const BARE =

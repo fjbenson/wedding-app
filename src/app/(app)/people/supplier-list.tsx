@@ -331,7 +331,7 @@ function CountCard({
   return (
     <section
       aria-label="Where you're up to"
-      className="mt-6 grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2.5 rounded-[22px] border border-white/85 bg-white/45 p-3 pb-2 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)] backdrop-blur-xl sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3 sm:p-3.5 sm:pb-2.5"
+      className="mt-6 grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2.5 rounded-[22px] border-[0.5px] border-white/70 bg-white/50 p-3 pb-2 shadow-[0_0_0_0.5px_rgb(60_50_40/0.06),0_18px_40px_-24px_rgb(60_50_40/0.32)] backdrop-blur-xl sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3 sm:p-3.5 sm:pb-2.5"
     >
       <button
         type="button"

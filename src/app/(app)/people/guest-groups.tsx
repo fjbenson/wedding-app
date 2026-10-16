@@ -189,7 +189,7 @@ export function GroupCard({
   const counts = [`${coming} coming`, invited > 0 && `${invited} invited`].filter(Boolean).join(" · ");
 
   return (
-    <div className="rounded-[22px] border border-white/85 bg-white/60 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)] backdrop-blur-xl">
+    <div className="rounded-[22px] border-[0.5px] border-white/70 bg-white/55 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)] backdrop-blur-xl">
       <div className="flex items-center gap-2.5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
           <Users className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />

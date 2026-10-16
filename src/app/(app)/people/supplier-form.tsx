@@ -27,7 +27,7 @@ function Line({ icon: Icon, label, children }: { icon: LucideIcon; label: string
   );
 }
 
-const CARD = "mt-2.5 overflow-hidden rounded-[22px] border border-white/85 bg-white/60 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4),inset_0_1px_0_rgb(255_255_255/0.9)]";
+const CARD = "mt-2.5 overflow-hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 shadow-[0_0_0_0.5px_rgb(60_50_40/0.06),0_18px_40px_-24px_rgb(60_50_40/0.32)]";
 
 /**
  * Adding a supplier (12 Oct 2026, owner: "one massive form… feels quite heavy"):

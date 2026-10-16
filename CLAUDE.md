@@ -781,7 +781,11 @@ still open. **Background (12 Oct 2026):** the satin stripes were replaced by
 (a grain was tried and dropped; **16 Oct 2026** the light became the canvas
 mock-ups' white top; then, same day, the light stops sooner over a warm
 ivory ground `#efe7da` and glass cards are a touch whiter with a firmer
-shadow — owner: all-white made the cards stop popping) (canvas 2 "Background · Round 2", option A; `body::before` in
+shadow — owner: all-white made the cards stop popping). **Glass cards made lighter, 16 Oct 2026** (owner: "the thick white
+border on the top… lighter and airy"): `.glass-card`, `CARD` and the People
+count / summary / group cards now have a 0.5px edge (no white border plus
+inner highlight), 50–55% white, blur 20px, a softer wider shadow. The Hub's
+ring dots are left as they were. (canvas 2 "Background · Round 2", option A; `body::before` in
 `globals.css`); the Hub's and area pages' gold glows were taken out. B (oat
 ground) and C (real texture) wait on the canvas.
 **T is part done** — hosting is live, the screens are not.

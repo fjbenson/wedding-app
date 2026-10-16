@@ -1205,10 +1205,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    `RowPeopleProvider`, `src/components/row-people.tsx`, on Plan, area pages
    and the Hub's This week); **In the plan** on the guest card
    (`guest-plan.tsx`). Nobody is told; the assistant isn't given the tags.
-   **Waiting on the owner:** (1) **Run sheet moments with no area** —
-   speeches showed as "Other"; suggested making the area optional on a
-   moment (no database change) rather than an Other dot on the ring
-   (owner's call: the Hub's look). **Before that, the 15–16 Oct 2026 chat:** built this
+   **Run sheet moments can have no area** (16 Oct 2026, owner): `AreaTiles`
+   takes `optional` — "" is no area, Other is stored as "other", a "No area"
+   link takes the choice off, and a saved moment with none shows a dashed "No
+   area · Add one" pill. On the moment form ("Area (optional)") and its card.
+   No database change; the ring is untouched. **Before that, the 15–16 Oct 2026 chat:** built this
    chat — delegation agreed (top of these notes); the four plain forms made
    visual; groups on Seating; the assistant writes group messages; area page
    tidy + a black + per section; 16px side margins; Plan calendar on a card

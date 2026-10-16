@@ -133,6 +133,7 @@ export function AreaTiles({
   defaultValue,
   onChange,
   folded: startFolded = false,
+  optional = false,
 }: {
   name: string;
   areas: AreaOption[];
@@ -148,6 +149,12 @@ export function AreaTiles({
    * Adding always shows the tiles.
    */
   folded?: boolean;
+  /**
+   * The area can be left off (run sheet moments — speeches belong to no area,
+   * owner 16 Oct 2026): "" is no area, Other needs `otherValue="other"`, and
+   * a "No area" link takes the choice off again.
+   */
+  optional?: boolean;
 }) {
   const [own, setOwn] = useState(defaultValue ?? "\u0000");
   const [isFolded, setFolded] = useState(startFolded);
@@ -183,6 +190,23 @@ export function AreaTiles({
 
   const options = areaTiles(all, otherValue);
   const chosen = options.find((o) => o.value === picked);
+  const none = optional && (picked === "" || picked === "\u0000");
+  if (isFolded && none) {
+    return (
+      <>
+        <input type="hidden" name={name} value="" />
+        <button
+          type="button"
+          onClick={() => setFolded(false)}
+          className="mt-3 inline-flex h-11 items-center gap-2 rounded-full border border-dashed border-champagne-400 pl-3.5 pr-3 text-[15px] text-stone transition hover:bg-champagne-100"
+        >
+          No area
+          <span className="ml-1 text-[13px] text-champagne-600">Add one</span>
+          <ChevronDown aria-hidden className="h-4 w-4 text-stone" strokeWidth={1.8} />
+        </button>
+      </>
+    );
+  }
   if (isFolded && chosen) {
     const Icon = chosen.icon;
     return (
@@ -205,6 +229,8 @@ export function AreaTiles({
   }
 
   return (
+    <>
+    {optional && none && <input type="hidden" name={name} value="" />}
     <Tiles name={name} options={options} value={picked} onChange={pick}>
       <button
         ref={tile}
@@ -238,6 +264,12 @@ export function AreaTiles({
           document.body,
         )}
     </Tiles>
+    {optional && !none && (
+      <button type="button" onClick={() => pick("")} className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink">
+        No area
+      </button>
+    )}
+    </>
   );
 }
 

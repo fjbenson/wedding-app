@@ -423,7 +423,7 @@ export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: 
       </Part>
 
       <Part label="Area">
-        <AreaTiles name="area" areas={options} otherValue="" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded />
+        <AreaTiles name="area" areas={options} otherValue="other" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded optional />
       </Part>
 
       <section className="mt-7">

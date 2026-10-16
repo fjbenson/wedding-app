@@ -36,7 +36,7 @@ export async function createAppointment(weddingId: string, fields: AppointmentFi
   if (error) throw error;
 }
 
-export async function updateAppointment(id: string, fields: AppointmentFields): Promise<void> {
+export async function updateAppointment(id: string, fields: Partial<AppointmentFields>): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("appointments").update(fields).eq("id", id);
   if (error) throw error;

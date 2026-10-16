@@ -272,6 +272,7 @@ export function DateCard({
   weddingDate,
   required,
   quick = true,
+  clearable = true,
 }: {
   name: string;
   value: string;
@@ -279,6 +280,8 @@ export function DateCard({
   weddingDate?: string | null;
   required?: boolean;
   quick?: boolean;
+  /** false: no ✕ (an appointment always has a day). */
+  clearable?: boolean;
 }) {
   const today = todayISO();
   const picks = [
@@ -313,7 +316,7 @@ export function DateCard({
           aria-label="Date"
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
-        {value && (
+        {value && clearable && (
           <button
             type="button"
             onClick={() => onChange("")}

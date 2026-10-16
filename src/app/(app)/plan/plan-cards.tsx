@@ -4,49 +4,40 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
 import CardSheet from "@/components/card-sheet";
-import ResetBoundary from "@/components/reset-boundary";
 import { replaceQuery } from "@/lib/url-state";
 import { toggleMilestoneAction } from "./actions";
-import AppointmentForm from "./appointment-form";
-import {
-  loadPlanCardAction,
-  removePlanCardAction,
-  saveAppointmentCardAction,
-  saveTodoCardAction,
-  type PlanCardData,
-} from "./card-actions";
-import MilestoneForm from "./milestone-form";
+import { loadPlanCardAction, removePlanCardAction, type CardKind, type PlanCardData } from "./card-actions";
+import { AppointmentBody, PaymentBody, TodoBody } from "./plan-card-body";
 
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
 /**
- * A to-do or an appointment opens as a card over whatever page you're on —
+ * A to-do, an appointment or a payment opens as a card over whatever page you're on —
  * the calendar, the List, the Hub's This week, an area page — like a guest
  * or a supplier (owner, 16 Oct 2026: look at something in a card, add
  * something new on a full screen). Mounted once in the (app) layout; the open
- * card lives in the address (?todo= / ?appointment=, set by `CardLink`), so
- * it survives a refresh and closing it leaves you where you were. Inside is
- * the same visual form as the edit page: Save rises once something changes,
- * and saving keeps the card open.
+ * card lives in the address (?todo= / ?appointment= / ?payment=, set by `CardLink`), so
+ * it survives a refresh and closing it leaves you where you were. Inside,
+ * everything is changed in place (`plan-card-body.tsx`): taps save at once,
+ * typing gets a small Save — the guest card's rule.
  */
 export default function PlanCards() {
   const params = useSearchParams();
   const todo = params.get("todo");
   const appointment = params.get("appointment");
-  const kind = todo ? "todo" : appointment ? "appointment" : null;
-  const id = todo ?? appointment;
+  const payment = params.get("payment");
+  const kind: CardKind | null = todo ? "todo" : appointment ? "appointment" : payment ? "payment" : null;
+  const id = todo ?? appointment ?? payment;
 
-  const close = useCallback(() => replaceQuery({ todo: null, appointment: null }), []);
+  const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null }), []);
   if (!kind || !id) return null;
   return <PlanCard key={`${kind}:${id}`} kind={kind} id={id} onClose={close} />;
 }
 
-function PlanCard({ kind, id, onClose }: { kind: "todo" | "appointment"; id: string; onClose: () => void }) {
+function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: () => void }) {
   const router = useRouter();
   const [data, setData] = useState<PlanCardData | null | undefined>(undefined);
-  const [round, setRound] = useState(0);
   const [error, setError] = useState<string>();
-  const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const load = useCallback(async () => {
@@ -59,26 +50,6 @@ function PlanCard({ kind, id, onClose }: { kind: "todo" | "appointment"; id: str
   useEffect(() => {
     load();
   }, [load]);
-  useEffect(() => {
-    if (!saved) return;
-    const t = setTimeout(() => setSaved(false), 2200);
-    return () => clearTimeout(t);
-  }, [saved]);
-
-  const save = async (formData: FormData) => {
-    try {
-      const result = kind === "todo" ? await saveTodoCardAction(id, formData) : await saveAppointmentCardAction(id, formData);
-      setError(result.error);
-      if (result.error) return;
-      await load();
-      // Drawn afresh from what's now saved, so Save sinks out of sight again.
-      setRound((r) => r + 1);
-      setSaved(true);
-      router.refresh();
-    } catch {
-      setError(UNSAVED);
-    }
-  };
 
   const remove = (title: string) => {
     if (!confirm(kind === "todo" ? `Remove "${title}" from the plan?` : `Remove "${title}"?`)) return;
@@ -105,13 +76,19 @@ function PlanCard({ kind, id, onClose }: { kind: "todo" | "appointment"; id: str
       }
     });
 
-  const label = kind === "todo" ? "To-do" : "Appointment";
-  const title = data ? (data.kind === "todo" ? data.milestone.title : data.appointment.title) : label;
+  const label = { todo: "To-do", appointment: "Appointment", payment: "Payment" }[kind];
+  const title = !data
+    ? label
+    : data.kind === "todo"
+      ? data.milestone.title
+      : data.kind === "appointment"
+        ? data.appointment.title
+        : data.payment.description;
 
   return (
     <CardSheet label={title} onClose={onClose} top={<span className="label">{label}</span>}>
       {data === undefined && <p className="py-10 text-center text-sm text-stone">One moment…</p>}
-      {data === null && <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t on the plan any more.</p>}
+      {data === null && <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t here any more.</p>}
 
       {data && (
         <div className="pt-1">
@@ -125,21 +102,13 @@ function PlanCard({ kind, id, onClose }: { kind: "todo" | "appointment"; id: str
             <DoneButton done={data.milestone.status !== "todo" && data.milestone.status !== "in_progress"} pending={pending} onToggle={toggle} />
           )}
 
-          <ResetBoundary>
-            <div key={round}>
-              {data.kind === "todo" ? (
-                <MilestoneForm action={save} milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} />
-              ) : (
-                <AppointmentForm
-                  action={save}
-                  appointment={data.appointment}
-                  suppliers={data.suppliers}
-                  areas={data.areas}
-                  weddingDate={data.weddingDate}
-                />
-              )}
-            </div>
-          </ResetBoundary>
+          {data.kind === "todo" ? (
+            <TodoBody milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} />
+          ) : data.kind === "appointment" ? (
+            <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
+          ) : (
+            <PaymentBody payment={data.payment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
+          )}
 
           <div className="mt-6 border-t border-linen pt-4 text-center">
             <button
@@ -148,21 +117,12 @@ function PlanCard({ kind, id, onClose }: { kind: "todo" | "appointment"; id: str
               onClick={() => remove(title)}
               className="text-xs text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
             >
-              {kind === "todo" ? "Remove from the plan" : "Remove this appointment"}
+              {{ todo: "Remove from the plan", appointment: "Remove this appointment", payment: "Remove this payment" }[kind]}
             </button>
           </div>
         </div>
       )}
 
-      {saved && (
-        <p
-          role="status"
-          className="rise-in fixed inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[60] mx-auto flex w-fit items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm text-ivory shadow-[0_10px_24px_-10px_rgb(30_27_24/0.6)]"
-        >
-          <Check className="h-4 w-4" strokeWidth={2} aria-hidden />
-          Saved
-        </p>
-      )}
     </CardSheet>
   );
 }

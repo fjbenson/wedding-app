@@ -1,4 +1,4 @@
-import Link from "next/link";
+import CardLink from "./card-link";
 import { Check } from "lucide-react";
 import DateStamp from "./date-stamp";
 import TickForm from "./tick-form";
@@ -11,7 +11,8 @@ import type { Payment } from "@/types/db";
  * One payment, laid out like every Plan row and the Hub's This week (owner,
  * 16 Oct 2026): the due date large on the left, what it's for and who it's
  * to, the amount, then the £ circle on the right — tap it to mark it paid
- * (a gold tick once paid; tap again to undo).
+ * (a gold tick once paid; tap again to undo). Tap the row and its card opens
+ * over the page (`plan-cards.tsx`).
  */
 export default function PaymentRow({ payment: p, today, who }: { payment: Payment; today: string; who?: string | null }) {
   const paid = !!p.paid_on;
@@ -19,7 +20,7 @@ export default function PaymentRow({ payment: p, today, who }: { payment: Paymen
   const sub = [paid ? `Paid ${formatDayMonth(p.paid_on!)}` : null, who].filter(Boolean);
   return (
     <li className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
-      <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
+      <CardLink href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
         <DateStamp date={p.due_date ?? p.paid_on ?? null} today={today} overdue={late} done={paid} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${paid ? "!text-stone" : ""}`}>{p.description}</span>
@@ -31,7 +32,7 @@ export default function PaymentRow({ payment: p, today, who }: { payment: Paymen
           )}
         </span>
         <span className={`type-figure shrink-0 text-[18px] ${paid ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
-      </Link>
+      </CardLink>
       <TickForm
         action={markPaidAction.bind(null, p.id, !paid)}
         undo={markPaidAction.bind(null, p.id, paid)}

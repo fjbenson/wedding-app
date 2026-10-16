@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -177,11 +178,11 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
             <ul className="mt-1">
               {toPay.map((p) => (
                 <li key={p.id} className="row-press border-b border-linen last:border-b-0">
-                  <Link href={`/money/payments/${p.id}`} className="flex items-center gap-3 py-3">
+                  <CardLink href={`/money/payments/${p.id}`} className="flex items-center gap-3 py-3">
                     <span className="w-14 shrink-0 text-xs text-stone">{p.due ? formatDayMonth(p.due) : "No date"}</span>
                     <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{p.what}</span>
                     <span className="type-figure shrink-0 text-lg !font-light">{formatMoney(p.amount)}</span>
-                  </Link>
+                  </CardLink>
                 </li>
               ))}
               {balances.map((b) => (
@@ -209,14 +210,14 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
               <ul className="mt-1">
                 {paid.map((p) => (
                   <li key={p.id} className="row-press border-b border-linen last:border-b-0">
-                    <Link href={`/money/payments/${p.id}`} className="flex items-center gap-3 py-3 text-stone">
+                    <CardLink href={`/money/payments/${p.id}`} className="flex items-center gap-3 py-3 text-stone">
                       <span className="w-14 shrink-0 text-xs">{formatDayMonth(p.on)}</span>
                       <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-[15px]">
                         <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
                         {p.what}
                       </span>
                       <span className="type-figure shrink-0 text-lg !font-light !text-stone">{formatMoney(p.amount)}</span>
-                    </Link>
+                    </CardLink>
                   </li>
                 ))}
               </ul>

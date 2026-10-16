@@ -904,6 +904,23 @@ Next.js scaffold. Built so far, against the plan's tabs:
   table option (seats on one side, at the head) was offered, not built.
   On a phone the room scrolls sideways rather than shrinking. The old cards
   are the **List** view (`?view=list`), where tables are renamed or removed.
+  **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view
+  has the other tabs' bones** — a numbers card (`NumbersCard`,
+  `src/components/numbers-card.tsx`: a big white tile and three figures),
+  search with the round black + at its end, then View / Filter.
+  Run sheet: Moments (first–last time) · Morning · Afternoon · Evening;
+  "Find a moment" (`?q=`, `UrlSearch`, `src/components/url-search.tsx`,
+  shared with Money) + Add a moment; Filter (area) with Print on its right.
+  Seating: Seated (of N coming) · To seat · Tables · Seats free; "Find a
+  guest or table" answers where someone's sitting (`seating-search.tsx`);
+  the + opens **a full-screen New table** (`/day/tables/new`, name, seats,
+  Round | Long; `addTableAndBackAction`) — the inline add form is gone; View
+  (`ViewMenu`, `src/components/view-menu.tsx`) is Floor plan · List.
+  Travel: Have a lift (of N coming) · No lift yet › · Staying over · Not
+  sure where ›; "Find a guest" shows where they sleep and their lift; the +
+  asks A place to stay (`?open=stay:new`) · A journey. Its section headings
+  lost their own black +. Travel's open card now follows the address
+  (`useSearchParams`, closing with `replaceQuery(…, { sync: true })`).
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an

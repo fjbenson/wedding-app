@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
 /**
- * Money's search box, with the round black + at its end like the guest list
+ * A search box kept in the address (`?q=`), with the round black + at its end like the guest list
  * and Plan's List (owner, 17 Oct 2026: "florist deposit" one search away).
  * Money is drawn on the server, so the words go in the address (`?q=`) and
  * the page redraws a moment after typing stops; the area filter and the view
  * stay as they are.
  */
-export default function MoneySearch({ initial, placeholder, end }: { initial: string; placeholder: string; end?: React.ReactNode }) {
+export default function UrlSearch({ initial, placeholder, end }: { initial: string; placeholder: string; end?: React.ReactNode }) {
   const router = useRouter();
   const [query, setQuery] = useState(initial);
   const first = useRef(true);

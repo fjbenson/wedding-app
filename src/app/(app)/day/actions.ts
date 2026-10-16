@@ -101,6 +101,12 @@ export async function addTableAction(formData: FormData) {
   refresh();
 }
 
+/** The full-screen "Add a table" form (Seating's black +): adds it, then back to Seating. */
+export async function addTableAndBackAction(formData: FormData) {
+  await addTableAction(formData);
+  redirect(SEATING);
+}
+
 export async function updateTableAction(id: string, formData: FormData) {
   const name = text(formData, "name");
   const capacity = Math.max(1, Math.min(40, Number(text(formData, "capacity")) || 8));

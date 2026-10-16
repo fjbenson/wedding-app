@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronRight, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { BedDouble, Bus, ChevronRight, Search, X } from "lucide-react";
+import AddMenu from "@/components/add-menu";
+import NumbersCard from "@/components/numbers-card";
 import AddButton from "@/components/add-button";
 import PageTitle from "@/components/page-title";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -72,9 +74,13 @@ export default function Travel({
   ready: boolean;
 }) {
   const [open, setOpen] = useState<string | null>(initial);
+  // The black +'s "A place to stay" links here with ?open=stay:new: follow the address.
+  const params = useSearchParams();
+  useEffect(() => setOpen(params.get("open")), [params]);
   const show = (value: string | null) => {
     setOpen(value);
-    replaceQuery({ open: value });
+    // Heard by useSearchParams, so the + can open the same card again later.
+    replaceQuery({ open: value }, { sync: true });
   };
 
   const onBoard = new Set(passengers.map((p) => p.contact_id));
@@ -99,15 +105,35 @@ export default function Travel({
         </p>
       )}
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <Figure count={staying.length} label="staying over" />
-        <Figure count={withLift.length} label={withLift.length === 1 ? "has a lift" : "have a lift"} />
-      </div>
+      {/* The tab's numbers, search with the black +, like Seating and the run sheet (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
+      <NumbersCard
+        big={{ label: "Have a lift", value: withLift.length, sub: `of ${guests.length} coming` }}
+        rows={[
+          { value: noLift.length, label: "No lift yet", onClick: noLift.length > 0 ? () => show("nolift") : undefined },
+          { value: staying.length, label: "Staying over" },
+          { value: unsure.length, label: "Not sure where", onClick: unsure.length > 0 ? () => show("unsure") : undefined },
+        ]}
+      />
+      <TravelSearch
+        guests={guests}
+        stays={stays}
+        runs={runs}
+        passengers={passengers}
+        end={
+          <AddMenu
+            label="Add to Travel"
+            title="Add to Travel"
+            choices={[
+              ...(ready ? [{ icon: <BedDouble />, title: "A place to stay", line: "A hotel, the pub, someone's spare room", href: "/day?tab=travel&open=stay:new" }] : []),
+              { icon: <Bus />, title: "A journey", line: "A car, a coach or a lift", href: "/day/transport/new" },
+            ]}
+          />
+        }
+      />
 
       {/* Where is everyone sleeping? */}
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">Staying</h2>
-        {ready && <AddButton onClick={() => show("stay:new")} label="Add a place to stay" />}
       </div>
       {stays.length > 0 ? (
         <ul className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
@@ -135,7 +161,6 @@ export default function Travel({
       {/* How is everyone getting there and back? */}
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">Getting there and back</h2>
-        <AddButton href="/day/transport/new" label="Add a journey" />
       </div>
       {runs.length > 0 ? (
         <ul className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
@@ -174,12 +199,60 @@ export default function Travel({
   );
 }
 
-function Figure({ count, label }: { count: number; label: string }) {
+/**
+ * Travel's search with the black + at its end: type a name to see where
+ * they're sleeping and how they're getting there, right under the box.
+ */
+function TravelSearch({
+  guests,
+  stays,
+  runs,
+  passengers,
+  end,
+}: {
+  guests: Contact[];
+  stays: Stay[];
+  runs: TransportRun[];
+  passengers: TransportPassenger[];
+  end: React.ReactNode;
+}) {
+  const [query, setQuery] = useState("");
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const found = words.length ? guests.filter((g) => words.every((w) => fullName(g).toLowerCase().includes(w))).slice(0, 8) : [];
+  const sleeping = (g: Contact) =>
+    g.staying === "yes" ? (stays.find((x) => x.id === g.stay_id)?.name ?? "Staying, not sure where") : g.staying === "no" ? "Going home" : null;
+  const lift = (g: Contact) => {
+    const run = runs.find((r) => passengers.some((p) => p.run_id === r.id && p.contact_id === g.id));
+    return run ? `${run.vehicle} · ${formatClock(run.at_time)}` : g.own_way ? "Own way" : "No lift yet";
+  };
   return (
-    <div className="glass-card rounded-[20px] p-4">
-      <span className="block type-figure text-[34px] leading-none !font-light">{count}</span>
-      <span className="mt-1 block text-[13px] text-stone">{label}</span>
-    </div>
+    <>
+      <div className="mt-5 flex items-center gap-2">
+        <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+          <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+          <span className="sr-only">Find a guest</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Find a guest"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+          />
+        </label>
+        {end}
+      </div>
+      {words.length > 0 && (
+        <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4">
+          {found.map((g) => (
+            <li key={g.id} className="border-b border-linen py-2.5 last:border-b-0">
+              <span className="block truncate text-[15px] text-ink">{fullName(g)}</span>
+              <span className="block truncate text-[13px] text-stone">{[sleeping(g), lift(g)].filter(Boolean).join(" · ")}</span>
+            </li>
+          ))}
+          {found.length === 0 && <li className="py-4 text-sm text-stone">No one matches that.</li>}
+        </ul>
+      )}
+    </>
   );
 }
 

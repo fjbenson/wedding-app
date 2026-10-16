@@ -4,13 +4,15 @@ import CardLink from "@/components/card-link";
 import { X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import CornerSwitch from "@/components/corner-switch";
-import ViewTabs from "@/components/view-tabs";
+import ViewMenu from "@/components/view-menu";
+import NumbersCard from "@/components/numbers-card";
+import UrlSearch from "@/components/url-search";
+import SeatingSearch from "./seating-search";
 import { InlineSubmit } from "@/components/form-bits";
 import { coupleName as setCoupleName } from "@/lib/couple-name";
 import { formatClock, formatLongDate, nowInLondon } from "@/lib/dates";
 import type { Contact, Rsvp, RunSheetItem, Seat, SeatingTable, Stay, TransportPassenger, TransportRun } from "@/types/db";
 import {
-  addTableAction,
   deleteTableAction,
   seatGuestAction,
   unseatGuestAction,
@@ -59,9 +61,12 @@ export default function DayView({
   rsvps,
   areas,
   area,
+  query,
   error,
   detail,
 }: {
+  /** The run sheet's search (`?q=`). */
+  query: string;
   tab: DayTab;
   /** Travel's places to stay (empty until 0020_travel.sql is run). */
   stays: Stay[];
@@ -122,7 +127,7 @@ export default function DayView({
           ready={guests.length === 0 || guests[0].own_way !== undefined}
         />
       ) : (
-        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} areas={areas} area={area} />
+        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} areas={areas} area={area} query={query} />
       )}
     </main>
   );
@@ -149,7 +154,9 @@ function RunSheet({
   weddingDate,
   areas,
   area,
+  query,
 }: {
+  query: string;
   items: RunSheetItem[];
   coupleName: string;
   weddingDate: string | null;
@@ -158,8 +165,14 @@ function RunSheet({
 }) {
   // Narrowed to one area (12 Oct 2026): what an area page's "In The Day ›"
   // opens, and a copy to print for that supplier.
-  const items =
+  const inArea =
     area === null ? all : all.filter((i) => (area === "none" ? !i.area_key || i.area_key === "other" : i.area_key === area));
+  // The search (`?q=`): what happens, where, who, or the notes.
+  const needle = query.toLowerCase();
+  const items = needle
+    ? inArea.filter((i) => [i.title, i.location, i.who, i.notes].some((t) => t?.toLowerCase().includes(needle)))
+    : inArea;
+  const partCount = (until: string, after: string) => inArea.filter((i) => i.at_time.slice(0, 5) >= after && i.at_time.slice(0, 5) < until).length;
   const forWhom = area === "none" ? "Other" : area ? areaName(area, areas) : null;
   const now = nowInLondon();
   const isTheDay = weddingDate === now.date;
@@ -176,27 +189,39 @@ function RunSheet({
       <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         The day
       </PageTitle>
-      {items.length === 0 && (
-        <p className="mt-2 text-sm text-stone">Hour by hour — who needs to be where, and when. It gets printed and handed round.</p>
+      {/* The tab's numbers, search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
+      <div className="print:hidden">
+      <NumbersCard
+        big={{
+          label: "Moments",
+          value: inArea.length,
+          sub: inArea.length > 0 ? `${formatClock(inArea[0].at_time)}–${formatClock(inArea[inArea.length - 1].at_time)}` : "Hour by hour",
+        }}
+        rows={[
+          { value: partCount("12:00", "00:00"), label: "Morning" },
+          { value: partCount("18:00", "12:00"), label: "Afternoon" },
+          { value: partCount("24:00", "18:00"), label: "Evening" },
+        ]}
+      />
+      <UrlSearch
+        initial={query}
+        placeholder="Find a moment"
+        end={
+          <AddButton
+            href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
+            label="Add a moment"
+          />
+        }
+      />
+      </div>
+      {all.length > 0 && (
+        <FilterMenu
+          base={query ? `/day?q=${encodeURIComponent(query)}` : "/day"}
+          groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
+          end={items.length > 0 ? <PrintButton /> : undefined}
+        />
       )}
-
-      {/* Filter on the left, Print and the round black + on its right (owner, 13 Oct 2026). */}
-      {(() => {
-        const buttons = (
-          <>
-            {items.length > 0 && <PrintButton />}
-            <AddButton
-              href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
-              label="Add a moment"
-            />
-          </>
-        );
-        return all.length > 0 ? (
-          <FilterMenu base="/day" groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]} end={buttons} />
-        ) : (
-          <div className="mt-5 flex items-center justify-end gap-2 print:hidden">{buttons}</div>
-        );
-      })()}
+      {needle && items.length === 0 && <p className="mt-6 px-1 text-sm text-stone">No moment matches that.</p>}
       {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (
@@ -310,46 +335,30 @@ function Seating({
       <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         Seating
       </PageTitle>
-      <p className="mt-2 text-sm text-stone">
-        {data.tables.length === 0
-          ? "Add your tables, then sit people at them."
-          : `${seated} of ${coming.length} seated · ${data.tables.length} ${data.tables.length === 1 ? "table" : "tables"} · ${seats} seats`}
-      </p>
-
-      <form action={addTableAction} className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl border border-linen bg-white p-4">
-        {/* On a small phone the name takes its own line; the seats and button sit below. */}
-        <input
-          name="name"
-          placeholder={`Name, e.g. Table ${data.tables.length + 1}`}
-          aria-label="Table name"
-          className={`${pill} basis-full sm:basis-auto sm:flex-1`}
-        />
-        <label className="flex items-center gap-2 text-sm text-stone">
-          <input name="capacity" type="number" min={1} max={40} defaultValue={8} aria-label="Seats" className={`${pill} w-16`} />
-          seats
-        </label>
-        {/* Round to start with (most tables are); tap Long to change it. */}
-        <div role="radiogroup" aria-label="Table shape" className="inline-grid grid-cols-2 rounded-full border border-linen bg-cream/60 p-1">
-          {(["round", "long"] as const).map((shape) => (
-            <label
-              key={shape}
-              className="cursor-pointer rounded-full px-3.5 py-1.5 text-sm capitalize text-stone has-[:checked]:bg-white has-[:checked]:text-ink has-[:checked]:shadow-[0_1px_2px_rgb(30_27_24/0.08)] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-champagne-400"
-            >
-              <input type="radio" name="shape" value={shape} defaultChecked={shape === "round"} className="sr-only" />
-              {shape}
-            </label>
-          ))}
-        </div>
-        <InlineSubmit label="Add table" pendingLabel="Adding…" />
-      </form>
-
-      <ViewTabs
-        label="Seating view"
-        tabs={[
-          { label: "Floor plan", href: "/day?tab=seating", active: view === "plan" },
-          { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
+      {/* The tab's numbers, search with the black +, then View (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
+      <NumbersCard
+        big={{ label: "Seated", value: seated, sub: `of ${coming.length} coming` }}
+        rows={[
+          { value: unseated.length, label: "To seat" },
+          { value: data.tables.length, label: data.tables.length === 1 ? "Table" : "Tables" },
+          { value: Math.max(seats - seated, 0), label: "Seats free" },
         ]}
       />
+      <SeatingSearch
+        guests={coming.map((g) => {
+          const t = tableOf.get(g.id);
+          return { id: g.id, name: fullName(g), table: t ? (data.tables.find((x) => x.id === t)?.name ?? null) : null };
+        })}
+        tables={data.tables.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, count: coming.filter((g) => tableOf.get(g.id) === t.id).length }))}
+      />
+      <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
+        <ViewMenu
+          options={[
+            { label: "Floor plan", href: "/day?tab=seating", active: view === "plan" },
+            { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
+          ]}
+        />
+      </div>
 
       {view === "plan" ? (
         <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} />

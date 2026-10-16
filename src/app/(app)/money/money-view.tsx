@@ -15,7 +15,7 @@ import { formatDayMonth, formatMonthYear, formatWeekdayDayMonth, todayISO } from
 import { formatMoney } from "@/lib/money";
 import type { Payment } from "@/types/db";
 import { markPaidAction } from "./actions";
-import MoneySearch from "./money-search";
+import UrlSearch from "@/components/url-search";
 
 /*
  * Money (screens 22–24), as settled on canvas 2 ("Money · Round 4", owner's
@@ -86,7 +86,7 @@ export default function MoneyView({
   // (owner, 17 Oct 2026): search with the round black + at its end, then Filter.
   const filter = (
     <>
-      <MoneySearch
+      <UrlSearch
         key={view}
         initial={query}
         placeholder={view === "month" ? "Find a payment" : "Find an area or supplier"}

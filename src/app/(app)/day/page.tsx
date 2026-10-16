@@ -14,11 +14,11 @@ export const metadata = { title: "The Day — Wedding App" };
 export default async function DayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; view?: string; area?: string; open?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string; view?: string; area?: string; open?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { tab, view, area, open, error, detail } = await searchParams;
+  const { q, tab, view, area, open, error, detail } = await searchParams;
   const [day, guests, rsvps, areaRows, stays, groups] = await Promise.all([
     getDay(wedding.id),
     listGuests(wedding.id),
@@ -45,6 +45,7 @@ export default async function DayPage({
       rsvps={rsvps}
       areas={areaOptions(areaRows)}
       area={area || null}
+      query={q?.trim() || ""}
       error={error}
       detail={detail}
     />

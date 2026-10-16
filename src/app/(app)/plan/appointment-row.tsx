@@ -36,8 +36,8 @@ export function AppointmentRow({
           <RowLine kind={been ? "Been" : "Appointment"} details={details} />
         </span>
       </CardLink>
-      {/* White with a firm edge, like a to-do's circle and a payment's £ (owner, 16 Oct 2026: the faint beige disc looked different). */}
-      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-champagne-400 bg-white text-champagne-600" aria-hidden>
+      {/* Champagne fill with a soft edge (owner, 16 Oct 2026): tells it apart from the white to-do circle. */}
+      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-champagne-400/45 bg-champagne-100 text-champagne-600" aria-hidden>
         {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <Calendar className="h-3.5 w-3.5" strokeWidth={2} />}
       </span>
     </li>

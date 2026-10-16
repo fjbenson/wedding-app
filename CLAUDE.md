@@ -774,6 +774,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Shown when an area has two or more quotes in and no one booked: on the
   area page's Suppliers (a tap opens the supplier card in place) and in
   Money's area sheet (a tap opens the area page with that card).
+  **Later 17 Oct 2026 (owner):** By month's payments sit on **one card**
+  with a heading per month inside it ("NOVEMBER 2026 · £600", like Plan's
+  list) instead of a card per month; an area's money sheet lists To pay and
+  Paid with the same `PaymentRow`s on a card. The laptop budget table was
+  taken back out (owner skipped it).
   **Who's paying** (17 Oct 2026, owner's OK; `0022_contributions.sql`, run
   the same day): money coming in — who (typed, e.g. "Us", "Mum and Dad";
   matching guests come up to tap, linking `contact_id`, optional), how much,

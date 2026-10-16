@@ -73,14 +73,8 @@ export default async function MoneyPage({
           deposit: amount(s.supplier_details?.deposit_paid),
         }))
         .sort((a, b) => STAGE_ORDER.indexOf(a.status) - STAGE_ORDER.indexOf(b.status)),
-      toPay: mine
-        .filter((p) => !p.paid_on)
-        .sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"))
-        .map((p) => ({ id: p.id, what: p.description, amount: amount(p.amount), due: p.due_date })),
-      paid: mine
-        .filter((p): p is typeof p & { paid_on: string } => !!p.paid_on)
-        .sort((a, b) => b.paid_on.localeCompare(a.paid_on))
-        .map((p) => ({ id: p.id, what: p.description, amount: amount(p.amount), on: p.paid_on })),
+      toPay: mine.filter((p) => !p.paid_on).sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999")),
+      paid: mine.filter((p) => !!p.paid_on).sort((a, b) => b.paid_on!.localeCompare(a.paid_on!)),
       balances: balances
         .filter((b) => belongs(key, b.supplier.supplier_details?.category ?? null))
         .map((b) => ({ supplierId: b.supplier.id, name: name(b.supplier), balance: Math.round(b.balance * 100) / 100 })),

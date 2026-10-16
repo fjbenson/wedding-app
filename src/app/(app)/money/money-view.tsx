@@ -318,12 +318,7 @@ function ByMonth({
 
   const count = (n: number) => (n === 1 ? "1 payment" : `${n} payments`);
   const cardTitle = (key: string) => {
-    const [month, year] = formatMonthYear(`${key}-01`).split(" ");
-    return (
-      <>
-        {month} <span className="italic text-champagne-600">{year}</span>
-      </>
-    );
+    return formatMonthYear(`${key}-01`);
   };
   const noDateTotal = sum(undated) + balances.reduce((s, b) => s + b.balance, 0);
 
@@ -411,16 +406,24 @@ function ByMonth({
         <p className="mt-4 text-[15px] text-stone">Nothing due in {formatMonthYear(`${chosen}-01`)}.</p>
       )}
 
-      {shownMonths.map(([key, list]) => (
-        <section key={key} className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 pb-1 pt-3.5 [--row-bleed:16px]">
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className="font-display text-[22px] font-light leading-tight text-ink">{cardTitle(key)}</h3>
-            <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(sum(list))}</span>
-          </div>
-          <p className="type-meta mt-0.5">{count(list.length)}</p>
-          <ul className="mt-1 border-t border-linen/80">{list.map(row)}</ul>
-        </section>
-      ))}
+      {/* One card, a heading per month inside it, like Plan's list (owner, 17 Oct 2026:
+          a card per month, most with one payment, was all headers and repeated totals). */}
+      {shownMonths.length > 0 && (
+        <div className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+          {shownMonths.map(([key, list], i) => (
+            <section key={key} aria-label={formatMonthYear(`${key}-01`)} className={i > 0 ? "border-t border-champagne-400" : ""}>
+              <h3 className="flex items-baseline justify-between gap-3 pb-0.5 pt-3.5">
+                <span className="section-label">{cardTitle(key)}</span>
+                <span className="type-meta">
+                  {list.length > 1 && `${count(list.length)} · `}
+                  {formatMoney(sum(list))}
+                </span>
+              </h3>
+              <ul>{list.map(row)}</ul>
+            </section>
+          ))}
+        </div>
+      )}
 
       {!chosen && (undated.length > 0 || balances.length > 0) && (
         <section className="mt-3 overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-stone/30 px-4 pb-1 pt-3.5 [--row-bleed:16px]">

@@ -604,10 +604,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   picked on arrival; `?day=` keeps the card open across Back.
   **List rebuilt 16 Oct 2026 (owner: "it's a mess"), shaped like the guest
   list** (`plan-list.tsx`): a **search box with the round black + at its
-  end** ("Find a to-do or appointment", `&q=`), then **Filter** left (Show
-  To-dos · Appointments `&show=`, When `&when=`, Area `&area=`) and **Sort**
-  right (By date · By area, grouped with headings · A–Z; kept on the phone,
-  `plan-list-sort`), a quiet count ("5 to do · 2 appointments"), then **to-dos
+  end** ("Find a to-do or appointment", `&q=`), then **View** left (Date · Area, grouped
+  with headings · A–Z; kept on the phone, `plan-list-sort`; since 17 Oct 2026,
+  was Sort on the right) and **Filter** right (Show
+  To-dos · Appointments `&show=`, When `&when=`, Area `&area=`), a quiet count ("5 to do · 2 appointments"), then **to-dos
   and appointments in one list** on a glass card (search finds both); done
   to-dos and been appointments in a Done fold. The To-dos | Appointments
   switch and the big "23 *to do*" are gone; old `&kind=appointments` links

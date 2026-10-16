@@ -24,10 +24,13 @@ export type FilterGroup = {
 export default function FilterMenu({
   base,
   groups,
+  start,
   end,
 }: {
   base: string;
   groups: FilterGroup[];
+  /** The View button, on the left with Filter moved to the right (Plan's List, as on the guest list). */
+  start?: React.ReactNode;
   /** Buttons for the right of the Filter's row (The Day's Print and +). */
   end?: React.ReactNode;
 }) {
@@ -62,6 +65,7 @@ export default function FilterMenu({
   return (
     <div className="mt-3 px-1 print:hidden">
       <div className="flex items-center justify-between gap-3">
+        {start}
         <div ref={box} className="relative inline-block">
           <button
             type="button"
@@ -80,7 +84,7 @@ export default function FilterMenu({
           </button>
 
           {open && (
-            <div className="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+            <div className={`absolute ${start ? "right-0" : "left-0"} top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]`}>
               <div className="flex items-baseline justify-between py-1">
                 <span className="section-label">Show only</span>
                 {on.length > 0 && (

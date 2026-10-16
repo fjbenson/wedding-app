@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, ChevronDown, LayoutList, Search, X } from "lucide-react";
 import AddMenu from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import FilterMenu from "@/components/filter-menu";
@@ -17,7 +17,7 @@ import { WHEN_CHOICES, type When } from "./when";
 type Show = "todos" | "appointments";
 type SortBy = "date" | "area" | "az";
 const SORTS: { key: SortBy; label: string; short: string }[] = [
-  { key: "date", label: "Date, soonest first", short: "by date" },
+  { key: "date", label: "Date", short: "by date" },
   { key: "area", label: "Area", short: "by area" },
   { key: "az", label: "Name, A–Z", short: "a–z" },
 ];
@@ -204,7 +204,7 @@ export default function PlanList({
           { param: "when", title: "When", current: when, rows: WHEN_CHOICES.map(([key, label]) => ({ key, label })) },
           { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
         ]}
-        end={<SortMenu sort={sort} onSort={pickSort} />}
+        start={<SortMenu sort={sort} onSort={pickSort} />}
       />
 
       <p className="type-meta mt-5 px-1">{count}</p>
@@ -274,16 +274,17 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`Sort: ${current.label}`}
+        aria-label={`View: ${current.label}`}
         onClick={() => setOpen((o) => !o)}
-        className="type-meta flex h-9 items-center gap-1 hover:text-ink"
+        className="type-meta flex h-9 items-center gap-1.5 hover:text-ink"
       >
-        {current.short}
+        <LayoutList className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+        {current.label.replace(", A–Z", "")}
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[15rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-          <span className="section-label block py-1">Sort by</span>
+        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[15rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <span className="section-label block py-1">View</span>
           <ul>
             {SORTS.map((s) => (
               <li key={s.key} className="border-t border-linen first:border-t-0">

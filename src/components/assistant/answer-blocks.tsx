@@ -100,7 +100,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
       return (
         <div className={CARD}>
           <div className="px-4 pb-3 pt-4">
-            <p className="type-meta">{s.area ? s.area.label : "The whole wedding"}</p>
+            <p className="type-meta">{s.area ? s.area.label : "All areas"}</p>
             <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
               <span className="font-display text-[40px] font-light leading-none text-ink">{formatMoney(s.toPay)}</span>
               <span className="text-sm text-stone">still to pay</span>

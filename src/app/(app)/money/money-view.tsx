@@ -186,11 +186,11 @@ function ByArea({
     <>
       <Link
         href="/money/budget"
-        aria-label={`${scope ?? "The whole wedding"} — change the budget`}
+        aria-label={`${scope ?? "All areas"} — change the budget`}
         className="card-white row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
       >
         <p className="flex items-baseline justify-between gap-3">
-          <span className="type-meta">{scope ?? "The whole wedding"}</span>
+          <span className="type-meta">{scope ?? "All areas"}</span>
           <span className="type-meta flex items-center !text-champagne-600">
             {total.budget === null ? "Set budget" : "Change"}
             <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />

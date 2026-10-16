@@ -7,11 +7,11 @@ import {
   Mail,
   MapPin,
   Music,
-  Shirt,
   Sparkles,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
+import { Dress } from "./clothes-icons";
 import { iconByName } from "./area-icons";
 
 /** An area as the rest of the app needs it: its stable key and its name. */
@@ -70,7 +70,7 @@ export const STARTER_AREAS: { key: string; label: string; icon: LucideIcon }[] =
   { key: "flowers", label: "Flowers", icon: Flower2 },
   { key: "cake", label: "Cake", icon: Cake },
   { key: "music", label: "Music", icon: Music },
-  { key: "attire", label: "Attire", icon: Shirt },
+  { key: "attire", label: "Attire", icon: Dress },
   { key: "hair-makeup", label: "Hair & makeup", icon: Brush },
   { key: "stationery", label: "Stationery", icon: Mail },
   { key: "transport", label: "Transport", icon: Car },

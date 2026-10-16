@@ -104,7 +104,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   guessed from the name, with a search ("lights" finds the bulb) over a
   shortlist of Lucide icons with search words (`src/lib/area-icons.ts`; add
   a line there to offer another), 3 a budget or Skip; then its page. The
-  icon's name is stored in `areas.icon` (`0016_area_icon.sql`; until it's
+  icon's name is stored in `areas.icon` (`0016_area_icon.sql`; Attire's
+  default is a **dress**, and a **suit** is in the search — both drawn for us
+  in Lucide's style, `src/lib/clothes-icons.ts`, since Lucide has neither;
+  16 Oct 2026, owner: "a t-shirt doesn't feel right"; until it's
   run the icon is quietly left out — **run 12 Oct 2026**) and `areaIcon(key,
   icon)` draws it. The step marker is circles joined by a line that fills
   gold, ticks when done, "2 of 3" on the right (canvas 2 "Area · The step
@@ -1027,9 +1030,11 @@ access control is RLS. No column-level encryption is planned.
   the list is shown: **Filter** (plain words; champagne pill "Filter · 2"
   when on, menu opens to the left) on the left, **Sort** on the right
   (canvas 2 "People · Fewer boxes" led here: too many boxed things). The
-  count cards' big **All** tile is champagne, not black, when picked — as
-  **champagne glass** since 12 Oct 2026 (`.glass-tile-on` / `.glass-tile` in
-  `globals.css`; owner: the gold outline felt clunky).
+  count cards' big **All** tile is never black when picked — since 16 Oct
+  2026 **white glass with the number in gold** (`.glass-tile-on` /
+  `.glass-tile` in `globals.css`; canvas 3 "Guest list · The All tile", B,
+  owner's pick: the champagne glass of 12 Oct read as beige on the warmer
+  ground, and white sits well with the white search box).
 - **A form's Save stays in reach** (owner, 12 Oct 2026: a date was
   changed and never saved because Save was below the fold): `SubmitBar` in
   `form-bits.tsx` keeps the main button at the foot of the screen while the

@@ -1,3 +1,4 @@
+import { Dress, Suit } from "./clothes-icons";
 import {
   Armchair,
   Baby,
@@ -83,7 +84,10 @@ export const AREA_ICONS: { name: string; icon: LucideIcon; words: string }[] = [
   { name: "Guitar", icon: Guitar, words: "band musicians live music" },
   { name: "Mic", icon: Mic, words: "speeches singer host" },
   { name: "Speaker", icon: Speaker, words: "sound pa speakers" },
-  { name: "Shirt", icon: Shirt, words: "attire outfits suit clothes dress" },
+  // Drawn for us (clothes-icons.ts): Lucide has no dress or suit.
+  { name: "Dress", icon: Dress, words: "attire outfits dress gown bride bridesmaids clothes" },
+  { name: "Suit", icon: Suit, words: "attire outfits suit tux tuxedo groom groomsmen clothes" },
+  { name: "Shirt", icon: Shirt, words: "clothes shirt casual" },
   { name: "Brush", icon: Brush, words: "hair makeup beauty" },
   { name: "Scissors", icon: Scissors, words: "hair diy crafts" },
   { name: "Gem", icon: Gem, words: "rings jewellery engagement" },

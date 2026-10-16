@@ -646,7 +646,7 @@ function AnswersCard({
       >
         <span className="type-meta text-champagne-600">All</span>
         <span>
-          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] text-ink`}>{total}</span>
+          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-champagne-600" : "text-ink"}`}>{total}</span>
           <span className="mt-1.5 block text-xs text-stone">
             {total === 1 ? "guest" : "guests"} · {homes} {homes === 1 ? "home" : "homes"}
           </span>

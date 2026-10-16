@@ -65,14 +65,14 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
  * Bridal party filter on, Dietary needs the Dietary needs one. The filter
  * shows as a pill and can be taken off or joined by others.
  */
-const SORTS: { key: SortBy; label: string; short: string; hint?: string }[] = [
+const SORTS: { key: SortBy; label: string; short: string }[] = [
   { key: "first", label: "First name, A–Z", short: "by first name" },
   { key: "last", label: "Surname, A–Z", short: "by surname" },
   { key: "household", label: "Household", short: "by household" },
   { key: "group", label: "Group", short: "by group" },
   { key: "type", label: "Event", short: "by event" },
-  { key: "role", label: "Bridal party", short: "by bridal party", hint: "Just the bridal party, by role" },
-  { key: "diet", label: "Dietary needs", short: "by dietary needs", hint: "Just those with a need, by need" },
+  { key: "role", label: "Bridal party", short: "by bridal party" },
+  { key: "diet", label: "Dietary needs", short: "by dietary needs" },
   { key: "meal", label: "Meal choice", short: "by meal" },
 ];
 
@@ -1100,10 +1100,7 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
                   }}
                   className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
                 >
-                  <span className="flex-1">
-                    {o.label}
-                    {o.hint && <span className="block text-xs text-stone">{o.hint}</span>}
-                  </span>
+                  <span className="flex-1">{o.label}</span>
                   {sort === o.key && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
                 </button>
               </li>

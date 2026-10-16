@@ -25,7 +25,8 @@ export default function DateStamp({
   return (
     <span className="flex w-12 shrink-0 flex-col items-start" aria-hidden={!date}>
       <span className={`font-display text-[30px] font-light leading-none tabular-nums ${date ? tone : "text-stone/40"}`}>
-        {date ? Number(date.slice(8)) : "–"}
+        {/* Always two digits, 08 not 8 (owner, 16 Oct 2026), so the column lines up. */}
+        {date ? date.slice(8, 10) : "–"}
       </span>
       <span className={`mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${isToday ? "text-ink" : "text-stone"}`}>
         {!date

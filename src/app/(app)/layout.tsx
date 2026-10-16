@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import AppShell from "@/components/app-shell";
+import PlanCards from "./plan/plan-cards";
 import UndoToast from "@/components/undo-toast";
 import ViewMemory from "@/components/view-memory";
 import { listNotes } from "@/lib/db/notes";
@@ -23,6 +25,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {children}
       <UndoToast />
       <ViewMemory />
+      {/* A to-do or appointment tapped anywhere opens here, over the page (?todo= / ?appointment=). */}
+      <Suspense>
+        <PlanCards />
+      </Suspense>
     </AppShell>
   );
 }

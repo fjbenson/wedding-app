@@ -1,4 +1,4 @@
-import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { Calendar, Check } from "lucide-react";
 import { formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import DateStamp from "@/components/date-stamp";
@@ -33,13 +33,13 @@ export function AppointmentRow({
   ].filter(Boolean);
   return (
     <li className={`row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0 ${been ? "opacity-60" : ""}`}>
-      <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
+      <CardLink href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
         <DateStamp date={a.on_date} today={todayISO()} done={been} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
           <span className="type-meta mt-1 block">{details.join(" · ")}</span>
         </span>
-      </Link>
+      </CardLink>
       <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600" aria-hidden>
         {been ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : <Calendar className="h-3.5 w-3.5" strokeWidth={2} />}
       </span>

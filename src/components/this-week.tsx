@@ -1,5 +1,6 @@
 import DateStamp from "./date-stamp";
 import Link from "next/link";
+import CardLink from "./card-link";
 import { Calendar, Check } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
 import TickForm from "@/components/tick-form";
@@ -142,7 +143,7 @@ export default function ThisWeek({
                   <ul className="min-w-0 flex-1">
                     {g.items.map((e) => (
                       <li key={e.key} className="flex items-center gap-3 border-t border-linen/70 first:border-t-0">
-                        <Link href={e.href} className="flex min-w-0 flex-1 items-center gap-3 py-3">
+                        <CardLink href={e.href} className="flex min-w-0 flex-1 items-center gap-3 py-3">
                           <span className="min-w-0 flex-1">
                             <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
                             <span className="type-meta mt-1 block">
@@ -151,7 +152,7 @@ export default function ThisWeek({
                             </span>
                           </span>
                           {e.amount && <span className="type-figure shrink-0 text-[18px]">{e.amount}</span>}
-                        </Link>
+                        </CardLink>
                         <Mark entry={e} />
                       </li>
                     ))}

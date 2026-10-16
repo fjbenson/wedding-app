@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { useEffect, useState, useTransition } from "react";
 import { Check, ChevronDown, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import { DateInput } from "@/components/form-bits";
@@ -150,9 +151,9 @@ export default function NoteWall({
         >
           <Check className="h-4 w-4 shrink-0" strokeWidth={2.2} aria-hidden />
           <span className="flex-1">Added to your plan.</span>
-          <Link href={`/plan/${added}`} className="font-medium underline underline-offset-4">
+          <CardLink href={`/plan/${added}`} className="font-medium underline underline-offset-4">
             See it
-          </Link>
+          </CardLink>
         </div>
       )}
     </>
@@ -287,14 +288,14 @@ function NotePanel({
           )}
         </div>
         {note.milestone_id ? (
-          <Link href={`/plan/${note.milestone_id}`} className={ROW}>
+          <CardLink href={`/plan/${note.milestone_id}`} className={ROW}>
             <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
             <span className="flex-1">On your plan as a to-do</span>
             <span className="flex items-center text-sm text-champagne-600">
               See it
               <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
             </span>
-          </Link>
+          </CardLink>
         ) : !asking ? (
           <button type="button" disabled={pending} onClick={() => setAsking(true)} className={ROW}>
             <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />

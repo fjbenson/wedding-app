@@ -1,4 +1,4 @@
-import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { Check } from "lucide-react";
 import { formatMonthYear, todayISO } from "@/lib/dates";
 import { isNudge } from "@/lib/plan";
@@ -13,7 +13,7 @@ export const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_
  * One to-do, laid out like the Hub's This week (owner, 16 Oct 2026: to-dos,
  * appointments and payments all the same): the date large on the left, the
  * title with its area under it, and the tick circle on the right. Tap the
- * row to edit. `area` is left off where the list is already one area. A
+ * row and its card opens over the page (`plan-cards.tsx`). `area` is left off where the list is already one area. A
  * nudge ("start around") has a dashed circle and an italic title, and says
  * "Start now" once its month comes rather than ever being overdue.
  */
@@ -41,7 +41,7 @@ export function MilestoneRow({
 
   return (
     <li className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
-      <Link href={`/plan/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
+      <CardLink href={`/plan/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
         <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>{m.title}</span>
@@ -53,7 +53,7 @@ export function MilestoneRow({
             </span>
           )}
         </span>
-      </Link>
+      </CardLink>
       <TickForm
         action={toggleMilestoneAction.bind(null, m.id, !done)}
         undo={toggleMilestoneAction.bind(null, m.id, done)}

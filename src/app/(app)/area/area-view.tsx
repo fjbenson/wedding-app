@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
+import AddButton from "@/components/add-button";
 import BudgetBar from "@/components/budget-bar";
 import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
@@ -238,28 +239,45 @@ function Section({
   icon: Icon,
   seeHref,
   seeLabel,
+  add,
+  empty = false,
   children,
 }: {
   id?: string;
   title: string;
   /** The tab's icon from the menu bar, or the area's own for its extras. */
   icon: LucideIcon;
+  /** The tab narrowed to this area: the heading itself opens it. */
   seeHref?: string;
   seeLabel?: string;
-  children: React.ReactNode;
+  /** The round black + beside the heading (owner, 16 Oct 2026, in place of "In People ›"). */
+  add?: { href: string; label: string; stays?: boolean };
+  /** Nothing to show yet: just the heading and its +, no empty card. */
+  empty?: boolean;
+  children?: React.ReactNode;
 }) {
+  const heading = (
+    <>
+      <Icon className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
+      <h2 className="label min-w-0">{title}</h2>
+    </>
+  );
   return (
-    <section id={id} className="mt-6 scroll-mt-6">
-      <div className="mb-2.5 flex items-center gap-2.5 px-1">
-        <Icon className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
-        <h2 className="label min-w-0 flex-1">{title}</h2>
-        {seeHref && (
-          <Link href={seeHref} className="shrink-0 py-2 text-[13px] text-champagne-600 hover:text-ink">
-            {seeLabel} ›
+    <section id={id} className="mt-7 scroll-mt-6">
+      <div className="mb-2.5 flex min-h-10 items-center gap-2.5 px-1">
+        {seeHref ? (
+          <Link href={seeHref} aria-label={seeLabel} className="flex min-w-0 flex-1 items-center gap-2.5 py-2 hover:opacity-80">
+            {heading}
+            <ChevronRight className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
           </Link>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">{heading}</div>
         )}
+        {add && <AddButton href={add.href} label={add.label} scroll={add.stays ? false : undefined} />}
       </div>
-      <div className="glass-card relative overflow-hidden rounded-[22px] px-[18px] py-0.5 [--row-bleed:18px]">{children}</div>
+      {!empty && (
+        <div className="glass-card relative overflow-hidden rounded-[22px] px-[18px] py-0.5 [--row-bleed:18px]">{children}</div>
+      )}
     </section>
   );
 }
@@ -376,7 +394,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
     const most = Math.max(1, ...facts.meals.map((m) => m.count), facts.notPicked);
     const names = facts.dietary.slice(0, 2).map((d) => `${d.name.split(" ")[0]} · ${d.note}`);
     return (
-      <Section title="Guests" icon={Users} seeHref={people} seeLabel="In People">
+      <Section title="Guests" icon={Users} seeHref={people} seeLabel="The guest list">
         <div className={`grid gap-2 pb-3.5 pt-3.5 ${facts.eveningEventId ? "grid-cols-3" : "grid-cols-2"}`}>
           <Figure value={facts.day} word={facts.eveningEventId ? "day, coming" : "coming"} href={`${people}?show=attending${facts.dayEventId ? `&of=${facts.dayEventId}` : ""}`} />
           {facts.eveningEventId && <Figure value={facts.evening} word="evening" href={`${people}?show=attending&of=${facts.eveningEventId}`} />}
@@ -424,7 +442,7 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
   }
   if (facts.kind === "stationery") {
     return (
-      <Section title="Guests" icon={Users} seeHref={people} seeLabel="In People">
+      <Section title="Guests" icon={Users} seeHref={people} seeLabel="The guest list">
         <div className="grid grid-cols-3 gap-2 pb-3.5 pt-3.5">
           <Figure value={facts.households} word={facts.households === 1 ? "household" : "households"} href={`${people}?view=households`} />
           <Figure value={facts.invited} word="invited" href={`${people}?show=pending`} />
@@ -460,7 +478,15 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
 function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: RunSheetItem[]; facts: AreaGuestFacts | null }) {
   const transport = facts?.kind === "transport" ? facts : null;
   return (
-    <Section id="day" title="The Day" icon={Clock} seeHref={`/day?area=${encodeURIComponent(areaKey)}`} seeLabel="In The Day">
+    <Section
+      id="day"
+      title="The Day"
+      icon={Clock}
+      seeHref={`/day?area=${encodeURIComponent(areaKey)}`}
+      seeLabel="The Day, just this area"
+      add={{ href: `/day/run-sheet/new?area=${encodeURIComponent(areaKey)}&from=area`, label: "Add a moment" }}
+      empty={moments.length === 0 && !transport}
+    >
       {moments.length > 0 && (
         <ul>
           {moments.map((m) => (
@@ -505,12 +531,7 @@ function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: Run
           dashed
         />
       )}
-      <Adds
-        links={[
-          { href: `/day/run-sheet/new?area=${encodeURIComponent(areaKey)}&from=area`, label: "Add a moment" },
-          ...(transport ? [{ href: "/day/transport/new", label: "Add a car or coach" }] : []),
-        ]}
-      />
+      {transport && <Adds links={[{ href: "/day/transport/new", label: "Add a car or coach" }]} />}
     </Section>
   );
 }
@@ -660,7 +681,9 @@ export default function AreaView({
           title="People"
           icon={Users}
           seeHref={`/people?tab=suppliers&f=${encodeURIComponent(`area:${area.key}`)}`}
-          seeLabel="In People"
+          seeLabel={`Suppliers for ${area.label}`}
+          add={{ href: `/people/suppliers/new?category=${key}`, label: "Add a supplier" }}
+          empty={shown.length === 0 && folded.length === 0 && !area.diy}
         >
           {shown.length > 0 ? (
             <ul>
@@ -690,7 +713,6 @@ export default function AreaView({
               </button>
             </form>
           )}
-          <Adds links={[{ href: `/people/suppliers/new?category=${key}`, label: "Add a supplier" }]} />
         </Section>
 
         {guestFacts && <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} />}
@@ -699,7 +721,9 @@ export default function AreaView({
           title="Plan"
           icon={CalendarDays}
           seeHref={`/plan?view=list&area=${key}`}
-          seeLabel="In Plan"
+          seeLabel={`The plan for ${area.label}`}
+          add={{ href: `/plan/new?area=${key}`, label: "Add a to-do or appointment" }}
+          empty={planNow.length === 0 && planDone === 0}
         >
           {planNow.length > 0 ? (
             <ul>
@@ -722,15 +746,16 @@ export default function AreaView({
               </ul>
             </Folded>
           )}
-          <Adds
-            links={[
-              { href: `/plan/new?area=${key}`, label: "To-do" },
-              { href: `/plan/appointments/new?area=${key}`, label: "Appointment" },
-            ]}
-          />
         </Section>
 
-        <Section id="payments" title="Money" icon={PoundSterling} seeHref={`/money?view=month&area=${key}`} seeLabel="In Money">
+        <Section
+          id="payments"
+          title="Money"
+          icon={PoundSterling}
+          seeHref={`/money?view=month&area=${key}`}
+          seeLabel={`Payments for ${area.label}`}
+          add={{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }}
+        >
           {anyMoney ? (
             <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
               <span className="flex flex-wrap items-baseline gap-x-2">
@@ -825,12 +850,16 @@ export default function AreaView({
               ))}
             </ul>
           ) : null}
-          <Adds links={[{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }]} />
         </Section>
 
         <DaySection areaKey={area.key} moments={moments} facts={guestFacts} />
 
-        <Section id="notes" title={`Just for ${area.label}`} icon={areaIcon(area.key, area.icon)}>
+        <Section
+          id="notes"
+          title={`Just for ${area.label}`}
+          icon={areaIcon(area.key, area.icon)}
+          add={{ href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }}
+        >
           <div className={notes.length > 0 || editing === "note" ? "border-b border-linen" : ""}>
             <div className="flex items-baseline justify-between pt-3.5">
               <h3 className="label">Key facts</h3>
@@ -929,7 +958,6 @@ export default function AreaView({
             <span className="text-sm text-ink">{ideaCount > 0 ? `${plural(ideaCount, "idea")} in Inspo` : "No pictures yet"}</span>
             <span className="shrink-0 text-[13px] text-champagne-600">{ideaCount > 0 ? "See them ›" : "Save one ›"}</span>
           </Link>
-          <Adds links={[{ href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }]} />
         </Section>
       </div>
     </main>

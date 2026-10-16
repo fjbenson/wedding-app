@@ -174,6 +174,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   "+ Add a supplier", "1 other", "Set it ›" are sentence case; supplier
   rows show initials with the stage badge (`StageIcon`, as on the Suppliers
   list) and the stage in words under the name, so long names fit.
+  **Section headings, 16 Oct 2026 (owner):** "In People ›" / "In Plan ›" /
+  "In Money ›" are gone. Each heading now has the **round black +** on its
+  right (`AddButton`; People → add a supplier, Plan → the To-do |
+  Appointment form, Money → a payment, The Day → a moment, Just for … → a
+  note) and the **heading itself** (icon, name, ›) opens the tab narrowed to
+  the area. The "+ Add …" lines at the foot of the cards went with it
+  (Transport's "+ Add a car or coach" stays). A section with nothing in it
+  is just its heading and +, no empty card.
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
   rounded switch in the top-right corner above the title ("The guest list"

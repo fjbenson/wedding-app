@@ -6,6 +6,7 @@ import { draftGroupMessageAction } from "../assistant/actions";
 import type { Contact, Rsvp } from "@/types/db";
 import { addToGroupAction, createGroupAction, deleteGroupAction, removeFromGroupAction, renameGroupAction } from "./group-actions";
 import CardSheet from "@/components/card-sheet";
+import { RoundAction, RoundActions } from "@/components/round-actions";
 import { AnswerIcon } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 
@@ -209,28 +210,11 @@ export function GroupSheet({
       {editing ? (
         <EditGroup group={group} onDone={() => setEditing(false)} onRemoved={onClose} />
       ) : (
-        <div className="mt-5 grid grid-cols-[2fr_1fr_1fr] gap-2">
-          <button
-            type="button"
-            onClick={() => setSheet("email")}
-            disabled={people.length === 0}
-            className="flex h-[46px] items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory disabled:opacity-40"
-          >
-            <Mail className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-            Email them
-          </button>
-          <button
-            type="button"
-            onClick={() => setSheet("text")}
-            disabled={people.length === 0}
-            className="h-[46px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400 disabled:opacity-40"
-          >
-            Text
-          </button>
-          <button type="button" onClick={() => setEditing(true)} className="h-[46px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400">
-            Edit
-          </button>
-        </div>
+        <RoundActions>
+          <RoundAction label="Email" icon={Mail} dark disabled={people.length === 0} onClick={() => setSheet("email")} />
+          <RoundAction label="Text" icon={MessageSquare} disabled={people.length === 0} onClick={() => setSheet("text")} />
+          <RoundAction label="Edit" icon={PenLine} onClick={() => setEditing(true)} />
+        </RoundActions>
       )}
 
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">

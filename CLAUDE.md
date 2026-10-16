@@ -1063,6 +1063,13 @@ access control is RLS. No column-level encryption is planned.
   Payment | Budget switches on the add forms are gone; their pages are
   titled "New to-do", "New appointment", "New payment", "Set a budget".
   A tab with one kind of thing (Suppliers, Inspo, notes) keeps a plain +.
+- **Text · Call · Email are round buttons with their word underneath, on
+  every card** (owner, 17 Oct 2026: the household's version was the best and
+  the guest and group cards had diverged): `RoundAction` / `RoundActions`
+  in `src/components/round-actions.tsx` — ink-filled for the main one, outline
+  for the rest, 52px, centred with a gap. Guest card (Text · Call · Email),
+  group card (Email · Text · Edit), supplier card (Call · Email · Website) and
+  the household card use it; use it for any new card.
 - **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
   button should be the loudest thing on the page). **The round black + is one
   size everywhere: 40px** (`AddButton`, `src/components/add-button.tsx`;

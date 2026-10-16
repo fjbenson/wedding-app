@@ -13,6 +13,7 @@ import { saveMealAction, setGuestAnswerAction, setGuestOfAction } from "./rsvp-a
 import { DetailLabel, fullName, initials } from "./guest-table";
 import { splitName } from "@/lib/names";
 import CardSheet from "@/components/card-sheet";
+import { RoundAction, RoundActions } from "@/components/round-actions";
 import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 import { GuestPlanSection } from "./guest-plan";
@@ -111,11 +112,11 @@ export default function GuestCard({
       <Profile guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
 
       {(phone || guest.email) && (
-        <div className="mt-4 flex gap-2">
-          {phone && <FlatAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
-          {phone && <FlatAction href={`tel:${phone}`} label="Call" icon={Phone} />}
-          {guest.email && <FlatAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
-        </div>
+        <RoundActions>
+          {phone && <RoundAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
+          {phone && <RoundAction href={`tel:${phone}`} label="Call" icon={Phone} />}
+          {guest.email && <RoundAction href={`mailto:${guest.email}`} label="Email" icon={Mail} dark={!phone} />}
+        </RoundActions>
       )}
 
       {/* The answer first — it's what changes most — then day or evening, then roles. */}
@@ -234,30 +235,6 @@ function Profile({
 }
 
 /** Text · Call · Email under the profile, as three flat buttons across the card. */
-function FlatAction({
-  href,
-  label,
-  icon: Icon,
-  dark = false,
-}: {
-  href: string;
-  label: string;
-  icon: typeof Phone;
-  dark?: boolean;
-}) {
-  return (
-    <a
-      href={href}
-      className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-sm ${
-        dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink hover:border-champagne-400"
-      }`}
-    >
-      <Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-      {label}
-    </a>
-  );
-}
-
 /** Runs a save, holding on to any problem so it can be shown in place. */
 export function useSaver() {
   const [pending, startTransition] = useTransition();

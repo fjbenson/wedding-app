@@ -341,7 +341,7 @@ function BusinessCard({
         )}
 
         {buttons.length > 0 && (
-          <div className="mt-5 flex justify-around">
+          <div className="mt-5 flex justify-center gap-8">
             {buttons.map((b, i) =>
               b.add ? (
                 <button

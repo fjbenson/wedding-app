@@ -547,7 +547,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   things and **Add on this day**: a to-do or an appointment with the date
   filled in (`/plan/new?date=`, `/plan/appointments/new?date=`). No day is
   picked on arrival; `?day=` keeps the card open across Back.
-  **List** (`?view=list`, `todo-list.tsx`) — **what's left to do**, one
+  **List rebuilt 16 Oct 2026 (owner: "it's a mess"), shaped like the guest
+  list** (`plan-list.tsx`): a **search box with the round black + at its
+  end** ("Find a to-do or appointment", `&q=`), then **Filter** left (Show
+  To-dos · Appointments `&show=`, When `&when=`, Area `&area=`) and **Sort**
+  right (By date · By area, grouped with headings · A–Z; kept on the phone,
+  `plan-list-sort`), a quiet count ("5 to do · 2 appointments"), then **to-dos
+  and appointments in one list** on a glass card (search finds both); done
+  to-dos and been appointments in a Done fold. The To-dos | Appointments
+  switch and the big "23 *to do*" are gone; old `&kind=appointments` links
+  open Show › Appointments. `todo-list.tsx` was removed.
+  **Before that,** the List (`?view=list`, `todo-list.tsx`) was **what's left to do**, one
   long checklist of **to-dos only** (owner, 12 Oct 2026: the Calendar is the
   diary — *when* is everything — the List the checklist; appointments live on
   the Calendar, the Hub and area pages). "23 *to do*" at the top, then

@@ -687,7 +687,7 @@ export default function AreaView({
         )}
 
         <Section
-          title="People"
+          title="Suppliers"
           icon={Users}
           seeHref={`/people?tab=suppliers&f=${encodeURIComponent(`area:${area.key}`)}`}
           seeLabel={`Suppliers for ${area.label}`}

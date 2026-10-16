@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { Check, ChevronRight, Globe, Mail, MoreHorizontal, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -62,6 +62,15 @@ export default function SupplierCard({
     return result;
   };
   const site = websiteHref(d?.website ?? null);
+  // Which Contact box to open ready to type: from the list's dashed buttons
+  // (editField) or the card's own (addField). `n` redraws the row to open it.
+  const [adding, setAdding] = useState<{ field?: "phone" | "email"; n: number }>({ field: editField, n: 0 });
+  const phoneRow = useRef<HTMLDivElement>(null);
+  const emailRow = useRef<HTMLDivElement>(null);
+  const addField = (field: "phone" | "email") => {
+    setAdding((a) => ({ field, n: a.n + 1 }));
+    requestAnimationFrame(() => (field === "phone" ? phoneRow : emailRow).current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  };
 
   // Escape closes it, and the list behind doesn't scroll while it's open.
   useEffect(() => {
@@ -117,7 +126,7 @@ export default function SupplierCard({
           {/* Canvas 2 "Suppliers · Round 3", A (owner's pick 13 Oct 2026:
               "business card baby you nailed it"): something to look at, each
               part changed by tapping it — no longer the add form filled in. */}
-          <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} />
+          <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
 
           <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} onError={setError} />
 
@@ -130,8 +139,12 @@ export default function SupplierCard({
             <h2 className="section-label font-body">Contact</h2>
             <dl className="mt-1">
               <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
-              <TextRow label="Phone" type="tel" value={supplier.phone} startEditing={editField === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
-              <TextRow label="Email" type="email" value={supplier.email} startEditing={editField === "email"} onSave={(v) => save({ field: "email", value: v })} />
+              <div ref={phoneRow}>
+                <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+              </div>
+              <div ref={emailRow}>
+                <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
+              </div>
               <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
               {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
               <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
@@ -244,12 +257,15 @@ function BusinessCard({
   phone,
   site,
   onError,
+  onAdd,
 }: {
   supplier: Supplier;
   areas: AreaOption[];
   phone: string | undefined;
   site: string | null;
   onError: (message?: string) => void;
+  /** A missing phone or email was tapped: open its box in Contact. */
+  onAdd: (field: "phone" | "email") => void;
 }) {
   const d = supplier.supplier_details;
   const name = supplierName(supplier);
@@ -266,11 +282,14 @@ function BusinessCard({
 
   const button = (dark: boolean) =>
     `flex h-[52px] w-[52px] items-center justify-center rounded-full ${dark ? "bg-ink text-ivory" : "border border-linen bg-white text-ink"}`;
+  // A missing phone or email shows as a faded dashed button, like the list's,
+  // that takes you to its box in Contact ready to type (owner, 16 Oct 2026).
   const buttons = [
-    phone && { href: `tel:${phone}`, label: "Call", Icon: Phone },
-    supplier.email && { href: `mailto:${supplier.email}`, label: "Email", Icon: Mail },
+    phone ? { href: `tel:${phone}`, label: "Call", Icon: Phone } : { add: "phone" as const, label: "Call", Icon: Phone },
+    supplier.email ? { href: `mailto:${supplier.email}`, label: "Email", Icon: Mail } : { add: "email" as const, label: "Email", Icon: Mail },
     site && { href: site, label: "Website", Icon: Globe, out: true },
-  ].filter(Boolean) as { href: string; label: string; Icon: typeof Phone; out?: boolean }[];
+  ].filter(Boolean) as { href?: string; add?: "phone" | "email"; label: string; Icon: typeof Phone; out?: boolean }[];
+  const dark = buttons.findIndex((b) => b.href);
 
   return (
     <>
@@ -323,19 +342,34 @@ function BusinessCard({
 
         {buttons.length > 0 && (
           <div className="mt-5 flex justify-around">
-            {buttons.map((b, i) => (
-              <a
-                key={b.label}
-                href={b.href}
-                {...(b.out ? { target: "_blank", rel: "noreferrer" } : {})}
-                className="flex flex-col items-center gap-1.5 text-[13px] text-ink"
-              >
-                <span className={button(i === 0)}>
-                  <b.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-                </span>
-                {b.label}
-              </a>
-            ))}
+            {buttons.map((b, i) =>
+              b.add ? (
+                <button
+                  key={b.label}
+                  type="button"
+                  onClick={() => onAdd(b.add!)}
+                  aria-label={b.add === "phone" ? "Add their phone number" : "Add their email"}
+                  className="flex flex-col items-center gap-1.5 text-[13px] text-stone/60"
+                >
+                  <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40">
+                    <b.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+                  </span>
+                  {b.label}
+                </button>
+              ) : (
+                <a
+                  key={b.label}
+                  href={b.href}
+                  {...(b.out ? { target: "_blank", rel: "noreferrer" } : {})}
+                  className="flex flex-col items-center gap-1.5 text-[13px] text-ink"
+                >
+                  <span className={button(i === dark)}>
+                    <b.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+                  </span>
+                  {b.label}
+                </a>
+              ),
+            )}
           </div>
         )}
       </div>

@@ -134,7 +134,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the menu bar** (People, Plan, Money, The Day; "Just for [area]" uses the
   area's own icon — owner, 12 Oct 2026, in place of the title drawings, and
   no line of explanation under each heading) and an "In People › / In Plan › / In
-  Money ›" link to the tab filtered to the area. **People** (its suppliers:
+  Money ›" link to the tab filtered to the area. **Suppliers** (headed
+  "People" until 16 Oct 2026, owner; its suppliers:
   quotes until one's booked, then the rest fold away), **Plan** (to-dos and
   appointments in one list by date, done and been folded), **Money**
   (agreed of budget, `BudgetBar` from `src/components/budget-bar.tsx`,
@@ -323,7 +324,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   month for that area, or "+ Add a payment"), **Documents**, **Contact**
   (contact person, phone, email, website, notes — `TextRow`s). Every part
   saves on its own (`updateSupplierAction`); the card isn't a form any
-  more. Before that, from 12 Oct 2026, it was **the add-a-supplier form itself, filled in** (`SupplierForm`
+  more. **A missing phone or email shows on the card too** (16 Oct 2026,
+  owner): a faded dashed Call / Email button, like the list's, that scrolls
+  to that box in Contact ready to type. Before that, from 12 Oct 2026, it was **the add-a-supplier form itself, filled in** (`SupplierForm`
   with `supplier`; owner: the card looked nothing like the form): name,
   Call · Email · Website, What they do tiles, Where you're up to tiles,
   Money (+ area budget and payments line), How to reach them, More; Cancel /

@@ -13,7 +13,7 @@ import GuestCard from "./guest-card";
 import EditEvents from "./edit-events";
 import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
-import { GroupCard, type GroupSummary } from "./guest-groups";
+import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
 import { SummaryBody, SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
@@ -171,6 +171,16 @@ export default function GuestBrowser({
     replaceQuery({ household: householdId ?? null });
   }, [householdId]);
   const openHousehold = householdId ? householdRows.find((h) => h.id === householdId) : undefined;
+  /** A group's card, up from the bottom like a household's (?groupcard=). Separate from filtering to a group. */
+  const [groupCardId, setGroupCardId] = useState<string | undefined>(() => {
+    const asked = params.get("groupcard");
+    return asked && guestGroups.some((g) => g.id === asked) ? asked : undefined;
+  });
+  const closeGroupCard = useCallback(() => setGroupCardId(undefined), []);
+  useEffect(() => {
+    replaceQuery({ groupcard: groupCardId ?? null });
+  }, [groupCardId]);
+  const openGroupCard = guestGroups.find((g) => g.id === groupCardId);
 
   // The sort is a preference (owner's call, 11 Oct 2026): kept on this phone
   // until it's changed. Read after the first draw so the server's page and
@@ -303,7 +313,7 @@ export default function GuestBrowser({
       .map((group) => ({
         key: group.id,
         title: group.name,
-        onOpen: () => setGroupId(group.id),
+        onOpen: () => setGroupCardId(group.id),
         guests: shown.filter((g) => members(group).has(g.id)),
       }))
       .filter((group) => group.guests.length > 0);
@@ -365,16 +375,7 @@ export default function GuestBrowser({
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
         {group ? (
           <div>
-            <GroupCard
-              group={group}
-              people={filtered}
-              answerOf={answerOf}
-              weddingName={weddingName}
-              onClear={() => setGroupId(undefined)}
-              onOpenGuest={setOpenId}
-            >
-              <SummaryBody {...summary} />
-            </GroupCard>
+            <SummaryCard icon={Users} title={group.name} {...summary} />
           </div>
         ) : filters.length + guestOf.length > 0 ? (
           <div>
@@ -444,8 +445,19 @@ export default function GuestBrowser({
             />
             <SortMenu sort={sort} onSort={setSort} />
           </div>
-          {filters.length + guestOf.length > 0 && (
+          {filters.length + guestOf.length + (group ? 1 : 0) > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+              {group && (
+                <button
+                  type="button"
+                  onClick={() => setGroupId(undefined)}
+                  aria-label={`Take off ${group.name}`}
+                  className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                >
+                  {group.name}
+                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                </button>
+              )}
               {pickedLine && (
                 <button
                   type="button"
@@ -529,6 +541,17 @@ export default function GuestBrowser({
       {/* The events themselves, at the foot of the list: one "Edit events" card (owner, 16 Oct 2026). */}
       <EditEvents events={events} />
 
+      {openGroupCard && (
+        <GroupSheet
+          group={openGroupCard}
+          people={guests.filter((g) => openGroupCard.members.includes(g.id)).sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }))}
+          answerOf={answerOf}
+          weddingName={weddingName}
+          onClose={closeGroupCard}
+          onOpenGuest={setOpenId}
+        />
+      )}
+
       {open && (
         <GuestCard
           guest={open}
@@ -542,7 +565,7 @@ export default function GuestBrowser({
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
           onShowGroup={(id) => {
             setOpenId(undefined);
-            setGroupId(id);
+            setGroupCardId(id);
           }}
           onOpenHousehold={(id) => {
             setOpenId(undefined);

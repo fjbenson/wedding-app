@@ -5,6 +5,8 @@ import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Users, X } from "lucid
 import { draftGroupMessageAction } from "../assistant/actions";
 import type { Contact, Rsvp } from "@/types/db";
 import { addToGroupAction, createGroupAction, deleteGroupAction, removeFromGroupAction, renameGroupAction } from "./group-actions";
+import CardSheet from "@/components/card-sheet";
+import { AnswerIcon } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 
 /**
@@ -161,26 +163,27 @@ export function GuestGroupsSection({
 }
 
 /**
- * The guest list showing one group: its name, how many and how they've
- * answered, then Email them (the main thing) · Text · Edit.
+ * One group, as a card that comes up over the guest list like a household's
+ * (owner, 17 Oct 2026: tapping a group's heading should pop up from the
+ * bottom, not filter the page): its name, how many and how they've answered,
+ * Email them (the main thing) · Text · Edit, then who's in it — each opens
+ * their guest card on top.
  */
-export function GroupCard({
+export function GroupSheet({
   group,
   people,
   answerOf,
   weddingName,
-  onClear,
+  onClose,
   onOpenGuest,
-  children,
 }: {
   group: GroupSummary;
+  /** Everyone in the group. */
   people: Contact[];
   answerOf: (g: Contact) => Rsvp["status"] | undefined;
   weddingName: string;
-  onClear: () => void;
+  onClose: () => void;
   onOpenGuest: (id: string) => void;
-  /** Its numbers, from the guest list's summary card; left out, a one-line count. */
-  children?: React.ReactNode;
 }) {
   const [sheet, setSheet] = useState<"email" | "text" | null>(null);
   const [editing, setEditing] = useState(false);
@@ -189,36 +192,29 @@ export function GroupCard({
   const counts = [`${coming} coming`, invited > 0 && `${invited} invited`].filter(Boolean).join(" · ");
 
   return (
-    <div className="rounded-[22px] border-[0.5px] border-white/70 bg-white/55 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-          <Users className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />
+    <CardSheet label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+          <Users className="h-5 w-5" strokeWidth={1.7} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="label">Group</p>
-          <p className="truncate font-display text-[22px] italic leading-tight text-ink">{group.name}</p>
+          <p className="truncate font-display text-[26px] italic leading-tight text-ink">{group.name}</p>
+          <p className="mt-0.5 text-[13px] text-stone">
+            {people.length} {people.length === 1 ? "person" : "people"}
+            {people.length > 0 && ` · ${counts}`}
+          </p>
         </div>
-        <button type="button" onClick={onClear} aria-label="Show everyone again" className="flex h-10 w-10 items-center justify-center rounded-full text-stone hover:text-ink">
-          <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-        </button>
       </div>
-      {children ?? (
-        <p className="mt-3 text-sm text-[#3A342E]">
-          <span className="type-figure mr-1 text-[26px]">{people.length}</span>
-          {people.length === 1 ? "person" : "people"}
-          {people.length > 0 && ` · ${counts}`}
-        </p>
-      )}
 
       {editing ? (
-        <EditGroup group={group} onDone={() => setEditing(false)} onRemoved={onClear} />
+        <EditGroup group={group} onDone={() => setEditing(false)} onRemoved={onClose} />
       ) : (
-        <div className="mt-3.5 grid grid-cols-[2fr_1fr_1fr] gap-2">
+        <div className="mt-5 grid grid-cols-[2fr_1fr_1fr] gap-2">
           <button
             type="button"
             onClick={() => setSheet("email")}
             disabled={people.length === 0}
-            className="flex h-[42px] items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory disabled:opacity-40"
+            className="flex h-[46px] items-center justify-center gap-2 rounded-full bg-ink text-sm text-ivory disabled:opacity-40"
           >
             <Mail className="h-4 w-4" strokeWidth={1.7} aria-hidden />
             Email them
@@ -227,15 +223,46 @@ export function GroupCard({
             type="button"
             onClick={() => setSheet("text")}
             disabled={people.length === 0}
-            className="h-[42px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400 disabled:opacity-40"
+            className="h-[46px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400 disabled:opacity-40"
           >
             Text
           </button>
-          <button type="button" onClick={() => setEditing(true)} className="h-[42px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400">
+          <button type="button" onClick={() => setEditing(true)} className="h-[46px] rounded-full border border-linen bg-white text-sm text-ink hover:border-champagne-400">
             Edit
           </button>
         </div>
       )}
+
+      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+        <div className="flex items-baseline justify-between">
+          <h2 className="label">Who’s in it</h2>
+          <span className="label">RSVP</span>
+        </div>
+        {people.length === 0 ? (
+          <p className="py-3 text-sm text-stone">No one in this group yet.</p>
+        ) : (
+          <ul className="mt-1">
+            {people.map((g) => (
+              <li key={g.id} className="border-b border-linen last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => onOpenGuest(g.id)}
+                  className="flex min-h-[52px] w-full items-center gap-3 text-left text-[15px] text-ink hover:text-champagne-600"
+                >
+                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-[13px] font-semibold text-champagne-600">
+                    {initials(g)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">{fullName(g)}</span>
+                  <span className="flex shrink-0 items-center gap-2 text-[13px] text-stone">
+                    {GROUP_RSVP_WORD[answerOf(g) ?? "unset"]}
+                    <AnswerIcon status={answerOf(g)} small />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {sheet && (
         <MessageSheet
@@ -250,9 +277,17 @@ export function GroupCard({
           }}
         />
       )}
-    </div>
+    </CardSheet>
   );
 }
+
+const GROUP_RSVP_WORD: Record<Rsvp["status"] | "unset", string> = {
+  attending: "Coming",
+  pending: "Invited",
+  to_invite: "To invite",
+  declined: "Can’t come",
+  unset: "Day or evening?",
+};
 
 /** Rename the group, or remove it (its people stay on the guest list). */
 function EditGroup({ group, onDone, onRemoved }: { group: GroupSummary; onDone: () => void; onRemoved: () => void }) {

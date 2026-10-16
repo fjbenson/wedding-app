@@ -414,6 +414,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   "coeliac"), "+ Add '…'" only when nothing matches, and a couple's own are
   offered to other guests. Stored in `rsvps.dietary_notes` joined with " · "
   like roles (no migration). On the guest card ("Dietary") and Add a guest.
+  **A group opens as a card up from the bottom** (17 Oct 2026, owner: like a
+  household, not filtering the page): tapping a group's heading in Sort ›
+  Group (or a group pill on a guest's card) opens `GroupSheet`
+  (`guest-groups.tsx`, `?groupcard=`): name, "8 people · 6 coming · 2
+  invited", Email them · Text · Edit, then "Who's in it" (each opens their
+  card on top). **Filter › Groups** still narrows the list to that group
+  (one at a time, `?group=`), with a normal summary card and a pill to take
+  it off.
   **Groups of guests** (14 Oct 2026; canvas 3 "Groups · Round 1", all
   three screens, owner's pick; `0019_guest_groups.sql`, run 14 Oct 2026
   with the owner's OK): people who belong together — "The football lot",

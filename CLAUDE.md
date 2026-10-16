@@ -409,7 +409,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   taken off, and others can be added from Filter (day/evening, children…);
   switching view takes off the filter the last view added. Views that filter
   aren't remembered on the phone (the filter wouldn't be); the others are.
-  The numbers card (All · Coming · Invited · Can't come) is unchanged.
+  **View sits on the left, Filter on the right** (owner: View is the bigger
+  choice); the button reads "View · Household". The numbers card (All ·
+  Coming · Invited · Can't come) is unchanged.
   **Every heading folds** (a chevron on its right, in the phone list and the
   laptop table; open by default, not remembered). The one thing kept on the
   card is **Copy the list for the caterer**, shown when the list is about

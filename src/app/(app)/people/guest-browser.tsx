@@ -451,8 +451,9 @@ export default function GuestBrowser({
             />
           </div>
 
-          {/* Find or add on the row above; how the list is shown here: Filter left, Sort right (owner, 12 Oct 2026). */}
+          {/* Find or add on the row above; how the list is shown here: View left, Filter right (owner, 17 Oct 2026: View is the bigger choice; was Filter left, Sort right). */}
           <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
+            <SortMenu sort={sort} onSort={chooseView} />
             <FilterMenu
               guestOf={ofCounted}
               ofOn={guestOf}
@@ -466,7 +467,6 @@ export default function GuestBrowser({
               onClear={clearAll}
               results={filtered.length}
             />
-            <SortMenu sort={sort} onSort={chooseView} />
           </div>
           {filters.length + guestOf.length + (group ? 1 : 0) > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
@@ -1080,12 +1080,12 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         onClick={() => setOpen((o) => !o)}
         className="type-meta flex h-9 min-w-0 items-center gap-1 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
-        <span className="truncate">{SORTS.find((o) => o.key === sort)!.short}</span>
+        <span className="truncate">View · {SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
 
       {open && (
-        <div className={`${MENU} w-[16rem] pb-1.5 pt-2.5`}>
+        <div className={`${MENU} !left-0 !right-auto w-[16rem] pb-1.5 pt-2.5`}>
           <span className="section-label block py-1">View</span>
           <ul>
             {SORTS.map((o) => (

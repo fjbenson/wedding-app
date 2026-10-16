@@ -1017,144 +1017,142 @@ function FilterMenu({
       document.body.style.overflow = overflow;
     };
   }, [open]);
-  const rows = [
-    ...guestOf.map((o) => ({ key: o.id, label: o.label, count: o.count, ticked: ofOn.includes(o.id), flip: () => onToggleOf(o.id) })),
-    ...filters.map((f) => ({ key: f.key, label: f.label, count: f.count, ticked: on.includes(f.key), flip: () => onToggle(f.key) })),
-  ];
-  // Groups come last, under their own heading.
-  const groupRows = groups.map((g) => ({
-    key: `group-${g.id}`,
-    label: g.label,
-    count: g.count,
-    ticked: groupOn === g.id,
-    flip: () => {
-      onPickGroup(g.id);
-      setOpen(false);
+  // One list of things to filter by (owner, 17 Oct 2026, canvas 3 "Filter reimagined", A):
+  // each row opens its own values, any of the ticked ones within a row, every row together.
+  type Opt = { id: string; label: string; count: number; ticked: boolean; flip: () => void; radio?: boolean };
+  type Row = { key: string; title: string; options: Opt[]; any?: Opt };
+  const pickedOf = (kind: string) => picked.filter((p) => p.startsWith(`${kind}:`));
+  const filterCount = (key: GuestFilter) => filters.find((f) => f.key === key)?.count ?? 0;
+  /** A row with an "Any" line for a whole-filter (Bridal party, Dietary needs) plus its specific values. */
+  const kindRow = (kind: "diet" | "role" | "meal", title: string, fk: GuestFilter | null, anyLabel: string): Row | null => {
+    const k = kinds.find((x) => x.kind === kind);
+    if (!k && !fk) return null;
+    const anyOn = fk ? on.includes(fk) : false;
+    return {
+      key: kind,
+      title,
+      any: fk
+        ? {
+            id: `any-${kind}`,
+            label: anyLabel,
+            count: filterCount(fk),
+            ticked: anyOn,
+            flip: () => {
+              if (!anyOn) pickedOf(kind).forEach(onPick);
+              onToggle(fk);
+            },
+          }
+        : undefined,
+      options: (k?.options ?? []).map((o) => {
+        const id = `${kind}:${o.label}`;
+        return {
+          id,
+          label: o.label,
+          count: o.count,
+          ticked: picked.includes(id),
+          flip: () => {
+            if (fk && anyOn) onToggle(fk);
+            onPick(id);
+          },
+        };
+      }),
+    };
+  };
+  const rowsAll: (Row | null)[] = [
+    guestOf.length > 0
+      ? { key: "event", title: "Event", options: guestOf.map((o) => ({ id: o.id, label: o.label, count: o.count, ticked: ofOn.includes(o.id), flip: () => onToggleOf(o.id) })) }
+      : null,
+    groups.length > 0
+      ? {
+          key: "group",
+          title: "Group",
+          options: groups.map((g) => ({
+            id: g.id,
+            label: g.label,
+            count: g.count,
+            ticked: groupOn === g.id,
+            radio: true,
+            flip: () => {
+              onPickGroup(g.id);
+              setOpen(false);
+            },
+          })),
+        }
+      : null,
+    kindRow("role", "Role on the day", "party", "Anyone in the bridal party"),
+    kindRow("diet", "Dietary needs", "dietary", "Any dietary need"),
+    kindRow("meal", "Meal choice", null, ""),
+    {
+      key: "age",
+      title: "Age",
+      options: [{ id: "children", label: "Children", count: filterCount("children"), ticked: on.includes("children"), flip: () => onToggle("children") }],
     },
-  }));
+    {
+      key: "address",
+      title: "Address",
+      options: [{ id: "noaddress", label: "No address yet", count: filterCount("noaddress"), ticked: on.includes("noaddress"), flip: () => onToggle("noaddress") }],
+    },
+  ];
+  const rows = rowsAll.filter((r): r is Row => r !== null);
+  const pickedIn = (r: Row) => r.options.filter((o) => o.ticked).length + (r.any?.ticked ? 1 : 0);
+
+  const optionButton = (o: Opt) => (
+    <li key={o.id} className="border-t border-linen first:border-t-0">
+      <button
+        type="button"
+        role={o.radio ? "menuitemradio" : "menuitemcheckbox"}
+        aria-checked={o.ticked}
+        onClick={o.flip}
+        className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+      >
+        <span
+          aria-hidden
+          className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+            o.ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+          }`}
+        >
+          {o.ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+        </span>
+        <span className="flex-1">{o.label}</span>
+        <span className="text-[13px] text-stone">{o.count}</span>
+      </button>
+    </li>
+  );
 
   const content = (
     <>
       <div className="flex items-baseline justify-between py-1">
-        <span className="section-label">Show only</span>
+        <span className="section-label">Filter by</span>
         {active > 0 && (
           <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
             Clear
           </button>
         )}
       </div>
-      <ul>
-        {rows.map((f, i) => {
-          const ticked = f.ticked;
-          return (
-            // A firmer line between "day / evening" and the rest.
-            <li key={f.key} className={`border-t first:border-t-0 ${i === guestOf.length && i > 0 ? "border-champagne-400" : "border-linen"}`}>
-              <button
-                type="button"
-                role="menuitemcheckbox"
-                aria-checked={ticked}
-                onClick={f.flip}
-                className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-              >
-                <span
-                  aria-hidden
-                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                    ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                  }`}
-                >
-                  {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                </span>
-                <span className="flex-1">{f.label}</span>
-                <span className="text-[13px] text-stone">{f.count}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      {groupRows.length > 0 && (
-        <>
-          <p className="section-label mt-2 border-t border-champagne-400 pt-3">Groups</p>
-          <ul>
-            {groupRows.map((f) => (
-              <li key={f.key} className="border-t border-linen first:border-t-0">
-                <button
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={f.ticked}
-                  onClick={f.flip}
-                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                >
-                  <span
-                    aria-hidden
-                    className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                      f.ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                    }`}
-                  >
-                    {f.ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                  </span>
-                  <span className="flex-1">{f.label}</span>
-                  <span className="text-[13px] text-stone">{f.count}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-      {kinds.length > 0 && (
-        <>
-          <p className="section-label mt-2 border-t border-champagne-400 pt-3">Narrow to</p>
-          {kinds.map((k) => {
-            const count = picked.filter((p) => p.startsWith(`${k.kind}:`)).length;
-            const isOpen = openKind === k.kind;
-            return (
-              <div key={k.kind} className="border-t border-linen first-of-type:border-t-0">
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenKind(isOpen ? null : k.kind)}
-                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                >
-                  <span className="flex-1">
-                    {k.title}
-                    {count > 0 && <span className="ml-2 text-[13px] text-champagne-600">{count} picked</span>}
-                  </span>
-                  <ChevronRight className={`h-4 w-4 shrink-0 text-stone transition ${isOpen ? "rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
-                </button>
-                {isOpen && (
-                  <ul className="pb-1 pl-2">
-                    {k.options.map((o) => {
-                      const id = `${k.kind}:${o.label}`;
-                      const ticked = picked.includes(id);
-                      return (
-                        <li key={id} className="border-t border-linen first:border-t-0">
-                          <button
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={ticked}
-                            onClick={() => onPick(id)}
-                            className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                          >
-                            <span
-                              aria-hidden
-                              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                                ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                              }`}
-                            >
-                              {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                            </span>
-                            <span className="flex-1">{o.label}</span>
-                            <span className="text-[13px] text-stone">{o.count}</span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
-        </>
-      )}
+      {rows.map((r) => {
+        const isOpen = openKind === r.key;
+        const n = pickedIn(r);
+        return (
+          <div key={r.key} className="border-t border-linen first:border-t-0">
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              onClick={() => setOpenKind(isOpen ? null : r.key)}
+              className="flex min-h-12 w-full items-center gap-3 text-left text-[15px] text-ink"
+            >
+              <span className="flex-1">{r.title}</span>
+              {n > 0 && <span className="text-[13px] font-medium text-champagne-600">{n} picked</span>}
+              <ChevronRight className={`h-4 w-4 shrink-0 text-stone transition ${isOpen ? "rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+            </button>
+            {isOpen && (
+              <ul className="pb-1 pl-2">
+                {r.any && optionButton(r.any)}
+                {r.options.map(optionButton)}
+              </ul>
+            )}
+          </div>
+        );
+      })}
     </>
   );
 

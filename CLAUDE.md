@@ -195,6 +195,24 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the area. The "+ Add …" lines at the foot of the cards went with it
   (Transport's "+ Add a car or coach" stays). A section with nothing in it
   is just its heading and +, no empty card.
+  **Rebuilt 17 Oct 2026** (canvas 3 "Area page · Round 5", **B + A**, owner's
+  pick: "B is fab because you can zoom back to stage 1"). Top to bottom: the
+  cover (name, and **the page's one black +** — `AddMenu`: a supplier, a
+  to-do, an appointment, a payment, a moment, an idea, a note — the black +
+  on every section is gone); a white **Next up** card worked out from the
+  stage (save a first idea → get a quote from … → pick between your N quotes
+  / book … → pay … by … → anything left to sort? → "All sorted. Ready to
+  dance."), with "Then: …" the next to-do or appointment; the **five stages
+  down a gold line** (`<details name="area-stages">`, so opening one closes
+  the others; the current one opens, a tick for done, dashed for to come):
+  Ideas (pictures + key facts, `#ideas`), Quotes (who's quoted / in touch, +
+  Add a supplier, DIY), Booked (the booked supplier, or the quotes chart),
+  Paid (what's still to pay), Ready (We're ready); then **"Everything for
+  [area]"** — one card of lines (Suppliers · Guests for Food/Stationery ·
+  Plan · Money · The Day · notes), each a one-line summary that opens in
+  place with "+ Add …" and "In Plan ›" at its foot (`Everything` in
+  `area-view.tsx`). Links to `#payments`, `#notes`… open the right part
+  (`open-on-hash.tsx`). The earlier sections below are kept for reference.
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
   rounded switch in the top-right corner above the title ("The guest list"

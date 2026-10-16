@@ -78,9 +78,10 @@ export default function MoneyView({
     <FilterMenu
       base={view === "month" ? "/money?view=month" : "/money"}
       groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
-      // By area: no heading, the + sits on the Filter's row (owner, 13 Oct
-      // 2026, as on The Day). Opens on Budget; the same page as By month's +.
-      end={view === "area" ? <AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} /> : undefined}
+      // No heading, the + sits on the Filter's row (owner, 13 Oct 2026, as on
+      // The Day) — in both views since 17 Oct 2026, so the row sits in the
+      // same place under the top card whichever view you're in.
+      end={<AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} />}
     />
   );
   return (
@@ -333,11 +334,9 @@ function ByMonth({
         </p>
       </section>
 
-      <div className="mt-8 flex items-center justify-between gap-3">
-        <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
-        <AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} />
-      </div>
-      {filter}
+      {/* Filter and + straight under the card, as on By area (owner, 17 Oct
+          2026: the "What's due" heading pushed them onto a row of their own). */}
+      <div className="mt-5">{filter}</div>
       {chosen && (
         <Link
           href={base}

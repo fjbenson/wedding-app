@@ -219,8 +219,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big **All** (champagne when picked; was dark until 12 Oct 2026)
-  with the breakdown beside it (Coming · Invited · Can't come, each with
-  an arrow; To invite guests count only in All) — every one is a button
+  with the breakdown beside it (To invite · Invited · Coming · Can't come, each with
+  an arrow, so they add up to All — To invite was added 17 Oct 2026, owner:
+  six guests weren't shown anywhere) — every one is a button
   that shows just those people. **The card counts whatever the filters
   leave**, by each guest's answer for their own event. Then search with a
   **Filter** button that drops down a small menu (Day guests · Evening
@@ -411,7 +412,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   switching view takes off the filter the last view added. Views that filter
   aren't remembered on the phone (the filter wouldn't be); the others are.
   **View sits on the left, Filter on the right** (owner: View is the bigger
-  choice); the button is a gold rows icon and the current view's name ("▤ Household ⌄"). The numbers card (All ·
+  choice); the button is a list icon (same weight and colour as Filter's) and the current view's name ("☰ Household ⌄"). The numbers card (All ·
   Coming · Invited · Can't come) is unchanged.
   **Every heading folds** (a chevron on its right, in the phone list and the
   laptop table; open by default, not remembered). The one thing kept on the

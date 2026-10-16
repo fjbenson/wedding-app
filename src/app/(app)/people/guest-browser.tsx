@@ -4,7 +4,7 @@ import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Rows3, Search, SlidersHorizontal, Star, UserRound, Users, X } from "lucide-react";
+import { CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Search, SlidersHorizontal, Star, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -666,11 +666,13 @@ function AnswersCard({
 }) {
   const all = showing === "all";
   const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
-    // All three in champagne (owner's call). The big All is champagne too: ink is kept for the Add button (12 Oct 2026).
-    { status: "attending", label: "Coming", tone: "text-champagne-600" },
+    // All four in champagne, in the order a guest moves through them, so they add up to All
+    // (owner, 17 Oct 2026: To invite was left off before and six guests weren't shown anywhere).
+    // The big All is champagne too: ink is kept for the Add button (12 Oct 2026).
+    { status: "to_invite", label: "To invite", tone: "text-champagne-600" },
     { status: "pending", label: "Invited", tone: "text-champagne-600" },
+    { status: "attending", label: "Coming", tone: "text-champagne-600" },
     { status: "declined", label: "Can't come", tone: "text-champagne-600" },
-    // "To invite" isn't listed (owner's call): those guests count in All.
   ];
 
   return (
@@ -704,7 +706,7 @@ function AnswersCard({
               type="button"
               aria-pressed={on}
               onClick={() => onShow(on ? "all" : row.status)}
-              className={`relative flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-left sm:gap-2.5 sm:px-2.5 transition ${
+              className={`relative flex min-h-10 min-w-0 items-center gap-2 rounded-xl px-2 text-left sm:gap-2.5 sm:px-2.5 transition ${
                 on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "hover:bg-white/60"
               }`}
             >
@@ -1059,9 +1061,9 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         aria-haspopup="true"
         aria-label={`View: ${SORTS.find((o) => o.key === sort)!.label}`}
         onClick={() => setOpen((o) => !o)}
-        className="type-meta flex h-9 min-w-0 items-center gap-1 hover:text-ink max-[359px]:tracking-[0.12em]"
+        className="type-meta flex h-9 min-w-0 items-center gap-1.5 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
-        <Rows3 className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
+        <LayoutList className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
         <span className="truncate">{SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>

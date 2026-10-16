@@ -1,145 +1,68 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import type { Contact, Household, WeddingEvent } from "@/types/db";
-import { eventWord } from "./guest-browser";
-import { formatLongDate } from "@/lib/dates";
+import { useId, useState } from "react";
+import type { Household, Rsvp } from "@/types/db";
 import { renameHouseholdAction, saveAddressAction } from "./household-actions";
 import { editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "./guest-card";
 import { DetailLabel } from "./guest-table";
 
 /**
- * A household as an envelope (canvas 3 "Household · Round 3 · Turn it over",
- * owner's pick 14 Oct 2026; households get an envelope as suppliers get a
- * business card and guests a place card). The front is only the address: the
- * name in calligraphy, the address in plain italic, a fine gold border, on
- * crisp white card with a few flecks. Tap it and it turns over, the flap
- * opens and the invitation slides out: the household's name and who's in it
- * (owner, 16 Oct 2026: just the list — the name had been on it three times).
- * Tapping the envelope again slides it in, closes the flap and turns it to
- * the front (no "Put it back" button). The name and address are changed in
- * `HouseholdDetails`, the card's Details rows.
+ * A household as an envelope: the top of the household card, as a guest has
+ * a profile and a supplier a business card. Only the front — the name in
+ * calligraphy, the address in plain italic, a fine gold border, on crisp
+ * white card — with a gold **postmark** saying how the replies stand.
  *
- * How it moves: the turn is a 3D flip of two faces. Once it's over, the flip
- * is swapped for a flat back (body, flap, invitation) that looks the same, so
- * the invitation can sit between the envelope's pocket and its flap — which
- * a 3D flip can't layer. "Reduce motion" skips the movement.
+ * It used to turn over and open, with an invitation inside (14–16 Oct 2026);
+ * the owner took that out on 16 Oct: the invitation is for the guest, not the
+ * couple, and it only repeated the Guests list under it, a tap away.
  */
 export default function HouseholdEnvelope({
   household,
-  people,
-  events,
-  ownEvent,
-  onOpenGuest,
+  answers,
 }: {
   household: Household;
-  people: Contact[];
-  events: WeddingEvent[];
-  ownEvent: (g: Contact) => WeddingEvent | undefined;
-  onOpenGuest: (id: string) => void;
+  /** Each person's answer for their own event (undefined: not day or evening yet). */
+  answers: (Rsvp["status"] | undefined)[];
 }) {
-  // turned: the faces are rotated; flat: the flat back is showing; open: flap up, invitation out.
-  const [turned, setTurned] = useState(false);
-  const [flat, setFlat] = useState(false);
-  const [open, setOpen] = useState(false);
-  const busy = useRef(false);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-
-  const card = useRef<HTMLDivElement>(null);
-  const [cardHeight, setCardHeight] = useState(300);
-  useLayoutEffect(() => {
-    const el = card.current;
-    if (!el) return;
-    const measure = () => setCardHeight(el.offsetHeight);
-    measure();
-    const watch = new ResizeObserver(measure);
-    watch.observe(el);
-    return () => watch.disconnect();
-  }, [flat]);
-
-  const calm = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const later = (ms: number, fn: () => void) => timers.current.push(setTimeout(fn, ms));
-
-  const openIt = () => {
-    if (busy.current || turned) return;
-    busy.current = true;
-    const quick = calm();
-    setTurned(true);
-    later(quick ? 0 : 640, () => setFlat(true));
-    later(quick ? 20 : 700, () => {
-      setOpen(true);
-      busy.current = false;
-    });
-  };
-  const closeIt = () => {
-    if (busy.current) return;
-    busy.current = true;
-    const quick = calm();
-    setOpen(false);
-    later(quick ? 0 : 500, () => setFlat(false));
-    later(quick ? 20 : 560, () => {
-      setTurned(false);
-      busy.current = false;
-    });
-  };
-
   const lines = [household.address_line1, household.address_line2, household.city, household.postcode].filter(Boolean) as string[];
-  const ENVELOPE = 236;
-  const TUCKED = 28; // how much of the invitation stays in the pocket when it's out (only its bottom margin)
-
+  const mark = postmark(answers);
   return (
     <div
-      className="relative mx-auto mt-4 w-full max-w-[400px] transition-[height] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none"
-      style={{ height: open ? cardHeight + ENVELOPE - TUCKED : ENVELOPE }}
+      role="img"
+      aria-label={`${household.name}${lines.length ? `, ${lines.join(", ")}` : ", no address yet"}${mark ? `. ${mark.say}` : ""}`}
+      className="relative mx-auto mt-2 h-[220px] w-full max-w-[400px] rounded-md"
     >
-      {!flat && (
-        <div className="absolute inset-x-0 bottom-0 z-[2] [perspective:1400px]" style={{ height: ENVELOPE }}>
-          <button
-            type="button"
-            onClick={openIt}
-            aria-label={`${household.name}${lines.length ? `, ${lines.join(", ")}` : ""}. Open the envelope`}
-            className="absolute inset-0 block rounded-md text-left transition-transform duration-[620ms] ease-[cubic-bezier(.45,.05,.25,1)] [transform-style:preserve-3d] motion-reduce:transition-none"
-            style={{ transform: `rotateY(${turned ? 180 : 0}deg)` }}
-          >
-            <Front name={household.name} lines={lines} />
-            <span className="absolute inset-0 block rounded-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <Paper />
-              <Seams />
-              <Flap seal={household.name} />
-            </span>
-          </button>
-        </div>
-      )}
-
-      {flat && (
-        <>
-          <div
-            ref={card}
-            className="absolute inset-x-3.5 z-[1] transition-[bottom,opacity] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none"
-            style={{ bottom: open ? ENVELOPE - TUCKED : 8, opacity: open ? 1 : 0 }}
-          >
-            <Invitation household={household} people={people} events={events} ownEvent={ownEvent} onOpenGuest={onOpenGuest} />
-          </div>
-          <button
-            type="button"
-            onClick={closeIt}
-            aria-label="Put the invitation back and turn the envelope over"
-            className="absolute inset-x-0 bottom-0 z-[2] block rounded-md"
-            style={{ height: ENVELOPE }}
-          >
-            <Paper />
-            <Seams />
-          </button>
-          <div
-            className="pointer-events-none absolute inset-x-0 transition-[transform,z-index] duration-[360ms] ease-[cubic-bezier(.3,.7,.3,1)] [transform-origin:50%_0] motion-reduce:transition-none"
-            style={{ bottom: ENVELOPE - 104, height: 104, zIndex: open ? 0 : 3, transform: `rotateX(${open ? 180 : 0}deg)`, transitionDelay: "0ms, 180ms" }}
-          >
-            <Flap />
-          </div>
-        </>
-      )}
+      <Front name={household.name} lines={lines} />
+      {mark && <Postmark top={mark.top} main={mark.main} />}
     </div>
+  );
+}
+
+/** How the replies stand, for the postmark: nothing until there's someone in it. */
+function postmark(answers: (Rsvp["status"] | undefined)[]) {
+  const n = answers.length;
+  if (n === 0) return null;
+  const sent = answers.filter((a) => a === "pending" || a === "attending" || a === "declined").length;
+  const replied = answers.filter((a) => a === "attending" || a === "declined").length;
+  const coming = answers.filter((a) => a === "attending").length;
+  if (sent === 0) return { top: "Invite", main: "Not sent", say: "Invitation not sent yet" };
+  if (coming === n) return { top: "All", main: "Coming", say: "Everyone's coming" };
+  if (replied === n) return { top: "Replied", main: `All ${n}`, say: `All ${n} have replied` };
+  return { top: "Replied", main: `${replied} of ${n}`, say: `${replied} of ${n} have replied` };
+}
+
+/** A round gold postmark in the corner, slightly askew, with its wavy lines. */
+function Postmark({ top, main }: { top: string; main: string }) {
+  return (
+    <span aria-hidden className="absolute right-[18px] top-[18px] flex rotate-[-8deg] items-center">
+      <svg viewBox="0 0 40 24" className="mr-[-5px] h-5 w-8 text-[#C9B07E]">
+        <path d="M0 5 q5 -4 10 0 t10 0 t10 0 t10 0 M0 12 q5 -4 10 0 t10 0 t10 0 t10 0 M0 19 q5 -4 10 0 t10 0 t10 0 t10 0" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      </svg>
+      <span className="flex h-[58px] w-[58px] flex-col items-center justify-center rounded-full border-[1.5px] border-[#B8914F] text-champagne-600 shadow-[inset_0_0_0_3px_#FFFFFF,inset_0_0_0_4px_#D8C7A4]">
+        <span className="font-body text-[7.5px] font-semibold uppercase tracking-[0.16em]">{top}</span>
+        <span className="mt-0.5 whitespace-nowrap font-display text-[11px] italic leading-none">{main}</span>
+      </span>
+    </span>
   );
 }
 
@@ -166,8 +89,8 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
       <Paper />
       <span aria-hidden className="absolute inset-[9px] rounded-[3px] border border-[#C9B07E]" />
       <span aria-hidden className="absolute inset-[13px] rounded-[2px] border-[0.5px] border-[#E2D3B4]" />
-      <span className="absolute inset-x-6 top-1/2 block -translate-y-1/2 text-center">
-        <span className={`block font-script leading-none text-ink ${name.length > 18 ? "text-[32px]" : "text-[42px]"}`}>{name}</span>
+      <span className="absolute inset-x-6 top-[63%] block -translate-y-1/2 text-center">
+        <span className={`block font-script leading-none text-ink ${name.length > 16 ? "text-[28px]" : "text-[36px]"}`}>{name}</span>
         <span aria-hidden className="mx-auto my-2 block h-px w-12 bg-[#C9B07E]" />
         {lines.length > 0 ? (
           <span className="block font-display text-base italic leading-[1.4] text-[#2E2924]">
@@ -182,96 +105,6 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
         )}
       </span>
     </span>
-  );
-}
-
-/**
- * The back's folds: a line from every corner to the flap's tip — one full
- * cross. With the flap shut its edges lie exactly on the top two; with it
- * open (folded up out of the way) the top two still show, so the cross stays
- * whole (owner, 16 Oct 2026: before, only the bottom V was left).
- */
-function Seams() {
-  return (
-    <svg aria-hidden viewBox="0 0 342 236" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-      <path d="M1 1 L171 103 L341 1 M1 235 L171 103 L341 235" fill="none" stroke="#E2D5BC" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
-
-/** The flap; with `seal`, the wax seal at its tip carries the name's first letter. */
-function Flap({ seal }: { seal?: string }) {
-  const letter = seal?.replace(/^the\s+/i, "").trim().charAt(0).toUpperCase();
-  return (
-    <span aria-hidden className="absolute inset-x-0 top-0 block h-[104px]">
-      <svg viewBox="0 0 342 104" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-        <path d="M0.5 0.5 L171 103 L341.5 0.5 Z" fill="#FFFFFF" stroke="#E2D5BC" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      </svg>
-      {seal && (
-        <span className="absolute left-1/2 top-[83px] flex h-[34px] w-[34px] -translate-x-1/2 items-center justify-center rounded-full bg-champagne-400 shadow-[inset_0_0_0_4px_#B8914F,inset_0_0_0_5px_#E9D9B4]">
-          <span className="font-display text-base italic text-[#FFFDF8]">{letter}</span>
-        </span>
-      )}
-    </span>
-  );
-}
-
-/** The card inside: the household's name, then who's in it — tap a name for their card. */
-function Invitation({
-  household,
-  people,
-  events,
-  ownEvent,
-  onOpenGuest,
-}: {
-  household: Household;
-  people: Contact[];
-  events: WeddingEvent[];
-  ownEvent: (g: Contact) => WeddingEvent | undefined;
-  onOpenGuest: (id: string) => void;
-}) {
-  const theirs = events.filter((e) => people.some((p) => ownEvent(p)?.id === e.id));
-  // Everyone invited to the same part: say it once. Mixed: each evening guest says so.
-  const one = theirs.length === 1 ? theirs[0] : undefined;
-  const mixed = theirs.length > 1;
-  return (
-    <div className="relative rounded px-[22px] pb-10 pt-6 text-center shadow-[0_0_0_1px_#E6DCC8,0_-10px_24px_-18px_rgb(60_45_20/0.5)]">
-      <Paper />
-      <span aria-hidden className="pointer-events-none absolute inset-[7px] rounded-sm border border-[#D8C7A4]" />
-      <div className="relative">
-        <p className={`font-script leading-none text-ink ${household.name.length > 18 ? "text-[28px]" : "text-[34px]"}`}>{household.name}</p>
-        <span aria-hidden className="mx-auto mb-2 mt-3 block h-px w-10 bg-[#D8C7A4]" />
-        {people.length === 0 ? (
-          <p className="font-display text-[15px] italic text-stone">No one in it yet</p>
-        ) : (
-          <ul>
-            {people.map((p) => {
-              const own = ownEvent(p);
-              return (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => onOpenGuest(p.id)}
-                    className="min-h-9 w-full font-display text-[19px] italic leading-tight text-ink hover:text-champagne-600"
-                  >
-                    {p.first_name} {p.last_name}
-                    {mixed && own && own.id !== theirs[0].id && (
-                      <span className="ml-1.5 text-[14px] text-champagne-600">{eventWord(own)}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {one && (
-          <p className="mt-2 text-[13px] text-stone">
-            to <em className="font-display text-champagne-600">{one.name.replace(/^\w/, (c) => c.toLowerCase())}</em>
-            {one.starts_at && ` · ${formatLongDate(one.starts_at.slice(0, 10))}`}
-          </p>
-        )}
-      </div>
-    </div>
   );
 }
 

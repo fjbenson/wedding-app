@@ -17,8 +17,8 @@ import type { TravelInfo } from "./guest-travel";
 /**
  * One household (screen 9), as a card over the guest list — since 16 Oct 2026
  * it opens like a guest's card (owner), from `?household=` on /people. Topped
- * by its envelope (`household-envelope.tsx`, canvas 3 "Household · Round
- * 3"): the address on the front, the invitation (who's in it) inside. Then
+ * by its envelope (`household-envelope.tsx`): the address, and a postmark
+ * saying how the replies stand. Then
  * Text · Call · Email, the guests with their RSVP, and Details (name and
  * address) like the guest card's. Each guest's card opens on top of it.
  */
@@ -72,13 +72,7 @@ export default function HouseholdSheet({
 
   return (
     <CardSheet label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
-      <HouseholdEnvelope
-        household={household}
-        people={people}
-        events={events}
-        ownEvent={ownEvent}
-        onOpenGuest={setOpenId}
-      />
+      <HouseholdEnvelope household={household} answers={people.map(statusOf)} />
       <p className="mt-3.5 text-center text-[13px] text-stone">{summary}</p>
 
       <div className="mt-5 flex justify-center gap-8">

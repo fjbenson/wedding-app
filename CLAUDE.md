@@ -447,25 +447,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   and the guest card's household name; old `/people/household/[id]` links
   redirect there. Name and address are **Details rows like the guest
   card's** (icon, label, value; tap to change; Copy beside the address).
-  **Since 14 Oct 2026 topped by an envelope** (canvas 3 "Household · Round 3 · Turn it
-  over", owner's pick; `household-envelope.tsx`): crisp white card with a
-  few flecks and a gold double border, the name in calligraphy (Pinyon
-  Script, `font-script`, loaded in `layout.tsx` for this alone) and the
-  address in plain italic. Tap it: it turns over (wax seal with the
-  initial), the flap opens and **the invitation** slides out — **simplified
-  16 Oct 2026 (owner)**: the household's name in calligraphy, then each
-  person's full name (tap for their card), then "to the day · date" when
-  they're all invited to the same part (if mixed, evening guests say
-  "evening" after their name); no answers. **Tapping the envelope again**
-  puts it back (the "Put it back" button is gone); the back's folds now
-  meet in a full cross. Name / Address rows with Change, Copy
-  (`renameHouseholdAction`, `saveAddressAction`) moved to a card under
-  "Guests" (`HouseholdDetails`). The "Who's in it" card is now headed
-  **Guests**, with an **RSVP** column on the right: each person's answer in
-  words for a household (Coming · Not answered · Not invited yet · Can't
-  come) and the guest list's answer icon. `.label` and `.section-label`
-  now set the sans font themselves: on an `h2`/`h3` the headings' serif had
-  been leaking in, which is why gold capitals looked serif on some screens. Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
+  **Topped by an envelope** (`household-envelope.tsx`): the front only —
+  the name in calligraphy (Pinyon Script, `font-script`, loaded in
+  `layout.tsx` for this alone), the address in plain italic, a gold double
+  border on white card — with a gold **postmark** in the corner saying how
+  replies stand ("Replied 1 of 3", "All coming", "Invite not sent"). **It no
+  longer turns over or opens** (owner, 16 Oct 2026: the invitation inside was
+  for the guest, not the couple, and only repeated the Guests list a tap
+  away; the turning envelope of 14 Oct and canvas 3 "Invitation · Round 1"
+  were dropped). Then "3 people · 1 child · day guests", round **Text · Call ·
   Email** (they reach the household's people — straight through if one has
   a number, a pick-list if several, hidden if none), then "Who's in it" on
   a glass card (small initials, name, ›; owner preferred it to the guest

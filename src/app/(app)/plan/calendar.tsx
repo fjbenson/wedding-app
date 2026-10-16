@@ -98,18 +98,6 @@ export default function PlanCalendar({
   const length = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const name = first.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
 
-  // How long to go, in months — the Hub already counts the days, and this is
-  // a month view (owner, 16 Oct 2026). Under a month it drops to weeks, then days.
-  const toGo = (() => {
-    if (!weddingDate || weddingDate <= today) return null;
-    const [ty, tm, td] = today.split("-").map(Number);
-    const [wy, wm, wd] = weddingDate.split("-").map(Number);
-    const months = (wy - ty) * 12 + (wm - tm) - (wd < td ? 1 : 0);
-    if (months >= 1) return { n: months, unit: months === 1 ? "month" : "months" };
-    const days = Math.round((Date.parse(`${weddingDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
-    if (days >= 14) return { n: Math.floor(days / 7), unit: "weeks" };
-    return { n: days, unit: days === 1 ? "day" : "days" };
-  })();
 
   const go = (by: 1 | -1) => {
     const next = shiftMonth(month, by);
@@ -159,11 +147,6 @@ export default function PlanCalendar({
         </div>
         {toggle}
       </div>
-      {toGo && (
-        <p className="-mt-1 pl-3 text-[13px] text-stone">
-          <span className="font-display text-[15px] text-champagne-600">{toGo.n}</span> {toGo.unit} to the wedding
-        </p>
-      )}
 
       <div className="mt-3 grid grid-cols-7 gap-y-1">
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
@@ -240,10 +223,11 @@ export default function PlanCalendar({
           <button
             type="button"
             onClick={() => setSelected("undated")}
+            aria-label={`${undatedCount} ${undatedCount === 1 ? "to-do" : "to-dos"} with no date`}
             className="flex h-9 shrink-0 items-center gap-1 text-[13px] text-stone transition hover:text-ink"
           >
-            {/* Quiet, like the key beside it (owner, 16 Oct 2026: the pill "jumps out a lot"). */}
-            {undatedCount} with no date
+            {/* Quiet, like the key beside it — just "Undated ›" (owner, 16 Oct 2026). */}
+            Undated
             <ChevronRight className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden />
           </button>
         )}
@@ -255,8 +239,9 @@ export default function PlanCalendar({
       {monthTops[month]}
       {/* Straight on the page, not a second card (owner, 16 Oct 2026: two
           cards the same weight competed): the calendar card is the hero. */}
-      {/* Rows run edge to edge so their dividers span the screen (owner, 16 Oct 2026). */}
-      <div className="mt-5 [--row-bleed:0px] [&_li]:-mx-[var(--gutter)] [&_li]:px-[var(--gutter)] [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
+      {/* Dividers within the page's margins (full width was tried and taken
+          back, owner, 16 Oct 2026), one above the first row too. */}
+      <div className="mt-5 [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}

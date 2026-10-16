@@ -495,8 +495,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Done** fold at the foot of the month, and a ticked row **slides away**
   (`tick-away` in `globals.css`, added by `TickForm`) before reappearing there.
   **Less flat, 16 Oct 2026** (owner: "quite flat"): the month (‹ name ›,
-  the +, "7 months to the wedding" — months, as the Hub already counts days;
-  weeks then days in the last month — the grid) sits on a **glass card**;
+  the +, the grid; a "7 months to the wedding" line was tried and taken out —
+  the Hub counts down) sits on a **glass card**;
   **today is a solid gold disc** with white numerals; days with something on
   them are darker than empty ones; the to-do circle and appointment mark
   are a size up; the month's list sits straight on the page under a hairline
@@ -504,14 +504,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   with "still open from before" just above it.
   **Then (owner's list, 16 Oct 2026):** the list has a heading like Done's
   — the month's name left, the count right ("OCTOBER · 4", "DONE · 1"), no
-  divider; "3 undated" is now quiet stone text "3 with no date ›" beside the
+  divider; "3 undated" is now quiet stone text "Undated ›" beside the
   key; a to-do's line drops "By" and its date is darker ("Overdue · 15 Oct ·
   Flowers"). The tab's top (back arrow, corner switch, title + drawing) is
   the shared pattern on every tab — left as is.
   Counts say "4 items" / "1 item" (a bare number didn't say what it
   counted); row dividers in Plan's lists are darker (`border-ink/[0.12]`
-  rather than linen), run the full width of the screen, with one above the
-  first row too; pages with the floating pen end 160px clear
+  rather than linen), within the page margins (full width tried and taken
+  back), with one above the first row too; pages with the floating pen end 160px clear
   (`pb-40`, was `pb-28`) so the last row can scroll out from under it.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,

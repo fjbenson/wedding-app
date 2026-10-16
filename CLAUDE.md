@@ -70,9 +70,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
 - **Setup** (`/setup`, screen 2): the couple's names and the date, then which
   areas apply. The home page sends anyone without a wedding, or without
   areas, here.
-- **Hub** (`/`): names, hub ring (its heart — the days to go, "How it's
-  going ›" — opens **Where things stand**, `/standing`, 13 Oct 2026; see
-  Backlog), then under the ring (canvas 2, "Home ·
+- **Hub** (`/`): names, hub ring (its heart — the days to go, "DAYS TO GO ›"
+  since 16 Oct 2026, owner; the "How it's going ›" line under it is gone —
+  opens **Where things stand**, `/standing`, 13 Oct 2026; see Backlog), then under the ring (canvas 2, "Home ·
   Round 2 · Calm under the ring", option B, owner's pick 13 Oct 2026; was
   "Home · Under the ring" B): one quiet glass pill, the assistant's gold pen
   mark and **"Ask your assistant"** in italics (canvas 2 "Hub · How to reach
@@ -696,7 +696,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   sidebar), titled **Your notes** and shown as a **wall of paper notes**
   (canvas 2, "Inbox · Sticky-note wall", option A, owner's pick 11 Oct
   2026; `note-wall.tsx`): two columns on a phone, three on a laptop, soft
-  papers (ivory, champagne, blush, sage), a slight tilt and a strip of tape. Until there are four, faded blank notes
+  papers (ivory, champagne, blush, sage), a slight tilt and a strip of tape.
+  **Each note's paper and tilt come from its id** (16 Oct 2026, owner: in
+  turn they read as pairs down the columns) — looks random, stays the same,
+  never the same as either of the two before it (`papersFor()`). Until there are four, faded blank notes
   fill the gaps ("+ A thought for later … Tap to jot", never saved; they open
   capture).
   Tap one and a panel comes up — File under an area, Make it a to-do, Edit,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 export interface HubArea {
@@ -39,9 +39,12 @@ function Countdown({ weddingDate }: { weddingDate: string | null }) {
       >
         {big}
       </p>
-      {days > 1 && (
-        <p className="mt-3 text-xs font-medium uppercase tracking-[0.24em] text-stone">Days to go</p>
-      )}
+      {/* "Days to go ›" — the › says the disc opens Where things stand (owner,
+          16 Oct 2026, in place of a "How it's going ›" line under it). */}
+      <p className="mt-3 flex items-center justify-center gap-0.5 text-xs font-medium uppercase tracking-[0.24em] text-stone">
+        {days > 1 && "Days to go"}
+        <ChevronRight className="h-3.5 w-3.5 text-champagne-600" strokeWidth={2} aria-hidden />
+      </p>
     </div>
   );
 }
@@ -78,7 +81,7 @@ export default function Hub({
         className="absolute left-1/2 top-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-white/90 bg-white/70 text-center shadow-[inset_0_2px_0_rgb(255_255_255/0.9),0_16px_40px_-18px_rgb(60_50_40/0.5)] backdrop-blur-xl transition active:scale-[0.98]"
       >
         <Countdown weddingDate={weddingDate} />
-        <span className="mt-2 font-display text-[13px] italic text-champagne-600">How it’s going ›</span>
+        <span className="sr-only">How it&apos;s going</span>
       </Link>
 
       {/* Each button opens its area's page (screen 5). */}

@@ -12,8 +12,31 @@ import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
-/** Soft papers, in turn: ivory, champagne, blush, sage. */
+/** Soft papers: ivory, champagne, blush, sage. */
 const PAPERS = ["#FFFDF8", "#F6EEDD", "#F3E6E1", "#EEF0E6"];
+
+/** A number from a note's id, so each note keeps its own paper and tilt. */
+function seed(text: string) {
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/**
+ * A paper for each note, looking random rather than in turn (owner, 16 Oct
+ * 2026: in turn, the two columns read as pairs — two white, two beige…).
+ * Picked from the note's id, so it stays the same every visit, and never
+ * the same as either of the two before it on the wall.
+ */
+function papersFor(keys: string[]) {
+  const picked: number[] = [];
+  for (const key of keys) {
+    let p = seed(key) % PAPERS.length;
+    while (p === picked[picked.length - 1] || p === picked[picked.length - 2]) p = (p + 1) % PAPERS.length;
+    picked.push(p);
+  }
+  return picked.map((p) => PAPERS[p]);
+}
 /** A slight, uneven tilt, in degrees — the canvas's "slight". */
 const TURNS = [-1, 0.8, -0.4, 1, 0.5, -0.9];
 
@@ -69,6 +92,9 @@ export default function NoteWall({
     return () => clearTimeout(timer);
   }, [added]);
 
+  const blanks = BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length));
+  const papers = papersFor([...notes.map((n) => n.id), ...blanks]);
+
   return (
     <>
       <ul className="columns-2 gap-3.5 pt-2 lg:columns-3">
@@ -78,7 +104,7 @@ export default function NoteWall({
               type="button"
               onClick={() => setOpenId(note.id)}
               className="relative block w-full rounded-[4px] px-4 pb-3.5 pt-[22px] text-left shadow-[0_1px_2px_rgb(60_45_20/0.08),0_10px_22px_-14px_rgb(60_45_20/0.35)] transition active:scale-[0.98] motion-reduce:transform-none"
-              style={{ background: PAPERS[index % PAPERS.length], transform: `rotate(${TURNS[index % TURNS.length]}deg)` }}
+              style={{ background: papers[index], transform: `rotate(${TURNS[seed(note.id) % TURNS.length]}deg)` }}
             >
               <span
                 aria-hidden
@@ -119,14 +145,14 @@ export default function NoteWall({
             </button>
           </li>
         ))}
-        {BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length)).map((prompt, i) => {
+        {blanks.map((prompt, i) => {
           const index = notes.length + i;
           return (
             <li key={prompt} className="mb-6 break-inside-avoid pt-2">
               <Link
                 href="/capture?from=/inbox"
                 className="relative block rounded-[4px] px-4 pb-3.5 pt-[22px] opacity-60 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_10px_22px_-16px_rgb(60_45_20/0.3)] transition hover:opacity-90"
-                style={{ background: PAPERS[index % PAPERS.length], transform: `rotate(${TURNS[index % TURNS.length]}deg)` }}
+                style={{ background: papers[index], transform: `rotate(${TURNS[seed(prompt) % TURNS.length]}deg)` }}
               >
                 <span aria-hidden className="absolute -top-2 left-1/2 h-4 w-[54px] -translate-x-1/2 border-x border-dashed border-white/60 bg-[rgb(225_205_165/0.55)]" />
                 <span className="flex items-start gap-2 font-display text-[17px] italic leading-snug text-stone">

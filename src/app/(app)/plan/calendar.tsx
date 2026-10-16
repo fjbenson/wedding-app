@@ -98,11 +98,18 @@ export default function PlanCalendar({
   const length = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const name = first.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
 
-  // Days to go, counted in whole days from today (both plain dates, so no clock in it).
-  const daysToGo =
-    weddingDate && weddingDate > today
-      ? Math.round((Date.parse(`${weddingDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
-      : null;
+  // How long to go, in months — the Hub already counts the days, and this is
+  // a month view (owner, 16 Oct 2026). Under a month it drops to weeks, then days.
+  const toGo = (() => {
+    if (!weddingDate || weddingDate <= today) return null;
+    const [ty, tm, td] = today.split("-").map(Number);
+    const [wy, wm, wd] = weddingDate.split("-").map(Number);
+    const months = (wy - ty) * 12 + (wm - tm) - (wd < td ? 1 : 0);
+    if (months >= 1) return { n: months, unit: months === 1 ? "month" : "months" };
+    const days = Math.round((Date.parse(`${weddingDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+    if (days >= 14) return { n: Math.floor(days / 7), unit: "weeks" };
+    return { n: days, unit: days === 1 ? "day" : "days" };
+  })();
 
   const go = (by: 1 | -1) => {
     const next = shiftMonth(month, by);
@@ -152,10 +159,9 @@ export default function PlanCalendar({
         </div>
         {toggle}
       </div>
-      {daysToGo !== null && (
+      {toGo && (
         <p className="-mt-1 pl-3 text-[13px] text-stone">
-          <span className="font-display text-[15px] text-champagne-600">{daysToGo}</span>{" "}
-          {daysToGo === 1 ? "day" : "days"} to the wedding
+          <span className="font-display text-[15px] text-champagne-600">{toGo.n}</span> {toGo.unit} to the wedding
         </p>
       )}
 
@@ -250,7 +256,7 @@ export default function PlanCalendar({
       {/* Straight on the page, not a second card (owner, 16 Oct 2026: two
           cards the same weight competed): the calendar card is the hero. */}
       {/* Rows run edge to edge so their dividers span the screen (owner, 16 Oct 2026). */}
-      <div className="mt-5 [--row-bleed:0px] [&_li]:-mx-[var(--gutter)] [&_li]:px-[var(--gutter)]">
+      <div className="mt-5 [--row-bleed:0px] [&_li]:-mx-[var(--gutter)] [&_li]:px-[var(--gutter)] [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}

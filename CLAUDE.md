@@ -489,7 +489,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Done** fold at the foot of the month, and a ticked row **slides away**
   (`tick-away` in `globals.css`, added by `TickForm`) before reappearing there.
   **Less flat, 16 Oct 2026** (owner: "quite flat"): the month (‹ name ›,
-  the +, "236 days to the wedding", the grid) sits on a **glass card**;
+  the +, "7 months to the wedding" — months, as the Hub already counts days;
+  weeks then days in the last month — the grid) sits on a **glass card**;
   **today is a solid gold disc** with white numerals; days with something on
   them are darker than empty ones; the to-do circle and appointment mark
   are a size up; the month's list sits straight on the page under a hairline
@@ -503,7 +504,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the shared pattern on every tab — left as is.
   Counts say "4 items" / "1 item" (a bare number didn't say what it
   counted); row dividers in Plan's lists are darker (`border-ink/[0.12]`
-  rather than linen) and run the full width of the screen; pages with the floating pen end 160px clear
+  rather than linen), run the full width of the screen, with one above the
+  first row too; pages with the floating pen end 160px clear
   (`pb-40`, was `pb-28`) so the last row can scroll out from under it.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,

@@ -348,7 +348,7 @@ export default function GuestBrowser({
   // How the list is grouped: by role for the bridal party, by household or
   // by day/evening if sorted that way, otherwise one A–Z run.
   let groups: Group[];
-  if ((sort === "diet" || sort === "meal" || sort === "role") && !filters.includes("noaddress")) {
+  if ((sort === "diet" || sort === "meal" || sort === "role")) {
     // A breakdown (owner, 17 Oct 2026): the headings are the kinds, each with its count.
     const kind = sort;
     const tally = new Map<string, Contact[]>();
@@ -368,7 +368,7 @@ export default function GuestBrowser({
     const none = kind === "diet" ? "No dietary needs" : kind === "role" ? "No role" : null;
     const loose = none ? shown.filter((g) => partOf(kind, g, look).length === 0) : [];
     if (loose.length > 0) groups.push({ key: "none", title: none!, guests: loose });
-  } else if (sort === "rsvp" && !filters.includes("noaddress")) {
+  } else if (sort === "rsvp") {
     const words: [Rsvp["status"] | undefined, string][] = [
       ["attending", "Coming"],
       ["pending", "Invited"],
@@ -379,17 +379,17 @@ export default function GuestBrowser({
     groups = words
       .map(([status, title]) => ({ key: status ?? "none", title, guests: shown.filter((g) => answerOf(g) === status) }))
       .filter((group) => group.guests.length > 0);
-  } else if (sort === "age" && !filters.includes("noaddress")) {
+  } else if (sort === "age") {
     groups = [
       { key: "adults", title: "Adults", guests: shown.filter((g) => !g.is_child) },
       { key: "children", title: "Children", guests: shown.filter((g) => g.is_child) },
     ].filter((group) => group.guests.length > 0);
-  } else if (sort === "table" && !filters.includes("noaddress")) {
+  } else if (sort === "table") {
     const names = [...new Set(shown.map((g) => tables[g.id]).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
     groups = names.map((name) => ({ key: `table-${name}`, title: name, guests: shown.filter((g) => tables[g.id] === name) }));
     const loose = shown.filter((g) => !tables[g.id]);
     if (loose.length > 0) groups.push({ key: "none", title: "No table yet", guests: loose });
-  } else if (sort === "staying" && !filters.includes("noaddress")) {
+  } else if (sort === "staying") {
     const stays = travel?.stays ?? [];
     groups = stays
       .map((stay) => ({ key: `stay-${stay.id}`, title: stay.name, guests: shown.filter((g) => g.staying === "yes" && g.stay_id === stay.id) }))
@@ -404,7 +404,7 @@ export default function GuestBrowser({
       const these = shown.filter(test);
       if (these.length > 0) groups.push({ key, title, guests: these });
     }
-  } else if (sort === "type" && !filters.includes("noaddress")) {
+  } else if (sort === "type") {
     groups = events
       .map((e) => ({
         key: e.id,
@@ -414,7 +414,7 @@ export default function GuestBrowser({
       .filter((group) => group.guests.length > 0);
     const loose = shown.filter((g) => !ownEvent(g));
     if (loose.length > 0) groups.push({ key: "none", title: "Day or evening?", guests: loose });
-  } else if (sort === "group" && !filters.includes("noaddress")) {
+  } else if (sort === "group") {
     // By group (owner, 16 Oct 2026): someone in two groups shows under both;
     // a group's heading opens it (its card, Email them · Text).
     const members = (g: GroupSummary) => new Set(g.members);
@@ -430,7 +430,7 @@ export default function GuestBrowser({
     const grouped = new Set(guestGroups.flatMap((g) => g.members));
     const loose = shown.filter((g) => !grouped.has(g.id));
     if (loose.length > 0) groups.push({ key: "none", title: "Not in a group", guests: loose });
-  } else if (sort === "household" || filters.includes("noaddress")) {
+  } else if (sort === "household") {
     groups = households
       .map((h) => ({
         key: h.id,

@@ -1,3 +1,4 @@
+import PaymentRow from "@/components/payment-row";
 import Link from "next/link";
 import AddButton from "@/components/add-button";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
@@ -252,37 +253,10 @@ function ByMonth({
   const columnHref = (key: string) => (key === chosen ? base : `${base}&month=${key}`);
   const shownMonths = [...byMonth.entries()].filter(([key]) => !chosen || key === chosen);
 
-  const row = (p: Payment) => {
-    const who = suppliers.find((s) => s.id === p.contact_id)?.name;
-    const late = !p.paid_on && p.due_date && p.due_date < today;
-    const when = p.paid_on ? `Paid ${formatDayMonth(p.paid_on)}` : p.due_date ? formatWeekdayDayMonth(p.due_date) : "No date";
-    return (
-      <li key={p.id} className="row-press flex items-center gap-3.5 border-b border-linen last:border-b-0">
-        <form action={markPaidAction.bind(null, p.id, !p.paid_on)}>
-          <button
-            type="submit"
-            aria-label={p.paid_on ? `Mark "${p.description}" as not paid` : `Mark "${p.description}" as paid`}
-            className={`flex h-[26px] w-[26px] items-center justify-center rounded-full font-display text-sm transition ${
-              p.paid_on ? "bg-ink text-ivory" : "bg-champagne-100 text-champagne-600 hover:bg-cream"
-            }`}
-          >
-            {p.paid_on ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden /> : "£"}
-          </button>
-        </form>
-        <Link href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
-          <span className="min-w-0 flex-1">
-            <span className={`type-item block truncate ${p.paid_on ? "!text-stone" : ""}`}>{p.description}</span>
-            <span className="type-meta mt-1 block">
-              {late && <span className="text-champagne-600">Overdue · </span>}
-              {[when, who].filter(Boolean).join(" · ")}
-            </span>
-          </span>
-          <span className={`type-figure shrink-0 text-lg !font-light ${p.paid_on ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-        </Link>
-      </li>
-    );
-  };
+  // The same row as Plan's and the Hub's This week (owner, 16 Oct 2026).
+  const row = (p: Payment) => (
+    <PaymentRow key={p.id} payment={p} today={today} who={suppliers.find((s) => s.id === p.contact_id)?.name} />
+  );
 
   const count = (n: number) => (n === 1 ? "1 payment" : `${n} payments`);
   const cardTitle = (key: string) => {

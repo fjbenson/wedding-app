@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
 import AddButton from "@/components/add-button";
+import PaymentRow from "@/components/payment-row";
+import DateStamp from "@/components/date-stamp";
 import BudgetBar from "@/components/budget-bar";
 import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
@@ -793,46 +795,24 @@ export default function AreaView({
           {deposits.length + schedule.length + unscheduled.length > 0 ? (
             <ul>
               {deposits.map((s) => (
-                <li key={`deposit-${s.id}`} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white">
-                    <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
-                  </span>
-                  <SupplierLink id={s.id} className="min-w-0 flex-1">
-                    <span className="type-item block truncate">Deposit</span>
-                    <span className="type-meta mt-1 block truncate">Paid · {supplierName(s)}</span>
+                <li key={`deposit-${s.id}`} className="flex items-center gap-3.5 border-b border-ink/[0.12] py-3 last:border-b-0">
+                  {/* Laid out like the payment rows: no date kept for a deposit, so the dash. */}
+                  <SupplierLink id={s.id} className="flex min-w-0 flex-1 items-center gap-3.5">
+                    <DateStamp date={null} today={today} done />
+                    <span className="min-w-0 flex-1">
+                      <span className="type-item block truncate !text-stone">Deposit</span>
+                      <span className="type-meta mt-1 block truncate">Paid · {supplierName(s)}</span>
+                    </span>
+                    <span className="type-figure shrink-0 text-[18px] !text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
                   </SupplierLink>
-                  <span className="type-figure text-lg !text-stone">{formatMoney(s.supplier_details?.deposit_paid ?? 0)}</span>
+                  <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white" aria-hidden>
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.4} />
+                  </span>
                 </li>
               ))}
-              {schedule.map((p) => {
-                const overdue = !p.paid_on && !!p.due_date && p.due_date < today;
-                return (
-                  <li key={p.id} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
-                    <form action={markPaidAction.bind(null, p.id, !p.paid_on)}>
-                      <button
-                        type="submit"
-                        aria-label={p.paid_on ? `Mark "${p.description}" as not paid` : `Mark "${p.description}" as paid`}
-                        className={`flex h-6 w-6 items-center justify-center rounded-full transition ${
-                          p.paid_on ? "bg-champagne-600 text-white" : "border border-champagne-400 bg-white hover:bg-champagne-100"
-                        }`}
-                      >
-                        {p.paid_on && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
-                      </button>
-                    </form>
-                    <Link href={`/money/payments/${p.id}`} className="min-w-0 flex-1">
-                      <span className="type-item block truncate">{p.description}</span>
-                      <span className={`type-meta mt-1 block truncate ${overdue ? "!text-ink" : ""}`}>
-                        {p.paid_on
-                          ? `Paid ${formatDayMonth(p.paid_on)}`
-                          : p.due_date
-                            ? `${overdue ? "Overdue · was due" : "Due"} ${formatWeekdayDayMonth(p.due_date)}`
-                            : "No date yet"}
-                      </span>
-                    </Link>
-                    <span className={`type-figure text-lg ${p.paid_on ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
-                  </li>
-                );
-              })}
+              {schedule.map((p) => (
+                <PaymentRow key={p.id} payment={p} today={today} />
+              ))}
               {unscheduled.map(({ supplier: s, balance }) => (
                 <li key={`balance-${s.id}`} className="flex items-center gap-3 border-b border-linen py-3.5 last:border-b-0">
                   <span className="h-6 w-6 shrink-0 rounded-full border border-dashed border-champagne-400" aria-hidden />

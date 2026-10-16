@@ -509,7 +509,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   first in **bold gold** ("20 Oct · Flowers"); overdue turns the date rose
   with "· Overdue" after it ("15 Oct · Overdue"); an appointment adds its day
   and time after the date ("24 Oct · Sat 2pm · Ashcombe Barn"). No "By".
-  `MilestoneRow` / `AppointmentRow`, so the same everywhere they show. The tab's top (back arrow, corner switch, title + drawing) is
+  **Replaced the same day by one row for all three** (owner: the Hub's
+  This week, Plan and Money rows were three styles): **the date large on
+  the left** (`DateStamp`, `src/components/date-stamp.tsx` — the day in gold,
+  month under; rose overdue, grey done, ink "Today"; "–" / "No date"), then
+  the title and a grey line (to-do: "Overdue" + area; appointment: "Sat 2pm ·
+  where · with …"; payment: "Overdue" / "Paid 3 Oct" + who) and the amount,
+  then **the mark on the right**: tick circle (to-do), little calendar
+  (appointment), £ circle (payment; `PaymentRow`, `src/components/
+  payment-row.tsx`, with Undo). No chevrons. Used by `MilestoneRow`,
+  `AppointmentRow`, Money's By month, area pages' payments, and the Hub's
+  This week (weekday under the date there). The tab's top (back arrow, corner switch, title + drawing) is
   the shared pattern on every tab — left as is.
   Counts say "4 items" / "1 item" (a bare number didn't say what it
   counted); row dividers in Plan's lists are darker (`border-ink/[0.12]`

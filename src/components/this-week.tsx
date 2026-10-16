@@ -1,3 +1,4 @@
+import DateStamp from "./date-stamp";
 import Link from "next/link";
 import { Calendar, Check } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
@@ -135,7 +136,9 @@ export default function ThisWeek({
             <div className="mt-2">
               {groups.map((g) => (
                 <div key={g.key} className="flex gap-3.5 border-t border-linen py-1 first:border-t-0">
-                  <DayStamp date={g.date} today={today} overdue={g.overdue} />
+                  <span className="pt-2.5">
+                    <DateStamp date={g.date} today={today} overdue={g.overdue} under="weekday" />
+                  </span>
                   <ul className="min-w-0 flex-1">
                     {g.items.map((e) => (
                       <li key={e.key} className="flex items-center gap-3 border-t border-linen/70 first:border-t-0">
@@ -187,26 +190,6 @@ export default function ThisWeek({
         )}
       </div>
     </section>
-  );
-}
-
-/**
- * The day down the left, large (owner, 13 Oct 2026, like canvas 2's option
- * B): the date in gold with its weekday under it; today in ink, "Today"; an
- * overdue day in rose, with "Overdue" under the title rather than here.
- */
-function DayStamp({ date, today, overdue }: { date: string; today: string; overdue: boolean }) {
-  const isToday = date === today;
-  return (
-    <span className="flex w-12 shrink-0 flex-col items-start pt-2">
-      <span className={`font-display text-[34px] font-light leading-none tabular-nums ${isToday ? "text-ink" : overdue ? "text-[#9A3F2B]" : "text-champagne-600"}`}>
-        {Number(date.slice(8))}
-      </span>
-      <span className={`mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${isToday ? "text-ink" : "text-stone"}`}>
-        {/* An overdue day may be weeks back, so it gets its month, not a weekday. */}
-        {isToday ? "Today" : overdue ? formatDayMonth(date).split(" ")[1] : formatWeekdayDayMonth(date).split(" ")[0]}
-      </span>
-    </span>
   );
 }
 

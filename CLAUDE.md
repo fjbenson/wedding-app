@@ -767,7 +767,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `expectedGuests()` in `src/lib/area-guests.ts`; only the count reaches
   Money) on its card and money sheet. Quote comparison options are on
   canvas 3 "Money · Comparing quotes" (A side by side, B against the budget
-  line, C pick one, then book).
+  line, C pick one, then book). **Built 17 Oct 2026 as B with A's tap**
+  (owner): `QuoteCompare` (`src/components/quote-compare.tsx`) — a bar per
+  quote, cheapest first, a black line at what's left of the area's budget
+  (budget − agreed), over runs on in rose stripes with "▲ Over by £…".
+  Shown when an area has two or more quotes in and no one booked: on the
+  area page's Suppliers (a tap opens the supplier card in place) and in
+  Money's area sheet (a tap opens the area page with that card).
   **Who's paying** (17 Oct 2026, owner's OK; `0022_contributions.sql`, run
   the same day): money coming in — who (typed, e.g. "Us", "Mum and Dad";
   matching guests come up to tap, linking `contact_id`, optional), how much,

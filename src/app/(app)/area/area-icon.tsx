@@ -65,7 +65,10 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Change the icon">
+        // pointer-events-auto: the icon sits in the cover's tap-through layer, so
+        // without it taps on the card fell through to the cover's "Save an
+        // idea" link (16 Oct 2026 bug: ✕ opened Save an idea).
+        <div className="pointer-events-auto fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Change the icon">
           <button
             type="button"
             aria-label="Close"
@@ -95,7 +98,6 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
               <div className={`mt-4 ${pending ? "opacity-60" : ""}`}>
                 <IconPicker value={current} onPick={pick} />
               </div>
-              <p className="mt-3.5 text-center text-xs text-stone">It saves as soon as you tap one.</p>
             </div>
           </div>
         </div>

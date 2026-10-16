@@ -6,38 +6,43 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, LayoutList, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import PageTitle from "@/components/page-title";
+import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
-import { formatMoney } from "@/lib/money";
-import { supplierStatusLabel } from "@/lib/supplier-status";
+import { supplierStatusLabel, SUPPLIER_STATUSES } from "@/lib/supplier-status";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment, SupplierStatus } from "@/types/db";
 import SupplierCard, { supplierContact, supplierName } from "./supplier-card";
 
 type Show = "all" | "booked" | "quoted" | "enquired";
-type SortBy = "area" | "name";
+type SortBy = "name" | "area" | "stage";
 const SORT_KEY = "supplier-list-sort";
-const SORTS: { key: SortBy; label: string; short: string }[] = [
-  { key: "area", label: "Area", short: "by area" },
-  { key: "name", label: "Name, A–Z", short: "A to Z" },
+/** The View menu, like the guest list's: an order, then ways to group (owner, 17 Oct 2026). */
+const SORTS: { key: SortBy; label: string; section: string }[] = [
+  { key: "name", label: "Name, A–Z", section: "Order" },
+  { key: "area", label: "Area", section: "Group by" },
+  { key: "stage", label: "Stage", section: "Group by" },
 ];
 /** "Looking" was folded into "In touch" (0012_area_stages.sql). */
 const stage = (s: Supplier): SupplierStatus => {
   const status = s.supplier_details?.status ?? "enquired";
   return status === "researching" ? "enquired" : status;
 };
+/** The supplier's area, with no area counted as Other. */
+const cat = (s: Supplier) => s.supplier_details?.category || "other";
 
 /**
  * The Suppliers tab of People (screen 12), shaped like the guest list
  * (canvas 2 "Suppliers · Round 1", A, owner's pick 12 Oct 2026): a count
  * card (All · Booked · Quote in · In touch, each one shows just those), search
- * and a Filter (areas, Still to pay, No phone or email, Not taken), then
- * everyone grouped by area in the wedding's own
- * order — so quotes for the same thing sit together. Each row: initials,
- * the business, who to ask for, the quote and a stage icon. Tapping one
- * opens their card (`supplier-card.tsx`). Search, the card's choice, the
- * area filter and an open card live in the address (?q= ?show= ?f=
- * ?supplier=), like the guest list.
+ * and a Filter — one list of things to filter by (Area · Stage · Money ·
+ * Contact), each opening its own values, like the guest list's since
+ * 17 Oct 2026 — then everyone grouped by area, A–Z (owner, 17 Oct 2026:
+ * Venue first "feels a bit wrong"), Other last. Each row: initials with the
+ * stage as a badge, the business, who to ask for, Call and Email. Tapping
+ * one opens their card (`supplier-card.tsx`). Search, filters and an open
+ * card live in the address (?q= ?f= ?supplier=), like the guest list; the
+ * count card's pick is the Stage filter, so old ?show= links still work.
  */
 export default function SupplierList({
   suppliers,
@@ -50,21 +55,21 @@ export default function SupplierList({
 }) {
   const params = useSearchParams();
   const [query, setQuery] = useState(params.get("q") ?? "");
-  const [show, setShow] = useState<Show>(() => {
-    const s = params.get("show");
-    return s === "booked" || s === "quoted" || s === "enquired" ? s : "all";
-  });
-  // Filters: areas ("area:venue", any of), plus "topay", "nocontact" and
-  // "nottaken" (each narrows further). Old ?area= links still work.
+  // Filters: "area:venue", "stage:booked" (any of within each), plus "topay"
+  // and "nocontact". Old ?area=, ?show= and "nottaken" links still work.
   const [filters, setFilters] = useState<string[]>(() => {
-    const asked = (params.get("f") ?? "").split(",").filter(Boolean);
+    const asked = (params.get("f") ?? "")
+      .split(",")
+      .filter(Boolean)
+      .map((k) => (k === "nottaken" ? "stage:cancelled" : k));
     const old = params.get("area");
-    return old ? [...asked, `area:${old}`] : asked;
+    const show = params.get("show");
+    return [...new Set([...asked, ...(old ? [`area:${old}`] : []), ...(show === "booked" || show === "quoted" || show === "enquired" ? [`stage:${show}`] : [])])];
   });
   const [openId, setOpenId] = useState<string | null>(params.get("supplier"));
   useEffect(() => {
-    replaceQuery({ q: query.trim() || null, show: show === "all" ? null : show, f: filters.length ? filters.join(",") : null, area: null, supplier: openId });
-  }, [query, show, filters, openId]);
+    replaceQuery({ q: query.trim() || null, show: null, f: filters.length ? filters.join(",") : null, area: null, supplier: openId });
+  }, [query, filters, openId]);
   const toggle = (key: string) => setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
   const [editField, setEditField] = useState<"phone" | "email">();
   const close = useCallback(() => {
@@ -72,15 +77,15 @@ export default function SupplierList({
     setEditField(undefined);
   }, []);
 
-  // By area, or A to Z by business name — a preference kept on this phone
-  // until it's changed, like the guest list's sort. Read after the first
-  // draw so the server's page and the phone's agree.
+  // How the list is shown — a preference kept on this phone until it's
+  // changed, like the guest list's View. Read after the first draw so the
+  // server's page and the phone's agree.
   const [sort, setSort] = useState<SortBy>("area");
   const [remembered, setRemembered] = useState(false);
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(SORT_KEY);
-      if (saved === "area" || saved === "name") setSort(saved);
+      if (SORTS.some((o) => o.key === saved)) setSort(saved as SortBy);
     } catch {
       // Private browsing or blocked storage: start from the default.
     }
@@ -95,14 +100,20 @@ export default function SupplierList({
     }
   }, [sort, remembered]);
 
-  const counts = { booked: 0, quoted: 0, enquired: 0 };
-  for (const s of suppliers) {
-    const st = stage(s);
-    if (st === "booked" || st === "quoted" || st === "enquired") counts[st] += 1;
-  }
+  // Headings folded away: tap a heading's chevron. Not taken starts folded,
+  // like the guest list's Can't come.
+  const [folded, setFolded] = useState<Set<string>>(new Set(["stage-cancelled"]));
+  const toggleFold = (key: string) =>
+    setFolded((all) => {
+      const next = new Set(all);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
 
-  const needle = query.trim().toLowerCase();
-  const narrowed = show !== "all" || filters.length > 0 || !!needle;
+  // Areas A to Z, Other last.
+  const areasAz = [...areas].sort((a, b) => a.label.localeCompare(b.label));
+  const hasOther = suppliers.some((s) => !areas.some((a) => a.key === cat(s)));
 
   // What each filter keeps.
   const owes = (s: Supplier) => {
@@ -115,20 +126,48 @@ export default function SupplierList({
   const tests: Record<string, (s: Supplier) => boolean> = {
     topay: owes,
     nocontact: (s) => !s.phone && !s.email,
-    nottaken: (s) => stage(s) === "cancelled",
   };
   const areaOn = filters.filter((f) => f.startsWith("area:")).map((f) => f.slice(5));
+  const stageOn = filters.filter((f) => f.startsWith("stage:")).map((f) => f.slice(6));
   const otherOn = filters.filter((f) => tests[f]);
-  const passes = (s: Supplier) =>
-    (areaOn.length === 0 || areaOn.includes(s.supplier_details?.category ?? "")) && otherOn.every((f) => tests[f](s));
-  const filterRows = [
-    ...areas.map((a) => ({ key: `area:${a.key}`, label: a.label, count: suppliers.filter((s) => s.supplier_details?.category === a.key).length })),
-    ...OTHER_FILTERS.map((f) => ({ ...f, count: suppliers.filter(tests[f.key]).length })),
-  ];
-  const labelOf = (key: string) => filterRows.find((r) => r.key === key)?.label ?? key;
+  const inArea = (s: Supplier, key: string) => (key === "other" ? !areas.some((a) => a.key === cat(s)) : cat(s) === key);
+  // Everything but the stage: what the count card counts.
+  const passesBesidesStage = (s: Supplier) => (areaOn.length === 0 || areaOn.some((k) => inArea(s, k))) && otherOn.every((f) => tests[f](s));
+  const passes = (s: Supplier) => passesBesidesStage(s) && (stageOn.length === 0 || stageOn.includes(stage(s)));
 
+  const counted = suppliers.filter(passesBesidesStage);
+  const counts = { booked: 0, quoted: 0, enquired: 0 };
+  for (const s of counted) {
+    const st = stage(s);
+    if (st === "booked" || st === "quoted" || st === "enquired") counts[st] += 1;
+  }
+  // The count card picks one stage; it lights up when that's the only stage on.
+  const show: Show | null = stageOn.length === 0 ? "all" : stageOn.length === 1 && stageOn[0] !== "cancelled" ? (stageOn[0] as Show) : null;
+  const onShow = (next: Show) =>
+    setFilters((on) => [...on.filter((f) => !f.startsWith("stage:")), ...(next === "all" ? [] : [`stage:${next}`])]);
+
+  const filterRows: FilterRow[] = [
+    {
+      key: "area",
+      title: "Area",
+      options: [
+        ...areasAz.map((a) => ({ id: `area:${a.key}`, label: a.label, count: suppliers.filter((s) => inArea(s, a.key)).length })),
+        ...(hasOther ? [{ id: "area:other", label: "Other", count: suppliers.filter((s) => inArea(s, "other")).length }] : []),
+      ],
+    },
+    {
+      key: "stage",
+      title: "Stage",
+      options: SUPPLIER_STATUSES.map((st) => ({ id: `stage:${st.status}`, label: st.label, count: suppliers.filter((s) => stage(s) === st.status).length })),
+    },
+    { key: "money", title: "Money", options: [{ id: "topay", label: "Still to pay", count: suppliers.filter(owes).length }] },
+    { key: "contact", title: "Contact", options: [{ id: "nocontact", label: "No phone or email", count: suppliers.filter(tests.nocontact).length }] },
+  ];
+  const labelOf = (key: string) => filterRows.flatMap((r) => r.options).find((o) => o.id === key)?.label ?? key;
+
+  const needle = query.trim().toLowerCase();
+  const narrowed = filters.length > 0 || !!needle;
   const shown = suppliers.filter((s) => {
-    if (show !== "all" && stage(s) !== show) return false;
     if (!passes(s)) return false;
     if (!needle) return true;
     return [supplierName(s), supplierContact(s), s.email, s.phone, areaName(s.supplier_details?.category ?? null, areas)]
@@ -136,35 +175,36 @@ export default function SupplierList({
       .some((t) => t!.toLowerCase().includes(needle));
   });
 
-  // Grouped by area in the wedding's own order, anything else after.
-  const cat = (s: Supplier) => s.supplier_details?.category || "other";
-  const keys = [...areas.map((a) => a.key), ...new Set(shown.map(cat))];
-  const byArea = [...new Set(keys)]
+  // "The" doesn't count when going A to Z.
+  const sortName = (s: Supplier) => supplierName(s).replace(/^the\s+/i, "");
+  const byNameOrder = (a: Supplier, b: Supplier) => sortName(a).localeCompare(sortName(b));
+
+  type Group = { key: string; label: string; href: string | null; rows: Supplier[] };
+  // Grouped by area, A to Z, with Other (no area, or one taken off) last.
+  const byArea: Group[] = [
+    ...areasAz.map((a) => a.key),
+    "other",
+  ]
     .map((key) => ({
       key,
-      label: areaName(key, areas) ?? key,
-      href: areas.some((x) => x.key === key) ? `/area/${encodeURIComponent(key)}` : null,
+      label: key === "other" ? "Other" : (areaName(key, areas) ?? key),
+      href: key === "other" ? null : `/area/${encodeURIComponent(key)}`,
       rows: shown
-        .filter((s) => cat(s) === key)
+        .filter((s) => inArea(s, key))
         // Booked first, then quotes, then in touch; not taken last.
-        .sort((a, b) => ORDER[stage(a)] - ORDER[stage(b)]),
+        .sort((a, b) => ORDER[stage(a)] - ORDER[stage(b)] || byNameOrder(a, b)),
     }))
     // With nothing narrowing the list, every area shows — an empty one as a
     // faded row to fill in — so the page has its shape from day one (owner,
     // 12 Oct 2026: "an empty page should still show its structure").
-    .filter((g) => g.rows.length > 0 || (!narrowed && areas.some((x) => x.key === g.key)));
-  // Or A to Z by business name, one plain list like the guest list's — no
-  // letter dividers (owner, 12 Oct 2026). "The" doesn't count.
-  const sortName = (s: Supplier) => supplierName(s).replace(/^the\s+/i, "");
-  const byName = [
-    {
-      key: "a-to-z",
-      label: "",
-      href: null as string | null,
-      rows: [...shown].sort((a, b) => sortName(a).localeCompare(sortName(b))),
-    },
-  ].filter((g) => g.rows.length > 0);
-  const groups = sort === "name" ? byName : byArea;
+    .filter((g) => g.rows.length > 0 || (!narrowed && g.key !== "other"));
+  // Grouped by stage, furthest along first, each A to Z.
+  const byStage: Group[] = (["booked", "quoted", "enquired", "cancelled"] as const)
+    .map((st) => ({ key: `stage-${st}`, label: supplierStatusLabel(st), href: null, rows: shown.filter((s) => stage(s) === st).sort(byNameOrder) }))
+    .filter((g) => g.rows.length > 0);
+  // Or one plain list A to Z, like the guest list's — no letter dividers (owner, 12 Oct 2026).
+  const byName: Group[] = [{ key: "a-to-z", label: "", href: null, rows: [...shown].sort(byNameOrder) }].filter((g) => g.rows.length > 0);
+  const groups = sort === "name" ? byName : sort === "stage" ? byStage : byArea;
   const open = suppliers.find((s) => s.id === openId);
 
   return (
@@ -175,12 +215,12 @@ export default function SupplierList({
 
         <div className="lg:max-w-xl">
           <CountCard
-            total={suppliers.length}
-            areasWith={areas.filter((a) => suppliers.some((s) => s.supplier_details?.category === a.key)).length}
+            total={counted.length}
+            areasWith={areas.filter((a) => counted.some((s) => cat(s) === a.key)).length}
             areas={areas.length}
             counts={counts}
             show={show}
-            onShow={setShow}
+            onShow={onShow}
           />
 
           <div className="mt-5 flex items-center gap-2">
@@ -200,7 +240,7 @@ export default function SupplierList({
 
           <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
             <SortMenu sort={sort} onSort={setSort} />
-            <FilterMenu rows={filterRows} areaCount={areas.length} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
+            <FilterMenu rows={filterRows} on={filters} onToggle={toggle} onClear={() => setFilters([])} results={shown.length} />
           </div>
           {filters.length > 0 && (
             <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
@@ -229,7 +269,6 @@ export default function SupplierList({
                 <button
                   type="button"
                   onClick={() => {
-                    setShow("all");
                     setFilters([]);
                     setQuery("");
                   }}
@@ -240,49 +279,67 @@ export default function SupplierList({
               )}
             </p>
           )}
-          {groups.map((g) => (
-            <section key={g.key || "none"} aria-label={g.label || "A to Z"}>
-              {g.label ? (
-                <p className="mt-6 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5">
-                  {/* An area's heading opens its page: where the choosing happens. */}
-                  {g.href ? (
-                    <Link href={g.href} className="label hover:text-ink">
-                      {g.label} ›
-                    </Link>
-                  ) : (
-                    <span className="label">{g.label}</span>
-                  )}
-                  <span className="text-xs text-stone">{supplierCount(g.rows.length)}</span>
-                </p>
-              ) : (
-                <div aria-hidden className="mt-4 border-b border-champagne-400" />
-              )}
-              <ul>
-                {g.rows.length === 0 && (
-                  <li className="row-press border-b-[0.5px] border-champagne-400">
-                    <Link href={`/people/suppliers/new?category=${encodeURIComponent(g.key)}&from=suppliers`} className="flex min-h-[58px] items-center gap-3 py-1.5">
-                      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600 max-[359px]:hidden">
-                        <Plus className="h-4 w-4" strokeWidth={1.8} />
-                      </span>
-                      <span className="min-w-0 flex-1 font-display text-lg italic text-stone/70">Add a supplier</span>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-stone/60" strokeWidth={1.8} aria-hidden />
-                    </Link>
-                  </li>
+          {groups.map((g) => {
+            const isFolded = folded.has(g.key);
+            return (
+              <section key={g.key || "none"} aria-label={g.label || "A to Z"}>
+                {g.label ? (
+                  <div className="mt-6 flex items-center justify-between gap-3 border-b border-champagne-400 pb-1">
+                    {/* An area's heading opens its page: where the choosing happens. */}
+                    {g.href ? (
+                      <Link href={g.href} className="label hover:text-ink">
+                        {g.label} ›
+                      </Link>
+                    ) : (
+                      <button type="button" onClick={() => toggleFold(g.key)} aria-expanded={!isFolded} className="label text-left hover:text-ink">
+                        {g.label}
+                      </button>
+                    )}
+                    <span className="flex items-center gap-1 text-xs text-stone">
+                      {supplierCount(g.rows.length)}
+                      {g.rows.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleFold(g.key)}
+                          aria-expanded={!isFolded}
+                          aria-label={`${isFolded ? "Show" : "Hide"} ${g.label}`}
+                          className="-mr-2 flex h-8 w-8 items-center justify-center text-stone hover:text-ink"
+                        >
+                          <ChevronDown className={`h-4 w-4 transition ${isFolded ? "-rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                ) : (
+                  <div aria-hidden className="mt-4 border-b border-champagne-400" />
                 )}
-                {g.rows.map((s) => (
-                  <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
-                    <SupplierRow
-                      supplier={s}
-                      onOpen={(field) => {
-                        setEditField(field);
-                        setOpenId(s.id);
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                <ul>
+                  {g.rows.length === 0 && (
+                    <li className="row-press border-b-[0.5px] border-champagne-400">
+                      <Link href={`/people/suppliers/new?category=${encodeURIComponent(g.key)}&from=suppliers`} className="flex min-h-[58px] items-center gap-3 py-1.5">
+                        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600 max-[359px]:hidden">
+                          <Plus className="h-4 w-4" strokeWidth={1.8} />
+                        </span>
+                        <span className="min-w-0 flex-1 font-display text-lg italic text-stone/70">Add a supplier</span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-stone/60" strokeWidth={1.8} aria-hidden />
+                      </Link>
+                    </li>
+                  )}
+                  {(isFolded ? [] : g.rows).map((s) => (
+                    <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
+                      <SupplierRow
+                        supplier={s}
+                        onOpen={(field) => {
+                          setEditField(field);
+                          setOpenId(s.id);
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
 
           <Key />
         </div>
@@ -319,10 +376,12 @@ function CountCard({
   areasWith: number;
   areas: number;
   counts: Record<"booked" | "quoted" | "enquired", number>;
-  show: Show;
+  /** Which tile is lit: null when the Stage filter holds something the card can't show (several, or Not taken). */
+  show: Show | null;
   onShow: (show: Show) => void;
 }) {
   const all = show === "all";
+  // Furthest step first, like the guest list's Coming · Invited · To invite.
   const rows: { status: Exclude<Show, "all">; label: string }[] = [
     { status: "booked", label: "Booked" },
     { status: "quoted", label: "Quote in" },
@@ -341,7 +400,12 @@ function CountCard({
       >
         <span className="type-meta text-champagne-600">All</span>
         <span>
-          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-champagne-600" : "text-ink"}`}>{total}</span>
+          {/* As big as the guest list's (owner, 17 Oct 2026). */}
+          <span
+            className={`type-figure block leading-none ${total >= 100 ? "text-[50px] sm:text-[56px]" : "text-[64px] sm:text-[72px]"} ${all ? "text-champagne-600" : "text-ink"}`}
+          >
+            {total}
+          </span>
           <span className="mt-1.5 block text-xs text-stone">
             {areasWith} of {areas} {areas === 1 ? "area" : "areas"}
           </span>
@@ -372,32 +436,10 @@ function CountCard({
   );
 }
 
-/** Beyond area: the things worth narrowing a list of suppliers to. Booked is the count card's. */
-const OTHER_FILTERS = [
-  { key: "topay", label: "Still to pay" },
-  { key: "nocontact", label: "No phone or email" },
-  { key: "nottaken", label: "Not taken" },
-];
+type FilterRow = { key: string; title: string; options: { id: string; label: string; count: number }[] };
 
-/**
- * The Filter button and its menu, as on the guest list: a round button that
- * goes dark with a count when anything's on, and "Show only" — the areas
- * (any of them), then the rest — ticked as you go, no apply step.
- */
-function FilterMenu({
-  rows,
-  areaCount,
-  on,
-  onToggle,
-  onClear,
-}: {
-  rows: { key: string; label: string; count: number }[];
-  /** How many of the rows are areas (they come first). */
-  areaCount: number;
-  on: string[];
-  onToggle: (key: string) => void;
-  onClear: () => void;
-}) {
+/** Closes on a tap outside or Escape. */
+function useDropdown() {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -413,7 +455,107 @@ function FilterMenu({
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
+  return { open, setOpen, box };
+}
+
+const MENU =
+  "absolute right-0 top-[calc(100%+8px)] z-30 rounded-[20px] border border-linen bg-white px-4 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]";
+
+/**
+ * The Filter button and its menu, as on the guest list (canvas 3 "Filter
+ * reimagined", A): one list of things to filter by — Area, Stage, Money,
+ * Contact — each opening its own values; any of the ticked ones within a
+ * row, every row together. Ticked as you go, no apply step. On a phone it's
+ * a sheet from the bottom with "Show N suppliers".
+ */
+function FilterMenu({
+  rows,
+  on,
+  onToggle,
+  onClear,
+  results,
+}: {
+  rows: FilterRow[];
+  on: string[];
+  onToggle: (key: string) => void;
+  onClear: () => void;
+  /** How many suppliers the filters leave, for the sheet's "Show …" button. */
+  results: number;
+}) {
+  const { open, setOpen, box } = useDropdown();
+  const close = useCallback(() => setOpen(false), [setOpen]);
+  const drag = usePullToClose(close);
   const active = on.length;
+  const [openKind, setOpenKind] = useState<string | null>(null);
+  // On a phone the list behind stays still while the sheet is open.
+  useEffect(() => {
+    if (!open || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
+
+  const content = (
+    <>
+      <div className="flex items-baseline justify-between py-1">
+        <span className="section-label">Filter by</span>
+        {active > 0 && (
+          <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+            Clear
+          </button>
+        )}
+      </div>
+      {rows.map((r) => {
+        const isOpen = openKind === r.key;
+        const n = r.options.filter((o) => on.includes(o.id)).length;
+        return (
+          <div key={r.key} className="border-t border-linen first:border-t-0">
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              onClick={() => setOpenKind(isOpen ? null : r.key)}
+              className="flex min-h-12 w-full items-center gap-3 text-left text-[15px] text-ink"
+            >
+              <span className="flex-1">{r.title}</span>
+              {n > 0 && <span className="text-[13px] font-medium text-champagne-600">{n} picked</span>}
+              <ChevronRight className={`h-4 w-4 shrink-0 text-stone transition ${isOpen ? "rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+            </button>
+            {isOpen && (
+              <ul className="pb-1 pl-2">
+                {r.options.map((o) => {
+                  const ticked = on.includes(o.id);
+                  return (
+                    <li key={o.id} className="border-t border-linen first:border-t-0">
+                      <button
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={ticked}
+                        onClick={() => onToggle(o.id)}
+                        className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                      >
+                        <span
+                          aria-hidden
+                          className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                            ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                          }`}
+                        >
+                          {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                        </span>
+                        <span className="flex-1">{o.label}</span>
+                        <span className="text-[13px] text-stone">{o.count}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
 
   return (
     <div ref={box} className="relative shrink-0">
@@ -434,66 +576,45 @@ function FilterMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-          <div className="flex items-baseline justify-between py-1">
-            <span className="section-label">Show only</span>
-            {active > 0 && (
-              <button type="button" onClick={onClear} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-                Clear
-              </button>
-            )}
+        <>
+          {/* Laptops: a small menu under the button. */}
+          <div className={`${MENU} hidden max-h-[70dvh] w-[17rem] overflow-y-auto pb-2 pt-2.5 lg:block`}>{content}</div>
+
+          {/* Phones: a sheet from the bottom, like the guest list's. */}
+          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Filter">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={close}
+              style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+              className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+            />
+            <div
+              style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+              className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] ${
+                drag.dragging ? "" : "transition-transform duration-200 ease-out"
+              }`}
+            >
+              <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center">
+                <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
+              </div>
+              <div className="overflow-y-auto overscroll-contain px-[22px] pb-3">{content}</div>
+              <div className="shrink-0 border-t border-linen px-[22px] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+                <button type="button" onClick={close} className="h-12 w-full rounded-full bg-ink text-[15px] text-ivory">
+                  Show {results} {results === 1 ? "supplier" : "suppliers"}
+                </button>
+              </div>
+            </div>
           </div>
-          <ul>
-            {rows.map((f, i) => {
-              const ticked = on.includes(f.key);
-              return (
-                // A firmer line between the areas and the rest.
-                <li key={f.key} className={`border-t first:border-t-0 ${i === areaCount && i > 0 ? "border-champagne-400" : "border-linen"}`}>
-                  <button
-                    type="button"
-                    role="menuitemcheckbox"
-                    aria-checked={ticked}
-                    onClick={() => onToggle(f.key)}
-                    className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
-                  >
-                    <span
-                      aria-hidden
-                      className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                        ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
-                      }`}
-                    >
-                      {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
-                    </span>
-                    <span className="flex-1">{f.label}</span>
-                    <span className="text-[13px] text-stone">{f.count}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        </>
       )}
     </div>
   );
 }
 
-/** "☰ Area ⌄" on the line above the list, on the left with Filter on the right — the guest list's View, for suppliers (owner, 17 Oct 2026). */
+/** "☰ Area ⌄" on the line above the list, on the left with Filter on the right — the guest list's View, for suppliers. */
 function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void }) {
-  const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("pointerdown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  const { open, setOpen, box } = useDropdown();
   const current = SORTS.find((o) => o.key === sort)!;
 
   return (
@@ -511,11 +632,11 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[14rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-          <span className="section-label block py-1">View</span>
+        <div className={`${MENU} !left-0 !right-auto w-[14rem] pb-1.5 pt-2.5`}>
           <ul>
-            {SORTS.map((o) => (
-              <li key={o.key} className="border-t border-linen first:border-t-0">
+            {SORTS.map((o, i) => (
+              <li key={o.key} className={i > 0 && SORTS[i - 1].section === o.section ? "border-t border-linen" : ""}>
+                {(i === 0 || SORTS[i - 1].section !== o.section) && <span className={`section-label block pb-0.5 ${i === 0 ? "pt-1" : "pt-3"}`}>{o.section}</span>}
                 <button
                   type="button"
                   role="menuitemradio"

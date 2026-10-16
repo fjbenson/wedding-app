@@ -307,8 +307,17 @@ Next.js scaffold. Built so far, against the plan's tabs:
   each shows just those), search with a round black **+** (add a supplier) at its end, then a
   **Filter** (always shown, plain words and the guest list's "Show only" menu: any of the wedding's areas, then
   Still to pay · No phone or email · Not taken; pills to take off; `?f=`;
-  Booked stays on the count card),
-  then everyone **grouped by area** in the wedding's order (heading shows a
+  Booked stays on the count card; **since 17 Oct 2026 like the guest
+  list's**: one list of rows — Area · Stage (In touch · Quote in · Booked ·
+  Not taken) · Money (Still to pay) · Contact (No phone or email) — each
+  opening its values, a sheet on phones with "Show N suppliers"; the count
+  card's tiles are the Stage filter (`stage:booked` in `?f=`; old `?show=`
+  and `nottaken` links still work) and count whatever the other filters
+  leave; the All number is the guest list's size, 64px; View has Order ·
+  Name and Group by · Area · Stage; every heading folds, Not taken starts
+  folded),
+  then everyone **grouped by area, A–Z** with Other last (owner, 17 Oct
+  2026: Venue first felt wrong) (heading shows a
   count, "1 supplier" / "0 suppliers", like the guest list; within a group booked → quotes → asked →
   not taken). **Rows are phone-book entries** (Suppliers round 2, A, 12 Oct
   2026): initials with the **stage as a badge** on them (✓ gold booked, ink until 13 Oct 2026 · £

@@ -10,6 +10,7 @@ import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
+import EditEvents from "./edit-events";
 import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupCard, type GroupSummary } from "./guest-groups";
@@ -525,17 +526,8 @@ export default function GuestBrowser({
         </>
       )}
 
-      {/* The events themselves — renaming them, or adding another — at the foot of the list. */}
-      <p className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-        {events.map((e) => (
-          <Link key={e.id} href={`/people/events/${e.id}`} className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-            Rename {e.name.toLowerCase()}
-          </Link>
-        ))}
-        <Link href="/people/events/new" className="text-xs text-stone underline underline-offset-4 hover:text-ink">
-          Add an event
-        </Link>
-      </p>
+      {/* The events themselves, at the foot of the list: one "Edit events" card (owner, 16 Oct 2026). */}
+      <EditEvents events={events} />
 
       {open && (
         <GuestCard

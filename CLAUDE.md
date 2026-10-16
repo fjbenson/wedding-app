@@ -229,8 +229,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   household, **group** (16 Oct 2026: under each group's name, A–Z, someone
   in two groups shows under both, the heading opens the group, then "Not in
   a group"), or **event** (day guests then evening; 9 Oct 2026; no separate sort
-  button by the search); "Rename the
-  day / evening" and "Add an event" sit at the foot of the list.
+  button by the search); at the foot of the list one **"Edit events"** link
+  (16 Oct 2026, owner; was "Rename the day · Rename the evening · Add an
+  event") opens a card listing each event — tap its name to rename, Where,
+  Remove (asks; its answers go too) — and "+ Add an event" (`edit-events.tsx`).
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"
   after it in gold italic (a guest's *type* is the first event they're
   invited to — events come in date order — so no new column), a **gold

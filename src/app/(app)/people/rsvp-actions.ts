@@ -134,3 +134,36 @@ export async function setGuestAnswerAction(guestId: string, status: RsvpStatus):
   if (!result.ok) return { error: result.detail ? `${result.error} ${result.detail}` : result.error };
   return {};
 }
+
+/**
+ * One change to an event from the Edit events card (owner, 16 Oct 2026):
+ * its name or where it is. Returns a message rather than moving screen.
+ */
+export async function updateEventFieldAction(
+  eventId: string,
+  field: "name" | "location",
+  value: string,
+): Promise<{ error?: string }> {
+  const tidy = value.trim() || null;
+  if (field === "name" && !tidy) return { error: "Please give it a name." };
+  try {
+    await updateEvent(eventId, { [field]: tidy } as Parameters<typeof updateEvent>[1]);
+  } catch (error) {
+    console.error("updating event failed", error);
+    return { error: "That didn't save." };
+  }
+  revalidatePath("/people");
+  return {};
+}
+
+/** Removes an event from the Edit events card; its guests' answers for it go too. */
+export async function removeEventAction(eventId: string): Promise<{ error?: string }> {
+  try {
+    await deleteEvent(eventId);
+  } catch (error) {
+    console.error("removing event failed", error);
+    return { error: "That didn't remove it." };
+  }
+  revalidatePath("/people");
+  return {};
+}

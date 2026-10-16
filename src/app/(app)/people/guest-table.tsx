@@ -90,6 +90,8 @@ const DETAIL_ICONS: Record<string, LucideIcon> = {
   Where: MapPin,
   With: UsersRound,
   To: UsersRound,
+  Who: UsersRound,
+  From: MapPin,
 };
 
 /** A detail's label with its small icon — phone for Phone, knife and fork for Meal. */

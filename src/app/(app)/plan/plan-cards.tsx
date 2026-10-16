@@ -7,16 +7,16 @@ import CardSheet from "@/components/card-sheet";
 import { replaceQuery } from "@/lib/url-state";
 import { toggleMilestoneAction } from "./actions";
 import { loadPlanCardAction, removePlanCardAction, type CardKind, type PlanCardData } from "./card-actions";
-import { AppointmentBody, PaymentBody, TodoBody } from "./plan-card-body";
+import { AppointmentBody, IdeaBody, MomentBody, PaymentBody, TodoBody } from "./plan-card-body";
 
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
 /**
- * A to-do, an appointment or a payment opens as a card over whatever page you're on —
+ * A to-do, an appointment, a payment, a run sheet moment or an Inspo idea opens as a card over whatever page you're on —
  * the calendar, the List, the Hub's This week, an area page — like a guest
  * or a supplier (owner, 16 Oct 2026: look at something in a card, add
  * something new on a full screen). Mounted once in the (app) layout; the open
- * card lives in the address (?todo= / ?appointment= / ?payment=, set by `CardLink`), so
+ * card lives in the address (?todo= / ?appointment= / ?payment= / ?moment= / ?idea=, set by `CardLink`), so
  * it survives a refresh and closing it leaves you where you were. Inside,
  * everything is changed in place (`plan-card-body.tsx`): taps save at once,
  * typing gets a small Save — the guest card's rule.
@@ -26,10 +26,22 @@ export default function PlanCards() {
   const todo = params.get("todo");
   const appointment = params.get("appointment");
   const payment = params.get("payment");
-  const kind: CardKind | null = todo ? "todo" : appointment ? "appointment" : payment ? "payment" : null;
-  const id = todo ?? appointment ?? payment;
+  const moment = params.get("moment");
+  const idea = params.get("idea");
+  const kind: CardKind | null = todo
+    ? "todo"
+    : appointment
+      ? "appointment"
+      : payment
+        ? "payment"
+        : moment
+          ? "moment"
+          : idea
+            ? "idea"
+            : null;
+  const id = todo ?? appointment ?? payment ?? moment ?? idea;
 
-  const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null }), []);
+  const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null, moment: null, idea: null }), []);
   if (!kind || !id) return null;
   return <PlanCard key={`${kind}:${id}`} kind={kind} id={id} onClose={close} />;
 }
@@ -52,7 +64,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
   }, [load]);
 
   const remove = (title: string) => {
-    if (!confirm(kind === "todo" ? `Remove "${title}" from the plan?` : `Remove "${title}"?`)) return;
+    if (!confirm(kind === "todo" ? `Remove "${title}" from the plan?` : kind === "idea" ? "Remove this from Inspo?" : `Remove "${title}"?`)) return;
     startTransition(async () => {
       try {
         const result = await removePlanCardAction(kind, id);
@@ -76,14 +88,18 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
       }
     });
 
-  const label = { todo: "To-do", appointment: "Appointment", payment: "Payment" }[kind];
+  const label = { todo: "To-do", appointment: "Appointment", payment: "Payment", moment: "On the day", idea: "Inspo" }[kind];
   const title = !data
     ? label
     : data.kind === "todo"
       ? data.milestone.title
       : data.kind === "appointment"
         ? data.appointment.title
-        : data.payment.description;
+        : data.kind === "moment"
+          ? data.moment.title
+          : data.kind === "idea"
+            ? (data.idea.title ?? "An idea")
+            : data.payment.description;
 
   return (
     <CardSheet label={title} onClose={onClose} top={<span className="label">{label}</span>}>
@@ -106,6 +122,10 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
             <TodoBody milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} />
           ) : data.kind === "appointment" ? (
             <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
+          ) : data.kind === "moment" ? (
+            <MomentBody moment={data.moment} areas={data.areas} />
+          ) : data.kind === "idea" ? (
+            <IdeaBody idea={data.idea} folderIds={data.folderIds} areas={data.areas} />
           ) : (
             <PaymentBody payment={data.payment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
           )}
@@ -117,7 +137,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
               onClick={() => remove(title)}
               className="text-xs text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
             >
-              {{ todo: "Remove from the plan", appointment: "Remove this appointment", payment: "Remove this payment" }[kind]}
+              {{ todo: "Remove from the plan", appointment: "Remove this appointment", payment: "Remove this payment", moment: "Remove from the run sheet", idea: "Remove this idea" }[kind]}
             </button>
           </div>
         </div>

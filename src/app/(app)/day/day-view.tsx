@@ -1,5 +1,6 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import CornerSwitch from "@/components/corner-switch";
@@ -217,7 +218,7 @@ function RunSheet({
                     const isNow = item.id === nowId;
                     return (
                       <li key={item.id}>
-                        <Link
+                        <CardLink
                           href={`/day/run-sheet/${item.id}`}
                           aria-current={isNow ? "time" : undefined}
                           className="relative grid grid-cols-[52px_1fr] gap-x-[26px] pb-[18px] hover:opacity-80"
@@ -249,7 +250,7 @@ function RunSheet({
                                 : "left-[61px] top-[7px] h-[9px] w-[9px] border-[1.5px] border-champagne-400 bg-white"
                             }`}
                           />
-                        </Link>
+                        </CardLink>
                       </li>
                     );
                   })}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Search, X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import PageTitle from "@/components/page-title";
@@ -10,6 +11,9 @@ import { formatClock } from "@/lib/dates";
 import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Stay, TransportPassenger, TransportRun } from "@/types/db";
 import { fullName, initials } from "../people/guest-table";
+import { safely, TextRow } from "../people/guest-card";
+import { removePlanCardAction, updatePlanFieldsAction } from "../plan/card-actions";
+import { TimeCard, TitleEditor } from "../plan/plan-card-body";
 import {
   addStayAction,
   boardAction,
@@ -502,21 +506,29 @@ function RunSheet({
   const aboard = guests.filter((g) => aboardIds.has(g.id));
   const noLift = guests.filter((g) => !anyLift.has(g.id) && !g.own_way);
   const { pending, error, run } = useSave();
+  const router = useRouter();
+  const [fieldError, setFieldError] = useState<string>();
+  const saveField = async (fields: Record<string, string | null>) => {
+    const result = await safely(() => updatePlanFieldsAction("journey", journey.id, fields));
+    setFieldError(result.error);
+    if (!result.error) router.refresh();
+    return result;
+  };
 
   return (
     <Sheet label={journey.vehicle} onClose={onClose}>
-      <div className="flex items-end justify-between gap-3">
-        <h2 className="font-display text-[32px] leading-none text-ink">{journey.vehicle}</h2>
-        <span className="type-figure text-[24px] text-champagne-600">{formatClock(journey.at_time)}</span>
+      {/* Edited right here, like every card (owner, 16 Oct 2026): the time
+          saves when it's picked; the name, from, to and notes get a small Save. */}
+      <TitleEditor value={journey.vehicle} onSave={(v) => saveField({ vehicle: v })} />
+      <div className="mt-4">
+        <TimeCard key={journey.at_time} value={journey.at_time.slice(0, 5)} onSave={(v) => saveField({ at_time: v })} required />
       </div>
-      {(journey.from_place || journey.to_place) && (
-        <p className="mt-2 text-[14px] text-stone">{[journey.from_place, journey.to_place].filter(Boolean).join(" → ")}</p>
-      )}
-      {journey.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-stone">{journey.notes}</p>}
-      <Link href={`/day/transport/${journey.id}`} className="mt-3 inline-block text-sm text-champagne-600 underline underline-offset-4">
-        Change the details ›
-      </Link>
-      <ErrorLine error={error} />
+      <dl className="mt-3">
+        <TextRow label="From" value={journey.from_place} onSave={(v) => saveField({ from_place: v })} />
+        <TextRow label="To" value={journey.to_place} onSave={(v) => saveField({ to_place: v })} />
+        <TextRow label="Notes" value={journey.notes} multiline onSave={(v) => saveField({ notes: v })} />
+      </dl>
+      <ErrorLine error={error ?? fieldError} />
 
       <h3 className="section-label mt-6">On board · {aboard.length}</h3>
       {aboard.length > 0 && (
@@ -541,6 +553,24 @@ function RunSheet({
         pending={pending}
         onPick={(g) => run(() => boardAction(journey.id, g.id))}
       />
+
+      <div className="mt-8 border-t border-linen pt-4 text-center">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            if (!confirm(`Remove ${journey.vehicle}? The people on it will show as having no lift.`)) return;
+            run(async () => {
+              const result = await removePlanCardAction("journey", journey.id);
+              if (!result.error) onClose();
+              return result;
+            });
+          }}
+          className="text-sm text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
+        >
+          Remove this journey
+        </button>
+      </div>
     </Sheet>
   );
 }

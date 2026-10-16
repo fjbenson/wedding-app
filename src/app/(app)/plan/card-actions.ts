@@ -8,9 +8,11 @@ import { describe } from "@/lib/errors";
 import { formOptions } from "@/lib/form-options";
 import { refreshMoney, refreshPlan } from "@/lib/jobs";
 import { deletePayment, getPayment, updatePayment } from "@/lib/db/money";
+import { deleteRunSheetItem, deleteTransportRun, getRunSheetItem, saveRunSheetItem, saveTransportRun } from "@/lib/db/day";
 import { parseMoney } from "@/lib/money";
+import { deleteInspo, getInspo, listInspoIds, updateInspo, type InspoWithPicture } from "@/lib/db/inspo";
 import type { AreaOption } from "@/lib/areas";
-import type { Appointment, Milestone, Payment } from "@/types/db";
+import type { Appointment, Milestone, Payment, RunSheetItem, TransportRun } from "@/types/db";
 
 /**
  * The to-do and appointment cards (plan-cards.tsx): each change saves on its
@@ -34,6 +36,22 @@ export type PlanCardData =
       weddingDate: string | null;
     }
   | {
+      kind: "moment";
+      moment: RunSheetItem;
+      areas: AreaOption[];
+      suppliers: { id: string; name: string; area?: string | null }[];
+      weddingDate: string | null;
+    }
+  | {
+      kind: "idea";
+      idea: InspoWithPicture;
+      /** Its folder's ideas, newest first, to step through with ‹ ›. */
+      folderIds: string[];
+      areas: AreaOption[];
+      suppliers: { id: string; name: string; area?: string | null }[];
+      weddingDate: string | null;
+    }
+  | {
       kind: "payment";
       payment: Payment;
       areas: AreaOption[];
@@ -42,6 +60,8 @@ export type PlanCardData =
     };
 
 export type CardKind = PlanCardData["kind"];
+/** What `updatePlanFieldsAction` can change: the cards, plus a journey on Travel's card. */
+type FieldKind = CardKind | "journey";
 
 /** What a card needs; null when it's gone (or another wedding's — row-level security). */
 export async function loadPlanCardAction(kind: CardKind, id: string): Promise<PlanCardData | null> {
@@ -49,19 +69,35 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
   const wedding = await getCurrentWedding();
   if (!wedding) return null;
   const [item, options] = await Promise.all([
-    kind === "todo" ? getMilestone(id) : kind === "appointment" ? getAppointment(id) : getPayment(id),
+    kind === "todo"
+      ? getMilestone(id)
+      : kind === "appointment"
+        ? getAppointment(id)
+        : kind === "moment"
+          ? getRunSheetItem(id)
+          : kind === "idea"
+            ? getInspo(id)
+            : getPayment(id),
     formOptions(wedding.id),
   ]);
   if (!item) return null;
   const common = { areas: options.areas, suppliers: options.suppliers, weddingDate: wedding.wedding_date };
   if (kind === "todo") return { kind, milestone: item as Milestone, ...common };
   if (kind === "appointment") return { kind, appointment: item as Appointment, ...common };
+  if (kind === "moment") return { kind, moment: item as RunSheetItem, ...common };
+  if (kind === "idea") {
+    const idea = item as InspoWithPicture;
+    return { kind, idea, folderIds: await listInspoIds(wedding.id, idea.area_key), ...common };
+  }
   return { kind, payment: item as Payment, ...common };
 }
 
 function refreshAll() {
   refreshPlan();
   refreshMoney();
+  revalidatePath("/day");
+  revalidatePath("/inspo");
+  revalidatePath("/inbox");
   revalidatePath("/standing");
 }
 
@@ -74,7 +110,7 @@ type AppointmentFields = Partial<Pick<Appointment, "title" | "on_date" | "at_tim
  * fields named here can be changed.
  */
 export async function updatePlanFieldsAction(
-  kind: CardKind,
+  kind: FieldKind,
   id: string,
   fields: TodoFields | AppointmentFields | Record<string, string | null>,
 ): Promise<{ error?: string }> {
@@ -82,6 +118,9 @@ export async function updatePlanFieldsAction(
     todo: ["title", "due_date", "category", "description"],
     appointment: ["title", "on_date", "at_time", "location", "contact_id", "area_key", "notes"],
     payment: ["description", "amount", "due_date", "paid_on", "contact_id", "area_key", "notes"],
+    moment: ["title", "at_time", "location", "who", "notes", "area_key"],
+    journey: ["vehicle", "at_time", "from_place", "to_place", "notes"],
+    idea: ["area_key", "note"],
   }[kind];
   const tidy: Record<string, string | null> = {};
   for (const [key, value] of Object.entries(fields)) {
@@ -92,12 +131,21 @@ export async function updatePlanFieldsAction(
     return { error: "It needs a name." };
   }
   if (kind === "appointment" && "on_date" in tidy && !tidy.on_date) return { error: "An appointment needs a date." };
+  if ((kind === "moment" || kind === "journey") && "at_time" in tidy && !tidy.at_time) return { error: "It needs a time." };
+  if (kind === "journey" && "vehicle" in tidy && !tidy.vehicle) return { error: "It needs a name, like Coach 1." };
   try {
     if (kind === "todo") {
       // Giving an old "start around" nudge a date makes it an ordinary to-do (12 Oct 2026).
       await updateMilestone(id, "due_date" in tidy ? { ...tidy, remind_at: null } : tidy);
     } else if (kind === "appointment") {
       await updateAppointment(id, tidy);
+    } else if (kind === "idea") {
+      await updateInspo(id, tidy);
+    } else if (kind === "moment" || kind === "journey") {
+      const wedding = await getCurrentWedding();
+      if (!wedding) return { error: "No wedding found." };
+      if (kind === "moment") await saveRunSheetItem(wedding.id, id, tidy as Partial<RunSheetItem> as RunSheetItem);
+      else await saveTransportRun(wedding.id, id, tidy as Partial<TransportRun> as TransportRun);
     } else {
       const { amount, ...rest } = tidy;
       const patch: Partial<Payment> = rest;
@@ -116,10 +164,13 @@ export async function updatePlanFieldsAction(
   return {};
 }
 
-export async function removePlanCardAction(kind: CardKind, id: string): Promise<{ error?: string }> {
+export async function removePlanCardAction(kind: FieldKind, id: string): Promise<{ error?: string }> {
   try {
     if (kind === "todo") await deleteMilestone(id);
     else if (kind === "appointment") await deleteAppointment(id);
+    else if (kind === "moment") await deleteRunSheetItem(id);
+    else if (kind === "journey") await deleteTransportRun(id);
+    else if (kind === "idea") await deleteInspo(id);
     else await deletePayment(id);
   } catch (error) {
     console.error("removing from its card failed", error);

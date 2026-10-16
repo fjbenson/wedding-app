@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Clock } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
-import type { Appointment, Milestone, Payment } from "@/types/db";
-import { todayISO, formatLongDate } from "@/lib/dates";
+import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
+import { todayISO, formatDayMonth, formatLongDate } from "@/lib/dates";
+import { replaceQuery } from "@/lib/url-state";
+import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
 import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
@@ -18,7 +20,7 @@ const TIMES = ["10:00", "11:00", "12:00", "14:00", "15:00", "18:00"];
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
 /** Saves one change and refreshes the page behind, so its list matches. */
-function useSave(kind: "todo" | "appointment" | "payment", id: string): Save {
+function useSave(kind: "todo" | "appointment" | "payment" | "moment" | "journey" | "idea", id: string): Save {
   const router = useRouter();
   return async (fields) => {
     const result = await safely(() => updatePlanFieldsAction(kind, id, fields));
@@ -397,8 +399,143 @@ function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) =>
   );
 }
 
+/**
+ * A run sheet moment (The Day), by the same rule: the time and the area
+ * save at once; what happens, where, who and notes get a small Save.
+ */
+export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: AreaOption[] }) {
+  const save = useSave("moment", m.id);
+  const [error, setError] = useState<string>();
+  const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
+  const original = m.area_key;
+  const options = original && original !== "other" && !areas.some((a) => a.key === original) ? [...areas, { key: original, label: original }] : areas;
+
+  return (
+    <>
+      <TitleEditor value={m.title} onSave={(v) => save({ title: v })} />
+      {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
+
+      <Part label="When">
+        <TimeCard value={m.at_time.slice(0, 5)} onSave={(v) => change({ at_time: v })} required />
+      </Part>
+
+      <Part label="Area">
+        <AreaTiles name="area" areas={options} otherValue="" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded />
+      </Part>
+
+      <section className="mt-7">
+        <h3 className="section-label">Details</h3>
+        <dl className="mt-1">
+          <TextRow label="Where" value={m.location} onSave={(v) => save({ location: v })} />
+          <TextRow label="Who" value={m.who} onSave={(v) => save({ who: v })} />
+          <TextRow label="Notes" value={m.notes} multiline onSave={(v) => save({ notes: v })} />
+        </dl>
+      </section>
+    </>
+  );
+}
+
+/**
+ * An Inspo idea, large (screen 32): the picture, ‹ › through its folder,
+ * where it came from, then its folder (a tap moves it) and a note (a small
+ * Save) — the same rule as every card.
+ */
+export function IdeaBody({ idea, folderIds, areas }: { idea: InspoWithPicture; folderIds: string[]; areas: AreaOption[] }) {
+  const save = useSave("idea", idea.id);
+  const [error, setError] = useState<string>();
+  const at = folderIds.indexOf(idea.id);
+  const prev = at > 0 ? folderIds[at - 1] : null;
+  const next = at >= 0 && at < folderIds.length - 1 ? folderIds[at + 1] : null;
+  const go = (id: string) => replaceQuery({ idea: id });
+  const step = "flex h-11 w-11 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
+
+  return (
+    <>
+      {idea.picture && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={idea.picture} alt={idea.title ?? idea.note ?? "A saved idea"} className="max-h-[55dvh] w-full rounded-2xl bg-cream object-contain" />
+      )}
+      {folderIds.length > 1 && (
+        <nav aria-label="More ideas in this folder" className="mt-3 flex items-center justify-between">
+          {prev ? (
+            <button type="button" onClick={() => go(prev)} aria-label="Previous idea" className={step}>
+              <ChevronLeft className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+            </button>
+          ) : (
+            <span className="h-11 w-11" />
+          )}
+          <span className="text-xs font-medium uppercase tracking-[0.24em] text-stone">
+            {at + 1} of {folderIds.length}
+          </span>
+          {next ? (
+            <button type="button" onClick={() => go(next)} aria-label="Next idea" className={step}>
+              <ChevronRight className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+            </button>
+          ) : (
+            <span className="h-11 w-11" />
+          )}
+        </nav>
+      )}
+
+      {idea.title && <h2 className="mt-5 font-display text-[22px] leading-snug text-ink">{idea.title}</h2>}
+      <p className="mt-1 text-xs text-stone">Saved {formatDayMonth(idea.created_at.slice(0, 10))}</p>
+      {idea.url && (
+        <a href={idea.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
+          <ExternalLink className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          Open where it came from
+        </a>
+      )}
+      {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
+
+      <Part label="Folder">
+        {/* Nothing picked is Unsorted, as when it was saved. */}
+        <AreaTiles
+          name="folder"
+          areas={areas}
+          otherValue="other"
+          defaultValue={idea.area_key ?? ""}
+          onChange={async (v) => setError((await save({ area_key: v || null })).error)}
+          folded={!!idea.area_key}
+        />
+      </Part>
+
+      <section className="mt-7">
+        <h3 className="section-label">Details</h3>
+        <dl className="mt-1">
+          <TextRow label="Notes" value={idea.note} multiline onSave={(v) => save({ note: v })} />
+        </dl>
+      </section>
+    </>
+  );
+}
+
+/** A time on its own card; it saves when the phone's time picker closes. */
+export function TimeCard({ value, onSave, required }: { value: string; onSave: (v: string) => void; required?: boolean }) {
+  const [time, setTime] = useState(value);
+  const [last, setLast] = useState(value);
+  const commit = (v: string) => {
+    if (v === last || (required && !v)) return setTime(last);
+    setLast(v);
+    onSave(v);
+  };
+  return (
+    <div className={CARD}>
+      <Line icon={Clock} label="Time">
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          onBlur={(e) => commit(e.target.value)}
+          aria-label="Time"
+          className={`${BARE} font-display !text-[21px] font-light`}
+        />
+      </Line>
+    </div>
+  );
+}
+
 /** The name, large; tap it to change it (a small Save under the box). */
-function TitleEditor({ value, onSave }: { value: string; onSave: (v: string) => Promise<{ error?: string }> }) {
+export function TitleEditor({ value, onSave }: { value: string; onSave: (v: string) => Promise<{ error?: string }> }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const { pending, error, setError, run } = useSaver();

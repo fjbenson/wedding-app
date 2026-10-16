@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CardLink from "@/components/card-link";
 import { ExternalLink } from "lucide-react";
 import AddButton from "@/components/add-button";
 import type { AreaOption } from "@/lib/areas";
@@ -15,7 +16,7 @@ function host(url: string) {
 /** One saved idea as a tile: its picture, or a card for a link with none. */
 export function InspoTile({ item }: { item: InspoWithPicture }) {
   return (
-    <Link href={`/inspo/${item.id}`} className="glass-card group mb-3 block break-inside-avoid overflow-hidden rounded-2xl">
+    <CardLink href={`/inspo/${item.id}`} className="glass-card group mb-3 block break-inside-avoid overflow-hidden rounded-2xl">
       {item.picture ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -32,7 +33,7 @@ export function InspoTile({ item }: { item: InspoWithPicture }) {
         </span>
       )}
       {item.note && <span className="block px-3 py-2 text-xs leading-relaxed text-stone">{item.note}</span>}
-    </Link>
+    </CardLink>
   );
 }
 

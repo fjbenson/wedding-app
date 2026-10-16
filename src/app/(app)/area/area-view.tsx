@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CardLink from "@/components/card-link";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
@@ -499,7 +500,7 @@ function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: Run
         <ul>
           {moments.map((m) => (
             <li key={m.id}>
-              <Link href={`/day/run-sheet/${m.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
+              <CardLink href={`/day/run-sheet/${m.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
                 <span className="type-figure w-12 shrink-0 text-lg text-champagne-600">{formatClock(m.at_time)}</span>
                 <span className="min-w-0 flex-1">
                   <span className="type-item block truncate">{m.title}</span>
@@ -508,7 +509,7 @@ function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: Run
                   )}
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-              </Link>
+              </CardLink>
             </li>
           ))}
         </ul>
@@ -517,7 +518,7 @@ function DaySection({ areaKey, moments, facts }: { areaKey: string; moments: Run
         <ul>
           {transport.runs.map((r) => (
             <li key={r.id}>
-              <Link href={`/day/transport/${r.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
+              <Link href={`/day?tab=travel&open=run:${r.id}`} className="row-press flex items-center gap-3 border-b border-linen py-3">
                 <span className="type-figure w-12 shrink-0 text-lg">{r.time}</span>
                 <span className="min-w-0 flex-1">
                   <span className="type-item block truncate">{r.vehicle}</span>

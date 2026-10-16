@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CardLink from "../card-link";
 import { Check, ChevronRight, StickyNote, Star } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import { AnswerIcon } from "@/app/(app)/people/guest-browser";
@@ -137,7 +138,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
           {s.next.length > 0 && (
             <div className="border-t border-linen">
               {s.next.map((p) => (
-                <Link key={p.id} href={`/money/payments/${p.id}`} onClick={onGo} className={ROW}>
+                <CardLink key={p.id} href={`/money/payments/${p.id}`} onOpen={onGo} className={ROW}>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-display text-[16px] text-ink">{p.description}</span>
                     <span className={`type-meta block ${p.overdue ? "!text-[#9A3F2B]" : ""}`}>
@@ -147,7 +148,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
                     </span>
                   </span>
                   <span className="font-display text-[16px] text-ink">{formatMoney(p.amount)}</span>
-                </Link>
+                </CardLink>
               ))}
             </div>
           )}
@@ -170,7 +171,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
           ) : (
             <div className="border-t border-linen">
               {block.items.slice(0, 8).map((e) => (
-                <Link key={`${e.kind}-${e.id}`} href={e.link} onClick={onGo} className={ROW}>
+                <CardLink key={`${e.kind}-${e.id}`} href={e.link} onOpen={onGo} className={ROW}>
                   <span className={`w-12 shrink-0 font-display text-[15px] ${e.overdue ? "text-[#9A3F2B]" : "text-champagne-600"}`}>
                     {e.overdue ? "Late" : formatWeekdayDayMonth(e.date).split(" ")[0]}
                   </span>
@@ -181,7 +182,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
                     </span>
                   </span>
                   {e.amount !== undefined && <span className="font-display text-[16px]">{formatMoney(e.amount)}</span>}
-                </Link>
+                </CardLink>
               ))}
             </div>
           )}

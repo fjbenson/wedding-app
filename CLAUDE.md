@@ -585,23 +585,27 @@ Next.js scaffold. Built so far, against the plan's tabs:
   fitting…), the date card, a time card with quick taps (10:00…18:00), a
   Where and who card (picking a supplier picks their area), then the area as
   picture tiles ending in Other; notes folded under "Add notes".
-- **To-do, appointment and payment cards** (16 Oct 2026, owner: "look at
-  something in a card, add something new on a full screen"): tapping one
-  anywhere — Plan's calendar and List, the day card, the Hub's This week,
-  area pages, Money's By month and area cards, a note's "See it" — opens it
-  as a **card over the page** (`plan-cards.tsx`, mounted once in the `(app)`
-  layout; `?todo=` / `?appointment=` / `?payment=` in the address, set by
-  `CardLink` in `src/components/card-link.tsx`, which keeps the real href
-  for long-press). **Edited in place like the guest card** (owner's rule,
-  16 Oct 2026: *taps save at once, typing gets a small Save*;
-  `plan-card-body.tsx`): Mark as done / Mark as paid, the date card, time
-  taps, the area pill and "With" / "To" save at a tap; the name, amount,
-  where and notes get a small Save under the box. One action saves a field:
-  `updatePlanFieldsAction` in `plan/card-actions.ts` (named fields only).
-  `DateCard` takes `clearable={false}` where a date is required. The card
-  frame is shared with guests and households (`CardSheet`,
-  `src/components/card-sheet.tsx`). The full edit pages still work for old
-  links. **Next:** The Day's moments and journeys the same way.
+- **Everything opens as a card** (16 Oct 2026, owner: "look at something
+  in a card, add something new on a full screen" — "makes all the tabs feel
+  really cohesive"). To-dos, appointments, payments, run sheet moments and
+  Inspo ideas open as a **card over the page** wherever they're tapped
+  (Plan, the Hub's This week, area pages, Money, The Day, Inspo and the
+  inbox's pictures, a note's "See it", the assistant's answers):
+  `plan-cards.tsx`, mounted once in the `(app)` layout; `?todo=` /
+  `?appointment=` / `?payment=` / `?moment=` / `?idea=` in the address, set
+  by `CardLink` (`src/components/card-link.tsx`; keeps the real href for
+  long-press; `onOpen` runs too, so the assistant closes itself). Guests,
+  households and suppliers already had cards; a journey's Travel card
+  (`?open=run:<id>`) now edits its own details too (the area page links
+  there). **Edited in place like the guest card** — the owner's rule,
+  16 Oct 2026: *taps save at once, typing gets a small Save*
+  (`plan-card-body.tsx`: `TodoBody`, `AppointmentBody`, `PaymentBody`,
+  `MomentBody`, `IdeaBody`, plus `TitleEditor`, `TimeCard`). One action
+  saves a field: `updatePlanFieldsAction` in `plan/card-actions.ts` (named
+  fields per kind only); `removePlanCardAction` removes. `DateCard` takes
+  `clearable={false}` where a date is required. Card frame: `CardSheet`,
+  `src/components/card-sheet.tsx`. The old full edit pages still work for
+  old links.
 - **Money** (`/money`, screens 22–24; `0006_money.sql`): **rebuilt 12 Oct
   2026** to canvas 2 "Money · Round 4" (owner's pick: B for the budget, C
   for the schedule). Money moves **Budget → Agreed → Paid**, and the rest

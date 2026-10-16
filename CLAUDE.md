@@ -492,7 +492,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the +, "236 days to the wedding", the grid) sits on a **glass card**;
   **today is a solid gold disc** with white numerals; days with something on
   them are darker than empty ones; the to-do circle and appointment mark
-  are a size up; the month's list sits on its own glass card (no gold rule),
+  are a size up; the month's list sits straight on the page under a hairline
+  (a second card competed with the calendar's — owner asked; no gold rule),
   with "still open from before" just above it.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,

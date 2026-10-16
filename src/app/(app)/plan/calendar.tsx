@@ -193,7 +193,7 @@ export default function PlanCalendar({
               aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                 marks.length ? `, ${marks.length} ${marks.length === 1 ? "item" : "items"}` : ""
               }`}
-              className="flex h-[52px] flex-col items-center gap-[3px] pt-0.5"
+              className="flex h-[48px] flex-col items-center gap-[3px] pt-0.5"
             >
               <span className={`flex h-8 w-8 items-center justify-center rounded-full font-display text-base ${circle}`}>
                 {i + 1}
@@ -247,7 +247,9 @@ export default function PlanCalendar({
           the title above the grid, and every row has its date (owner, 12 Oct
           2026 — no "All of October · 2 things"). */}
       {monthTops[month]}
-      <div className="glass-card mt-4 overflow-hidden rounded-[22px] px-4 py-1 [--row-bleed:16px]">
+      {/* Straight on the page, not a second card (owner, 16 Oct 2026: two
+          cards the same weight competed): the calendar card is the hero. */}
+      <div className="mt-4 border-t border-linen">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}

@@ -196,7 +196,7 @@ export default function Agenda({
         undatedCount={undated.length}
         undatedPanel={undatedPanel}
         toggle={
-          // The one way in (owner, 12 Oct 2026): the round black +, at the end of the month's row.
+          // The one way in (owner, 12 Oct 2026): the round black +, at the end of the key's row under the month (16 Oct 2026).
           <AddButton href="/plan/new" label="Add to the plan" />
         }
         weddingPanel={

@@ -119,9 +119,10 @@ export default function PlanCalendar({
     <section className="mt-6">
       {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
           flat" — everything printed straight on the background). ‹ the
-          month › on the left, the round + on the right (12 Oct 2026). */}
+          month › centred; the round + moved out to the key's row (owner,
+          16 Oct 2026: inside the card it crowded the month). */}
       <div className="glass-card rounded-[26px] px-2.5 pb-3 pt-2.5">
-      <div className="flex items-center justify-between gap-2 pr-1">
+      <div className="flex items-center justify-center">
         <div className="flex min-w-0 items-center">
           <button
             type="button"
@@ -145,7 +146,6 @@ export default function PlanCalendar({
             <ChevronRight className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
           </button>
         </div>
-        {toggle}
       </div>
 
       <div className="mt-3 grid grid-cols-7 gap-y-1">
@@ -202,10 +202,10 @@ export default function PlanCalendar({
 
       </div>
 
-      {/* The key on the left; on the right, the to-dos with no date yet as a
-          small pill that opens their card (owner, 12 Oct 2026: the banner at
-          the foot was too much, and the pen button sat on its arrow). */}
-      <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
+      {/* The key on the left, the round black + on the right — the row of
+          controls under the card, as on Guests and Plan's List (owner, 16 Oct
+          2026). Undated moved to the foot of the list. */}
+      <div className="mt-3 flex items-center justify-between gap-3 px-1">
         <span className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-stone" aria-hidden>
           {(
             [
@@ -219,18 +219,7 @@ export default function PlanCalendar({
             </span>
           ))}
         </span>
-        {undatedCount > 0 && (
-          <button
-            type="button"
-            onClick={() => setSelected("undated")}
-            aria-label={`${undatedCount} ${undatedCount === 1 ? "to-do" : "to-dos"} with no date`}
-            className="flex h-9 shrink-0 items-center gap-1 text-[13px] text-stone transition hover:text-ink"
-          >
-            {/* Quiet, like the key beside it — just "Undated ›" (owner, 16 Oct 2026). */}
-            Undated
-            <ChevronRight className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden />
-          </button>
-        )}
+        {toggle}
       </div>
 
       {/* The month's things, straight under the key: the month is already
@@ -251,6 +240,22 @@ export default function PlanCalendar({
           </p>
         )}
       </div>
+
+      {/* To-dos with no date, after the month: a heading like the month's and
+          Done's, opening their card (owner, 16 Oct 2026). */}
+      {undatedCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setSelected("undated")}
+          className="mt-3 flex w-full items-baseline justify-between gap-3 border-t border-ink/[0.12] pb-1 pt-3 text-left hover:[&>span]:text-ink"
+        >
+          <span className="section-label">Undated</span>
+          <span className="type-meta flex items-center gap-1">
+            {undatedCount === 1 ? "1 item" : `${undatedCount} items`}
+            <ChevronRight className="h-3.5 w-3.5 self-center" strokeWidth={1.8} aria-hidden />
+          </span>
+        </button>
+      )}
 
 
       {selected === "undated" && (

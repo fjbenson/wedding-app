@@ -249,7 +249,8 @@ export default function PlanCalendar({
       {monthTops[month]}
       {/* Straight on the page, not a second card (owner, 16 Oct 2026: two
           cards the same weight competed): the calendar card is the hero. */}
-      <div className="mt-5">
+      {/* Rows run edge to edge so their dividers span the screen (owner, 16 Oct 2026). */}
+      <div className="mt-5 [--row-bleed:0px] [&_li]:-mx-[var(--gutter)] [&_li]:px-[var(--gutter)]">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}

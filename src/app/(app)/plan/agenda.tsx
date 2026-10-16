@@ -162,7 +162,7 @@ export default function Agenda({
           {done.length > 0 && (
             <Fold
               id={`done-${key}`}
-              className="mt-3 border-t border-ink/[0.12] pt-3"
+              className="-mx-[var(--gutter)] mt-3 border-t border-ink/[0.12] px-[var(--gutter)] pt-3"
               header={
                 <span className="flex items-baseline justify-between gap-3">
                   <span className="section-label">Done</span>

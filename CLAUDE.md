@@ -196,7 +196,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Guests quill and scroll · Suppliers cards tied with a bow · Plan diary
   with a ribbon bookmark · Money coin purse (Budget and Payments) · The
   Day pocket watch (run sheet, Seating, Transport). The Hub has none — the
-  ring is its picture. Sharp vector versions are a to-do. **Guest list
+  ring is its picture. Sharp vector versions are a to-do. **Replaced 16 Oct 2026** (canvas 3
+  "Tab tops · Round 1", option A, owner's pick): every tab's top is now
+  **one row** — the title at 32px on the left, the view switch on the right
+  (`CornerSwitch` floats right, `PageTitle` sits beside it), **no back
+  arrow** (the menu bar's house goes home) and **no title drawings** (owner:
+  out of place in a modern app; the PNGs stay in `public/illustrations/`).
+  Inspo, Your notes and Settings titles are 32px to match. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
   Rounds 3–7"): no event switch any more. The card is a big **All** (champagne when picked; was dark until 12 Oct 2026)
@@ -759,7 +765,8 @@ in `tailwind.config.ts` and `src/app/globals.css` (`.glass`, `.label`); the
 existing sign-in, new-wedding and hub screens use them. Final glass use is
 still open. **Background (12 Oct 2026):** the satin stripes were replaced by
 **paper under a lamp** — one light from the top of the screen, no grain
-(a grain was tried and dropped) (canvas 2 "Background · Round 2", option A; `body::before` in
+(a grain was tried and dropped; **16 Oct 2026** the light became the canvas
+mock-ups' — white at the top to a cooler ivory `#f4efe7`, owner's pick) (canvas 2 "Background · Round 2", option A; `body::before` in
 `globals.css`); the Hub's and area pages' gold glows were taken out. B (oat
 ground) and C (real texture) wait on the canvas.
 **T is part done** — hosting is live, the screens are not.
@@ -1525,7 +1532,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 All private to the owner; open with the Artifact tool's `read` action.
 
 - **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
-  envelope; Guest card round 2, the profile; Groups round 1 — built; **Tab tops · Round 1**, 16 Oct 2026: owner wants the back arrow and title drawings gone — A one row (title + switch), B a gold line above the title, C no title, switch centred; on Plan and Guests; not picked yet): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+  envelope; Guest card round 2, the profile; Groups round 1 — built; **Tab tops · Round 1**, 16 Oct 2026: A one row (title + switch), B a gold line above the title, C no title, switch centred — **A picked and built**): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **full** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026); new rounds go on canvas 3: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Name Lab** — a this-or-that game for the name (`results` collection;

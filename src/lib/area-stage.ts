@@ -7,7 +7,8 @@ import type { AreaRow } from "@/types/db";
  * page design, round 4, 7 Oct 2026). The first four tick themselves from
  * what's recorded; Ready is the one the couple ticks.
  */
-export const STAGES = ["Dream", "Compare", "Book", "Pay", "Ready"] as const;
+// Named after what ticks each one (owner, 16 Oct 2026; were Dream · Compare · Book · Pay · Ready).
+export const STAGES = ["Ideas", "Quotes", "Booked", "Paid", "Ready"] as const;
 
 export interface AreaStage {
   /** Which stages are done, in order. A later stage done counts the earlier ones done too. */

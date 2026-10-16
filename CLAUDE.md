@@ -118,10 +118,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   area. A photo-collage cover from the area's Inspo folder (soft-colour
   tiles and a camera until photos exist; tapping it opens the folder, and
   `/inspo/[id]` steps through with ‹ ›; "⋯" holds take-off-hub / stop
-  planning). Then the **five stages** — Dream · Compare · Book · Pay ·
-  Ready (`src/lib/area-stage.ts`): the first four tick themselves from
-  what's recorded, Ready is a button; "we're doing this ourselves"
-  (`areas.diy`) skips Compare and Book. Then **the tabs, filtered to
+  planning). Then the **five stages** — **Ideas · Quotes · Booked · Paid ·
+  Ready** (`src/lib/area-stage.ts`; renamed 16 Oct 2026 from Dream · Compare ·
+  Book · Pay · Ready, owner: Dream and Compare read alike — now each is named
+  after what ticks it): Ideas = an Inspo picture or key facts; Quotes = a
+  supplier at "Quote in"; Booked = a supplier booked; Paid = booked and
+  nothing left owing; Ready = the couple's tap. "We're doing this ourselves"
+  (`areas.diy`) skips Quotes and Booked. Then **the tabs, filtered to
   this area** (canvas 2 "Area page · Made of the tabs", option A, owner's
   pick 12 Oct 2026 — so the page reads as People, Plan and Money for one
   area): four sections, each headed like its tab with **that tab's icon from

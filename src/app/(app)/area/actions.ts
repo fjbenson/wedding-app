@@ -168,7 +168,7 @@ export async function addAreaAction(formData: FormData) {
 
 /**
  * The area's two hand-set stage switches: "we're doing this ourselves"
- * (skips Compare and Book) and "we're ready" (the last stage).
+ * (skips Quotes and Booked) and "we're ready" (the last stage).
  */
 export async function setAreaStageFlagAction(areaId: string, key: string, flag: "diy" | "ready", on: boolean) {
   try {

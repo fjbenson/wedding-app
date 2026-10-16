@@ -165,7 +165,7 @@ export interface AreaRow {
   budget?: number | null;
   /** The icon's name from src/lib/area-icons.ts (0016_area_icon.sql). */
   icon?: string | null;
-  /** "We're doing this ourselves": skips Compare and Book (0012_area_stages.sql). */
+  /** "We're doing this ourselves": skips Quotes and Booked (0012_area_stages.sql). */
   diy?: boolean;
   /** The couple has marked the area ready, its last stage (0012_area_stages.sql). */
   ready?: boolean;

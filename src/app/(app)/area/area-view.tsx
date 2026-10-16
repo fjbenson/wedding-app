@@ -190,7 +190,7 @@ function AreaCover({
 }
 
 /**
- * Dream · Compare · Book · Pay · Ready: small dots on a hairline, labelled in
+ * Ideas · Quotes · Booked · Paid · Ready: small dots on a hairline, labelled in
  * the type system's capitals. Done is champagne, now is ink with a soft halo,
  * still to come is a fine gold ring.
  */

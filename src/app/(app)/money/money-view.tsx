@@ -82,7 +82,7 @@ export default function MoneyView({
     />
   );
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-40 lg:pb-16">
       <CornerSwitch
         label="Show the money"
         tabs={[

@@ -29,7 +29,7 @@ export function AppointmentRow({
     area,
   ].filter(Boolean);
   return (
-    <li className={`row-press flex items-center gap-3.5 border-b border-linen last:border-b-0 ${been ? "opacity-60" : ""}`}>
+    <li className={`row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0 ${been ? "opacity-60" : ""}`}>
       {/* Outlined like a to-do's circle so the two read the same size (owner,
           12 Oct 2026); the plain calendar, as on the Plan calendar. */}
       <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-champagne-400/70 bg-champagne-100 text-champagne-600" aria-hidden>

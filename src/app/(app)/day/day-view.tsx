@@ -84,7 +84,7 @@ export default function DayView({
   const data: DayData = day ?? { runSheet: [], tables: [], seats: [], runs: [], passengers: [] };
 
   return (
-    <main className="page pb-28 lg:pb-16 print:p-0">
+    <main className="page pb-40 lg:pb-16 print:p-0">
       <div className="print:hidden">
         <CornerSwitch
           label="The Day"

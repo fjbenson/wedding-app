@@ -54,7 +54,7 @@ export default function TimelineView({
   const nothing = milestones.length === 0 && upcoming === 0;
 
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-40 lg:pb-16">
       <CornerSwitch
         label="Show the plan"
         tabs={[

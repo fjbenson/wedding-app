@@ -55,7 +55,7 @@ export default function SettingsView({
   const move = "flex h-8 w-8 items-center justify-center rounded-full text-stone hover:bg-cream disabled:opacity-30";
 
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-40 lg:pb-16">
       <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">Settings</h1>
 
       {error && (

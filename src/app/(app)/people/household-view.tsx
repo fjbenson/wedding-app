@@ -69,7 +69,7 @@ export default function HouseholdView({
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-40 lg:pb-16">
       <div className="flex items-center justify-between gap-3">
         <Link href="/people" aria-label="Back to the guest list" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream">
           <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />

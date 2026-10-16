@@ -155,18 +155,18 @@ export default function Agenda({
           {open.length > 0 && (
             <p className="flex items-baseline justify-between gap-3 pt-1">
               <span className="section-label">{monthName(key)}</span>
-              <span className="type-meta">{open.length}</span>
+              <span className="type-meta">{open.length === 1 ? "1 item" : `${open.length} items`}</span>
             </p>
           )}
           {open.length > 0 && <ul className="mt-1">{open.map((e) => row(e))}</ul>}
           {done.length > 0 && (
             <Fold
               id={`done-${key}`}
-              className="mt-3 border-t border-linen pt-3"
+              className="mt-3 border-t border-ink/[0.12] pt-3"
               header={
                 <span className="flex items-baseline justify-between gap-3">
                   <span className="section-label">Done</span>
-                  <span className="type-meta">{done.length}</span>
+                  <span className="type-meta">{done.length === 1 ? "1 item" : `${done.length} items`}</span>
                 </span>
               }
             >

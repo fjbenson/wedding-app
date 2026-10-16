@@ -39,7 +39,7 @@ export function MilestoneRow({
   const details = [when, area].filter(Boolean);
 
   return (
-    <li className="row-press flex items-center gap-3.5 border-b border-linen last:border-b-0">
+    <li className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
       <TickForm
         action={toggleMilestoneAction.bind(null, m.id, !done)}
         undo={toggleMilestoneAction.bind(null, m.id, done)}

@@ -72,7 +72,7 @@ export default async function StandingPage() {
   ].filter(Boolean);
 
   return (
-    <main className="page pb-28 lg:pb-16">
+    <main className="page pb-40 lg:pb-16">
       <Link href="/" className="inline-flex h-11 items-center text-sm text-stone">
         ‹ Hub
       </Link>

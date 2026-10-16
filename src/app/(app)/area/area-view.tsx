@@ -638,7 +638,7 @@ export default function AreaView({
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
-    <main className="page relative pb-28 lg:pb-16">
+    <main className="page relative pb-40 lg:pb-16">
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} />
 
       <div className="relative mt-5 flex flex-col gap-3.5">

@@ -334,6 +334,42 @@ export default function GuestBrowser({
     const none = kind === "diet" ? "No dietary needs" : kind === "role" ? "No role" : null;
     const loose = none ? shown.filter((g) => partOf(kind, g, look).length === 0) : [];
     if (loose.length > 0) groups.push({ key: "none", title: none!, guests: loose });
+  } else if (sort === "rsvp" && !filters.includes("noaddress")) {
+    const words: [Rsvp["status"] | undefined, string][] = [
+      ["attending", "Coming"],
+      ["pending", "Invited"],
+      ["to_invite", "To invite"],
+      ["declined", "Can't come"],
+      [undefined, "Day or evening?"],
+    ];
+    groups = words
+      .map(([status, title]) => ({ key: status ?? "none", title, guests: shown.filter((g) => answerOf(g) === status) }))
+      .filter((group) => group.guests.length > 0);
+  } else if (sort === "age" && !filters.includes("noaddress")) {
+    groups = [
+      { key: "adults", title: "Adults", guests: shown.filter((g) => !g.is_child) },
+      { key: "children", title: "Children", guests: shown.filter((g) => g.is_child) },
+    ].filter((group) => group.guests.length > 0);
+  } else if (sort === "table" && !filters.includes("noaddress")) {
+    const names = [...new Set(shown.map((g) => tables[g.id]).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+    groups = names.map((name) => ({ key: `table-${name}`, title: name, guests: shown.filter((g) => tables[g.id] === name) }));
+    const loose = shown.filter((g) => !tables[g.id]);
+    if (loose.length > 0) groups.push({ key: "none", title: "No table yet", guests: loose });
+  } else if (sort === "staying" && !filters.includes("noaddress")) {
+    const stays = travel?.stays ?? [];
+    groups = stays
+      .map((stay) => ({ key: `stay-${stay.id}`, title: stay.name, guests: shown.filter((g) => g.staying === "yes" && g.stay_id === stay.id) }))
+      .filter((group) => group.guests.length > 0);
+    const placed = new Set(stays.map((st) => st.id));
+    const rest: [string, string, (g: Contact) => boolean][] = [
+      ["unsure", "Staying, place not sure", (g) => g.staying === "yes" && !(g.stay_id && placed.has(g.stay_id))],
+      ["no", "Not staying over", (g) => g.staying === "no"],
+      ["unasked", "Not asked yet", (g) => !g.staying],
+    ];
+    for (const [key, title, test] of rest) {
+      const these = shown.filter(test);
+      if (these.length > 0) groups.push({ key, title, guests: these });
+    }
   } else if (sort === "type" && !filters.includes("noaddress")) {
     groups = events
       .map((e) => ({

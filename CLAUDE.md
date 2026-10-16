@@ -1188,7 +1188,19 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 15–16 Oct 2026 chat):** built this
+   `calendar.tsx`). **Next up (end of the 16 Oct 2026 evening chat):**
+   built this chat — the household envelope front-only with a postmark and
+   the household as a card; Add menus (pick what to add, then a full
+   screen); everything opens as a card, edited in place; Plan's List like
+   the guest list; area stages renamed (Ideas · Quotes · Booked · Paid ·
+   Ready); "Edit events" card; Sort › Group; the shorter grey line under
+   rows. **Waiting on the owner:** (1) **tagging guests on to-dos and
+   appointments** — needs a database change (two link tables, a "Who's
+   involved" picker on cards and add forms, initials on rows, a list on the
+   guest card); asked, no OK yet. (2) **Run sheet moments with no area** —
+   speeches showed as "Other"; suggested making the area optional on a
+   moment (no database change) rather than an Other dot on the ring
+   (owner's call: the Hub's look). **Before that, the 15–16 Oct 2026 chat:** built this
    chat — delegation agreed (top of these notes); the four plain forms made
    visual; groups on Seating; the assistant writes group messages; area page
    tidy + a black + per section; 16px side margins; Plan calendar on a card

@@ -591,14 +591,15 @@ function FilterMenu({
             />
             <div
               style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-              className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] ${
+              className={`absolute inset-x-0 bottom-0 flex h-[80dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] ${
                 drag.dragging ? "" : "transition-transform duration-200 ease-out"
               }`}
             >
               <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center">
                 <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
               </div>
-              <div className="overflow-y-auto overscroll-contain px-[22px] pb-3">{content}</div>
+              {/* A set height, so opening a row scrolls inside rather than pushing the sheet up (owner, 17 Oct 2026). */}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[22px] pb-3">{content}</div>
               <div className="shrink-0 border-t border-linen px-[22px] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
                 <button type="button" onClick={close} className="h-12 w-full rounded-full bg-ink text-[15px] text-ivory">
                   Show {results} {results === 1 ? "supplier" : "suppliers"}

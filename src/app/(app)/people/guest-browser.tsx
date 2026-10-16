@@ -159,6 +159,9 @@ export default function GuestBrowser({
     return asked && guestGroups.some((g) => g.id === asked) ? asked : undefined;
   });
   const group = guestGroups.find((g) => g.id === groupId);
+  /** Specific kinds picked in Filter (?s=, e.g. "diet:Vegetarian|role:Bridesmaid"): any within one kind, all kinds together. */
+  const [picks, setPicks] = useState<string[]>(() => (params.get("s") ?? "").split("|").filter(Boolean));
+  const togglePick = (id: string) => setPicks((on) => (on.includes(id) ? on.filter((p) => p !== id) : [...on, id]));
   useEffect(() => {
     replaceQuery({
       q: query.trim() || null,
@@ -168,9 +171,10 @@ export default function GuestBrowser({
       group: group?.id ?? null,
       by: null,
       pick: null,
+      s: picks.length ? picks.join("|") : null,
       tab: null,
     });
-  }, [query, showing, filters, guestOf, group]);
+  }, [query, showing, filters, guestOf, group, picks]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : initialFilter === "party" ? "role" : "first");
   /** Picks a view, and switches on (or off) the filter that goes with it. */
   const chooseView = (next: SortBy) => {
@@ -185,7 +189,7 @@ export default function GuestBrowser({
   };
   const [openId, setOpenId] = useState(initialGuestId);
   /** Headings folded away (owner, 17 Oct 2026): tap a heading's chevron to fold or open its guests. */
-  const [folded, setFolded] = useState<Set<string>>(new Set());
+  const [folded, setFolded] = useState<Set<string>>(new Set(["declined"]));
   const toggleFold = (key: string) =>
     setFolded((all) => {
       const next = new Set(all);
@@ -261,6 +265,9 @@ export default function GuestBrowser({
    */
   const ownEvent = (g: Contact) => events.find((e) => statusFor(g, e));
   const dietOf = (g: Contact) => data.answers.get(g.id)?.find((r) => r.dietary_notes)?.dietary_notes ?? null;
+  const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
+  const mealOf = (g: Contact) => ownRsvp(g)?.meal_choice?.trim() || null;
+  const look = { dietOf, mealOf, ownEvent };
 
   const tests: Record<GuestFilter, (g: Contact) => boolean> = {
     party: (g) => rolesOf(g).length > 0,
@@ -273,11 +280,34 @@ export default function GuestBrowser({
     setFilters((on) => (on.includes(key) ? on.filter((k) => k !== key) : [...on, key]));
   const ofLabel = (e: WeddingEvent) => `${eventWord(e).replace(/^\w/, (c) => c.toUpperCase())} guests`;
   const ofCounted = events.map((e) => ({ id: e.id, label: ofLabel(e), count: guests.filter((g) => ownEvent(g)?.id === e.id).length }));
+  /** What Filter can narrow to inside a breakdown, with how many guests have each. */
+  const kindOptions = (kind: "diet" | "role" | "meal") => {
+    const tally = new Map<string, number>();
+    for (const g of guests) for (const l of partOf(kind, g, look)) if (l !== NOT_PICKED) tally.set(l, (tally.get(l) ?? 0) + 1);
+    const labels = [...tally.keys()];
+    const ordered =
+      kind === "diet"
+        ? labels.sort((a, b) => needRank(a) - needRank(b) || a.localeCompare(b))
+        : kind === "role"
+          ? labels.sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b))
+          : labels.sort((a, b) => tally.get(b)! - tally.get(a)! || a.localeCompare(b));
+    return ordered.map((label) => ({ label, count: tally.get(label)! }));
+  };
+  const kinds = (
+    [
+      { kind: "diet" as const, title: "Dietary needs" },
+      { kind: "role" as const, title: "Bridal party roles" },
+      { kind: "meal" as const, title: "Meal choice" },
+    ] as const
+  )
+    .map((k) => ({ ...k, options: kindOptions(k.kind) }))
+    .filter((k) => k.options.length > 0);
   const toggleOf = (id: string) => setGuestOf((on) => (on.includes(id) ? on.filter((k) => k !== id) : [...on, id]));
   const clearAll = () => {
     setFilters([]);
     setGuestOf([]);
     setGroupId(undefined);
+    setPicks([]);
   };
   const pickGroup = (id: string) => {
     setGroupId((on) => (on === id ? undefined : id));
@@ -289,13 +319,17 @@ export default function GuestBrowser({
   const filtered = guests
     .filter((g) => !group || group.members.includes(g.id))
     .filter((g) => guestOf.length === 0 || guestOf.includes(ownEvent(g)?.id ?? ""))
-    .filter((g) => filters.every((f) => tests[f](g)));
+    .filter((g) => filters.every((f) => tests[f](g)))
+    // Specific kinds from Filter: any of the ticked ones within a kind, every kind that has some.
+    .filter((g) =>
+      (["diet", "role", "meal"] as const).every((kind) => {
+        const want = picks.filter((p) => p.startsWith(`${kind}:`)).map((p) => p.slice(kind.length + 1));
+        return want.length === 0 || partOf(kind, g, look).some((l) => want.includes(l));
+      }),
+    );
   const answerOf = (g: Contact) => statusFor(g, ownEvent(g));
 
-  const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
-  const mealOf = (g: Contact) => ownRsvp(g)?.meal_choice?.trim() || null;
   const coming = filtered.filter((g) => answerOf(g) === "attending");
-  const look = { dietOf, mealOf, ownEvent };
   /** "Copy the list for the caterer", under the card when the list is about dietary needs. */
   const caterer = filters.includes("dietary") || sort === "diet" ? splitOf("diet", coming, look).copy : undefined;
 
@@ -413,12 +447,25 @@ export default function GuestBrowser({
 
 
 
+  // People who can't come sit at the foot in a folded "Can't come" group (owner, 17 Oct 2026):
+  // the list then agrees with the Guests number, and a search or View › RSVP still finds them.
+  if (sort !== "rsvp" && showing === "all" && words.length === 0) {
+    const gone = shown.filter((g) => answerOf(g) === "declined");
+    if (gone.length > 0) {
+      groups = groups
+        .map((gp) => ({ ...gp, guests: gp.guests.filter((g) => answerOf(g) !== "declined") }))
+        .filter((gp) => gp.guests.length > 0 || gp.key === "az");
+      groups.push({ key: "declined", title: "Can't come", guests: gone });
+    }
+  }
+
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
-  const az = groups.length === 1 && groups[0].key === "az";
+  const az = groups[0]?.key === "az";
+  const lettered = az ? groups[0].guests : [];
   const letterOf = (g: Contact) => ((sort === "last" && g.last_name) || g.first_name).charAt(0).toUpperCase();
-  const letters = az ? new Set(shown.map(letterOf)) : new Set<string>();
-  const indexed = az && shown.length > 12;
-  const firstOfLetter = new Set(az ? [...letters].map((l) => shown.find((g) => letterOf(g) === l)!.id) : []);
+  const letters = az ? new Set(lettered.map(letterOf)) : new Set<string>();
+  const indexed = az && lettered.length > 12;
+  const firstOfLetter = new Set(az ? [...letters].map((l) => lettered.find((g) => letterOf(g) === l)!.id) : []);
 
   return (
     <>
@@ -483,9 +530,12 @@ export default function GuestBrowser({
               onToggle={toggle}
               onClear={clearAll}
               results={filtered.length}
+              kinds={kinds}
+              picked={picks}
+              onPick={togglePick}
             />
           </div>
-          {filters.length + guestOf.length + (group ? 1 : 0) > 0 && (
+          {filters.length + guestOf.length + picks.length + (group ? 1 : 0) > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
               {group && (
                 <button
@@ -512,6 +562,18 @@ export default function GuestBrowser({
                     <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
                   </button>
                 ))}
+              {picks.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => togglePick(id)}
+                  aria-label={`Take off ${id.slice(id.indexOf(":") + 1)}`}
+                  className="flex h-8 items-center gap-1.5 rounded-full border border-champagne-600 bg-champagne-100 pl-3 pr-2.5 text-[13px] font-medium text-champagne-600"
+                >
+                  {id.slice(id.indexOf(":") + 1)}
+                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                </button>
+              ))}
               {filters.map((key) => (
                 <button
                   key={key}
@@ -917,7 +979,15 @@ function FilterMenu({
   onToggle,
   onClear,
   results,
+  kinds,
+  picked,
+  onPick,
 }: {
+  /** The breakdowns Filter can narrow to one kind of, each with its options and counts. */
+  kinds: { kind: "diet" | "role" | "meal"; title: string; options: { label: string; count: number }[] }[];
+  /** Ticked ones, as "diet:Vegetarian". */
+  picked: string[];
+  onPick: (id: string) => void;
   /** How many guests the filters leave, for the sheet's "Show …" button. */
   results: number;
   /** Day guests, evening guests: one per event. */
@@ -936,7 +1006,8 @@ function FilterMenu({
   const { open, setOpen, box } = useDropdown();
   const close = useCallback(() => setOpen(false), [setOpen]);
   const drag = usePullToClose(close);
-  const active = on.length + ofOn.length + (groupOn ? 1 : 0);
+  const active = on.length + ofOn.length + picked.length + (groupOn ? 1 : 0);
+  const [openKind, setOpenKind] = useState<string | null>(null);
   // On a phone it's a sheet from the bottom: the list behind stays still while it's open.
   useEffect(() => {
     if (!open || !window.matchMedia("(max-width: 1023px)").matches) return;
@@ -1029,6 +1100,61 @@ function FilterMenu({
           </ul>
         </>
       )}
+      {kinds.length > 0 && (
+        <>
+          <p className="section-label mt-2 border-t border-champagne-400 pt-3">Narrow to</p>
+          {kinds.map((k) => {
+            const count = picked.filter((p) => p.startsWith(`${k.kind}:`)).length;
+            const isOpen = openKind === k.kind;
+            return (
+              <div key={k.kind} className="border-t border-linen first-of-type:border-t-0">
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenKind(isOpen ? null : k.kind)}
+                  className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                >
+                  <span className="flex-1">
+                    {k.title}
+                    {count > 0 && <span className="ml-2 text-[13px] text-champagne-600">{count} picked</span>}
+                  </span>
+                  <ChevronRight className={`h-4 w-4 shrink-0 text-stone transition ${isOpen ? "rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+                </button>
+                {isOpen && (
+                  <ul className="pb-1 pl-2">
+                    {k.options.map((o) => {
+                      const id = `${k.kind}:${o.label}`;
+                      const ticked = picked.includes(id);
+                      return (
+                        <li key={id} className="border-t border-linen first:border-t-0">
+                          <button
+                            type="button"
+                            role="menuitemcheckbox"
+                            aria-checked={ticked}
+                            onClick={() => onPick(id)}
+                            className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                          >
+                            <span
+                              aria-hidden
+                              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                                ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                              }`}
+                            >
+                              {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                            </span>
+                            <span className="flex-1">{o.label}</span>
+                            <span className="text-[13px] text-stone">{o.count}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </>
+      )}
     </>
   );
 
@@ -1053,7 +1179,7 @@ function FilterMenu({
       {open && (
         <>
           {/* Laptops: a small menu under the button. */}
-          <div className={`${MENU.replace("right-0", "left-0")} hidden w-[17rem] pb-2 pt-2.5 lg:block`}>{content}</div>
+          <div className={`${MENU} hidden max-h-[70dvh] w-[17rem] overflow-y-auto pb-2 pt-2.5 lg:block`}>{content}</div>
 
           {/* Phones: a sheet from the bottom (owner, 14 Oct 2026). The card above the
               list grows as filters go on; a menu hanging off the button moved with it. */}

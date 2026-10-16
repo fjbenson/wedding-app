@@ -418,6 +418,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **View sits on the left, Filter on the right** (owner: View is the bigger
   choice); the button is a list icon (same weight and colour as Filter's) and the current view's name ("☰ Household ⌄"). The numbers card (All ·
   Coming · Invited · Can't come) is unchanged.
+  **Filter has a second layer, "Narrow to"** (17 Oct 2026, owner: "filter to
+  specific members of a breakdown, e.g. veggies, and still get the headline
+  numbers"): under Show only and Groups, **Dietary needs ›**, **Bridal party
+  roles ›** and **Meal choice ›** each open a short list of the specific ones
+  with counts; tick one or several (any of them within a kind, every kind
+  together — Bridal party roles + Vegetarian = the vegetarians in the
+  bridal party). Each shows as a pill to take off; they live in the address
+  (`?s=diet:Vegetarian|role:Bridesmaid`) and the numbers card follows like
+  any filter.
+  **People who can't come** sit at the foot of the list in a **folded "Can't
+  come" group** (open it with its chevron), so the list agrees with the
+  Guests number; search and View › RSVP still show them in place.
   **Every heading folds** (a chevron on its right, in the phone list and the
   laptop table; open by default, not remembered). The one thing kept on the
   card is **Copy the list for the caterer**, shown when the list is about

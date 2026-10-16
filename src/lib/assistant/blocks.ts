@@ -31,6 +31,18 @@ export type Proposal =
       };
     }
   | { kind: "set_guest_answer"; input: { guestId: string; status: "to_invite" | "pending" | "attending" | "declined" } }
+  | {
+      kind: "add_appointment";
+      input: {
+        title: string;
+        onDate: string;
+        atTime?: string | null;
+        location?: string | null;
+        supplierId?: string | null;
+        area?: string | null;
+        notes?: string | null;
+      };
+    }
   | { kind: "move_guest"; input: { guestId: string; householdId?: string | null; newHousehold?: string | null } }
   | { kind: "set_guest_of"; input: { guestId: string; eventId: string } }
   | { kind: "set_guest_diet"; input: { guestId: string; diet: string | null } }
@@ -102,9 +114,60 @@ export interface TodoStepsBlock {
   options: { areas: { key: string; label: string }[]; today: string; weddingDate: string | null };
 }
 
+/** A payment: what it's for is known; the amount, when and who may not be. */
+export interface PaymentStepsBlock {
+  type: "payment_steps";
+  id: string;
+  prefill: {
+    description: string;
+    amount: number | null;
+    /** The couple said whether it's paid, or gave a date. */
+    whenKnown: boolean;
+    paid: boolean;
+    dueDate: string | null;
+    paidOn: string | null;
+    supplierId: string | null;
+    area: string | null;
+    /** The couple said who it's to, or that it's not for a supplier. */
+    whoKnown: boolean;
+    notes: string | null;
+  };
+  options: {
+    suppliers: { id: string; name: string; area: string | null }[];
+    areas: { key: string; label: string }[];
+    today: string;
+    weddingDate: string | null;
+  };
+}
+
+/** An appointment: the title is known; the date, time, place and who may not be. */
+export interface AppointmentStepsBlock {
+  type: "appointment_steps";
+  id: string;
+  prefill: {
+    title: string;
+    date: string | null;
+    time: string | null;
+    /** The couple said it has no set time. */
+    noTime: boolean;
+    location: string | null;
+    supplierId: string | null;
+    area: string | null;
+    notes: string | null;
+  };
+  options: {
+    suppliers: { id: string; name: string; area: string | null }[];
+    areas: { key: string; label: string }[];
+    today: string;
+    weddingDate: string | null;
+  };
+}
+
 export type Block =
   | GuestStepsBlock
   | TodoStepsBlock
+  | PaymentStepsBlock
+  | AppointmentStepsBlock
   | { type: "guests"; title: string; count: number; guests: GuestLine[]; link: string }
   | { type: "money"; summary: MoneySummary }
   | { type: "week"; from: string; to: string; items: WeekItem[]; link: string }

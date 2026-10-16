@@ -13,10 +13,10 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { DIETARY_NEEDS, joinNeeds, needsOf } from "@/lib/dietary";
 import { addNote } from "@/lib/jobs";
-import { findGroups, findGuests, findPayments, findSuppliers, findTodos, guestChoices, moneySummary, overview, seating, thisWeek, type Overview } from "@/lib/lookups";
+import { findGroups, findGuests, findPayments, findSuppliers, findTodos, guestChoices, moneySummary, overview, seating, supplierChoices, thisWeek, type Overview } from "@/lib/lookups";
 import { formatLongDate } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
-import type { Block, GuestStepsBlock, Proposal, TodoStepsBlock } from "./blocks";
+import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, Proposal, TodoStepsBlock } from "./blocks";
 
 type Tool = Anthropic.Beta.BetaTool;
 
@@ -141,7 +141,7 @@ export const TOOLS: Tool[] = [
   {
     name: "add_payment",
     description:
-      "Propose recording a payment — still to pay with a due date, or already paid. Use find_suppliers for a supplier's id. Shows a card; nothing is saved until Yes.",
+      "Start recording a payment. Call it straight away with what it's for and anything the couple already said (the amount, a supplier, a date, whether it's paid); do NOT ask them anything first. The app asks the rest on screen, one short step at a time (amount, still to pay or paid and when, who it's to), then shows a card to confirm. Nothing is saved until they tap Yes. Use find_suppliers for a supplier's id.",
     input_schema: {
       type: "object",
       properties: {
@@ -153,8 +153,29 @@ export const TOOLS: Tool[] = [
         paid: { type: "boolean" },
         paid_on: date,
         notes: str,
+        no_date: { type: "boolean", description: "Set when the couple said it has no date yet" },
+        no_supplier: { type: "boolean", description: "Set when the couple said it isn't for a supplier or area in particular" },
       },
-      required: ["description", "amount"],
+      required: ["description"],
+    },
+  },
+  {
+    name: "add_appointment",
+    description:
+      "Start adding an appointment (a fitting, a tasting, a venue visit). Call it straight away with what it is and anything the couple already said (the date, time, place, a supplier); do NOT ask them anything first. The app asks the rest on screen, one short step at a time, then shows a card to confirm. Nothing is saved until they tap Yes. Use find_suppliers for a supplier's id.",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: str,
+        date: date,
+        time: { ...str, description: "24-hour, e.g. 14:30" },
+        no_time: { type: "boolean", description: "Set when the couple said it has no set time (all day)" },
+        location: str,
+        supplier_id: str,
+        area: { ...str, description: "An area key, or 'other'" },
+        notes: str,
+      },
+      required: ["title"],
     },
   },
   {
@@ -371,6 +392,22 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
       return r.ok ? { result: JSON.stringify({ groups: r.groups }) } : fail(r.error);
     }
 
+    case "add_payment": {
+      const o = await overview();
+      if (!o.ok) return fail(o.error);
+      const step = await paymentSteps(input, id, o);
+      if ("error" in step) return fail(step.error);
+      return { result: STEPS_STARTED, block: step };
+    }
+
+    case "add_appointment": {
+      const o = await overview();
+      if (!o.ok) return fail(o.error);
+      const step = await appointmentSteps(input, id, o);
+      if ("error" in step) return fail(step.error);
+      return { result: STEPS_STARTED, block: step };
+    }
+
     case "set_guest_answer":
     case "move_guest":
     case "set_guest_of":
@@ -378,8 +415,7 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
     case "add_guest_to_group":
     case "set_todo_date":
     case "tick_todo":
-    case "mark_payment_paid":
-    case "add_payment": {
+    case "mark_payment_paid": {
       const o = await overview();
       if (!o.ok) return fail(o.error);
       const card = await proposalCard(name, input, id, o);
@@ -453,6 +489,66 @@ function todoSteps(input: Input, id: string, o: Overview): TodoStepsBlock | { er
       notes: text(input.notes),
     },
     options: { areas: o.areas.map((a) => ({ key: a.key, label: a.label })), today: o.today, weddingDate: o.date },
+  };
+}
+
+/** Same for a payment: what's known, and the suppliers and areas to choose from. */
+async function paymentSteps(input: Input, id: string, o: Overview): Promise<PaymentStepsBlock | { error: string }> {
+  const description = text(input.description);
+  if (!description) return { error: "A payment needs to say what it's for." };
+  const amount = typeof input.amount === "number" && Number.isFinite(input.amount) && input.amount >= 0 ? input.amount : null;
+  const choices = await supplierChoices();
+  const suppliers = choices.ok ? choices.suppliers : [];
+  const supplierId = text(input.supplier_id);
+  if (supplierId && !suppliers.some((s) => s.id === supplierId)) return { error: "That supplier id isn't one of this wedding's." };
+  const area = text(input.area);
+  if (area && area !== "other" && !o.areas.some((a) => a.key === area)) return { error: `There's no area "${area}".` };
+  const paid = flag(input.paid) ?? false;
+  const dueDate = day(input.due_date);
+  return {
+    type: "payment_steps",
+    id,
+    prefill: {
+      description,
+      amount,
+      whenKnown: paid || !!dueDate || flag(input.no_date) === true,
+      paid,
+      dueDate: paid ? null : dueDate,
+      paidOn: paid ? day(input.paid_on) : null,
+      supplierId,
+      area,
+      whoKnown: !!supplierId || !!area || flag(input.no_supplier) === true,
+      notes: text(input.notes),
+    },
+    options: { suppliers, areas: o.areas.map((a) => ({ key: a.key, label: a.label })), today: o.today, weddingDate: o.date },
+  };
+}
+
+/** Same for an appointment. */
+async function appointmentSteps(input: Input, id: string, o: Overview): Promise<AppointmentStepsBlock | { error: string }> {
+  const title = text(input.title);
+  if (!title) return { error: "An appointment needs a name." };
+  const choices = await supplierChoices();
+  const suppliers = choices.ok ? choices.suppliers : [];
+  const supplierId = text(input.supplier_id);
+  if (supplierId && !suppliers.some((s) => s.id === supplierId)) return { error: "That supplier id isn't one of this wedding's." };
+  const area = text(input.area);
+  if (area && area !== "other" && !o.areas.some((a) => a.key === area)) return { error: `There's no area "${area}".` };
+  const time = text(input.time);
+  return {
+    type: "appointment_steps",
+    id,
+    prefill: {
+      title,
+      date: day(input.date),
+      time: time && /^\d{1,2}:\d{2}$/.test(time) ? time.padStart(5, "0") : null,
+      noTime: flag(input.no_time) === true,
+      location: text(input.location),
+      supplierId,
+      area,
+      notes: text(input.notes),
+    },
+    options: { suppliers, areas: o.areas.map((a) => ({ key: a.key, label: a.label })), today: o.today, weddingDate: o.date },
   };
 }
 
@@ -621,39 +717,5 @@ async function proposalCard(name: string, input: Input, id: string, o: Overview)
     };
   }
 
-  // add_payment
-  const description = text(input.description);
-  const amount = typeof input.amount === "number" && Number.isFinite(input.amount) && input.amount >= 0 ? input.amount : null;
-  if (!description || amount === null) return { error: "A payment needs what it's for and an amount." };
-  const area = text(input.area);
-  const bad = checkArea(area);
-  if (bad) return { error: bad };
-  const supplierId = text(input.supplier_id);
-  let supplierName: string | null = null;
-  if (supplierId) {
-    const s = await findSuppliers();
-    supplierName = s.ok ? (s.suppliers.find((x) => x.id === supplierId)?.name ?? null) : null;
-    if (!supplierName) return { error: "That supplier id isn't one of this wedding's suppliers." };
-  }
-  const paid = flag(input.paid) ?? false;
-  const dueDate = day(input.due_date);
-  const paidOn = day(input.paid_on);
-  const rows: [string, string][] = [["Amount", formatMoney(amount)]];
-  if (supplierName) rows.push(["To", supplierName]);
-  if (area) rows.push(["Area", areaLabel(area)!]);
-  rows.push(paid ? ["Paid", paidOn ? formatLongDate(paidOn) : "Today"] : ["Due", dueDate ? formatLongDate(dueDate) : "No date yet"]);
-  const notes = text(input.notes);
-  if (notes) rows.push(["Notes", notes]);
-  return {
-    type: "confirm",
-    id,
-    title: description,
-    action: paid ? "Record as paid" : "Add to what's due",
-    rows,
-    yes: "Record it",
-    proposal: {
-      kind: "add_payment",
-      input: { description, amount, supplierId, area, dueDate: paid ? null : dueDate, paid, paidOn: paid ? paidOn : null, notes },
-    },
-  };
+  return { error: "That isn't something I can propose." };
 }

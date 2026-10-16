@@ -578,3 +578,21 @@ export async function findGroups(query: { name?: string; id?: string } = {}): Pr
     return failed("find groups failed", error);
   }
 }
+
+/** Suppliers to choose from in the steps for a payment or appointment. Not sent to the AI. */
+export async function supplierChoices(): Promise<Lookup<{ suppliers: { id: string; name: string; area: string | null }[] }>> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const all = await listSuppliers(wedding.id);
+    return {
+      ok: true,
+      suppliers: all
+        .map((s) => ({ id: s.id, name: s.supplier_details?.company_name ?? fullName(s), area: s.supplier_details?.category ?? null }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  } catch (error) {
+    console.error("supplier choices failed", error);
+    return { ok: true, suppliers: [] };
+  }
+}

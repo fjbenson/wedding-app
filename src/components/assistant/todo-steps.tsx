@@ -2,7 +2,8 @@
 
 import type { Proposal, TodoStepsBlock } from "@/lib/assistant/blocks";
 import { formatLongDate } from "@/lib/dates";
-import { FIELD, PILL, PILL_OFF, PILL_ON, type Flow, type StepBodyProps, type StepsState } from "./steps-flow";
+import { type Flow, type StepBodyProps, type StepsState } from "./steps-flow";
+import { AreaPills, DateStep } from "./steps-bits";
 
 /**
  * Adding a to-do, a step at a time (see steps-flow.tsx). Steps: when, which
@@ -82,56 +83,12 @@ export const todoFlow: Flow<TodoStepsBlock, Values> = {
 
 // ── The steps' answers ──────────────────────────────────────────────────
 
-const addDays = (iso: string, n: number) => {
-  const d = new Date(`${iso}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-};
-const addMonths = (iso: string, n: number) => {
-  const d = new Date(`${iso}T12:00:00Z`);
-  d.setUTCMonth(d.getUTCMonth() + n);
-  return d.toISOString().slice(0, 10);
-};
-
 function Body({ block, state, setValues, stepKey }: StepBodyProps<TodoStepsBlock, Values>) {
   const v = state.values;
   if (stepKey === "date") {
-    const { today, weddingDate } = block.options;
-    const picks: [string, string][] = [
-      ["Next week", addDays(today, 7)],
-      ["Next month", addMonths(today, 1)],
-      ["In 3 months", addMonths(today, 3)],
-    ];
-    if (weddingDate && weddingDate > today) picks.push(["A week before the day", addDays(weddingDate, -7)]);
-    return (
-      <div className="space-y-3">
-        {v.date && <p className="font-display text-[22px] font-light leading-tight text-ink">{formatLongDate(v.date)}</p>}
-        <div className="flex flex-wrap gap-2">
-          {picks.map(([label, date]) => (
-            <button key={label} type="button" aria-pressed={v.date === date} onClick={() => setValues({ date })} className={`${PILL} ${v.date === date ? PILL_ON : PILL_OFF}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-        <label className="block">
-          <span className="sr-only">Pick a date</span>
-          <input type="date" value={v.date} onChange={(e) => setValues({ date: e.target.value })} className={FIELD} />
-        </label>
-      </div>
-    );
+    return <DateStep value={v.date} onChange={(date) => setValues({ date })} today={block.options.today} weddingDate={block.options.weddingDate} />;
   }
-  if (stepKey === "area") {
-    const areas = [...block.options.areas, { key: "other", label: "Other" }];
-    return (
-      <div className="flex flex-wrap gap-2">
-        {areas.map((a) => (
-          <button key={a.key} type="button" aria-pressed={v.area === a.key} onClick={() => setValues({ area: v.area === a.key ? "" : a.key })} className={`${PILL} ${v.area === a.key ? PILL_ON : PILL_OFF}`}>
-            {a.label}
-          </button>
-        ))}
-      </div>
-    );
-  }
+  if (stepKey === "area") return <AreaPills areas={block.options.areas} value={v.area} onChange={(area) => setValues({ area })} />;
   return (
     <label className="block">
       <span className="sr-only">Notes</span>

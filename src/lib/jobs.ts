@@ -13,7 +13,9 @@ import { createContact, createHousehold, listGuests, listHouseholds, updateConta
 import { addToGroup, listGroups } from "@/lib/db/groups";
 import { listStays, setGuestStay } from "@/lib/db/stays";
 import { completeMilestone, createMilestone, listMilestones, updateMilestone } from "@/lib/db/milestones";
+import { createAppointment } from "@/lib/db/appointments";
 import { createPayment, getPayment, updatePayment } from "@/lib/db/money";
+import { listSuppliers } from "@/lib/db/suppliers";
 import { createNote } from "@/lib/db/notes";
 import { deleteRsvp, inviteGuestsToEvent, listEvents, listRsvps, setContactStatus, updateRsvp } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
@@ -438,5 +440,53 @@ export async function markPaymentPaid(paymentId: string, paidOn?: string | null)
     return { ok: true };
   } catch (error) {
     return failed("marking payment paid failed", error);
+  }
+}
+
+// ── Add an appointment ──────────────────────────────────────────────────
+
+export interface NewAppointment {
+  title: string;
+  /** yyyy-mm-dd */
+  onDate: string;
+  /** "14:30", or none for a whole-day thing. */
+  atTime?: string | null;
+  location?: string | null;
+  /** A supplier's id (one of this wedding's); or none. */
+  supplierId?: string | null;
+  area?: string | null;
+  notes?: string | null;
+}
+
+export async function addAppointment(input: NewAppointment): Promise<JobResult<{ id: string }>> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+
+  const title = tidy(input.title);
+  const onDate = tidy(input.onDate);
+  if (!title || !onDate) return { ok: false, error: "Please say what it is and when." };
+  if (!isDate(onDate)) return { ok: false, error: "That date isn't right." };
+  const atTime = tidy(input.atTime);
+  if (atTime && !/^\d{2}:\d{2}(:\d{2})?$/.test(atTime)) return { ok: false, error: "That time isn't right." };
+
+  try {
+    let supplierId = tidy(input.supplierId);
+    if (supplierId && !(await listSuppliers(wedding.id)).some((s) => s.id === supplierId)) {
+      return { ok: false, error: "That supplier couldn't be found." };
+    }
+    supplierId = supplierId ?? null;
+    const id = await createAppointment(wedding.id, {
+      title,
+      on_date: onDate,
+      at_time: atTime,
+      location: tidy(input.location),
+      contact_id: supplierId,
+      area_key: tidy(input.area),
+      notes: tidy(input.notes),
+    });
+    refreshPlan();
+    return { ok: true, id };
+  } catch (error) {
+    return failed("adding appointment failed", error);
   }
 }

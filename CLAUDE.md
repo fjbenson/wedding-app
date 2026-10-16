@@ -1478,6 +1478,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
      (`guestChoices()` in `lookups.ts`). A payment still uses the confirm
      card; stepping payments and appointments is next. Role, child and meal
      aren't steps yet.
+     **Payments and appointments too** (17 Oct 2026; `payment-steps.tsx`,
+     `appointment-steps.tsx`, shared bits in `steps-bits.tsx`): **payment** —
+     how much, still to pay or already paid (and when), who it's to (a
+     supplier drop-down, whose area it takes; or no supplier and an area);
+     straight to the check card once the amount and paid-or-not are known,
+     and Yes stays off until there's an amount (`Flow.missing`).
+     **Appointment** (a new job, `addAppointment`) — the day, the time, where
+     and who with, the area; straight to the check card once the day and time
+     (or "no set time") are known; the supplier's area is used if none is
+     picked. Suppliers for the drop-downs come from `supplierChoices()`
+     (to the screen only, never to Anthropic).
    - **Changing things that exist** (17 Oct 2026, owner: "move Anna from X
      household to Y"): seven more tools, each a **before-and-after confirm
      card** (Was / Now, Yes), nothing changes until Yes, nothing is ever

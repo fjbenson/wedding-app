@@ -6,10 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowUp, CalendarDays, Camera, Check, ListPlus, PenLine, PoundSterling, StickyNote, UserPlus, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
+import { appointmentFlow } from "@/components/assistant/appointment-steps";
 import { guestFlow } from "@/components/assistant/guest-steps";
+import { paymentFlow } from "@/components/assistant/payment-steps";
 import { StepsChat, StepsTray, type Flow, type StepsState } from "@/components/assistant/steps-flow";
 import { todoFlow } from "@/components/assistant/todo-steps";
-import type { Block, GuestStepsBlock, StreamEvent, TodoStepsBlock } from "@/lib/assistant/blocks";
+import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, StreamEvent, TodoStepsBlock } from "@/lib/assistant/blocks";
 
 /**
  * Your assistant (CLAUDE.md, Next steps 8; canvas 2 "Your planner · Round
@@ -25,10 +27,12 @@ import type { Block, GuestStepsBlock, StreamEvent, TodoStepsBlock } from "@/lib/
 type Part = { kind: "text"; text: string } | { kind: "block"; block: Block };
 type Turn = { role: "user"; text: string } | { role: "assistant"; parts: Part[]; error?: string; failedText?: string };
 /** A job done a step at a time (steps-flow.tsx). */
-type StepsBlock = GuestStepsBlock | TodoStepsBlock;
+type StepsBlock = GuestStepsBlock | TodoStepsBlock | PaymentStepsBlock | AppointmentStepsBlock;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const flowOf = (block: StepsBlock): Flow<any, any> => (block.type === "guest_steps" ? guestFlow : todoFlow);
-const isSteps = (block: Block): block is StepsBlock => block.type === "guest_steps" || block.type === "todo_steps";
+const flowOf = (block: StepsBlock): Flow<any, any> =>
+  block.type === "guest_steps" ? guestFlow : block.type === "todo_steps" ? todoFlow : block.type === "payment_steps" ? paymentFlow : appointmentFlow;
+const isSteps = (block: Block): block is StepsBlock =>
+  block.type === "guest_steps" || block.type === "todo_steps" || block.type === "payment_steps" || block.type === "appointment_steps";
 
 type CardState = { state: "saving" } | { state: "saved"; link?: string; note?: string } | { state: "changed" } | { state: "error"; message: string };
 

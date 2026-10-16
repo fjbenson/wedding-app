@@ -67,6 +67,8 @@ export interface Flow<B extends { id: string }, V> {
   /** Lines on the check card that aren't steps. */
   fixed(block: B): [string, string][];
   Body: ComponentType<StepBodyProps<B, V>>;
+  /** What's still needed before Yes can save, or null. */
+  missing?(block: B, values: V): string | null;
   /** A line on the check card that is changed in place rather than by a step. */
   Extra?: ComponentType<{ block: B; state: StepsState<V>; setValues: (change: Partial<V>) => void; editable: boolean }>;
 }
@@ -97,6 +99,7 @@ export function StepsChat<B extends { id: string }, V>({
   const reviewing = ["review", "saving", "error", "saved"].includes(state.phase);
   const editable = state.phase === "review";
   const Extra = flow.Extra;
+  const missing = flow.missing?.(block, state.values) ?? null;
 
   return (
     <div className="mt-3.5">
@@ -165,15 +168,15 @@ export function StepsChat<B extends { id: string }, V>({
                 <button
                   type="button"
                   onClick={onYes}
-                  disabled={state.phase === "saving"}
-                  className="h-[46px] flex-1 rounded-full bg-ink text-[15px] text-ivory disabled:opacity-60"
+                  disabled={state.phase === "saving" || !!missing}
+                  className="h-[46px] flex-1 rounded-full bg-ink text-[15px] text-ivory disabled:opacity-40"
                 >
                   {state.phase === "saving" ? "Saving…" : flow.yes(block)}
                 </button>
               </div>
             )}
           </div>
-          {state.phase === "review" && <p className="mt-2 text-xs text-stone">Tap any line to change it.</p>}
+          {state.phase === "review" && <p className="mt-2 text-xs text-stone">{missing ?? "Tap any line to change it."}</p>}
           {state.phase === "saved" && (
             <p className="mt-2.5 flex flex-wrap items-center gap-2 text-sm text-champagne-600">
               <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-champagne-600 text-white">

@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  addAppointment,
   addGuest,
   addGuestToGroup,
   addNote,
@@ -51,6 +52,19 @@ export async function confirmProposalAction(
       case "set_guest_answer": {
         const r = await setGuestAnswer(String(proposal.input.guestId), proposal.input.status);
         return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "add_appointment": {
+        const p = proposal.input;
+        const r = await addAppointment({
+          title: String(p.title ?? ""),
+          onDate: String(p.onDate ?? ""),
+          atTime: p.atTime ?? null,
+          location: p.location ?? null,
+          supplierId: p.supplierId ?? null,
+          area: p.area ?? null,
+          notes: p.notes ?? null,
+        });
+        return r.ok ? { ok: true, link: `/plan/appointments/${r.id}` } : { ok: false, error: r.error };
       }
       case "move_guest": {
         const p = proposal.input;

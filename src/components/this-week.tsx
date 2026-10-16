@@ -199,7 +199,7 @@ export default function ThisWeek({
 function Mark({ entry: e }: { entry: Entry }) {
   if (e.kind === "appointment") {
     return (
-      <span aria-hidden className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-100">
+      <span aria-hidden className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-champagne-400 bg-white">
         <Calendar className="h-3.5 w-3.5 text-champagne-600" strokeWidth={2} />
       </span>
     );

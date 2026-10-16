@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { X } from "lucide-react";
 import IconPicker from "@/components/icon-picker";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -20,6 +20,15 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
   const Icon = areaIcon(areaKey, current);
   const close = () => setOpen(false);
   const drag = usePullToClose(close);
+  // The card keeps the height it opened at (16 Oct 2026 bug: as the search
+  // narrowed the icons the card shrank, and its search box sank behind the
+  // phone's keyboard).
+  const sheet = useRef<HTMLDivElement>(null);
+  const [openHeight, setOpenHeight] = useState<number>();
+  useLayoutEffect(() => {
+    if (!open) return setOpenHeight(undefined);
+    if (sheet.current) setOpenHeight(sheet.current.offsetHeight);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +92,8 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
             className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
           />
           <div
-            style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+            ref={sheet}
+            style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined, minHeight: openHeight }}
             className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
               drag.dragging ? "" : "transition-transform duration-200 ease-out"
             }`}

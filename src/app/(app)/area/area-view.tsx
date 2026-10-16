@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Camera, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
@@ -19,6 +19,7 @@ import { markPaidAction } from "../money/actions";
 import { AppointmentRow } from "../plan/appointment-row";
 import { MilestoneRow } from "../plan/milestone-row";
 import { SupplierCards, SupplierLink } from "../people/supplier-cards";
+import { StageIcon } from "../people/supplier-list";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
 import {
@@ -108,29 +109,22 @@ function AreaCover({
   );
 
   return (
-    <div className="relative -mx-5 -mt-[max(2.5rem,env(safe-area-inset-top))] h-[300px] overflow-hidden md:mx-0 md:mt-0 md:h-[360px] md:rounded-3xl">
-      {photos.length > 0 ? (
-        <Link href={galleryHref} aria-label={`See all ${plural(ideaCount, "saved idea")}`}>
-          {collage}
-        </Link>
-      ) : (
-        collage
-      )}
+    <div className={`relative -mx-5 -mt-[max(2.5rem,env(safe-area-inset-top))] overflow-hidden md:mx-0 md:mt-0 md:rounded-3xl ${
+        // Shorter until there are pictures (owner, 16 Oct 2026): empty tiles shouldn't take a third of the screen.
+        photos.length > 0 ? "h-[300px] md:h-[360px]" : "h-[220px] md:h-[240px]"
+      }`}>
+      {/* Nothing saved yet: the soft tiles open "Save an idea" too (the button up top does the same). */}
+      <Link
+        href={photos.length > 0 ? galleryHref : saveHref}
+        aria-label={photos.length > 0 ? `See all ${plural(ideaCount, "saved idea")}` : "Save an idea"}
+      >
+        {collage}
+      </Link>
 
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[180px] bg-gradient-to-b from-[#FBF7F0]/0 via-[#FBF7F0]/85 to-[#FAF5EE]"
       />
-
-      {photos.length === 0 && (
-        <Link
-          href={saveHref}
-          aria-label="Add a photo"
-          className="glass-card absolute left-1/2 top-[38%] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-ink hover:border-champagne-400"
-        >
-          <Camera className="h-6 w-6" strokeWidth={1.5} aria-hidden />
-        </Link>
-      )}
 
       <div className="absolute inset-x-4 top-[max(1rem,env(safe-area-inset-top))] flex justify-between gap-2">
         <Link href="/" aria-label="Back to the hub" className={`${glassButton} w-11`}>
@@ -180,7 +174,7 @@ function AreaCover({
           <h1 className="type-display min-w-0 text-[48px] leading-none md:text-6xl">{area.label}</h1>
         </div>
         {ideaCount > 0 && (
-          <Link href={galleryHref} className="label pointer-events-auto mb-2 shrink-0 hover:text-ink">
+          <Link href={galleryHref} className="pointer-events-auto mb-2 shrink-0 text-[13px] text-champagne-600 hover:text-ink">
             {plural(ideaCount, "idea")} ›
           </Link>
         )}
@@ -260,7 +254,7 @@ function Section({
         <Icon className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
         <h2 className="label min-w-0 flex-1">{title}</h2>
         {seeHref && (
-          <Link href={seeHref} className="type-meta shrink-0 py-2 !text-champagne-600 hover:!text-ink">
+          <Link href={seeHref} className="shrink-0 py-2 text-[13px] text-champagne-600 hover:text-ink">
             {seeLabel} ›
           </Link>
         )}
@@ -275,7 +269,7 @@ function Adds({ links }: { links: { href: string; label: string; stays?: boolean
   return (
     <div className="flex flex-wrap gap-x-6 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-linen">
       {links.map((l) => (
-        <Link key={l.href} href={l.href} scroll={!l.stays} className="label flex min-h-12 items-center hover:text-ink">
+        <Link key={l.href} href={l.href} scroll={!l.stays} className="flex min-h-12 items-center text-[15px] text-champagne-600 hover:text-ink">
           <span aria-hidden>+&nbsp;</span>
           {l.label}
         </Link>
@@ -294,7 +288,7 @@ function Folded({ label, children }: { label: string; children: React.ReactNode 
   return (
     <details className="group border-t border-linen">
       <summary className="flex cursor-pointer list-none items-center gap-3 py-3.5 [&::-webkit-details-marker]:hidden">
-        <span className="type-meta flex-1">{label}</span>
+        <span className="flex-1 text-[15px] text-stone">{label}</span>
         <ChevronRight className="h-4 w-4 text-stone transition group-open:rotate-90" strokeWidth={1.8} aria-hidden />
       </summary>
       <div className="pb-1">{children}</div>
@@ -302,24 +296,35 @@ function Folded({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
+/**
+ * A supplier on the area page: initials with the stage as a badge (like the
+ * Suppliers list), the name with room to breathe, the quote on the right.
+ */
 function SupplierRow({ s }: { s: Supplier }) {
   const d = s.supplier_details;
   const status = d?.status ?? "enquired";
-  const strong = status === "booked" || status === "quoted";
+  const name = supplierName(s);
+  const letters = name
+    .replace(/[^\p{L} ]/gu, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
   return (
     <li className="border-b border-linen last:border-b-0">
-      <SupplierLink id={s.id} className="flex w-full items-center gap-3 py-3.5">
-        <span className={`type-item min-w-0 flex-1 truncate ${status === "cancelled" ? "!text-stone" : ""}`}>
-          {supplierName(s)}
+      <SupplierLink id={s.id} className="flex w-full items-center gap-3 py-3">
+        <span aria-hidden className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
+          {letters}
+          <span className="absolute -bottom-1 -right-1.5">
+            <StageIcon status={status} badge />
+          </span>
         </span>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em] ${
-            strong ? "bg-champagne-100 text-champagne-600" : "bg-cream text-stone"
-          }`}
-        >
-          {supplierStatusLabel(status)}
+        <span className="min-w-0 flex-1">
+          <span className={`type-item block truncate ${status === "cancelled" ? "!text-stone line-through" : ""}`}>{name}</span>
+          <span className="mt-0.5 block text-[13px] text-stone">{supplierStatusLabel(status)}</span>
         </span>
-        <span className="type-figure w-[4.5rem] shrink-0 text-right text-xl">
+        <span className="type-figure shrink-0 text-right text-xl">
           {d?.quoted_cost != null ? formatMoney(d.quoted_cost) : <span className="text-stone">—</span>}
         </span>
       </SupplierLink>
@@ -757,7 +762,7 @@ export default function AreaView({
           ) : (
             <Link href="/money/budget" className="flex items-center justify-between gap-3 border-b border-linen py-3.5">
               <span className="text-sm text-stone">No budget for {area.label} yet.</span>
-              <span className="label shrink-0">Set it ›</span>
+              <span className="shrink-0 text-[13px] text-champagne-600">Set it ›</span>
             </Link>
           )}
           {deposits.length + schedule.length + unscheduled.length > 0 ? (
@@ -830,7 +835,7 @@ export default function AreaView({
             <div className="flex items-baseline justify-between pt-3.5">
               <h3 className="label">Key facts</h3>
               {editing !== "facts" && (
-                <Link href={`/area/${area.key}?edit=facts#notes`} scroll={false} className="label py-1 hover:text-ink">
+                <Link href={`/area/${area.key}?edit=facts#notes`} scroll={false} className="py-1 text-[13px] text-champagne-600 hover:text-ink">
                   {area.details ? "Edit" : "Write"}
                 </Link>
               )}
@@ -909,7 +914,7 @@ export default function AreaView({
                     <div className="min-w-0 flex-1">
                       <NoteText note={n} />
                     </div>
-                    <Link href={`/area/${area.key}?edit=note:${n.id}#notes`} scroll={false} className="label shrink-0 py-0.5 hover:text-ink">
+                    <Link href={`/area/${area.key}?edit=note:${n.id}#notes`} scroll={false} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
                       Edit
                     </Link>
                   </li>
@@ -922,7 +927,7 @@ export default function AreaView({
             className="flex items-center justify-between gap-3 border-t border-linen py-3.5"
           >
             <span className="text-sm text-ink">{ideaCount > 0 ? `${plural(ideaCount, "idea")} in Inspo` : "No pictures yet"}</span>
-            <span className="label shrink-0">{ideaCount > 0 ? "See them ›" : "Save one ›"}</span>
+            <span className="shrink-0 text-[13px] text-champagne-600">{ideaCount > 0 ? "See them ›" : "Save one ›"}</span>
           </Link>
           <Adds links={[{ href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }]} />
         </Section>

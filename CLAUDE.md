@@ -167,6 +167,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (`0017_run_sheet_area.sql`, run 12 Oct 2026); the moment form is now
   visual (what happens large, time card, area tiles, where and who, notes).
   Notes can be added, edited and removed in place on the area page.
+  **Tidied 16 Oct 2026** (owner: "go ahead"): the empty cover is shorter
+  (220px until there are pictures, 300px after) and its camera circle is
+  gone — the soft tiles and "Save an idea" both open the save form; spaced
+  capitals only on section names ("PEOPLE", "KEY FACTS") — "In People ›",
+  "+ Add a supplier", "1 other", "Set it ›" are sentence case; supplier
+  rows show initials with the stage badge (`StageIcon`, as on the Suppliers
+  list) and the stage in words under the name, so long names fit.
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
   rounded switch in the top-right corner above the title ("The guest list"

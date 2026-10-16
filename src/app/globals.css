@@ -226,6 +226,18 @@ body::before {
       0 10px 22px -14px rgb(60 50 40 / 0.35);
   }
 
+  /*
+   * A tab's headline card in solid white, like the guest list's All tile and
+   * the search box (owner, 17 Oct 2026: on Money the white search jumped out
+   * between two frosted cards). Money's top card on both views.
+   */
+  .card-white {
+    background: #ffffff;
+    box-shadow:
+      0 0 0 0.5px rgb(60 50 40 / 0.08),
+      0 18px 40px -24px rgb(60 50 40 / 0.32);
+  }
+
   /* A glass node for an area that is done (e.g. venue booked). */
   .glass-done {
     background: linear-gradient(

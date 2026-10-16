@@ -187,7 +187,7 @@ function ByArea({
       <Link
         href="/money/budget"
         aria-label={`${scope ?? "The whole wedding"} — change the budget`}
-        className="glass-card row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
+        className="card-white row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
       >
         <p className="flex items-baseline justify-between gap-3">
           <span className="type-meta">{scope ?? "The whole wedding"}</span>
@@ -321,7 +321,7 @@ function ByMonth({
     <>
       {/* Canvas 2 "Money · Round 6", option D (owner's pick 12 Oct 2026): the
           chart on a glass card, then a glass card per month listing its payments. */}
-      <section className="glass-card mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
+      <section className="card-white mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="type-meta">Still to pay</p>

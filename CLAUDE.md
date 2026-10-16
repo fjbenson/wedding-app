@@ -890,14 +890,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0020_travel.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0021_involved.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0020 are now in** (0020, Travel's places to stay, run 15 Oct 2026) (12 Oct
+only queries) needs no OK. **All migrations 0001–0021 are now in** (0021, guests on to-dos and appointments, run 16 Oct 2026) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1194,10 +1194,18 @@ additive — new tables hanging off `weddings`. None require changing the above.
    screen); everything opens as a card, edited in place; Plan's List like
    the guest list; area stages renamed (Ideas · Quotes · Booked · Paid ·
    Ready); "Edit events" card; Sort › Group; the shorter grey line under
-   rows. **Waiting on the owner:** (1) **tagging guests on to-dos and
-   appointments** — needs a database change (two link tables, a "Who's
-   involved" picker on cards and add forms, initials on rows, a list on the
-   guest card); asked, no OK yet. (2) **Run sheet moments with no area** —
+   rows. **Guests on to-dos and appointments — built 16 Oct 2026 (late),
+   owner's OK; `0021_involved.sql`, run the same day:** link tables
+   `milestone_guests` / `appointment_guests` (tied to `(id, wedding_id)` both
+   sides, RLS like groups, in `rls_isolation.sql`); queries
+   `src/lib/db/involved.ts`; a **Who's involved** part on the to-do and
+   appointment cards (`plan/involved.tsx`, pills, ✕, "+ Add a guest" search,
+   taps save; `setInvolvedAction`) and folded on the add forms (`PeoplePicker`,
+   `tag-guests.ts`); small initials at a row's end (`RowPeople` +
+   `RowPeopleProvider`, `src/components/row-people.tsx`, on Plan, area pages
+   and the Hub's This week); **In the plan** on the guest card
+   (`guest-plan.tsx`). Nobody is told; the assistant isn't given the tags.
+   **Waiting on the owner:** (1) **Run sheet moments with no area** —
    speeches showed as "Other"; suggested making the area optional on a
    moment (no database change) rather than an Other dot on the ring
    (owner's call: the Hub's look). **Before that, the 15–16 Oct 2026 chat:** built this

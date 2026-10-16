@@ -30,10 +30,12 @@ export async function getAppointment(id: string): Promise<Appointment | null> {
   return data;
 }
 
-export async function createAppointment(weddingId: string, fields: AppointmentFields): Promise<void> {
+/** Adds an appointment and gives back its id. */
+export async function createAppointment(weddingId: string, fields: AppointmentFields): Promise<string> {
   const supabase = await createClient();
-  const { error } = await supabase.from("appointments").insert({ wedding_id: weddingId, ...fields });
+  const { data, error } = await supabase.from("appointments").insert({ wedding_id: weddingId, ...fields }).select("id").single();
   if (error) throw error;
+  return data.id as string;
 }
 
 export async function updateAppointment(id: string, fields: Partial<AppointmentFields>): Promise<void> {

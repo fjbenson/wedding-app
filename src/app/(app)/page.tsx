@@ -15,6 +15,8 @@ import HubTiles from "@/components/hub-tiles";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
 import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
+import { involvedNames } from "@/lib/db/involved";
+import { RowPeopleProvider } from "@/components/row-people";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -29,7 +31,7 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas, suppliers, appointments, payments, unfiled, inspo, latestInspo] = await Promise.all([
+  const [milestones, areas, suppliers, appointments, payments, unfiled, inspo, latestInspo, people] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
     listSuppliers(wedding.id),
@@ -38,6 +40,7 @@ export default async function HomePage() {
     listNotes(wedding.id, { area: null }),
     countInspo(wedding.id),
     listInspo(wedding.id, { limit: 4 }),
+    involvedNames(wedding.id),
   ]);
   const sortable = (unfiled ?? []).filter(toSort);
   const toSortCount = sortable.length;
@@ -69,6 +72,7 @@ export default async function HomePage() {
             />
           </div>
         )}
+        <RowPeopleProvider people={people}>
         <ThisWeek
           milestones={milestones}
           appointments={appointments ?? []}
@@ -81,6 +85,7 @@ export default async function HomePage() {
             area: s.supplier_details?.category ?? null,
           }))}
         />
+        </RowPeopleProvider>
         <HubTiles
           note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}
           toSort={toSortCount}

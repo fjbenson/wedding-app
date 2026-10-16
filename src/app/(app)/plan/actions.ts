@@ -15,6 +15,7 @@ import { describe } from "@/lib/errors";
 import { addTodo, refreshPlan } from "@/lib/jobs";
 import { returnTo, stayAfterSave } from "@/lib/return-to";
 import { starterPlan } from "@/lib/starter-plan";
+import { tagGuests } from "./tag-guests";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -60,6 +61,7 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
   } else {
     const result = await addTodo({ title, dueDate: due, area: fields.category, notes: fields.description });
     if (!result.ok) ({ error, detail = "" } = result);
+    else await tagGuests(wedding.id, "todo", result.id, formData);
   }
 
   if (error) {

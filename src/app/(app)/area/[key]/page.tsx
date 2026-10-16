@@ -15,6 +15,8 @@ import { getDay } from "@/lib/db/day";
 import { areaGuestFacts, guestFactsKind } from "@/lib/area-guests";
 import { coupleName } from "@/lib/couple-name";
 import AreaView from "../area-view";
+import { involvedNames } from "@/lib/db/involved";
+import { RowPeopleProvider } from "@/components/row-people";
 
 export const metadata = { title: "Area — Wedding App" };
 
@@ -34,7 +36,7 @@ export default async function AreaPage({
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
-  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows, day] = await Promise.all([
+  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows, day, people] = await Promise.all([
     listMilestones(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -45,6 +47,7 @@ export default async function AreaPage({
     countInspo(wedding.id),
     listAreas(wedding.id),
     getDay(wedding.id),
+    involvedNames(wedding.id),
   ]);
   const allPayments = payments ?? [];
 
@@ -65,6 +68,7 @@ export default async function AreaPage({
   const supplierIds = new Set(areaSuppliers.map((s) => s.id));
 
   return (
+    <RowPeopleProvider people={people}>
     <AreaView
       area={area}
       areas={areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }))}
@@ -88,5 +92,6 @@ export default async function AreaPage({
       error={error}
       detail={detail}
     />
+    </RowPeopleProvider>
   );
 }

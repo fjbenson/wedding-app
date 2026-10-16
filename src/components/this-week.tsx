@@ -1,4 +1,5 @@
 import RowLine from "./row-line";
+import RowPeople from "./row-people";
 import DateStamp from "./date-stamp";
 import Link from "next/link";
 import { areaName, type AreaOption } from "@/lib/areas";
@@ -164,6 +165,7 @@ export default function ThisWeek({
                             <RowLine details={[e.meta]} overdue={e.overdue} />
                           </span>
                           {e.amount && <span className="type-figure shrink-0 text-[18px]">{e.amount}</span>}
+                          {e.kind !== "payment" && <RowPeople kind={e.kind} id={e.id} />}
                         </CardLink>
                         <Mark entry={e} />
                       </li>

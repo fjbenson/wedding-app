@@ -1,5 +1,6 @@
 import CardLink from "@/components/card-link";
 import RowLine from "@/components/row-line";
+import RowPeople from "@/components/row-people";
 import { Check } from "lucide-react";
 import { formatMonthYear, todayISO } from "@/lib/dates";
 import { isNudge } from "@/lib/plan";
@@ -48,6 +49,7 @@ export function MilestoneRow({
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>{m.title}</span>
           <RowLine status={done ? "Done" : nudgeWhen} details={[area]} overdue={late} />
         </span>
+        <RowPeople kind="todo" id={m.id} />
       </CardLink>
       <TickForm
         action={toggleMilestoneAction.bind(null, m.id, !done)}

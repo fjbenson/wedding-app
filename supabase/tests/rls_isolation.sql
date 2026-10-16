@@ -93,6 +93,17 @@ begin
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Dress fitting', '2027-01-10'),
       ('bbbbbbbb-0000-0000-0000-000000000002', 'Cake tasting', '2027-01-11');
   end if;
+  if to_regclass('public.milestone_guests') is not null then
+    insert into milestones (id, wedding_id, title) values
+      ('aaaaaaaa-4444-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Ask about readings'),
+      ('bbbbbbbb-4444-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Ask about readings');
+    insert into milestone_guests (milestone_id, contact_id, wedding_id)
+      select 'aaaaaaaa-4444-0000-0000-000000000001', id, wedding_id from contacts where first_name = 'Alice';
+    insert into milestone_guests (milestone_id, contact_id, wedding_id)
+      select 'bbbbbbbb-4444-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
+    insert into appointment_guests (appointment_id, contact_id, wedding_id)
+      select a.id, c.id, a.wedding_id from appointments a join contacts c on c.wedding_id = a.wedding_id;
+  end if;
   if to_regclass('public.payments') is not null then
     insert into payments (wedding_id, description, amount) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Rings', 900),
@@ -420,6 +431,56 @@ begin
     execute $q$select count(*) from contacts where first_name = 'Alice' and staying = 'yes' and stay_id is null$q$ into visible_contacts;
     if visible_contacts <> 1 then
       raise exception 'Removing a place to stay lost its guest (or their wedding)';
+    end if;
+  end if;
+
+  if to_regclass('public.milestone_guests') is not null then
+    execute 'select count(*) from milestone_guests' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % to-do tags, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from appointment_guests' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % appointment tags, expected 1', visible_contacts;
+    end if;
+    -- Wedding A's to-do can't be tagged with wedding B's guest, nor the other way round.
+    begin
+      execute $q$insert into milestone_guests (milestone_id, contact_id, wedding_id)
+               values ('aaaaaaaa-4444-0000-0000-000000000001',
+                       (select id from contacts where first_name = 'Bob' limit 1),
+                       'aaaaaaaa-0000-0000-0000-000000000001')$q$;
+      raise exception 'LEAK: couple A tagged wedding B''s guest';
+    exception
+      when insufficient_privilege or foreign_key_violation or not_null_violation then null;  -- expected
+    end;
+    begin
+      execute $q$insert into milestone_guests (milestone_id, contact_id, wedding_id)
+               values ('bbbbbbbb-4444-0000-0000-000000000002',
+                       (select id from contacts where first_name = 'Alice' limit 1),
+                       'bbbbbbbb-0000-0000-0000-000000000002')$q$;
+      raise exception 'LEAK: couple A tagged a guest on wedding B''s to-do';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    execute $q$delete from milestone_guests where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s to-do tags';
+    end if;
+    execute $q$delete from appointment_guests where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s appointment tags';
+    end if;
+    -- Removing their own to-do takes its tags with it, and keeps the guest.
+    execute $q$delete from milestones where id = 'aaaaaaaa-4444-0000-0000-000000000001'$q$;
+    execute 'select count(*) from milestone_guests' into visible_contacts;
+    if visible_contacts <> 0 then
+      raise exception 'Removing a to-do left its tags behind';
+    end if;
+    execute $q$select count(*) from contacts where first_name = 'Alice'$q$ into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'Removing a to-do removed its guest';
     end if;
   end if;
 

@@ -8,3 +8,9 @@ export function splitName(full: string): { first: string; last: string | null } 
   if (words.length <= 1) return { first: words[0] ?? "", last: null };
   return { first: words.slice(0, -1).join(" "), last: words[words.length - 1] };
 }
+
+/** "AL" for "Amy Latham" — for the little circles of people on a row. */
+export function initialsOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  return ((words[0]?.charAt(0) ?? "") + (words.length > 1 ? words[words.length - 1].charAt(0) : "")).toUpperCase();
+}

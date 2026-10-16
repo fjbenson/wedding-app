@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, MapPin, NotebookPen, UsersRound } from "lucide-react";
+import { Clock, MapPin, NotebookPen, Plus, UsersRound } from "lucide-react";
 import { ReturnTo } from "@/components/back-link";
 import { SubmitBar } from "@/components/form-bits";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part, TITLE_INPUT } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
+import PeoplePicker from "../people/people-picker";
 
 type Kind = "todo" | "appointment";
 type Action = (formData: FormData) => void | Promise<void>;
@@ -23,6 +24,7 @@ export default function PlanAddForm({
   saveTodo,
   saveAppointment,
   suppliers,
+  guests,
   areas,
   defaultArea,
   defaultDate,
@@ -32,6 +34,7 @@ export default function PlanAddForm({
   saveTodo: Action;
   saveAppointment: Action;
   suppliers: { id: string; name: string; area?: string | null }[];
+  guests: { id: string; name: string }[];
   areas: AreaOption[];
   defaultArea?: string;
   defaultDate?: string;
@@ -45,6 +48,7 @@ export default function PlanAddForm({
   const [area, setArea] = useState(defaultArea ?? "");
   const [notes, setNotes] = useState("");
   const [supplier, setSupplier] = useState("");
+  const [tagging, setTagging] = useState(false);
   // The area comes first, so "With" lists that area's suppliers (owner, 16 Oct
   // 2026: pick Photos, then choose from the photographers). No area, or an
   // area with none yet: everyone.
@@ -134,6 +138,25 @@ export default function PlanAddForm({
         </Part>
       )}
 
+      {/* Guests tagged on it (0021_involved.sql) — folded until wanted. */}
+      {guests.length > 0 && (
+        <Part label="Who's involved">
+          {tagging ? (
+            <div className="mt-1">
+              <PeoplePicker people={guests} />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setTagging(true)}
+              className="mt-1 flex h-9 items-center gap-1.5 rounded-full border border-dashed border-champagne-400 px-3.5 text-[15px] text-champagne-600 hover:bg-champagne-100"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2} aria-hidden />
+              Add a guest
+            </button>
+          )}
+        </Part>
+      )}
 
       <section className="mt-7">
         <h2 className="section-label font-body">Notes</h2>

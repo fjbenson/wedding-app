@@ -12,7 +12,8 @@ import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
 import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
-import { updatePlanFieldsAction } from "./card-actions";
+import { updatePlanFieldsAction, type Involved } from "./card-actions";
+import { InvolvedPart } from "./involved";
 
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
@@ -31,7 +32,17 @@ function useSave(kind: "todo" | "appointment" | "payment" | "moment" | "journey"
  * Oct 2026): a tap — a date, a quick pick, an area — saves at once; typing
  * (the name, notes) gets a small Save under the box.
  */
-export function TodoBody({ milestone: m, areas, weddingDate }: { milestone: Milestone; areas: AreaOption[]; weddingDate: string | null }) {
+export function TodoBody({
+  milestone: m,
+  areas,
+  weddingDate,
+  involved,
+}: {
+  milestone: Milestone;
+  areas: AreaOption[];
+  weddingDate: string | null;
+  involved: Involved;
+}) {
   const save = useSave("todo", m.id);
   const [date, setDate] = useState(m.due_date ?? m.remind_at?.slice(0, 10) ?? "");
   const [error, setError] = useState<string>();
@@ -62,6 +73,8 @@ export function TodoBody({ milestone: m, areas, weddingDate }: { milestone: Mile
         <AreaTiles name="category" areas={options} otherValue="" defaultValue={current ?? ""} onChange={(v) => change({ category: v || null })} folded />
       </Part>
 
+      <InvolvedPart kind="todo" id={m.id} involved={involved} />
+
       <section className="mt-7">
         <h3 className="section-label">Details</h3>
         <dl className="mt-1">
@@ -78,11 +91,13 @@ export function AppointmentBody({
   areas,
   suppliers,
   weddingDate,
+  involved,
 }: {
   appointment: Appointment;
   areas: AreaOption[];
   suppliers: { id: string; name: string; area?: string | null }[];
   weddingDate: string | null;
+  involved: Involved;
 }) {
   const save = useSave("appointment", a.id);
   const [date, setDate] = useState(a.on_date);
@@ -151,6 +166,8 @@ export function AppointmentBody({
           folded={!!a.area_key}
         />
       </Part>
+
+      <InvolvedPart kind="appointment" id={a.id} involved={involved} />
 
       <section className="mt-7">
         <h3 className="section-label">Details</h3>

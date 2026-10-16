@@ -1,5 +1,6 @@
 import CardLink from "@/components/card-link";
 import RowLine from "@/components/row-line";
+import RowPeople from "@/components/row-people";
 import { Calendar, Check } from "lucide-react";
 import { formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import DateStamp from "@/components/date-stamp";
@@ -35,6 +36,7 @@ export function AppointmentRow({
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
           <RowLine status={been ? "Been" : null} details={details} />
         </span>
+        <RowPeople kind="appointment" id={a.id} />
       </CardLink>
       {/* Champagne fill with a soft edge (owner, 16 Oct 2026): tells it apart from the white to-do circle. */}
       <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-champagne-400/45 bg-champagne-100 text-champagne-600" aria-hidden>

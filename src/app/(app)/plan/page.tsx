@@ -5,6 +5,8 @@ import { listAreas } from "@/lib/db/areas";
 import { listMilestones } from "@/lib/db/milestones";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { involvedNames } from "@/lib/db/involved";
+import { RowPeopleProvider } from "@/components/row-people";
 import TimelineView from "./timeline-view";
 import { asWhen } from "./when";
 
@@ -19,14 +21,16 @@ export default async function PlanPage({
   if (!wedding) redirect("/");
 
   const { view, as, area, when, kind, show, q } = await searchParams;
-  const [milestones, areas, appointments, suppliers] = await Promise.all([
+  const [milestones, areas, appointments, suppliers, people] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
     listAppointments(wedding.id),
     listSuppliers(wedding.id),
+    involvedNames(wedding.id),
   ]);
 
   return (
+    <RowPeopleProvider people={people}>
     <TimelineView
       milestones={milestones}
       appointments={appointments}
@@ -45,5 +49,6 @@ export default async function PlanPage({
       show={show === "todos" || show === "appointments" ? show : kind === "appointments" ? "appointments" : null}
       query={q ?? ""}
     />
+    </RowPeopleProvider>
   );
 }

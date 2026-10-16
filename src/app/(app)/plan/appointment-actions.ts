@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createAppointment, deleteAppointment, updateAppointment } from "@/lib/db/appointments";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { tagGuests } from "./tag-guests";
 import { returnTo, stayAfterSave } from "@/lib/return-to";
 
 function text(formData: FormData, key: string): string | null {
@@ -47,12 +48,14 @@ export async function saveAppointmentAction(appointmentId: string | null, formDa
     notes: text(formData, "notes"),
   };
 
+  let newId: string | null = null;
   try {
     if (appointmentId) await updateAppointment(appointmentId, fields);
-    else await createAppointment(wedding.id, fields);
+    else newId = await createAppointment(wedding.id, fields);
   } catch (error) {
     failed(back, "That didn't save.", error);
   }
+  if (newId) await tagGuests(wedding.id, "appointment", newId, formData);
 
   refresh();
   redirect(appointmentId ? stayAfterSave(`/plan/appointments/${appointmentId}`) : returnTo(formData, "/plan"));

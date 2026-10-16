@@ -15,6 +15,7 @@ import { splitName } from "@/lib/names";
 import CardSheet from "@/components/card-sheet";
 import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
+import { GuestPlanSection } from "./guest-plan";
 
 type Saver = () => Promise<{ error?: string } | void>;
 
@@ -125,6 +126,8 @@ export default function GuestCard({
       {travel && <GuestTravelSection guest={guest} travel={travel} />}
 
       {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
+
+      <GuestPlanSection guestId={guest.id} />
 
       {/* A hairline right across the card between sections. */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">

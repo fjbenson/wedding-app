@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
+import { listGuests } from "@/lib/db/contacts";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { formOptions } from "@/lib/form-options";
 import { saveMilestoneAction } from "./actions";
@@ -22,7 +23,10 @@ export default async function PlanAddPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { error, detail, area, date } = searchParams;
-  const { areas, suppliers } = await formOptions(wedding.id);
+  const [{ areas, suppliers }, guestRows] = await Promise.all([formOptions(wedding.id), listGuests(wedding.id)]);
+  const guests = guestRows
+    .map((g) => ({ id: g.id, name: [g.first_name, g.last_name].filter(Boolean).join(" ") }))
+    .sort((a, b) => a.name.localeCompare(b.name));
   const fromArea = areas.some((a) => a.key === area) ? area : undefined;
 
   return (
@@ -32,6 +36,7 @@ export default async function PlanAddPage({
         saveTodo={saveMilestoneAction.bind(null, null)}
         saveAppointment={saveAppointmentAction.bind(null, null)}
         suppliers={suppliers}
+        guests={guests}
         areas={areas}
         defaultArea={fromArea}
         defaultDate={date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined}

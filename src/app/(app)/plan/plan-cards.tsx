@@ -119,9 +119,9 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
           )}
 
           {data.kind === "todo" ? (
-            <TodoBody milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} />
+            <TodoBody milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} involved={data.involved} />
           ) : data.kind === "appointment" ? (
-            <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
+            <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} involved={data.involved} />
           ) : data.kind === "moment" ? (
             <MomentBody moment={data.moment} areas={data.areas} />
           ) : data.kind === "idea" ? (

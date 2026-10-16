@@ -16,7 +16,21 @@ import { setInvolvedAction, type Involved } from "./card-actions";
  * the guest list where a tap tags them at once (taps save, like the rest of
  * the card). Nobody is told; it's a note for the couple.
  */
-export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointment"; id: string; involved: Involved }) {
+export function InvolvedPart({
+  kind,
+  id,
+  involved,
+  label = "Who's involved",
+  nobody,
+}: {
+  kind: "todo" | "appointment" | "payment";
+  id: string;
+  involved: Involved;
+  /** A payment's is "Who's paying" (0023_payment_payers.sql). */
+  label?: string;
+  /** Shown while nobody's tagged: a payment says "Us". */
+  nobody?: string;
+}) {
   const router = useRouter();
   const [ids, setIds] = useState(involved.ids);
   const [open, setOpen] = useState(false);
@@ -46,8 +60,11 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
 
   return (
     <fieldset className="mt-7 min-w-0">
-      <legend className="section-label">Who&apos;s involved</legend>
+      <legend className="section-label">{label}</legend>
       <div className="mt-1 flex flex-wrap gap-2">
+        {nobody && ids.length === 0 && (
+          <span className="flex h-9 items-center rounded-full border border-linen bg-white px-3.5 text-[15px] text-ink">{nobody}</span>
+        )}
         {ids.map((guestId) => {
           const name = names.get(guestId) ?? "Someone";
           return (
@@ -76,7 +93,7 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
             className="flex h-9 items-center gap-1.5 rounded-full border border-dashed border-champagne-400 px-3.5 text-[15px] text-champagne-600 hover:bg-champagne-100"
           >
             <Plus className="h-4 w-4" strokeWidth={2} aria-hidden />
-            {ids.length ? "Add someone" : "Add a guest"}
+            {ids.length ? "Add someone" : nobody ? "Someone else" : "Add a guest"}
           </button>
         )}
       </div>

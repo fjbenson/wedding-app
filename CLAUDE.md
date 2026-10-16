@@ -783,7 +783,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `src/lib/db/contributions.ts`); listed under the budget page
   (`/money/budget#paying`, `budget/paying.tsx`); the top card on By area
   shows "Money towards it £… · £… arrived" (follows the area filter). Not
-  given to the assistant. In `rls_isolation.sql`. "Agreed" is the UI word for what
+  given to the assistant. In `rls_isolation.sql`.
+  **Who's paying a bill** (17 Oct 2026, owner's OK; `0023_payment_payers.sql`,
+  run the same day): family paying a supplier themselves — guests tagged on
+  a payment like "Who's involved" on a to-do (`InvolvedKind` gains
+  `"payment"`, `src/lib/db/involved.ts`; `InvolvedPart` with label "Who's
+  paying" and "Us" while nobody's tagged, on the payment's card; "Us /
+  + Someone else" on a new payment, `PeoplePicker`, `tagGuests`). Nobody
+  tagged = the couple. Money's top card: "Bills family are paying £…"; the
+  budget page's Who's paying lists them under "Bills they're paying". "Agreed" is the UI word for what
   `src/lib/budget.ts` calls committed (committed = booked suppliers' quotes
   + payments not for a supplier; paid = supplier deposits + payments marked
   paid; area pages use it too). A laptop table view is for the laptop
@@ -970,14 +978,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0022_contributions.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0023_payment_payers.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0022 are now in** (0022, who's paying, run 17 Oct 2026 with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0023 are now in** (0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026 with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

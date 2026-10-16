@@ -127,7 +127,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
           ) : data.kind === "idea" ? (
             <IdeaBody idea={data.idea} folderIds={data.folderIds} areas={data.areas} />
           ) : (
-            <PaymentBody payment={data.payment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} />
+            <PaymentBody payment={data.payment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} involved={data.involved} />
           )}
 
           <div className="mt-6 border-t border-linen pt-4 text-center">

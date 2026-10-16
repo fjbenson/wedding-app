@@ -36,10 +36,12 @@ export async function getPayment(paymentId: string): Promise<Payment | null> {
   return data && { ...data, amount: Number(data.amount) };
 }
 
-export async function createPayment(weddingId: string, fields: PaymentFields): Promise<void> {
+/** Adds a payment; gives back its id (for who's paying it). */
+export async function createPayment(weddingId: string, fields: PaymentFields): Promise<string> {
   const supabase = await createClient();
-  const { error } = await supabase.from("payments").insert({ wedding_id: weddingId, ...fields });
+  const { data, error } = await supabase.from("payments").insert({ wedding_id: weddingId, ...fields }).select("id").single();
   if (error) throw error;
+  return data.id as string;
 }
 
 export async function updatePayment(paymentId: string, fields: Partial<PaymentFields>): Promise<void> {

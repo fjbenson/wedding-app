@@ -6,29 +6,34 @@ import { createClient } from "@/lib/supabase/server";
  * Every read is empty until 0021 is run, rather than breaking the page.
  */
 
-export type InvolvedKind = "todo" | "appointment";
+export type InvolvedKind = "todo" | "appointment" | "payment";
 
-const TABLE = { todo: "milestone_guests", appointment: "appointment_guests" } as const;
-const COLUMN = { todo: "milestone_id", appointment: "appointment_id" } as const;
+/** A payment's tags are who's paying it (0023_payment_payers.sql): none means the couple. */
+const TABLE = { todo: "milestone_guests", appointment: "appointment_guests", payment: "payment_payers" } as const;
+const COLUMN = { todo: "milestone_id", appointment: "appointment_id", payment: "payment_id" } as const;
 
 const missing = (code?: string) => code === "42P01" || code === "PGRST205";
 
 /** Everything tagged in the wedding: item id → the guests' ids. */
-export async function listInvolved(weddingId: string): Promise<{ todo: Map<string, string[]>; appointment: Map<string, string[]> }> {
+export async function listInvolved(
+  weddingId: string,
+): Promise<{ todo: Map<string, string[]>; appointment: Map<string, string[]>; payment: Map<string, string[]> }> {
   const supabase = await createClient();
-  const [todos, appointments] = await Promise.all([
+  const [todos, appointments, payments] = await Promise.all([
     supabase.from(TABLE.todo).select("milestone_id, contact_id").eq("wedding_id", weddingId).order("created_at"),
     supabase.from(TABLE.appointment).select("appointment_id, contact_id").eq("wedding_id", weddingId).order("created_at"),
+    supabase.from(TABLE.payment).select("payment_id, contact_id").eq("wedding_id", weddingId).order("created_at"),
   ]);
   const group = (rows: Record<string, string>[] | null, column: string) => {
     const map = new Map<string, string[]>();
     for (const r of rows ?? []) map.set(r[column], [...(map.get(r[column]) ?? []), r.contact_id]);
     return map;
   };
-  for (const r of [todos, appointments]) if (r.error && !missing(r.error.code)) throw r.error;
+  for (const r of [todos, appointments, payments]) if (r.error && !missing(r.error.code)) throw r.error;
   return {
     todo: group(todos.error ? null : (todos.data as Record<string, string>[]), "milestone_id"),
     appointment: group(appointments.error ? null : (appointments.data as Record<string, string>[]), "appointment_id"),
+    payment: group(payments.error ? null : (payments.data as Record<string, string>[]), "payment_id"),
   };
 }
 
@@ -102,7 +107,7 @@ export async function involvedNames(weddingId: string): Promise<Record<string, s
   if (guests.error) throw guests.error;
   const names = new Map((guests.data ?? []).map((g) => [g.id as string, [g.first_name, g.last_name].filter(Boolean).join(" ")]));
   const out: Record<string, string[]> = {};
-  for (const kind of ["todo", "appointment"] as const) {
+  for (const kind of ["todo", "appointment", "payment"] as const) {
     for (const [id, ids] of tags[kind]) out[`${kind}:${id}`] = ids.map((x) => names.get(x)).filter((n): n is string => !!n);
   }
   return out;

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CircleCheck, Hourglass, NotebookPen, Store } from "lucide-react";
+import { CircleCheck, Hourglass, NotebookPen, Plus, Store } from "lucide-react";
+import PeoplePicker from "../people/people-picker";
 import { SubmitBar } from "@/components/form-bits";
 import { BARE, CARD, DateCard, Folded, Line, Part, TITLE_INPUT, Tiles, AreaTiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
@@ -34,7 +35,10 @@ export default function PaymentForm({
   prefill,
   weddingDate,
   focus = true,
+  guests = [],
 }: {
+  /** For "Who's paying" on a new payment (0023): family paying a bill themselves. */
+  guests?: { id: string; name: string }[];
   action: (formData: FormData) => void | Promise<void>;
   payment?: Payment;
   suppliers: { id: string; name: string; area?: string | null }[];
@@ -60,6 +64,7 @@ export default function PaymentForm({
   const options =
     original && original !== "other" && !known.has(original) ? [...areas, { key: original, label: original }] : areas;
   const supplierName = suppliers.find((s) => s.id === supplier)?.name;
+  const [someoneElse, setSomeoneElse] = useState(false);
 
   const chip = (label: string, value: string) => (
     <button
@@ -159,6 +164,29 @@ export default function PaymentForm({
         {/* None picked means it follows the supplier's area, as before. */}
         <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} folded={!!payment?.area_key} />
       </Part>
+
+      {/* Nobody picked means the couple pay it; changed later on the payment's card. */}
+      {!payment && guests.length > 0 && (
+        <Part label="Who's paying">
+          {someoneElse ? (
+            <div className="mt-1">
+              <PeoplePicker people={guests} />
+            </div>
+          ) : (
+            <div className="mt-1 flex flex-wrap gap-2">
+              <span className="flex h-9 items-center rounded-full border border-linen bg-white px-3.5 text-[15px] text-ink">Us</span>
+              <button
+                type="button"
+                onClick={() => setSomeoneElse(true)}
+                className="flex h-9 items-center gap-1.5 rounded-full border border-dashed border-champagne-400 px-3.5 text-[15px] text-champagne-600 hover:bg-champagne-100"
+              >
+                <Plus className="h-4 w-4" strokeWidth={2} aria-hidden />
+                Someone else
+              </button>
+            </div>
+          )}
+        </Part>
+      )}
 
       <Folded label="Add notes" open={!!payment?.notes}>
         <section className="mt-7">

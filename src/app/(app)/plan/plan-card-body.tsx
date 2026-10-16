@@ -225,8 +225,11 @@ export function PaymentBody({
   areas,
   suppliers,
   weddingDate,
+  involved,
 }: {
   payment: Payment;
+  /** Who's paying it: guests tagged, none means the couple. */
+  involved: Involved;
   areas: AreaOption[];
   suppliers: { id: string; name: string; area?: string | null }[];
   weddingDate: string | null;
@@ -311,6 +314,9 @@ export function PaymentBody({
           folded={!!p.area_key}
         />
       </Part>
+
+      {/* Family paying a bill themselves (owner, 17 Oct 2026). Nobody tagged = the couple. */}
+      <InvolvedPart kind="payment" id={p.id} involved={involved} label="Who's paying" nobody="Us" />
 
       <section className="mt-7">
         <h3 className="section-label">Details</h3>

@@ -7,6 +7,7 @@ import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listGuests } from "@/lib/db/contacts";
 import { listContributions } from "@/lib/db/contributions";
+import { listInvolved } from "@/lib/db/involved";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { expectedGuests, guestFactsKind } from "@/lib/area-guests";
 import type { AreaDetail } from "./area-cards";
@@ -26,7 +27,7 @@ export default async function MoneyPage({
   if (!wedding) redirect("/");
   const { q, view, tab, area, open, month, error, detail } = await searchParams;
 
-  const [areaRows, allSuppliers, found, guests, events, rsvps, contributions] = await Promise.all([
+  const [areaRows, allSuppliers, found, guests, events, rsvps, contributions, tags] = await Promise.all([
     listAreas(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -35,6 +36,7 @@ export default async function MoneyPage({
     listEvents(wedding.id),
     listRsvps(wedding.id),
     listContributions(wedding.id),
+    listInvolved(wedding.id),
   ]);
   const expected = expectedGuests(guests ?? [], events ?? [], rsvps ?? []);
   const allPayments = found ?? [];
@@ -100,7 +102,12 @@ export default async function MoneyPage({
           return { ...a, detail: { ...detailFor(a.key), perHead } };
         })}
       query={q?.trim() || ""}
-      towards={{ total: towards.reduce((t, c) => t + c.amount, 0), arrived: towards.filter((c) => c.received_on).reduce((t, c) => t + c.amount, 0) }}
+      towards={{
+        total: towards.reduce((t, c) => t + c.amount, 0),
+        arrived: towards.filter((c) => c.received_on).reduce((t, c) => t + c.amount, 0),
+        // Bills family are paying themselves (0023): payments with someone tagged.
+        bills: payments.filter((p) => tags.payment.has(p.id)).reduce((t, p) => t + p.amount, 0),
+      }}
       open={open || null}
       month={month || null}
       payments={payments}

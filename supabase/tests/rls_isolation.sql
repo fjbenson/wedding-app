@@ -117,6 +117,11 @@ begin
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Rings', 900),
       ('bbbbbbbb-0000-0000-0000-000000000002', 'Rings', 1200);
   end if;
+  if to_regclass('public.payment_payers') is not null then
+    insert into payment_payers (payment_id, contact_id, wedding_id)
+      select p.id, c.id, p.wedding_id from payments p join contacts c on c.wedding_id = p.wedding_id;
+    perform set_config('test.bob_payment', (select id::text from payments where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002' limit 1), false);
+  end if;
   if to_regclass('public.areas') is not null then
     insert into areas (wedding_id, key, label) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'venue', 'Venue'),
@@ -510,6 +515,28 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A removed wedding B''s gifts';
+    end if;
+  end if;
+
+  if to_regclass('public.payment_payers') is not null then
+    execute 'select count(*) from payment_payers' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % payment tags, expected 1', visible_contacts;
+    end if;
+    -- Couple A can't tag their guest on wedding B's payment.
+    begin
+      execute $q$insert into payment_payers (payment_id, contact_id, wedding_id)
+               values (current_setting('test.bob_payment')::uuid,
+                       (select id from contacts where first_name = 'Alice' limit 1),
+                       'aaaaaaaa-0000-0000-0000-000000000001')$q$;
+      raise exception 'LEAK: couple A tagged wedding B''s payment';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    execute $q$delete from payment_payers where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s payment tags';
     end if;
   end if;
 

@@ -54,7 +54,7 @@ export default function MoneyView({
   towards,
 }: {
   /** Money coming in towards it (who's paying), for the top card. */
-  towards: { total: number; arrived: number };
+  towards: { total: number; arrived: number; bills: number };
   /** The search (`?q=`): narrows the areas or the payments, not the top card. */
   query: string;
   view: "area" | "month";
@@ -174,7 +174,7 @@ function ByArea({
   searching,
   towards,
 }: {
-  towards: { total: number; arrived: number };
+  towards: { total: number; arrived: number; bills: number };
   total: Money;
   byArea: AreaCard[];
   scope: string | null;
@@ -198,14 +198,24 @@ function ByArea({
         </p>
         <MoneyFigures money={total} />
         {/* Who's paying (owner, 17 Oct 2026): what's coming in, under what's going out. */}
-        {towards.total > 0 && (
-          <p className="mt-3.5 flex items-baseline justify-between gap-3 border-t border-linen pt-3 text-sm text-stone">
-            <span>Money towards it</span>
-            <span>
-              <span className="type-figure text-lg !font-light text-ink">{formatMoney(towards.total)}</span>
-              {towards.arrived < towards.total && ` · ${formatMoney(towards.arrived)} arrived`}
-            </span>
-          </p>
+        {(towards.total > 0 || towards.bills > 0) && (
+          <div className="mt-3.5 border-t border-linen pt-1.5 text-sm text-stone">
+            {towards.total > 0 && (
+              <p className="flex items-baseline justify-between gap-3 pt-1.5">
+                <span>Money towards it</span>
+                <span>
+                  <span className="type-figure text-lg !font-light text-ink">{formatMoney(towards.total)}</span>
+                  {towards.arrived < towards.total && ` · ${formatMoney(towards.arrived)} arrived`}
+                </span>
+              </p>
+            )}
+            {towards.bills > 0 && (
+              <p className="flex items-baseline justify-between gap-3 pt-1.5">
+                <span>Bills family are paying</span>
+                <span className="type-figure text-lg !font-light text-ink">{formatMoney(towards.bills)}</span>
+              </p>
+            )}
+          </div>
         )}
       </Link>
 

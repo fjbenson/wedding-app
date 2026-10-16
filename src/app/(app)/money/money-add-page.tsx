@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { listAreas } from "@/lib/db/areas";
+import { listGuests } from "@/lib/db/contacts";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { formOptions } from "@/lib/form-options";
 import { parseMoney } from "@/lib/money";
@@ -24,7 +25,7 @@ export default async function MoneyAddPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { error, detail, supplier, amount, area } = searchParams;
-  const [{ areas, suppliers }, areaRows] = await Promise.all([formOptions(wedding.id), listAreas(wedding.id)]);
+  const [{ areas, suppliers }, areaRows, guests] = await Promise.all([formOptions(wedding.id), listAreas(wedding.id), listGuests(wedding.id)]);
   const budgets = Object.fromEntries((areaRows ?? []).filter((a) => a.enabled).map((a) => [a.key, a.budget ?? null]));
 
   const from = suppliers.find((s) => s.id === supplier);
@@ -51,6 +52,9 @@ export default async function MoneyAddPage({
         weddingBudget={wedding.budget ?? null}
         prefill={prefill}
         weddingDate={wedding.wedding_date}
+        guests={guests
+          .map((g) => ({ id: g.id, name: [g.first_name, g.last_name].filter(Boolean).join(" ") }))
+          .sort((a, b) => a.name.localeCompare(b.name))}
       />
     </FormPage>
   );

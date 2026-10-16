@@ -235,7 +235,7 @@ export interface NewPayment {
   notes?: string | null;
 }
 
-export async function addPayment(input: NewPayment): Promise<JobResult> {
+export async function addPayment(input: NewPayment): Promise<JobResult<{ id: string }>> {
   const wedding = await getCurrentWedding();
   if (!wedding) return NO_WEDDING;
 
@@ -247,8 +247,9 @@ export async function addPayment(input: NewPayment): Promise<JobResult> {
   const paidOn = input.paid ? (tidy(input.paidOn) ?? todayISO()) : null;
   if (!isDate(dueDate) || !isDate(paidOn)) return { ok: false, error: "That date isn't right." };
 
+  let id: string;
   try {
-    await createPayment(wedding.id, {
+    id = await createPayment(wedding.id, {
       description,
       amount: Math.round(input.amount * 100) / 100,
       contact_id: input.supplierId ?? null,
@@ -266,7 +267,7 @@ export async function addPayment(input: NewPayment): Promise<JobResult> {
     return failed("adding payment failed", error);
   }
   refreshMoney();
-  return { ok: true };
+  return { ok: true, id };
 }
 
 /** Everywhere money shows. */

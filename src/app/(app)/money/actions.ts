@@ -9,6 +9,7 @@ import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
 import { addPayment, refreshMoney } from "@/lib/jobs";
 import { parseMoney } from "@/lib/money";
+import { tagGuests } from "../plan/tag-guests";
 
 function text(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -121,6 +122,7 @@ export async function savePaymentAction(paymentId: string | null, formData: Form
     if (!result.ok) {
       redirect(`${back}?error=${encodeURIComponent(result.error)}${result.detail ? `&detail=${encodeURIComponent(result.detail)}` : ""}`);
     }
+    await tagGuests(wedding.id, "payment", result.id, formData);
   }
 
   refresh();

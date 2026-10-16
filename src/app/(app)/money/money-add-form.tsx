@@ -29,7 +29,9 @@ export default function MoneyAddForm({
   weddingBudget,
   prefill,
   weddingDate,
+  guests,
 }: {
+  guests: { id: string; name: string }[];
   kind: Kind;
   savePayment: Action;
   suppliers: { id: string; name: string; area?: string | null }[];
@@ -53,6 +55,7 @@ export default function MoneyAddForm({
           prefill={prefill}
           weddingDate={weddingDate}
           focus={startKind === "payment"}
+          guests={guests}
         />
       </div>
       <div hidden={kind !== "budget"}>

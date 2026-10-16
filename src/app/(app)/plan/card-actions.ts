@@ -58,6 +58,8 @@ export type PlanCardData =
   | {
       kind: "payment";
       payment: Payment;
+      /** Who's paying it (0023): guests tagged; none means the couple. */
+      involved: Involved;
       areas: AreaOption[];
       suppliers: { id: string; name: string; area?: string | null }[];
       weddingDate: string | null;
@@ -109,7 +111,7 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
     const idea = item as InspoWithPicture;
     return { kind, idea, folderIds: await listInspoIds(wedding.id, idea.area_key), ...common };
   }
-  return { kind, payment: item as Payment, ...common };
+  return { kind, payment: item as Payment, involved: await loadInvolved(wedding.id, "payment", id), ...common };
 }
 
 function refreshAll() {
@@ -205,7 +207,7 @@ export async function removePlanCardAction(kind: FieldKind, id: string): Promise
  * The database only links a guest and an item of the same wedding.
  */
 export async function setInvolvedAction(kind: InvolvedKind, id: string, contactId: string, on: boolean): Promise<{ error?: string }> {
-  if (kind !== "todo" && kind !== "appointment") return { error: "That can't have people on it." };
+  if (kind !== "todo" && kind !== "appointment" && kind !== "payment") return { error: "That can't have people on it." };
   const wedding = await getCurrentWedding();
   if (!wedding) return { error: "No wedding found." };
   try {

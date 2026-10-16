@@ -1529,7 +1529,10 @@ means *styling detail*, not structure: the home screen keeps its cover, glass
 hub ring, "coming up" list and menu bar. Keep new screens simple in style.
 Every screen is phone-first and responsive: other screens sit in the `.page`
 frame (`globals.css`), safe areas (notch, home bar) are respected, and no text
-is under 12px. Check changes at 320px, 393px (iPhone 15) and desktop widths.
+is under 12px. **Side margin (16 Oct 2026, owner: "not utilising the full width"):**
+16px on phones (iOS's own), 20px from 640px up, set once as `--gutter` in
+`globals.css`; things that run edge to edge use `-mx-[var(--gutter)]`
+(never a fixed `-mx-5`). Glass cards' inner padding is 16px (`px-4`). Check changes at 320px, 393px (iPhone 15) and desktop widths.
 
 **Phone first (owner, 11 Oct 2026):** the design work so far is for the
 phone app; laptop/desktop ("web") design has barely started and comes later.

@@ -299,7 +299,7 @@ function ByMonth({
     <>
       {/* Canvas 2 "Money · Round 6", option D (owner's pick 12 Oct 2026): the
           chart on a glass card, then a glass card per month listing its payments. */}
-      <section className="glass-card mt-6 rounded-[26px] px-[18px] pb-4 pt-5" aria-label="Month by month">
+      <section className="glass-card mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="type-meta">Still to pay</p>
@@ -373,7 +373,7 @@ function ByMonth({
 
       {chosen === "paid" &&
         (paid.length > 0 ? (
-          <ul className="glass-card mt-3 overflow-hidden rounded-[22px] px-[18px] [--row-bleed:18px]">{paid.map(row)}</ul>
+          <ul className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">{paid.map(row)}</ul>
         ) : (
           <p className="mt-4 text-[15px] text-stone">Nothing paid yet.</p>
         ))}
@@ -382,7 +382,7 @@ function ByMonth({
       )}
 
       {shownMonths.map(([key, list]) => (
-        <section key={key} className="glass-card mt-3 overflow-hidden rounded-[22px] px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
+        <section key={key} className="glass-card mt-3 overflow-hidden rounded-[22px] px-4 pb-1 pt-3.5 [--row-bleed:16px]">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="font-display text-[22px] font-light leading-tight text-ink">{cardTitle(key)}</h3>
             <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(sum(list))}</span>
@@ -393,7 +393,7 @@ function ByMonth({
       ))}
 
       {!chosen && (undated.length > 0 || balances.length > 0) && (
-        <section className="mt-3 overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-stone/30 px-[18px] pb-1 pt-3.5 [--row-bleed:18px]">
+        <section className="mt-3 overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-stone/30 px-4 pb-1 pt-3.5 [--row-bleed:16px]">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="font-display text-[22px] font-light italic leading-tight text-ink/80">No date yet</h3>
             <span className="type-figure shrink-0 text-xl !font-light">{formatMoney(noDateTotal)}</span>
@@ -433,7 +433,7 @@ function ByMonth({
             <span aria-hidden className="min-w-4 flex-1 -translate-y-[4px] border-b-[1.5px] border-dotted border-stone/35" />
             <span className="type-figure text-base !font-light !text-stone">{formatMoney(sum(paid))}</span>
           </summary>
-          <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-[18px] [--row-bleed:18px]">{paid.map(row)}</ul>
+          <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">{paid.map(row)}</ul>
         </details>
       )}
     </>

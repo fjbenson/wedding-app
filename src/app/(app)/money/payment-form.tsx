@@ -89,7 +89,7 @@ export default function PaymentForm({
         className={description.length > 24 ? TITLE_INPUT.replace("!text-[24px]", "!text-[20px]") : TITLE_INPUT}
       />
       {!payment && (
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        <div className="-mx-[var(--gutter)] mt-3 flex gap-2 overflow-x-auto px-[var(--gutter)] pb-1 [scrollbar-width:none]">
           {KINDS.map((k) => chip(k, supplierName ? `${supplierName} ${k.toLowerCase()}` : k))}
           {OTHERS.map((k) => chip(k, k))}
         </div>

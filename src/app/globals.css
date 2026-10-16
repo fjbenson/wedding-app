@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The page's side margin: 16px on phones, 20px from 640px up. Things that run edge to edge use -mx-gutter. */
+:root {
+  --gutter: 1rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --gutter: 1.25rem;
+  }
+}
+
 @layer base {
   /* No grey box when a link is tapped on an iPhone: it only covered the
      link itself, a rectangle short of the row. Rows use .row-press. */
@@ -77,7 +87,7 @@ body::before {
      --row-bleed is set to the card's own padding so it stops at its edge. */
   .row-press {
     --row-shade: transparent;
-    --row-reach: var(--row-bleed, max(1.25rem, env(safe-area-inset-left)));
+    --row-reach: var(--row-bleed, max(var(--gutter), env(safe-area-inset-left)));
     background-color: var(--row-shade);
     box-shadow: 0 0 0 var(--row-reach) var(--row-shade);
     clip-path: inset(0 calc(-1 * var(--row-reach)));
@@ -103,8 +113,9 @@ body::before {
   .page {
     @apply mx-auto min-h-dvh w-full max-w-lg md:max-w-2xl;
     padding-top: max(2.5rem, env(safe-area-inset-top));
-    padding-left: max(1.25rem, env(safe-area-inset-left));
-    padding-right: max(1.25rem, env(safe-area-inset-right));
+    /* 16px gutter on phones, as iOS uses (owner, 16 Oct 2026: use more of the width); 20px from 640px up. */
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
   }
 
   /*

@@ -225,7 +225,7 @@ export default function FloorPlan({
       </p>
 
       {/* Below ~560px the room scrolls sideways instead of shrinking past readable. */}
-      <div className="-mx-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:px-0">
+      <div className="-mx-[var(--gutter)] overflow-x-auto px-[var(--gutter)] pb-2 sm:mx-0 sm:px-0">
         <div
           ref={roomRef}
           onPointerMove={onPointerMove}

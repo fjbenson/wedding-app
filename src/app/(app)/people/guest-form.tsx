@@ -83,7 +83,7 @@ export default function GuestForm({
         </fieldset>
       )}
 
-      <fieldset className="mt-6 -mx-5 border-t border-linen px-5 pt-6">
+      <fieldset className="mt-6 -mx-[var(--gutter)] border-t border-linen px-[var(--gutter)] pt-6">
         <legend className="sr-only">Role on the day</legend>
         <p aria-hidden className="section-label flex items-center gap-2">
           <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
@@ -113,7 +113,7 @@ export default function GuestForm({
         />
       </fieldset>
 
-      <section className="mt-6 -mx-5 border-t border-linen px-5 pt-6">
+      <section className="mt-6 -mx-[var(--gutter)] border-t border-linen px-[var(--gutter)] pt-6">
         <h2 className="section-label">Details</h2>
         <div className="mt-1">
           <Row label="Household">

@@ -105,7 +105,7 @@ export default function TodoList({
           )}
         </p>
       ) : (
-        <ul className="glass-card mt-4 overflow-hidden rounded-[22px] px-[18px] py-1 [--row-bleed:18px]">
+        <ul className="glass-card mt-4 overflow-hidden rounded-[22px] px-4 py-1 [--row-bleed:16px]">
           {open.map((m) => (
             <MilestoneRow
               key={m.id}
@@ -202,7 +202,7 @@ function AppointmentList({
           {appointments.length === 0 ? "No appointments yet." : `Nothing coming up${areaLabel ? ` for ${areaLabel}` : ""}.`}
         </p>
       ) : (
-        <ul className="glass-card mt-4 overflow-hidden rounded-[22px] px-[18px] py-1 [--row-bleed:18px]">
+        <ul className="glass-card mt-4 overflow-hidden rounded-[22px] px-4 py-1 [--row-bleed:16px]">
           {coming.map((a) => (
             <AppointmentRow
               key={a.id}

@@ -65,7 +65,7 @@ export default function AppointmentForm({
         className={TITLE_INPUT}
       />
       {!appointment && (
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        <div className="-mx-[var(--gutter)] mt-3 flex gap-2 overflow-x-auto px-[var(--gutter)] pb-1 [scrollbar-width:none]">
           {IDEAS.map((idea) => (
             <button
               key={idea}

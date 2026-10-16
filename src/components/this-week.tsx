@@ -124,7 +124,7 @@ export default function ThisWeek({
 
   return (
     <section className="relative px-5 lg:px-0">
-      <div className="glass-card rounded-[22px] px-[18px] pb-2 pt-4">
+      <div className="glass-card rounded-[22px] px-4 pb-2 pt-4">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="section-label">This week</h2>
           <span className="type-meta tabular-nums">{weekRange(monday, sunday)}</span>

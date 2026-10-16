@@ -110,7 +110,7 @@ function AreaCover({
   );
 
   return (
-    <div className={`relative -mx-5 -mt-[max(2.5rem,env(safe-area-inset-top))] overflow-hidden md:mx-0 md:mt-0 md:rounded-3xl ${
+    <div className={`relative -mx-[var(--gutter)] -mt-[max(2.5rem,env(safe-area-inset-top))] overflow-hidden md:mx-0 md:mt-0 md:rounded-3xl ${
         // Shorter until there are pictures (owner, 16 Oct 2026): empty tiles shouldn't take a third of the screen.
         photos.length > 0 ? "h-[300px] md:h-[360px]" : "h-[220px] md:h-[240px]"
       }`}>
@@ -276,7 +276,7 @@ function Section({
         {add && <AddButton href={add.href} label={add.label} scroll={add.stays ? false : undefined} />}
       </div>
       {!empty && (
-        <div className="glass-card relative overflow-hidden rounded-[22px] px-[18px] py-0.5 [--row-bleed:18px]">{children}</div>
+        <div className="glass-card relative overflow-hidden rounded-[22px] px-4 py-0.5 [--row-bleed:16px]">{children}</div>
       )}
     </section>
   );
@@ -663,7 +663,7 @@ export default function AreaView({
         {stage.current === STAGES.length - 1 && (
           <form
             action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", true)}
-            className="glass-card flex items-center gap-3 rounded-[22px] px-[18px] py-3.5"
+            className="glass-card flex items-center gap-3 rounded-[22px] px-4 py-3.5"
           >
             <p className="flex-1 text-sm text-ink">Booked and paid. Anything left to sort?</p>
             <InlineSubmit label="We're ready" pendingLabel="Saving…" primary />

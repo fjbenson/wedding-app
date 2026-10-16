@@ -97,7 +97,7 @@ export function SubmitBar({
       ref={ref}
       className={
         shown
-          ? `sticky bottom-0 z-20 -mx-5 mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 ${whenChanged ? "rise-in" : ""}`
+          ? `sticky bottom-0 z-20 -mx-[var(--gutter)] mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-[var(--gutter)] pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 ${whenChanged ? "rise-in" : ""}`
           : "hidden"
       }
     >

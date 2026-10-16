@@ -71,7 +71,7 @@ export default function HouseholdView({
         <Link href="/people" aria-label="Back to the guest list" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream">
           <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />
         </Link>
-        <span className="label">Household</span>
+        <span className="section-label">Household</span>
         <span className="w-11" aria-hidden />
       </div>
 
@@ -96,10 +96,10 @@ export default function HouseholdView({
         ))}
       </div>
 
-      {/* Who's in it, on a card of its own (canvas 3 "Household · Round 3"). */}
+      {/* Guests, on a card of its own (canvas 3 "Household · Round 3"). */}
       <section className="mt-7 rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-1.5 pt-4 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
         <div className="flex items-baseline justify-between">
-          <h2 className="label">Who&apos;s in it</h2>
+          <h2 className="section-label">Guests</h2>
           <span className="text-xs text-stone">{people.length}</span>
         </div>
         {people.length === 0 ? (

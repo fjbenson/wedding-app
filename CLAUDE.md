@@ -454,7 +454,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   puts it back (the "Put it back" button is gone); the back's folds now
   meet in a full cross. Name / Address rows with Change, Copy
   (`renameHouseholdAction`, `saveAddressAction`) moved to a card under
-  "Who's in it" (`HouseholdDetails`). Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
+  "Guests" (`HouseholdDetails`). The "Who's in it" card is now headed
+  **Guests**, and the page's headings are grey (`.section-label`), not gold. Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
   Email** (they reach the household's people — straight through if one has
   a number, a pick-list if several, hidden if none), then "Who's in it" on
   a glass card (small initials, name, ›; owner preferred it to the guest

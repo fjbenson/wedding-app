@@ -27,10 +27,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
  */
 function Mark({ kind }: { kind: Dot }) {
   if (kind === "appointment") {
-    return <Calendar className="h-3 w-3 text-champagne-600" strokeWidth={2.2} />;
+    return <Calendar className="h-3.5 w-3.5 text-champagne-600" strokeWidth={2.2} />;
   }
   return (
-<span className="h-2.5 w-2.5 rounded-full border border-stone/50 bg-white" />
+<span className="h-3 w-3 rounded-full border-[1.5px] border-ink/35 bg-white shadow-[0_1px_2px_rgb(30_27_24/0.12)]" />
   );
 }
 
@@ -98,6 +98,12 @@ export default function PlanCalendar({
   const length = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const name = first.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
 
+  // Days to go, counted in whole days from today (both plain dates, so no clock in it).
+  const daysToGo =
+    weddingDate && weddingDate > today
+      ? Math.round((Date.parse(`${weddingDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
+      : null;
+
   const go = (by: 1 | -1) => {
     const next = shiftMonth(month, by);
     setMonth(next);
@@ -116,9 +122,11 @@ export default function PlanCalendar({
 
   return (
     <section className="mt-6">
-      {/* ‹ the month › on the left, the round + on the right (owner, 12 Oct
-          2026). The month stays well under the page title's size. */}
-      <div className="flex items-center justify-between gap-2">
+      {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
+          flat" — everything printed straight on the background). ‹ the
+          month › on the left, the round + on the right (12 Oct 2026). */}
+      <div className="glass-card rounded-[26px] px-2.5 pb-3 pt-2.5">
+      <div className="flex items-center justify-between gap-2 pr-1">
         <div className="flex min-w-0 items-center">
           <button
             type="button"
@@ -144,10 +152,14 @@ export default function PlanCalendar({
         </div>
         {toggle}
       </div>
+      {daysToGo !== null && (
+        <p className="-mt-1 pl-3 text-[13px] text-stone">
+          <span className="font-display text-[15px] text-champagne-600">{daysToGo}</span>{" "}
+          {daysToGo === 1 ? "day" : "days"} to the wedding
+        </p>
+      )}
 
-      {monthTops[month]}
-
-      <div className="mt-4 grid grid-cols-7 gap-y-1">
+      <div className="mt-3 grid grid-cols-7 gap-y-1">
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
           <span key={i} aria-hidden className="pb-1 text-center text-xs font-medium tracking-[0.1em] text-stone/80">
             {d}
@@ -166,10 +178,12 @@ export default function PlanCalendar({
             : isWedding
               ? "text-ink font-semibold shadow-[inset_0_0_0_3px_#B8914F]"
               : date === today
-                ? "bg-champagne-100 text-ink"
+                ? "bg-champagne-600 text-white font-medium shadow-[0_6px_14px_-6px_rgb(140_100_40/0.7)]"
                 : date < today
-                  ? "text-stone/60"
-                  : "text-ink";
+                  ? "text-stone/50"
+                  : marks.length > 0
+                    ? "text-ink font-medium"
+                    : "text-ink/60";
           return (
             <button
               key={date}
@@ -197,10 +211,12 @@ export default function PlanCalendar({
         })}
       </div>
 
+      </div>
+
       {/* The key on the left; on the right, the to-dos with no date yet as a
           small pill that opens their card (owner, 12 Oct 2026: the banner at
           the foot was too much, and the pen button sat on its arrow). */}
-      <div className="mt-5 flex min-h-9 items-center justify-between gap-3">
+      <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
         <span className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-stone" aria-hidden>
           {(
             [
@@ -230,9 +246,10 @@ export default function PlanCalendar({
       {/* The month's things, straight under the key: the month is already
           the title above the grid, and every row has its date (owner, 12 Oct
           2026 — no "All of October · 2 things"). */}
-      <div className="mt-6 border-t border-champagne-400 pt-1">
+      {monthTops[month]}
+      <div className="glass-card mt-4 overflow-hidden rounded-[22px] px-4 py-1 [--row-bleed:16px]">
         {monthLists[month] ?? (
-          <p className="mt-3.5 text-[15px] text-stone">
+          <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}
             <Link href="/plan/new" className="text-champagne-600 underline underline-offset-4 hover:text-ink">
               Add a to-do

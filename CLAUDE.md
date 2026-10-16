@@ -488,6 +488,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   cream banner at the foot is gone. Under the grid, done things sit in a
   **Done** fold at the foot of the month, and a ticked row **slides away**
   (`tick-away` in `globals.css`, added by `TickForm`) before reappearing there.
+  **Less flat, 16 Oct 2026** (owner: "quite flat"): the month (‹ name ›,
+  the +, "236 days to the wedding", the grid) sits on a **glass card**;
+  **today is a solid gold disc** with white numerals; days with something on
+  them are darker than empty ones; the to-do circle and appointment mark
+  are a size up; the month's list sits on its own glass card (no gold rule),
+  with "still open from before" just above it.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,
   **everything in the month** as one list in date order — no day headings,

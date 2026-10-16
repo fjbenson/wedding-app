@@ -87,7 +87,8 @@ export default function ThisWeek({
       .map((a) => ({
         key: `a-${a.id}`, kind: "appointment" as const, id: a.id, date: a.on_date, order: 0,
         href: `/plan/appointments/${a.id}`, title: a.title, overdue: false,
-        meta: a.at_time ? formatTime(a.at_time) : "Appointment",
+        // Says what it is, like "To do" and "To pay" (owner, 16 Oct 2026).
+        meta: a.at_time ? `${formatTime(a.at_time)} · Appointment` : "Appointment",
       })),
     ...payments
       .filter((p) => !p.paid_on && p.due_date)

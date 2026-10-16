@@ -707,7 +707,7 @@ const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNo
   attending: { ring: "bg-champagne-600 text-white", icon: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
   // Every answer has a ring as strong as Coming's fill, so none fade into the
   // page (owner, 16 Oct 2026: Invited and Can't come were hard to see).
-  pending: { ring: "border-[1.5px] border-champagne-600 bg-white text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
+  pending: { ring: "border border-champagne-600 bg-white text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={1.8} /> },
   to_invite: { ring: "border-[1.5px] border-dashed border-champagne-600 text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
   declined: { ring: "bg-[#D6D0C7] text-[#4F4A45]", icon: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
   unset: { ring: "border-[1.5px] border-dashed border-champagne-600 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },

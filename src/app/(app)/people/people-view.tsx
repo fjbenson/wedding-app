@@ -22,6 +22,7 @@ export default function PeopleView({
   groups,
   weddingName,
   guestId,
+  householdId,
   filter,
   view,
   error,
@@ -38,6 +39,7 @@ export default function PeopleView({
   groups: GroupSummary[];
   weddingName: string;
   guestId?: string;
+  householdId?: string;
   filter?: GuestFilter;
   view?: GuestView;
   error?: string;
@@ -85,6 +87,8 @@ export default function PeopleView({
             groups={groups}
             weddingName={weddingName}
             initialGuestId={guestId}
+            initialHouseholdId={householdId}
+            householdRows={households}
             initialFilter={filter}
             initialView={view}
           />

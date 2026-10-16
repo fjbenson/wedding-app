@@ -27,12 +27,12 @@ export const metadata = { title: "People — Wedding App" };
 export default async function PeoplePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; guest?: string; view?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ tab?: string; guest?: string; household?: string; view?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const { tab, guest, view, error, detail } = await searchParams;
+  const { tab, guest, household, view, error, detail } = await searchParams;
   const [guests, households, events, rsvps, suppliers, areaRows] = await Promise.all([
     listGuests(wedding.id),
     listHouseholds(wedding.id),
@@ -67,6 +67,7 @@ export default async function PeoplePage({
           groups={groups.map((g) => ({ id: g.id, name: g.name, members: g.members }))}
           weddingName={wedding.name}
           guestId={guest}
+          householdId={household}
           filter={tab === "party" ? "party" : undefined}
           view={view === "households" ? "households" : undefined}
           error={error}

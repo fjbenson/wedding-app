@@ -59,6 +59,7 @@ export default function GuestCard({
   travel,
   groups,
   onShowGroup,
+  onOpenHousehold,
   ownNeeds = [],
   onClose,
 }: {
@@ -76,12 +77,95 @@ export default function GuestCard({
   /** The wedding's groups of guests; the card shows theirs and adds to others. Left out, no Groups part. */
   groups?: GroupSummary[];
   onShowGroup?: (id: string) => void;
+  /** Tapping the household name opens it in place; left out, it goes to the guest list with it open. */
+  onOpenHousehold?: (id: string) => void;
   /** Dietary needs other guests have that aren't on the standard list — offered here too. */
   ownNeeds?: string[];
   onClose: () => void;
 }) {
   const name = fullName(guest);
 
+  const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
+  // Their answer for their own event — the first they're on (day before evening).
+  const own = events.map((e) => rsvps.find((r) => r.event_id === e.id)).find(Boolean);
+  const phone = guest.phone?.replace(/\s+/g, "");
+
+  return (
+    <CardSheet
+      label={name}
+      onClose={onClose}
+      top={
+        household &&
+        (onOpenHousehold ? (
+          <button type="button" onClick={() => onOpenHousehold(household.id)} className="label hover:text-ink">
+            {household.name} ›
+          </button>
+        ) : (
+          <Link href={`/people?household=${household.id}`} className="label hover:text-ink">
+            {household.name} ›
+          </Link>
+        ))
+      }
+    >
+      <Profile guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
+
+      {(phone || guest.email) && (
+        <div className="mt-4 flex gap-2">
+          {phone && <FlatAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
+          {phone && <FlatAction href={`tel:${phone}`} label="Call" icon={Phone} />}
+          {guest.email && <FlatAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
+        </div>
+      )}
+
+      {/* The answer first — it's what changes most — then day or evening, then roles. */}
+      {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
+
+      <Roles guest={guest} />
+
+      {travel && <GuestTravelSection guest={guest} travel={travel} />}
+
+      {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
+
+      {/* A hairline right across the card between sections. */}
+      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+        <h3 className="section-label">Details</h3>
+        <dl className="mt-1">
+          <HouseholdRow guest={guest} households={households} onSave={save} />
+          <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
+          <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
+          {own && (
+            <>
+              <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
+              <DietaryRow rsvp={own} own={ownNeeds} />
+            </>
+          )}
+          <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
+          <ChildRow guest={guest} onSave={save} />
+        </dl>
+      </section>
+
+      <RemoveGuest guest={guest} name={name} />
+    </CardSheet>
+  );
+}
+
+/**
+ * A card over the list: a sheet that slides up on a phone (pull it down to
+ * close), a panel on the right on a laptop. The guest card and the household
+ * card both use it (owner, 16 Oct 2026: a household opens like a guest).
+ */
+export function CardSheet({
+  label,
+  top,
+  onClose,
+  children,
+}: {
+  label: string;
+  /** What sits left of the ✕ at the top. */
+  top?: React.ReactNode;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
   // Escape closes it, and the list behind doesn't scroll while it's open.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
@@ -93,15 +177,10 @@ export default function GuestCard({
       document.body.style.overflow = overflow;
     };
   }, [onClose]);
-
-  const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
   const drag = usePullToClose(onClose);
-  // Their answer for their own event — the first they're on (day before evening).
-  const own = events.map((e) => rsvps.find((r) => r.event_id === e.id)).find(Boolean);
-  const phone = guest.phone?.replace(/\s+/g, "");
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={name}>
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={label}>
       <button
         type="button"
         aria-label="Close"
@@ -116,20 +195,14 @@ export default function GuestCard({
           drag.dragging ? "" : "transition-transform duration-200 ease-out"
         }`}
       >
-        {/* The grab bar: pull it (or the name area) down to close, as the bar promises. */}
+        {/* The grab bar: pull it (or the top row) down to close, as the bar promises. */}
         <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center lg:hidden">
           <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
         </div>
 
         <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8">
           <div onPointerDown={drag.start} className="flex touch-none items-center gap-3 lg:touch-auto">
-            <div className="min-w-0 flex-1">
-              {household && (
-                <Link href={`/people/household/${household.id}`} className="label hover:text-ink">
-                  {household.name} ›
-                </Link>
-              )}
-            </div>
+            <div className="min-w-0 flex-1">{top}</div>
             <button
               type="button"
               onClick={onClose}
@@ -139,45 +212,7 @@ export default function GuestCard({
               <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
             </button>
           </div>
-
-          <Profile guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
-
-          {(phone || guest.email) && (
-            <div className="mt-4 flex gap-2">
-              {phone && <FlatAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
-              {phone && <FlatAction href={`tel:${phone}`} label="Call" icon={Phone} />}
-              {guest.email && <FlatAction href={`mailto:${guest.email}`} label="Email" icon={Mail} />}
-            </div>
-          )}
-
-          {/* The answer first — it's what changes most — then day or evening, then roles. */}
-          {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
-
-          <Roles guest={guest} />
-
-          {travel && <GuestTravelSection guest={guest} travel={travel} />}
-
-          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
-
-          {/* A hairline right across the card between sections. */}
-          <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-            <h3 className="section-label">Details</h3>
-            <dl className="mt-1">
-              <HouseholdRow guest={guest} households={households} onSave={save} />
-              <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
-              <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
-              {own && (
-                <>
-                  <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
-                  <DietaryRow rsvp={own} own={ownNeeds} />
-                </>
-              )}
-              <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
-              <ChildRow guest={guest} onSave={save} />
-            </dl>
-          </section>
-
-          <RemoveGuest guest={guest} name={name} />
+          {children}
         </div>
       </div>
     </div>

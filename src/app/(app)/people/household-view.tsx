@@ -2,11 +2,10 @@
 
 import { ownNeeds } from "@/lib/dietary";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { ChevronLeft, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
+import { Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
-import GuestCard from "./guest-card";
+import GuestCard, { CardSheet } from "./guest-card";
 import { AnswerIcon, eventWord } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
@@ -16,14 +15,14 @@ import { updateGuestAction } from "./actions";
 import type { TravelInfo } from "./guest-travel";
 
 /**
- * One household (screen 9). Since 14 Oct 2026 topped by its envelope
- * (`household-envelope.tsx`, canvas 3 "Household · Round 3"): the address on
- * the front, the invitation (who's in it) inside; name and address to change
- * on a card further down. Then Text · Call · Email, and
- * who's in it — the guest list's own rows, opening each person's card right
- * here.
+ * One household (screen 9), as a card over the guest list — since 16 Oct 2026
+ * it opens like a guest's card (owner), from `?household=` on /people. Topped
+ * by its envelope (`household-envelope.tsx`, canvas 3 "Household · Round
+ * 3"): the address on the front, the invitation (who's in it) inside. Then
+ * Text · Call · Email, the guests with their RSVP, and Details (name and
+ * address) like the guest card's. Each guest's card opens on top of it.
  */
-export default function HouseholdView({
+export default function HouseholdSheet({
   household,
   households,
   guests,
@@ -32,6 +31,7 @@ export default function HouseholdView({
   tables,
   travel,
   groups,
+  onClose,
 }: {
   household: Household;
   /** Every household, for moving someone on their card. */
@@ -42,6 +42,7 @@ export default function HouseholdView({
   tables: Record<string, string>;
   travel?: TravelInfo;
   groups: GroupSummary[];
+  onClose: () => void;
 }) {
   const [openId, setOpenId] = useState<string>();
   const close = useCallback(() => setOpenId(undefined), []);
@@ -70,15 +71,7 @@ export default function HouseholdView({
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 
   return (
-    <main className="page pb-40 lg:pb-16">
-      <div className="flex items-center justify-between gap-3">
-        <Link href="/people" aria-label="Back to the guest list" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream">
-          <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />
-        </Link>
-        <span className="label">Household</span>
-        <span className="w-11" aria-hidden />
-      </div>
-
+    <CardSheet label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
       <HouseholdEnvelope
         household={household}
         people={people}
@@ -101,7 +94,7 @@ export default function HouseholdView({
       </div>
 
       {/* Guests, on a card of its own (canvas 3 "Household · Round 3"). */}
-      <section className="mt-7 rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-1.5 pt-4 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
+      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
         <div className="flex items-baseline justify-between">
           <h2 className="label">Guests</h2>
           <span className="label">RSVP</span>
@@ -142,7 +135,7 @@ export default function HouseholdView({
 
       <HouseholdDetails household={household} />
 
-      <RemoveHousehold household={household} />
+      <RemoveHousehold household={household} onRemoved={onClose} />
 
       {open && (
         <GuestCard
@@ -155,10 +148,11 @@ export default function HouseholdView({
           travel={travel}
           groups={groups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
+          onOpenHousehold={close}
           onClose={close}
         />
       )}
-    </main>
+    </CardSheet>
   );
 }
 
@@ -239,8 +233,7 @@ function ContactMenu({ kind, people }: { kind: "text" | "phone" | "email"; peopl
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
 /** "Remove this household", asking first. Its people stay on the guest list. */
-function RemoveHousehold({ household }: { household: Household }) {
-  const router = useRouter();
+function RemoveHousehold({ household, onRemoved }: { household: Household; onRemoved: () => void }) {
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   return (
@@ -254,7 +247,7 @@ function RemoveHousehold({ household }: { household: Household }) {
             try {
               const result = await removeHouseholdAction(household.id);
               setError(result.error);
-              if (!result.error) router.push("/people");
+              if (!result.error) onRemoved();
             } catch {
               setError(UNSAVED);
             }
@@ -313,7 +306,7 @@ function AddSomeone({
       <button
         type="button"
         onClick={() => setStep("choose")}
-        className="mt-3 flex min-h-12 items-center gap-3 px-5 font-display text-[15px] italic text-stone hover:text-ink"
+        className="mt-2 flex min-h-12 items-center gap-3 font-display text-[15px] italic text-stone hover:text-ink"
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600">
           <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />

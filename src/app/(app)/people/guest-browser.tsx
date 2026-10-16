@@ -8,8 +8,9 @@ import { Baby, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHor
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
-import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
+import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
+import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupCard, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
@@ -36,8 +37,8 @@ export interface HouseholdSummary {
 interface Group {
   key: string;
   title: string;
-  /** Household groups link to the household's page. */
-  href?: string;
+  /** Household groups open the household's card. */
+  onOpen?: () => void;
   guests: Contact[];
 }
 
@@ -97,6 +98,8 @@ export default function GuestBrowser({
   groups: guestGroups = [],
   weddingName = "",
   initialGuestId,
+  initialHouseholdId,
+  householdRows = [],
   initialFilter,
   initialView = "az",
 }: {
@@ -110,6 +113,10 @@ export default function GuestBrowser({
   groups?: GroupSummary[];
   weddingName?: string;
   initialGuestId?: string;
+  /** A household whose card opens on arrival (?household=). */
+  initialHouseholdId?: string;
+  /** Every household in full (address too), for the household card. */
+  householdRows?: Household[];
   initialFilter?: GuestFilter;
   initialView?: GuestView;
 }) {
@@ -155,6 +162,13 @@ export default function GuestBrowser({
   useEffect(() => {
     replaceQuery({ guest: openId ?? null });
   }, [openId]);
+  // A household opens as a card over the list too (?household=), like a guest.
+  const [householdId, setHouseholdId] = useState(initialHouseholdId);
+  const closeHousehold = useCallback(() => setHouseholdId(undefined), []);
+  useEffect(() => {
+    replaceQuery({ household: householdId ?? null });
+  }, [householdId]);
+  const openHousehold = householdId ? householdRows.find((h) => h.id === householdId) : undefined;
 
   // The sort is a preference (owner's call, 11 Oct 2026): kept on this phone
   // until it's changed. Read after the first draw so the server's page and
@@ -283,7 +297,7 @@ export default function GuestBrowser({
       .map((h) => ({
         key: h.id,
         title: h.name,
-        href: `/people/household/${h.id}`,
+        onOpen: () => setHouseholdId(h.id),
         guests: shown.filter((g) => g.household_id === h.id),
       }))
       .filter((group) => group.guests.length > 0);
@@ -511,7 +525,25 @@ export default function GuestBrowser({
             setOpenId(undefined);
             setGroupId(id);
           }}
+          onOpenHousehold={(id) => {
+            setOpenId(undefined);
+            setHouseholdId(id);
+          }}
           onClose={close}
+        />
+      )}
+
+      {openHousehold && (
+        <HouseholdSheet
+          household={openHousehold}
+          households={households}
+          guests={guests}
+          events={events}
+          rsvps={rsvps}
+          tables={tables}
+          travel={travel}
+          groups={guestGroups}
+          onClose={closeHousehold}
         />
       )}
     </>
@@ -524,15 +556,15 @@ function GroupTitle({ group }: { group: Group }) {
       <span className="label">{group.title}</span>
       <span className="text-xs text-stone">
         {guestCount(group.guests.length)}
-        {group.href && " ›"}
+        {group.onOpen && " ›"}
       </span>
     </>
   );
   const className = "mt-5 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5 pt-1";
-  return group.href ? (
-    <Link href={group.href} className={`${className} hover:[&>span]:text-ink`}>
+  return group.onOpen ? (
+    <button type="button" onClick={group.onOpen} className={`${className} w-full text-left hover:[&>span]:text-ink`}>
       {inner}
-    </Link>
+    </button>
   ) : (
     <div className={className}>{inner}</div>
   );
@@ -1050,10 +1082,10 @@ function GuestTable({
             {group.title && (
               <tr>
                 <th colSpan={7} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
-                  {group.href ? (
-                    <Link href={group.href} className="font-display text-lg text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
+                  {group.onOpen ? (
+                    <button type="button" onClick={group.onOpen} className="font-display text-lg text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
                       {group.title}
-                    </Link>
+                    </button>
                   ) : (
                     <span className="font-display text-lg text-ink">{group.title}</span>
                   )}

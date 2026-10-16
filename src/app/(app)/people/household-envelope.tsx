@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { Contact, Household, WeddingEvent } from "@/types/db";
 import { eventWord } from "./guest-browser";
 import { formatLongDate } from "@/lib/dates";
 import { renameHouseholdAction, saveAddressAction } from "./household-actions";
+import { editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "./guest-card";
+import { DetailLabel } from "./guest-table";
 
 /**
  * A household as an envelope (canvas 3 "Household · Round 3 · Turn it over",
@@ -16,7 +18,7 @@ import { renameHouseholdAction, saveAddressAction } from "./household-actions";
  * (owner, 16 Oct 2026: just the list — the name had been on it three times).
  * Tapping the envelope again slides it in, closes the flap and turns it to
  * the front (no "Put it back" button). The name and address are changed in
- * `HouseholdDetails`, under the envelope.
+ * `HouseholdDetails`, the card's Details rows.
  *
  * How it moves: the turn is a 3D flip of two faces. Once it's over, the flip
  * is swapped for a flat back (body, flap, invitation) that looks the same, so
@@ -268,101 +270,29 @@ function Invitation({
   );
 }
 
-/** The household's name and address, to change or copy — on a card under the envelope. */
+/**
+ * The household's name and address as Details rows, laid out like the guest
+ * card's: the small icon and label on the left, the value on the right, tap
+ * to change it.
+ */
 export function HouseholdDetails({ household }: { household: Household }) {
   return (
-    <section className="mt-4 rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 py-1.5 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
-      <NameRow household={household} />
-      <AddressRow household={household} />
+    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+      <h3 className="label">Details</h3>
+      <dl className="mt-1">
+        <TextRow label="Name" value={household.name} onSave={(v) => safely(() => renameHouseholdAction(household.id, v))} />
+        <AddressRow household={household} />
+      </dl>
     </section>
   );
 }
 
-/** What a failed save says, rather than taking the page down (see guest-card.tsx). */
-const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
-
-const FIELD =
-  "w-full rounded-[10px] border border-linen bg-white px-3 py-2 text-base text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
-
-function Buttons({ pending, onCancel }: { pending: boolean; onCancel: () => void }) {
-  return (
-    <span className="flex items-center justify-end gap-2 pt-1">
-      <button type="button" onClick={onCancel} className="h-9 rounded-full border border-linen bg-white px-4 text-[13px] text-ink hover:border-champagne-400">
-        Cancel
-      </button>
-      <button type="submit" disabled={pending} className="h-9 rounded-full bg-ink px-4 text-[13px] text-ivory hover:bg-ink/90 disabled:opacity-60">
-        {pending ? "Saving…" : "Save"}
-      </button>
-    </span>
-  );
-}
-
-/** The household's name; Change to rename it. */
-function NameRow({ household }: { household: Household }) {
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(household.name);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
-
-  if (!editing) {
-    return (
-      <div className="flex min-h-10 items-center justify-between gap-3 border-b border-[#EFE9DF] py-1">
-        <span className="min-w-0 text-[13px] text-[#3A342E]">
-          <span className="mr-2 text-xs text-stone">Name</span>
-          {household.name}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setName(household.name);
-            setError(undefined);
-            setEditing(true);
-          }}
-          className="h-8 shrink-0 px-1 text-xs text-champagne-600 underline underline-offset-[3px] hover:text-ink"
-        >
-          Change
-        </button>
-      </div>
-    );
-  }
-  return (
-    <form
-      className="space-y-2 border-b border-[#EFE9DF] py-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-        startTransition(async () => {
-          try {
-            const result = await renameHouseholdAction(household.id, name);
-            setError(result.error);
-            if (!result.error) setEditing(false);
-          } catch {
-            setError(UNSAVED);
-          }
-        });
-      }}
-    >
-      <input
-        autoFocus
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
-        aria-label="Household name"
-        placeholder="e.g. The Bensons"
-        className={FIELD}
-      />
-      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-      <Buttons pending={pending} onCancel={() => setEditing(false)} />
-    </form>
-  );
-}
-
-/** Where the envelope goes: Copy for writing it out, Change (or Add) to edit it. */
+/** Where the envelope goes: tap to change it; Copy for writing it out. */
 function AddressRow({ household }: { household: Household }) {
   const lines = [household.address_line1, household.address_line2, household.city, household.postcode].filter(Boolean) as string[];
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
+  const { pending, error, setError, run } = useSaver();
   const [draft, setDraft] = useState({ address_line1: "", address_line2: "", city: "", postcode: "" });
 
   const start = () => {
@@ -375,6 +305,8 @@ function AddressRow({ household }: { household: Household }) {
     setError(undefined);
     setEditing(true);
   };
+  const submit = () => run(() => saveAddressAction(household.id, draft), () => setEditing(false));
+  const keys = editorKeys(submit, () => setEditing(false));
 
   const copy = async () => {
     try {
@@ -386,50 +318,48 @@ function AddressRow({ household }: { household: Household }) {
     }
   };
 
-  if (!editing) {
-    return (
-      <div className="flex min-h-10 items-start justify-between gap-3 py-2">
-        <span className="min-w-0 text-[13px] leading-snug text-[#3A342E]">
-          <span className="mr-2 text-xs text-stone">Address</span>
-          {lines.length ? lines.join(", ") : <em className="font-display text-stone">none yet</em>}
-        </span>
-        <span className="flex shrink-0 gap-3">
-          {lines.length > 0 && (
-            <button type="button" onClick={copy} className="h-8 px-1 text-xs text-champagne-600 underline underline-offset-[3px] hover:text-ink">
-              {copied ? "Copied ✓" : "Copy"}
-            </button>
-          )}
-          <button type="button" onClick={start} className="h-8 px-1 text-xs text-champagne-600 underline underline-offset-[3px] hover:text-ink">
-            {lines.length ? "Change" : "Add"}
-          </button>
-        </span>
-      </div>
-    );
-  }
   return (
-    <form
-      className="space-y-2 py-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-        startTransition(async () => {
-          try {
-            const result = await saveAddressAction(household.id, draft);
-            setError(result.error);
-            if (!result.error) setEditing(false);
-          } catch {
-            setError(UNSAVED);
-          }
-        });
-      }}
-    >
-      <input autoFocus value={draft.address_line1} onChange={(e) => setDraft({ ...draft, address_line1: e.target.value })} placeholder="House and street" aria-label="House and street" className={FIELD} />
-      <input value={draft.address_line2} onChange={(e) => setDraft({ ...draft, address_line2: e.target.value })} placeholder="Second line (optional)" aria-label="Second line" className={FIELD} />
-      <div className="grid grid-cols-[1fr_7rem] gap-2">
-        <input value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} placeholder="Town" aria-label="Town" className={FIELD} />
-        <input value={draft.postcode} onChange={(e) => setDraft({ ...draft, postcode: e.target.value.toUpperCase() })} placeholder="Postcode" aria-label="Postcode" className={FIELD} />
-      </div>
-      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-      <Buttons pending={pending} onCancel={() => setEditing(false)} />
-    </form>
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+      <dt className="type-meta py-3.5">
+        <DetailLabel label="Address" />
+      </dt>
+      <dd className="min-w-0">
+        {editing ? (
+          <form
+            className="space-y-2 py-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+          >
+            <input autoFocus value={draft.address_line1} onChange={(e) => setDraft({ ...draft, address_line1: e.target.value })} onKeyDown={keys} placeholder="House and street" aria-label="House and street" className={FIELD} />
+            <input value={draft.address_line2} onChange={(e) => setDraft({ ...draft, address_line2: e.target.value })} onKeyDown={keys} placeholder="Second line (optional)" aria-label="Second line" className={FIELD} />
+            <input value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} onKeyDown={keys} placeholder="Town" aria-label="Town" className={FIELD} />
+            <input value={draft.postcode} onChange={(e) => setDraft({ ...draft, postcode: e.target.value.toUpperCase() })} onKeyDown={keys} placeholder="Postcode" aria-label="Postcode" className={FIELD} />
+            {error && <p role="alert" className="text-sm text-ink">{error}</p>}
+            <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
+          </form>
+        ) : (
+          <div className="flex items-start gap-3">
+            <button type="button" onClick={start} className="block min-h-11 min-w-0 flex-1 py-3 text-left text-[15px] leading-snug text-ink hover:text-champagne-600">
+              {lines.length ? (
+                lines.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))
+              ) : (
+                <span className="text-stone/70">Add address</span>
+              )}
+            </button>
+            {lines.length > 0 && (
+              <button type="button" onClick={copy} className="mt-2.5 h-8 shrink-0 text-xs text-champagne-600 underline underline-offset-[3px] hover:text-ink">
+                {copied ? "Copied ✓" : "Copy"}
+              </button>
+            )}
+          </div>
+        )}
+      </dd>
+    </div>
   );
 }

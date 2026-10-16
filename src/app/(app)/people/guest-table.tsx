@@ -1,4 +1,4 @@
-import { Baby, Check, House, Mail, Minus, PenLine, Phone, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
+import { Baby, Check, House, Mail, MapPin, Minus, PenLine, Phone, Tag, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
 import { rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, RsvpStatus } from "@/types/db";
 
@@ -85,6 +85,8 @@ const DETAIL_ICONS: Record<string, LucideIcon> = {
   Dietary: WheatOff,
   Notes: PenLine,
   Child: Baby,
+  Name: Tag,
+  Address: MapPin,
 };
 
 /** A detail's label with its small icon — phone for Phone, knife and fork for Meal. */

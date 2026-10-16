@@ -60,7 +60,7 @@ export default function GuestForm({
 
   return (
     <form action={action}>
-      {defaultHousehold && <input type="hidden" name="return_to" value={`/people/household/${defaultHousehold}`} />}
+      {defaultHousehold && <input type="hidden" name="return_to" value={`/people?household=${defaultHousehold}`} />}
 
       <input name="full_name" required autoFocus autoComplete="off" aria-label="Full name" placeholder="Full name" className={FIELD} />
 

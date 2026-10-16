@@ -440,8 +440,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`
   retries on error 22P02). Guests from before "Guest of" show "Day or
   evening?" and their card asks which (`setGuestOfAction`).
-  **Household page** (`/people/household/[id]`, screen 9): **since 14 Oct
-  2026 topped by an envelope** (canvas 3 "Household · Round 3 · Turn it
+  **Household card** (screen 9) — **since 16 Oct 2026 a card over the guest
+  list like a guest's** (owner): `?household=<id>` on `/people`
+  (`HouseholdSheet` in `household-view.tsx`, sharing the guest card's frame,
+  `CardSheet` in `guest-card.tsx`); opened from Sort › Household headings
+  and the guest card's household name; old `/people/household/[id]` links
+  redirect there. Name and address are **Details rows like the guest
+  card's** (icon, label, value; tap to change; Copy beside the address).
+  **Since 14 Oct 2026 topped by an envelope** (canvas 3 "Household · Round 3 · Turn it
   over", owner's pick; `household-envelope.tsx`): crisp white card with a
   few flecks and a gold double border, the name in calligraphy (Pinyon
   Script, `font-script`, loaded in `layout.tsx` for this alone) and the

@@ -410,7 +410,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   switching view takes off the filter the last view added. Views that filter
   aren't remembered on the phone (the filter wouldn't be); the others are.
   **View sits on the left, Filter on the right** (owner: View is the bigger
-  choice); the button reads "View · Household". The numbers card (All ·
+  choice); the button is a gold rows icon and the current view's name ("▤ Household ⌄"). The numbers card (All ·
   Coming · Invited · Can't come) is unchanged.
   **Every heading folds** (a chevron on its right, in the phone list and the
   laptop table; open by default, not remembered). The one thing kept on the

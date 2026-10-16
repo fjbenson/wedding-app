@@ -4,7 +4,7 @@ import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Baby, CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, UserRound, Users, WheatOff, X } from "lucide-react";
+import { Baby, CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Rows3, Search, SlidersHorizontal, Star, Sun, UserRound, Users, WheatOff, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -1080,7 +1080,8 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         onClick={() => setOpen((o) => !o)}
         className="type-meta flex h-9 min-w-0 items-center gap-1 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
-        <span className="truncate">View · {SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
+        <Rows3 className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.7} aria-hidden />
+        <span className="truncate">{SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
 

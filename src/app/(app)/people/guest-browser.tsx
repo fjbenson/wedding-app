@@ -793,7 +793,7 @@ function AnswersCard({
             {total}
           </span>
           <span className="mt-1.5 block text-xs text-stone">
-            {total === 1 ? "guest" : "guests"} · {homes} {homes === 1 ? "home" : "homes"}
+            {homes} {homes === 1 ? "household" : "households"}
           </span>
         </span>
       </button>

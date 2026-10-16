@@ -6,8 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowUp, Camera, Check, PenLine, X } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
-import { GuestStepsChat, GuestStepsTray, buildProposal, initialSteps, stepKeys, type StepKey, type StepsState } from "@/components/assistant/guest-steps";
-import type { Block, GuestStepsBlock, StreamEvent } from "@/lib/assistant/blocks";
+import { guestFlow } from "@/components/assistant/guest-steps";
+import { StepsChat, StepsTray, type Flow, type StepsState } from "@/components/assistant/steps-flow";
+import { todoFlow } from "@/components/assistant/todo-steps";
+import type { Block, GuestStepsBlock, StreamEvent, TodoStepsBlock } from "@/lib/assistant/blocks";
 
 /**
  * Your assistant (CLAUDE.md, Next steps 8; canvas 2 "Your planner · Round
@@ -22,6 +24,12 @@ import type { Block, GuestStepsBlock, StreamEvent } from "@/lib/assistant/blocks
 
 type Part = { kind: "text"; text: string } | { kind: "block"; block: Block };
 type Turn = { role: "user"; text: string } | { role: "assistant"; parts: Part[]; error?: string; failedText?: string };
+/** A job done a step at a time (steps-flow.tsx). */
+type StepsBlock = GuestStepsBlock | TodoStepsBlock;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const flowOf = (block: StepsBlock): Flow<any, any> => (block.type === "guest_steps" ? guestFlow : todoFlow);
+const isSteps = (block: Block): block is StepsBlock => block.type === "guest_steps" || block.type === "todo_steps";
+
 type CardState = { state: "saving" } | { state: "saved"; link?: string; note?: string } | { state: "changed" } | { state: "error"; message: string };
 
 export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "fab"; subtitle?: string }) {
@@ -60,7 +68,8 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
 function useConversation() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [cards, setCards] = useState<Record<string, CardState>>({});
-  const [steps, setSteps] = useState<Record<string, StepsState>>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [steps, setSteps] = useState<Record<string, StepsState<any>>>({});
   const [busy, setBusy] = useState(false);
   /** What Claude has seen so far, sent back each turn (the API keeps nothing). */
   const history = useRef<unknown[]>([]);
@@ -210,44 +219,47 @@ function Panel({
     input.current?.focus();
   }
 
-  // ── Adding a guest a step at a time (guest-steps.tsx) ──
+  // ── A job done a step at a time (steps-flow.tsx) ──
   /** Only the latest set of steps can still be answered; an older one left half done reads as cancelled. */
-  let latestSteps: GuestStepsBlock | null = null;
+  let latestSteps: StepsBlock | null = null;
   for (const turn of turns) {
     if (turn.role !== "assistant") continue;
-    for (const part of turn.parts) if (part.kind === "block" && part.block.type === "guest_steps") latestSteps = part.block;
+    for (const part of turn.parts) if (part.kind === "block" && isSteps(part.block)) latestSteps = part.block;
   }
-  const stepsFor = (block: GuestStepsBlock): StepsState => {
-    const state = steps[block.id] ?? initialSteps(block);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stepsFor = (block: StepsBlock): StepsState<any> => {
+    const state = steps[block.id] ?? flowOf(block).initial(block);
     return state.phase === "asking" && block.id !== latestSteps?.id ? { ...state, phase: "cancelled" } : state;
   };
-  const updateSteps = (block: GuestStepsBlock, change: (state: StepsState) => StepsState) =>
-    setSteps((all) => ({ ...all, [block.id]: change(all[block.id] ?? initialSteps(block)) }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateSteps = (block: StepsBlock, change: (state: StepsState<any>) => StepsState<any>) =>
+    setSteps((all) => ({ ...all, [block.id]: change(all[block.id] ?? flowOf(block).initial(block)) }));
   const activeSteps = latestSteps && stepsFor(latestSteps).phase === "asking" ? latestSteps : null;
 
-  function cancelSteps(block: GuestStepsBlock) {
+  function cancelSteps(block: StepsBlock) {
     updateSteps(block, (s) => ({ ...s, phase: "cancelled" }));
-    remember(`[They cancelled adding "${block.prefill.fullName}" — not saved.]`);
+    remember(`[They cancelled adding "${flowOf(block).subject(block)}" — not saved.]`);
   }
 
-  function editStep(block: GuestStepsBlock, key: StepKey) {
-    const index = Math.max(0, stepKeys(block).indexOf(key));
+  function editStep(block: StepsBlock, key: string) {
+    const index = Math.max(0, flowOf(block).keys(block).indexOf(key));
     updateSteps(block, (s) => ({ ...s, phase: "asking", editing: true, index }));
   }
 
-  async function yesSteps(block: GuestStepsBlock) {
+  async function yesSteps(block: StepsBlock) {
+    const flow = flowOf(block);
     const values = stepsFor(block).values;
     updateSteps(block, (s) => ({ ...s, phase: "saving", error: undefined }));
     let result: Awaited<ReturnType<typeof confirmProposalAction>>;
     try {
-      result = await confirmProposalAction(buildProposal(block, values));
+      result = await confirmProposalAction(flow.proposal(block, values));
     } catch {
       // A page left open across an update can call an action that's gone.
       result = { ok: false, error: "That didn't save. Reload the page and try again." };
     }
     if (result.ok) {
       updateSteps(block, (s) => ({ ...s, phase: "saved", link: result.link, note: result.note }));
-      remember(`[They tapped Yes on "${block.prefill.fullName}" — saved.]`);
+      remember(`[They tapped Yes on "${flow.subject(block)}" — saved.]`);
       router.refresh();
     } else {
       updateSteps(block, (s) => ({ ...s, phase: "error", error: result.error }));
@@ -399,14 +411,18 @@ function Panel({
                     </p>
                   )}
                   {turn.parts.map((part, j) =>
-                    part.kind === "text" ? null : part.block.type === "guest_steps" ? (
-                      <GuestStepsChat
+                    part.kind === "text" ? null : isSteps(part.block) ? (
+                      <StepsChat
                         key={j}
+                        flow={flowOf(part.block)}
                         block={part.block}
                         state={stepsFor(part.block)}
-                        onYes={() => yesSteps(part.block as GuestStepsBlock)}
-                        onCancel={() => cancelSteps(part.block as GuestStepsBlock)}
-                        onEdit={(key) => editStep(part.block as GuestStepsBlock, key)}
+                        onYes={() => yesSteps(part.block as StepsBlock)}
+                        onCancel={() => cancelSteps(part.block as StepsBlock)}
+                        onEdit={(key) => editStep(part.block as StepsBlock, key)}
+                        setValues={(change) =>
+                          updateSteps(part.block as StepsBlock, (s) => ({ ...s, values: { ...s.values, ...change } }))
+                        }
                         onGo={onClose}
                       />
                     ) : part.block.type === "confirm" ? (
@@ -441,7 +457,8 @@ function Panel({
               <div ref={bottom} />
             </div>
             {activeSteps ? (
-              <GuestStepsTray
+              <StepsTray
+                flow={flowOf(activeSteps)}
                 block={activeSteps}
                 state={stepsFor(activeSteps)}
                 update={(change) => updateSteps(activeSteps, change)}

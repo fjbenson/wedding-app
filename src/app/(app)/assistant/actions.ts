@@ -31,6 +31,7 @@ export async function confirmProposalAction(
           notes: p.notes ?? null,
           groupIds: Array.isArray(p.groupIds) ? p.groupIds.map(String) : [],
           stayId: p.stayId ?? null,
+          answer: (["to_invite", "pending", "attending", "declined"] as const).find((a) => a === p.answer) ?? null,
         });
         return r.ok ? { ok: true, link: `/people?guest=${r.id}`, note: r.note } : { ok: false, error: r.error };
       }

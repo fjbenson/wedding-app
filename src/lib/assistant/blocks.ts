@@ -26,6 +26,8 @@ export type Proposal =
         /** Groups to put them in, and a place they're staying (both checked against the wedding when saved). */
         groupIds?: string[];
         stayId?: string | null;
+        /** Their answer on the event they're a guest of; to invite unless said otherwise. */
+        answer?: "to_invite" | "pending" | "attending" | "declined";
       };
     }
   | { kind: "set_guest_answer"; input: { guestId: string; status: "to_invite" | "pending" | "attending" | "declined" } }
@@ -55,6 +57,11 @@ export interface GuestStepsBlock {
     householdId: string | null;
     newHousehold: string | null;
     diet: string[];
+    /** The couple said what the diet is, or that there isn't one. */
+    dietKnown: boolean;
+    /** The couple said they aren't in a household. */
+    noHousehold: boolean;
+    answer: "to_invite" | "pending" | "attending" | "declined";
     phone: string | null;
     email: string | null;
     roles: string[];
@@ -71,8 +78,26 @@ export interface GuestStepsBlock {
   };
 }
 
+/** The same idea for a to-do: what's known, and the areas to choose from. */
+export interface TodoStepsBlock {
+  type: "todo_steps";
+  id: string;
+  prefill: {
+    title: string;
+    dueDate: string | null;
+    /** The couple said when, or that it has no date. */
+    dateKnown: boolean;
+    area: string | null;
+    /** The couple said which area, or that it's none in particular. */
+    areaKnown: boolean;
+    notes: string | null;
+  };
+  options: { areas: { key: string; label: string }[]; today: string; weddingDate: string | null };
+}
+
 export type Block =
   | GuestStepsBlock
+  | TodoStepsBlock
   | { type: "guests"; title: string; count: number; guests: GuestLine[]; link: string }
   | { type: "money"; summary: MoneySummary }
   | { type: "week"; from: string; to: string; items: WeekItem[]; link: string }

@@ -63,6 +63,8 @@ export interface NewGuest {
   groupIds?: string[];
   /** A place they're staying; one that isn't this wedding's is ignored. */
   stayId?: string | null;
+  /** Their answer on that event; to invite unless said otherwise. */
+  answer?: RsvpStatus | null;
 }
 
 export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string; note?: string }>> {
@@ -122,9 +124,15 @@ export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string;
       }
     }
 
+    // Already invited, coming or not coming: said up front, so set it now.
+    let note: string | undefined;
+    if (input.eventId && input.answer && input.answer !== "to_invite") {
+      const set = await setGuestAnswer(created.id, input.answer);
+      if (!set.ok) note = "Added, but their answer wasn't set. Do that on their card.";
+    }
+
     // Groups and a place to stay come after the guest exists. If either fails
     // the guest is still added, and the caller says so.
-    let note: string | undefined;
     try {
       const groupIds = [...new Set(input.groupIds ?? [])];
       if (groupIds.length > 0) {
@@ -137,7 +145,7 @@ export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string;
       }
     } catch (error) {
       console.error("adding guest to groups or a stay failed", error);
-      note = "Added, but not to their group or place to stay. Do that on their card.";
+      note = [note, "Added, but not to their group or place to stay. Do that on their card."].filter(Boolean).join(" ");
     }
 
     revalidatePath("/people");

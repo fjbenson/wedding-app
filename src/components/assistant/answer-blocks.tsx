@@ -281,6 +281,7 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
 
     case "confirm":
     case "guest_steps":
+    case "todo_steps":
       // Drawn by the panel, which owns the Yes.
       return null;
   }

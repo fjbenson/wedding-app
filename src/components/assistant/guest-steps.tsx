@@ -1,29 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { Check, ChevronDown, ChevronLeft, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { DIETARY_NEEDS, joinNeeds } from "@/lib/dietary";
 import { splitName } from "@/lib/names";
 import type { GuestStepsBlock, Proposal } from "@/lib/assistant/blocks";
+import { FIELD, PILL, PILL_OFF, PILL_ON, type Flow, type StepBodyProps, type StepsState } from "./steps-flow";
 
 /**
- * Adding a guest through Your assistant, a step at a time (canvas 3 "Your
- * assistant · Steps in the chat", owner's picks 17 Oct 2026): the chat
- * stays on screen; a small card rises from the bottom where the message box
- * is, with the step marker, one question and Back · Skip · Next. Each
- * answer becomes a message in the conversation, a skipped step a faded
- * "Skipped". Steps the AI already knows (a household, a phone number) are
- * answered for you; dietary needs is always asked, with what was said
- * already ticked. At the end a card lists every line (tap one to change it)
- * and only Yes saves.
- *
- * Everything here runs on the phone: no further calls to the AI, and what
- * is typed or picked in the steps is never sent to it.
+ * Adding a guest, a step at a time (see steps-flow.tsx). Steps: day or
+ * evening (only if the wedding has both), household, dietary needs, contact
+ * details, and anything else (groups, where they're staying — only if the
+ * wedding has any). Whatever the couple already said is answered for them;
+ * when day or evening, household and diet are all known it goes straight to
+ * the check card, since contact details and groups are only ever optional.
  */
-
-export type StepKey = "event" | "household" | "diet" | "contact" | "more";
-type Mark = "answered" | "skipped";
 
 interface Values {
   eventId: string | null;
@@ -35,58 +26,63 @@ interface Values {
   email: string;
   groupIds: string[];
   stayId: string | null;
+  answer: GuestStepsBlock["prefill"]["answer"];
 }
 
-export interface StepsState {
-  phase: "asking" | "review" | "saving" | "saved" | "error" | "cancelled";
-  /** Which step the tray is on. */
-  index: number;
-  marks: Partial<Record<StepKey, Mark>>;
-  /** Changing one line from the check card: Next goes straight back to it. */
-  editing: boolean;
-  values: Values;
-  link?: string;
-  note?: string;
-  error?: string;
-}
+type Key = "event" | "household" | "diet" | "contact" | "more";
 
 const cap = (word: string) => word.replace(/^\w/, (c) => c.toUpperCase());
+const firstName = (b: GuestStepsBlock) => splitName(b.prefill.fullName).first;
 
-export function stepKeys(block: GuestStepsBlock): StepKey[] {
+const ANSWER_WORDS: [Values["answer"], string][] = [
+  ["to_invite", "To invite"],
+  ["pending", "Invited"],
+  ["attending", "Coming"],
+  ["declined", "Can’t come"],
+];
+
+function keys(block: GuestStepsBlock): Key[] {
   const { events, groups, stays } = block.options;
-  const keys: StepKey[] = [];
-  if (events.length > 1) keys.push("event");
-  keys.push("household", "diet", "contact");
-  if (groups.length > 0 || stays.length > 0) keys.push("more");
-  return keys;
+  const all: Key[] = [];
+  if (events.length > 1) all.push("event");
+  all.push("household", "diet", "contact");
+  if (groups.length > 0 || stays.length > 0) all.push("more");
+  return all;
 }
 
-export function initialSteps(block: GuestStepsBlock): StepsState {
+function initial(block: GuestStepsBlock): StepsState<Values> {
   const { prefill: p, options: o } = block;
   const values: Values = {
     eventId: p.eventId ?? (o.events.length === 1 ? o.events[0].id : null),
-    household: p.householdId ?? (p.newHousehold ? "new" : ""),
+    household: p.householdId ?? (p.newHousehold ? "new" : p.noHousehold ? "none" : ""),
     newHousehold: p.newHousehold ?? "",
     diet: p.diet,
     phone: p.phone ?? "",
     email: p.email ?? "",
     groupIds: [],
     stayId: null,
+    answer: p.answer,
   };
-  // What the AI was told is already answered; dietary needs is always asked.
+  // What the AI was told is already answered.
   const marks: StepsState["marks"] = {};
   if (p.eventId) marks.event = "answered";
-  if (p.householdId || p.newHousehold) marks.household = "answered";
+  if (p.householdId || p.newHousehold || p.noHousehold) marks.household = "answered";
+  if (p.dietKnown) marks.diet = "answered";
   if (p.phone || p.email) marks.contact = "answered";
-  const keys = stepKeys(block);
-  const first = keys.findIndex((k) => !marks[k]);
-  return { phase: "asking", index: first === -1 ? keys.length - 1 : first, marks, editing: false, values };
+  const all = keys(block);
+  // Day or evening, household and diet are the ones that matter. With those
+  // known there's nothing to ask: contact details and groups are optional.
+  if (all.filter((k) => k !== "contact" && k !== "more").every((k) => marks[k])) {
+    for (const k of all) marks[k] ??= "skipped";
+    return { phase: "review", index: all.length - 1, marks, editing: false, values };
+  }
+  const first = all.findIndex((k) => !marks[k]);
+  return { phase: "asking", index: first === -1 ? all.length - 1 : first, marks, editing: false, values };
 }
 
-/** What the guest's answer to a step reads as in the chat; null when there is none. */
-function answerText(block: GuestStepsBlock, v: Values, key: StepKey): string | null {
+function answer(block: GuestStepsBlock, v: Values, key: string): string | null {
   const o = block.options;
-  switch (key) {
+  switch (key as Key) {
     case "event": {
       const e = o.events.find((x) => x.id === v.eventId);
       return e ? cap(e.word) : null;
@@ -110,10 +106,11 @@ function answerText(block: GuestStepsBlock, v: Values, key: StepKey): string | n
       return parts.length > 0 ? parts.join(" · ") : null;
     }
   }
+  return null;
 }
 
-function cleared(v: Values, key: StepKey): Values {
-  switch (key) {
+function clear(v: Values, key: string): Values {
+  switch (key as Key) {
     case "event":
       return { ...v, eventId: null };
     case "household":
@@ -125,10 +122,10 @@ function cleared(v: Values, key: StepKey): Values {
     case "more":
       return { ...v, groupIds: [], stayId: null };
   }
+  return v;
 }
 
-/** What Yes saves: exactly what the check card shows. */
-export function buildProposal(block: GuestStepsBlock, v: Values): Proposal {
+function proposal(block: GuestStepsBlock, v: Values): Proposal {
   const p = block.prefill;
   const isNew = v.household === "new" && v.newHousehold.trim();
   const existing = block.options.households.some((h) => h.id === v.household) ? v.household : null;
@@ -148,312 +145,125 @@ export function buildProposal(block: GuestStepsBlock, v: Values): Proposal {
       notes: p.notes,
       groupIds: v.groupIds,
       stayId: v.stayId,
+      answer: v.eventId ? v.answer : undefined,
     },
   };
 }
 
-const LABEL: Record<StepKey, string> = {
-  event: "Guest of",
-  household: "Household",
-  diet: "Dietary",
-  contact: "Contact",
-  more: "More",
+export const guestFlow: Flow<GuestStepsBlock, Values> = {
+  keys,
+  initial,
+  answer,
+  clear,
+  proposal,
+  subject: (b) => b.prefill.fullName,
+  intro: (b) => `A few quick questions about ${firstName(b)}. Skip any you like.`,
+  question(b, key) {
+    switch (key as Key) {
+      case "event":
+        return b.options.events.map((e) => cap(e.word)).join(" or ") + "?";
+      case "household":
+        return `Which household is ${firstName(b)} in?`;
+      case "diet":
+        return "Any dietary needs?";
+      case "contact":
+        return `Any contact details for ${firstName(b)}?`;
+      default:
+        return "Anything else?";
+    }
+  },
+  heading(b, key) {
+    switch (key as Key) {
+      case "event":
+        return b.options.events.map((e) => cap(e.word)).join(" or ") + "?";
+      case "household":
+        return "Household";
+      case "diet":
+        return "Dietary needs";
+      case "contact":
+        return "Contact details";
+      default:
+        return "Anything else?";
+    }
+  },
+  label: (key) => ({ event: "Guest of", household: "Household", diet: "Dietary", contact: "Contact", more: "More" })[key as Key] ?? key,
+  action: "Add to the guest list",
+  closing: (b) => `That’s everything. Shall I add ${firstName(b)}?`,
+  yes: (b) => `Add ${firstName(b)}`,
+  seeIt: "See them ›",
+  cancelled: "Cancelled. Nobody was added.",
+  fixed(b) {
+    const rows: [string, string][] = [];
+    if (b.prefill.roles.length > 0) rows.push(["Role", b.prefill.roles.join(" · ")]);
+    if (b.prefill.meal) rows.push(["Meal", b.prefill.meal]);
+    if (b.prefill.isChild) rows.push(["Child", "Yes"]);
+    if (b.prefill.notes) rows.push(["Notes", b.prefill.notes]);
+    return rows;
+  },
+  Body,
+  Extra: Invitation,
 };
 
-function question(block: GuestStepsBlock, key: StepKey): string {
-  const first = splitName(block.prefill.fullName).first;
-  switch (key) {
-    case "event":
-      return block.options.events.map((e) => cap(e.word)).join(" or ") + "?";
-    case "household":
-      return `Which household is ${first} in?`;
-    case "diet":
-      return `Any dietary needs?`;
-    case "contact":
-      return `Any contact details for ${first}?`;
-    case "more":
-      return "Anything else?";
-  }
-}
-
-const HEADING: Record<StepKey, string> = {
-  event: "",
-  household: "Household",
-  diet: "Dietary needs",
-  contact: "Contact details",
-  more: "Anything else?",
-};
-
-// ── In the conversation ─────────────────────────────────────────────────
-
-/** The steps' trail in the chat: questions and answers, then the check card. */
-export function GuestStepsChat({
+/** Yet to invite unless the couple said otherwise; changed in place on the check card. */
+function Invitation({
   block,
   state,
-  onYes,
-  onCancel,
-  onEdit,
-  onGo,
+  setValues,
+  editable,
 }: {
   block: GuestStepsBlock;
-  state: StepsState;
-  onYes: () => void;
-  onCancel: () => void;
-  onEdit: (key: StepKey) => void;
-  onGo: () => void;
+  state: StepsState<Values>;
+  setValues: (change: Partial<Values>) => void;
+  editable: boolean;
 }) {
-  const keys = stepKeys(block);
-  const first = splitName(block.prefill.fullName).first;
-  const current = state.phase === "asking" ? keys[state.index] : null;
-  const reviewing = state.phase === "review" || state.phase === "saving" || state.phase === "error" || state.phase === "saved";
-
+  if (!state.values.eventId || block.options.events.length === 0) return null;
+  const current = ANSWER_WORDS.find(([a]) => a === state.values.answer)?.[1] ?? "To invite";
   return (
-    <div className="mt-3.5">
-      <p className="max-w-[92%] text-[16px] leading-relaxed text-ink">A few quick questions about {first}. Skip any you like.</p>
-
-      {keys.map((key) => {
-        const mark = state.marks[key];
-        if (!mark && key !== current) return null;
-        const text = mark === "answered" ? answerText(block, state.values, key) : null;
-        return (
-          <div key={key}>
-            <p className="mt-4 font-display text-[19px] font-light leading-snug text-ink">{question(block, key)}</p>
-            {mark && (
-              <div className="mt-2 flex justify-end">
-                {text ? (
-                  <p className="max-w-[78%] rounded-[20px_20px_6px_20px] bg-champagne-100 px-4 py-2 text-[15px] leading-snug text-ink">{text}</p>
-                ) : (
-                  <p className="rounded-2xl border border-dashed border-stone/50 px-3.5 py-1.5 text-sm italic text-stone">Skipped</p>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {reviewing && (
-        <>
-          <p className="mt-4 font-display text-[19px] font-light leading-snug text-ink">That’s everything. Shall I add {first}?</p>
-          <div className="mt-3 overflow-hidden rounded-[18px] border border-linen bg-white">
-            <div className="px-4 py-3.5">
-              <span className="block font-display text-[18px] leading-tight text-ink">{block.prefill.fullName}</span>
-              <span className="type-meta mt-1 block">Add to the guest list</span>
-            </div>
-            {keys.map((key) => {
-              const text = answerText(block, state.values, key);
-              const editable = state.phase === "review";
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  disabled={!editable}
-                  onClick={() => onEdit(key)}
-                  className="flex w-full justify-between gap-4 border-t border-linen px-4 py-2.5 text-left text-sm disabled:cursor-default"
-                >
-                  <span className="shrink-0 text-stone">{LABEL[key]}</span>
-                  <span className={`text-right ${text ? "text-ink" : "italic text-stone/70"}`}>{text ?? "Skipped"}</span>
-                </button>
-              );
-            })}
-            {block.prefill.roles.length > 0 && <Fixed label="Role" value={block.prefill.roles.join(" · ")} />}
-            {block.prefill.meal && <Fixed label="Meal" value={block.prefill.meal} />}
-            {block.prefill.isChild && <Fixed label="Child" value="Yes" />}
-            {block.prefill.notes && <Fixed label="Notes" value={block.prefill.notes} />}
-            {state.phase !== "saved" && (
-              <div className="flex gap-2 border-t border-linen px-4 py-3">
-                <button
-                  type="button"
-                  onClick={onYes}
-                  disabled={state.phase === "saving"}
-                  className="h-[46px] flex-1 rounded-full bg-ink text-[15px] text-ivory disabled:opacity-60"
-                >
-                  {state.phase === "saving" ? "Saving…" : `Add ${first}`}
-                </button>
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  disabled={state.phase === "saving"}
-                  className="h-[46px] w-24 rounded-full border border-linen bg-white text-[15px] text-ink"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-          {state.phase === "review" && <p className="mt-2 text-xs text-stone">Tap any line to change it.</p>}
-          {state.phase === "saved" && (
-            <p className="mt-2.5 flex flex-wrap items-center gap-2 text-sm text-champagne-600">
-              <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-champagne-600 text-white">
-                <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden />
-              </span>
-              Done
-              {state.link && (
-                <>
-                  {" · "}
-                  <Link href={state.link} onClick={onGo} className="underline underline-offset-4 hover:text-ink">
-                    See them ›
-                  </Link>
-                </>
-              )}
-            </p>
-          )}
-          {state.phase === "saved" && state.note && <p className="mt-1.5 text-sm text-stone">{state.note}</p>}
-          {state.phase === "error" && <p className="mt-2 text-sm text-[#9A3F2B]">{state.error}</p>}
-        </>
+    <div className="flex items-center justify-between gap-4 border-t border-linen px-4 py-2 text-sm">
+      <span className="shrink-0 text-stone">Invitation</span>
+      {editable ? (
+        <label className="relative">
+          <span className="sr-only">Invitation</span>
+          <select
+            value={state.values.answer}
+            onChange={(e) => setValues({ answer: e.target.value as Values["answer"] })}
+            className="appearance-none rounded-full bg-transparent py-1.5 pl-3 pr-7 text-right text-sm text-ink"
+          >
+            {ANSWER_WORDS.map(([a, word]) => (
+              <option key={a} value={a}>
+                {word}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone" strokeWidth={1.8} aria-hidden />
+        </label>
+      ) : (
+        <span className="py-1.5 text-ink">{current}</span>
       )}
-
-      {state.phase === "cancelled" && <p className="mt-3 text-sm italic text-stone">Cancelled. Nobody was added.</p>}
     </div>
   );
 }
 
-function Fixed({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 border-t border-linen px-4 py-2.5 text-sm">
-      <span className="shrink-0 text-stone">{label}</span>
-      <span className="text-right text-ink">{value}</span>
-    </div>
-  );
-}
+// ── The steps' answers ──────────────────────────────────────────────────
 
-// ── The tray ────────────────────────────────────────────────────────────
-
-const PILL = "h-10 rounded-full border px-4 text-sm transition";
-const PILL_ON = "border-champagne-400 bg-champagne-100 text-ink";
-const PILL_OFF = "border-linen bg-white text-ink hover:border-champagne-400";
-const FIELD =
-  "block h-[52px] w-full rounded-2xl border border-linen bg-white px-4 text-[17px] text-ink placeholder:text-stone/70 focus:border-champagne-400 focus:outline-none";
-
-/** The card that rises where the message box is: marker, one question, Back · Skip · Next. */
-export function GuestStepsTray({
-  block,
-  state,
-  update,
-  onCancel,
-}: {
-  block: GuestStepsBlock;
-  state: StepsState;
-  update: (change: (state: StepsState) => StepsState) => void;
-  onCancel: () => void;
-}) {
-  const keys = stepKeys(block);
-  const key = keys[state.index];
-  const last = state.index === keys.length - 1;
-
-  const setValues = (change: Partial<Values>) => update((s) => ({ ...s, values: { ...s.values, ...change } }));
-
-  /** Marks this step and moves on: to the next, or back to the check card if changing one line. */
-  function finish(skip: boolean) {
-    update((s) => {
-      const has = answerText(block, s.values, key) !== null;
-      const answered = !skip && has;
-      const marks = { ...s.marks, [key]: answered ? ("answered" as const) : ("skipped" as const) };
-      const values = answered ? s.values : cleared(s.values, key);
-      if (s.editing || last) return { ...s, marks, values, editing: false, phase: "review" };
-      return { ...s, marks, values, index: s.index + 1 };
-    });
+function Body({ block, state, setValues, stepKey }: StepBodyProps<GuestStepsBlock, Values>) {
+  switch (stepKey as Key) {
+    case "event":
+      return <EventStep block={block} state={state} setValues={setValues} />;
+    case "household":
+      return <HouseholdStep block={block} state={state} setValues={setValues} />;
+    case "diet":
+      return <DietStep state={state} setValues={setValues} />;
+    case "contact":
+      return <ContactStep state={state} setValues={setValues} />;
+    default:
+      return <MoreStep block={block} state={state} setValues={setValues} />;
   }
-
-  function skipRest() {
-    update((s) => {
-      const marks = { ...s.marks };
-      let values = s.values;
-      keys.forEach((k, i) => {
-        if (i < s.index || (marks[k] && i !== s.index)) return;
-        const has = answerText(block, values, k) !== null;
-        marks[k] = i === s.index && has ? "answered" : "skipped";
-        if (!(i === s.index && has)) values = cleared(values, k);
-      });
-      return { ...s, marks, values, editing: false, phase: "review" };
-    });
-  }
-
-  const heading = key === "event" ? question(block, "event") : HEADING[key];
-
-  return (
-    <div className="shrink-0 rounded-t-[28px] bg-white pt-3 shadow-[0_-16px_40px_-18px_rgb(60_45_20/0.35)] lg:rounded-bl-[28px]">
-      <div className="mx-auto mb-2.5 h-[5px] w-10 rounded-full bg-linen" aria-hidden />
-      <div className="flex items-center gap-1.5 px-5">
-        {keys.map((k, i) => {
-          const mark = state.marks[k];
-          const here = i === state.index;
-          return (
-            <div key={k} className="flex flex-1 items-center gap-1.5 last:flex-none">
-              <span
-                className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-xs ${
-                  here
-                    ? "bg-ink font-semibold text-ivory"
-                    : mark === "answered"
-                      ? "bg-champagne-400 text-white"
-                      : mark === "skipped"
-                        ? "border-[1.5px] border-dashed border-stone/50 text-stone"
-                        : "border-[1.5px] border-linen bg-white text-stone"
-                }`}
-              >
-                {here ? i + 1 : mark === "answered" ? <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden /> : mark === "skipped" ? "–" : i + 1}
-              </span>
-              {i < keys.length - 1 && <span className={`h-0.5 flex-1 rounded-full ${mark === "answered" ? "bg-champagne-400" : "bg-linen"}`} />}
-            </div>
-          );
-        })}
-        <span className="ml-1.5 whitespace-nowrap text-xs text-stone">
-          {state.index + 1} of {keys.length}
-        </span>
-        <button
-          type="button"
-          onClick={onCancel}
-          aria-label="Cancel"
-          className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
-        >
-          <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        </button>
-      </div>
-
-      <div className="max-h-[44dvh] overflow-y-auto overscroll-contain px-5 pt-4">
-        <p className="font-display text-[26px] font-light leading-[1.1] tracking-[-0.02em] text-ink">{heading}</p>
-        <div className="mt-3.5">
-          {key === "event" && <EventStep block={block} state={state} setValues={setValues} />}
-          {key === "household" && <HouseholdStep block={block} state={state} setValues={setValues} />}
-          {key === "diet" && <DietStep state={state} setValues={setValues} />}
-          {key === "contact" && <ContactStep state={state} setValues={setValues} />}
-          {key === "more" && <MoreStep block={block} state={state} setValues={setValues} />}
-        </div>
-      </div>
-
-      <div className="px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
-        <div className="flex gap-2">
-          {state.index > 0 && (
-            <button
-              type="button"
-              onClick={() => update((s) => ({ ...s, index: s.index - 1, editing: false }))}
-              aria-label="Back"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-linen bg-white text-stone hover:text-ink"
-            >
-              <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
-            </button>
-          )}
-          <button type="button" onClick={() => finish(true)} className="h-12 w-[88px] shrink-0 rounded-full border border-linen bg-white text-[15px] text-ink">
-            Skip
-          </button>
-          <button type="button" onClick={() => finish(false)} className="h-12 flex-1 rounded-full bg-ink text-base text-ivory">
-            {last || state.editing ? "Review" : "Next"}
-          </button>
-        </div>
-        {!last && !state.editing && (
-          <p className="mt-2.5 text-center">
-            <button type="button" onClick={skipRest} className="text-[13px] text-champagne-600 underline underline-offset-4 hover:text-ink">
-              Skip the rest and review
-            </button>
-          </p>
-        )}
-      </div>
-    </div>
-  );
 }
 
-type StepProps = { block: GuestStepsBlock; state: StepsState; setValues: (change: Partial<Values>) => void };
+type Set = (change: Partial<Values>) => void;
 
-function EventStep({ block, state, setValues }: StepProps) {
+function EventStep({ block, state, setValues }: { block: GuestStepsBlock; state: StepsState<Values>; setValues: Set }) {
   return (
     <div className="flex gap-2">
       {block.options.events.map((e) => {
@@ -474,7 +284,7 @@ function EventStep({ block, state, setValues }: StepProps) {
   );
 }
 
-function HouseholdStep({ block, state, setValues }: StepProps) {
+function HouseholdStep({ block, state, setValues }: { block: GuestStepsBlock; state: StepsState<Values>; setValues: Set }) {
   const households = [...block.options.households].sort((a, b) => a.name.localeCompare(b.name));
   const v = state.values;
   return (
@@ -509,7 +319,7 @@ function HouseholdStep({ block, state, setValues }: StepProps) {
   );
 }
 
-function DietStep({ state, setValues }: Omit<StepProps, "block">) {
+function DietStep({ state, setValues }: { state: StepsState<Values>; setValues: Set }) {
   const [typed, setTyped] = useState("");
   const chosen = state.values.diet;
   const standard = DIETARY_NEEDS.map((n) => n.name);
@@ -565,7 +375,7 @@ function DietStep({ state, setValues }: Omit<StepProps, "block">) {
   );
 }
 
-function ContactStep({ state, setValues }: Omit<StepProps, "block">) {
+function ContactStep({ state, setValues }: { state: StepsState<Values>; setValues: Set }) {
   return (
     <div className="space-y-2.5">
       <label className="block">
@@ -598,7 +408,7 @@ function ContactStep({ state, setValues }: Omit<StepProps, "block">) {
   );
 }
 
-function MoreStep({ block, state, setValues }: StepProps) {
+function MoreStep({ block, state, setValues }: { block: GuestStepsBlock; state: StepsState<Values>; setValues: Set }) {
   const { groups, stays } = block.options;
   const v = state.values;
   return (

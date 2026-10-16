@@ -1448,25 +1448,34 @@ additive — new tables hanging off `weddings`. None require changing the above.
      6. Tests: the assistant's tools in `supabase/tests/rls_isolation.sql`
         terms (another wedding's ids return nothing); try it on the demo
         wedding first.
-   - **Add a guest, a step at a time** (17 Oct 2026, owner; canvas 3 "Your
-     assistant · Steps in the chat"): `add_guest` no longer asks questions
-     in words. It starts steps **inside the chat** (`guest-steps.tsx`): a
-     card rises where the message box is, with a step marker, one question
-     and Back · Skip · Next ("Skip the rest and review"); each answer
-     becomes a message, a skipped step a faded "Skipped". Steps: day or
-     evening (only if the wedding has both), household (a drop-down, "New
-     household…"), dietary needs (always asked, what was said already
-     ticked), contact details (phone + email), anything else (groups and
-     where they're staying, only if the wedding has any). Anything the
-     assistant already heard is answered for you. Then a check card (tap a
-     line to change it) and **Yes saves** (`confirmProposalAction`, now with
-     `groupIds` / `stayId`; `addGuest` checks both belong to the wedding and,
-     if adding to a group or stay fails, still adds the guest and says so).
-     The steps run on the phone with **no further calls to the AI**; their
-     choices (groups, places to stay) are sent to the screen only, never
-     back to Anthropic (`guestChoices()` in `lookups.ts`). Other jobs (a
-     to-do, a payment, an appointment) still use the confirm card; stepping
-     them is next. Role, child and meal are not steps yet.
+   - **Jobs done a step at a time** (17 Oct 2026, owner; canvas 3 "Your
+     assistant · Steps in the chat"): `add_guest` and `add_todo` don't ask
+     questions in words. They start steps **inside the chat**: a card rises
+     where the message box is, with a step marker, one question and Back ·
+     Skip · Next ("Skip the rest and review"); each answer becomes a message,
+     a skipped step a faded "Skipped". Shared frame `steps-flow.tsx` (a
+     `Flow` per job); `guest-steps.tsx`, `todo-steps.tsx`. **Guest** steps:
+     day or evening (only if the wedding has both), household (a drop-down,
+     "New household…"), dietary needs, contact details (phone + email),
+     anything else (groups, where they're staying — only if any exist).
+     **To-do** steps: when, which area, anything to add. Whatever the
+     assistant already heard is answered for you; **if a guest's day/evening,
+     household and diet are all known (or a to-do's date and area), the
+     questions are skipped** and it goes straight to the check card (contact,
+     groups and notes are only ever optional). The tool takes
+     `no_dietary_needs` / `no_household` / `no_date` / `no_area` so "none"
+     counts as known. The check card lists every line (tap one to change it)
+     and a guest's **Invitation** (To invite unless told otherwise; or
+     Invited / Coming / Can't come, set in place), then Cancel · Add; **Yes
+     saves** (`confirmProposalAction`; `addGuest` also takes `groupIds`,
+     `stayId`, `answer`, checks groups and stays belong to the wedding and,
+     if a later part fails, still adds the guest and says so). The steps run
+     on the phone with **no further calls to the AI**; their choices (groups,
+     places to stay, areas) go to the screen only, never back to Anthropic
+     (`guestChoices()` in `lookups.ts`). A payment still uses the confirm
+     card; stepping payments and appointments is next, then changing things
+     that exist ("move Anna to the Greens"). Role, child and meal aren't
+     steps yet.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

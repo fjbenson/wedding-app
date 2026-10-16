@@ -16,7 +16,7 @@ import { addNote } from "@/lib/jobs";
 import { findGuests, findSuppliers, guestChoices, moneySummary, overview, seating, thisWeek, type Overview } from "@/lib/lookups";
 import { formatLongDate } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
-import type { Block, GuestStepsBlock, Proposal } from "./blocks";
+import type { Block, GuestStepsBlock, Proposal, TodoStepsBlock } from "./blocks";
 
 type Tool = Anthropic.Beta.BetaTool;
 
@@ -101,6 +101,13 @@ export const TOOLS: Tool[] = [
         meal: str,
         diet: { ...str, description: `Dietary needs, joined with " · ", using these names where they fit: ${DIETARY_NEEDS.map((n) => n.name).join(", ")}. Anything else in their own words.` },
         notes: str,
+        no_dietary_needs: { type: "boolean", description: "Set when the couple said they have no dietary needs" },
+        no_household: { type: "boolean", description: "Set when the couple said they aren't in a household" },
+        answer: {
+          type: "string",
+          enum: [...ANSWERS],
+          description: "Only if the couple said so: to_invite (the default), pending (already invited), attending (already coming), declined",
+        },
       },
       required: ["full_name"],
     },
@@ -116,10 +123,18 @@ export const TOOLS: Tool[] = [
   },
   {
     name: "add_todo",
-    description: "Propose a to-do for the plan. Shows a card; nothing is saved until Yes.",
+    description:
+      "Start adding a to-do. Call it straight away with the title and anything the couple already said (a date, an area); do NOT ask them anything first. The app asks the rest on screen, one short step at a time (when, which area, anything to add), then shows a card to confirm. Nothing is saved until they tap Yes.",
     input_schema: {
       type: "object",
-      properties: { title: str, due_date: date, area: { ...str, description: "An area key, or 'other'" }, notes: str },
+      properties: {
+        title: str,
+        due_date: date,
+        area: { ...str, description: "An area key, or 'other'" },
+        notes: str,
+        no_date: { type: "boolean", description: "Set when the couple said it has no date yet" },
+        no_area: { type: "boolean", description: "Set when the couple said it's no area in particular" },
+      },
       required: ["title"],
     },
   },
@@ -182,9 +197,9 @@ export interface ToolOutcome {
 }
 
 const fail = (message: string): ToolOutcome => ({ result: JSON.stringify({ error: message }), isError: true });
-const GUEST_STEPS_STARTED = JSON.stringify({
+const STEPS_STARTED = JSON.stringify({
   status:
-    "The couple is now being asked the remaining details on screen, step by step, and will confirm with a card. Don't ask them anything yourself, don't list the details, and don't say the guest is added. Reply with at most a few words, or nothing.",
+    "The couple is now being asked the remaining details on screen, step by step (or goes straight to a card if you already had everything), and confirms with a card. Don't ask them anything yourself, don't list the details, and don't say it's added. Reply with at most a few words, or nothing.",
 });
 const WAITING = JSON.stringify({
   status: "Shown to the couple as a card. Nothing is saved until they tap Yes; you'll hear if they do. Don't say it's done.",
@@ -268,11 +283,18 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
       if (!o.ok) return fail(o.error);
       const step = await guestSteps(input, id, o);
       if ("error" in step) return fail(step.error);
-      return { result: GUEST_STEPS_STARTED, block: step };
+      return { result: STEPS_STARTED, block: step };
+    }
+
+    case "add_todo": {
+      const o = await overview();
+      if (!o.ok) return fail(o.error);
+      const step = todoSteps(input, id, o);
+      if ("error" in step) return fail(step.error);
+      return { result: STEPS_STARTED, block: step };
     }
 
     case "set_guest_answer":
-    case "add_todo":
     case "add_payment": {
       const o = await overview();
       if (!o.ok) return fail(o.error);
@@ -309,6 +331,9 @@ async function guestSteps(input: Input, id: string, o: Overview): Promise<GuestS
       householdId: household?.id ?? null,
       newHousehold: household ? null : text(input.new_household),
       diet: needsOf(text(input.diet)),
+      dietKnown: !!text(input.diet) || flag(input.no_dietary_needs) === true,
+      noHousehold: !household && !text(input.new_household) && flag(input.no_household) === true,
+      answer: oneOf(input.answer, ANSWERS) ?? "to_invite",
       phone: text(input.phone),
       email: text(input.email),
       roles,
@@ -322,6 +347,28 @@ async function guestSteps(input: Input, id: string, o: Overview): Promise<GuestS
       groups: choices.ok ? choices.groups : [],
       stays: choices.ok ? choices.stays : [],
     },
+  };
+}
+
+/** Same for a to-do: checks what was said, and passes on the areas to choose from. */
+function todoSteps(input: Input, id: string, o: Overview): TodoStepsBlock | { error: string } {
+  const title = text(input.title);
+  if (!title) return { error: "A to-do needs a name." };
+  const area = text(input.area);
+  if (area && area !== "other" && !o.areas.some((a) => a.key === area)) return { error: `There's no area "${area}".` };
+  const dueDate = day(input.due_date);
+  return {
+    type: "todo_steps",
+    id,
+    prefill: {
+      title,
+      dueDate,
+      dateKnown: !!dueDate || flag(input.no_date) === true,
+      area,
+      areaKnown: !!area || flag(input.no_area) === true,
+      notes: text(input.notes),
+    },
+    options: { areas: o.areas.map((a) => ({ key: a.key, label: a.label })), today: o.today, weddingDate: o.date },
   };
 }
 
@@ -352,30 +399,6 @@ async function proposalCard(name: string, input: Input, id: string, o: Overview)
       ],
       yes: "Change it",
       proposal: { kind: "set_guest_answer", input: { guestId, status } },
-    };
-  }
-
-  if (name === "add_todo") {
-    const title = text(input.title);
-    if (!title) return { error: "A to-do needs a name." };
-    const area = text(input.area);
-    const bad = checkArea(area);
-    if (bad) return { error: bad };
-    const dueDate = day(input.due_date);
-    const rows: [string, string][] = [
-      ["When", dueDate ? formatLongDate(dueDate) : "No date yet"],
-      ["Area", areaLabel(area) ?? "Other"],
-    ];
-    const notes = text(input.notes);
-    if (notes) rows.push(["Notes", notes]);
-    return {
-      type: "confirm",
-      id,
-      title,
-      action: "Add to the plan",
-      rows,
-      yes: "Add it",
-      proposal: { kind: "add_todo", input: { title, dueDate, area, notes } },
     };
   }
 

@@ -1,6 +1,19 @@
 "use server";
 
-import { addGuest, addNote, addPayment, addTodo, setGuestAnswer } from "@/lib/jobs";
+import {
+  addGuest,
+  addGuestToGroup,
+  addNote,
+  addPayment,
+  addTodo,
+  markPaymentPaid,
+  moveGuest,
+  setGuestAnswer,
+  setGuestDiet,
+  setGuestOf,
+  setTodoDate,
+  tickTodo,
+} from "@/lib/jobs";
 import type { Proposal } from "@/lib/assistant/blocks";
 import { draftGroupMessage } from "@/lib/assistant/draft";
 
@@ -38,6 +51,35 @@ export async function confirmProposalAction(
       case "set_guest_answer": {
         const r = await setGuestAnswer(String(proposal.input.guestId), proposal.input.status);
         return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "move_guest": {
+        const p = proposal.input;
+        const r = await moveGuest(String(p.guestId), { householdId: p.householdId ?? null, newHousehold: p.newHousehold ?? null });
+        return r.ok ? { ok: true, link: `/people?guest=${p.guestId}` } : { ok: false, error: r.error };
+      }
+      case "set_guest_of": {
+        const r = await setGuestOf(String(proposal.input.guestId), String(proposal.input.eventId));
+        return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "set_guest_diet": {
+        const r = await setGuestDiet(String(proposal.input.guestId), proposal.input.diet ?? null);
+        return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "add_guest_to_group": {
+        const r = await addGuestToGroup(String(proposal.input.guestId), String(proposal.input.groupId));
+        return r.ok ? { ok: true, link: `/people?guest=${proposal.input.guestId}` } : { ok: false, error: r.error };
+      }
+      case "set_todo_date": {
+        const r = await setTodoDate(String(proposal.input.todoId), proposal.input.dueDate ?? null);
+        return r.ok ? { ok: true, link: "/plan?view=list" } : { ok: false, error: r.error };
+      }
+      case "tick_todo": {
+        const r = await tickTodo(String(proposal.input.todoId));
+        return r.ok ? { ok: true, link: "/plan?view=list" } : { ok: false, error: r.error };
+      }
+      case "mark_payment_paid": {
+        const r = await markPaymentPaid(String(proposal.input.paymentId), proposal.input.paidOn ?? null);
+        return r.ok ? { ok: true, link: "/money?view=month" } : { ok: false, error: r.error };
       }
       case "add_todo": {
         const p = proposal.input;

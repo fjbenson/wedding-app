@@ -9,13 +9,13 @@
  * `{ ok: false, error }`, and the caller decides what to show.
  */
 import { revalidatePath } from "next/cache";
-import { createContact, createHousehold } from "@/lib/db/contacts";
+import { createContact, createHousehold, listGuests, listHouseholds, updateContact } from "@/lib/db/contacts";
 import { addToGroup, listGroups } from "@/lib/db/groups";
 import { listStays, setGuestStay } from "@/lib/db/stays";
-import { createMilestone } from "@/lib/db/milestones";
-import { createPayment } from "@/lib/db/money";
+import { completeMilestone, createMilestone, listMilestones, updateMilestone } from "@/lib/db/milestones";
+import { createPayment, getPayment, updatePayment } from "@/lib/db/money";
 import { createNote } from "@/lib/db/notes";
-import { inviteGuestsToEvent, listEvents, listRsvps, setContactStatus, updateRsvp } from "@/lib/db/rsvps";
+import { deleteRsvp, inviteGuestsToEvent, listEvents, listRsvps, setContactStatus, updateRsvp } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
 import { describe } from "@/lib/errors";
@@ -308,4 +308,135 @@ export async function addNote(input: NewNote): Promise<JobResult> {
   revalidatePath("/area/[key]", "page");
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+
+// ── Changing what's already there ───────────────────────────────────────
+// Each checks the thing belongs to this wedding before touching it (row-level
+// security would refuse anyway). Used by Your assistant's change cards.
+
+/** Moves a guest to another household, a new one, or out of any. */
+export async function moveGuest(
+  guestId: string,
+  move: { householdId?: string | null; newHousehold?: string | null },
+): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const guest = (await listGuests(wedding.id)).find((g) => g.id === guestId);
+    if (!guest) return { ok: false, error: "That guest couldn't be found." };
+    let householdId = move.householdId ?? null;
+    const fresh = tidy(move.newHousehold);
+    if (fresh) householdId = (await createHousehold({ weddingId: wedding.id, name: fresh })).id;
+    else if (householdId && !(await listHouseholds(wedding.id)).some((h) => h.id === householdId)) {
+      return { ok: false, error: "That household couldn't be found." };
+    }
+    await updateContact(guestId, { household_id: householdId });
+    revalidatePath("/people");
+    return { ok: true };
+  } catch (error) {
+    return failed("moving guest failed", error);
+  }
+}
+
+/** Day or evening: puts them on that event and every later one, off any earlier. Their answer stays. */
+export async function setGuestOf(guestId: string, eventId: string): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const [events, guests, rsvps] = await Promise.all([listEvents(wedding.id), listGuests(wedding.id), listRsvps(wedding.id)]);
+    const guest = guests.find((g) => g.id === guestId);
+    const from = events.findIndex((e) => e.id === eventId);
+    if (!guest || from === -1) return { ok: false, error: "That couldn't be found." };
+
+    const theirs = rsvps.filter((r) => r.contact_id === guestId);
+    const earlier = new Set(events.slice(0, from).map((e) => e.id));
+    for (const r of theirs.filter((r) => earlier.has(r.event_id))) await deleteRsvp(r.id);
+    for (const event of events.slice(from)) await inviteGuestsToEvent(wedding.id, event.id, [guest]);
+    const kept = theirs.find((r) => !earlier.has(r.event_id)) ?? theirs[0];
+    if (kept) await setContactStatus(guestId, kept.status);
+    revalidatePath("/people");
+    return { ok: true };
+  } catch (error) {
+    return failed("setting day or evening failed", error);
+  }
+}
+
+/** Their dietary needs (the whole list, joined), on the event they're a guest of. */
+export async function setGuestDiet(guestId: string, diet: string | null): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const [events, guests, rsvps] = await Promise.all([listEvents(wedding.id), listGuests(wedding.id), listRsvps(wedding.id)]);
+    if (!guests.some((g) => g.id === guestId)) return { ok: false, error: "That guest couldn't be found." };
+    const order = new Map(events.map((e, i) => [e.id, i]));
+    const own = rsvps
+      .filter((r) => r.contact_id === guestId)
+      .sort((a, b) => (order.get(a.event_id) ?? 99) - (order.get(b.event_id) ?? 99))[0];
+    if (!own) return { ok: false, error: "They aren't on a list yet, so there's nowhere to put it." };
+    await updateRsvp(own.id, { dietary_notes: tidy(diet) });
+    revalidatePath("/people");
+    return { ok: true };
+  } catch (error) {
+    return failed("saving dietary needs failed", error);
+  }
+}
+
+export async function addGuestToGroup(guestId: string, groupId: string): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    if (!(await listGuests(wedding.id)).some((g) => g.id === guestId)) return { ok: false, error: "That guest couldn't be found." };
+    if (!(await listGroups(wedding.id)).some((g) => g.id === groupId)) return { ok: false, error: "That group couldn't be found." };
+    await addToGroup(wedding.id, groupId, guestId);
+    revalidatePath("/people");
+    return { ok: true };
+  } catch (error) {
+    return failed("adding to group failed", error);
+  }
+}
+
+export async function setTodoDate(todoId: string, dueDate: string | null): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  const date = tidy(dueDate);
+  if (!isDate(date)) return { ok: false, error: "That date isn't right." };
+  try {
+    if (!(await listMilestones(wedding.id)).some((m) => m.id === todoId)) return { ok: false, error: "That to-do couldn't be found." };
+    await updateMilestone(todoId, { due_date: date });
+    refreshPlan();
+    return { ok: true };
+  } catch (error) {
+    return failed("changing to-do date failed", error);
+  }
+}
+
+export async function tickTodo(todoId: string): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    if (!(await listMilestones(wedding.id)).some((m) => m.id === todoId)) return { ok: false, error: "That to-do couldn't be found." };
+    await completeMilestone(todoId);
+    refreshPlan();
+    return { ok: true };
+  } catch (error) {
+    return failed("ticking off to-do failed", error);
+  }
+}
+
+export async function markPaymentPaid(paymentId: string, paidOn?: string | null): Promise<JobResult> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  const date = tidy(paidOn) ?? todayISO();
+  if (!isDate(date)) return { ok: false, error: "That date isn't right." };
+  try {
+    const payment = await getPayment(paymentId);
+    if (!payment || payment.wedding_id !== wedding.id) return { ok: false, error: "That payment couldn't be found." };
+    if (payment.paid_on) return { ok: false, error: "That one is already marked as paid." };
+    await updatePayment(paymentId, { paid_on: date });
+    refreshMoney();
+    return { ok: true };
+  } catch (error) {
+    return failed("marking payment paid failed", error);
+  }
 }

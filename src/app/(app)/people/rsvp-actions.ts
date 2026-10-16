@@ -17,7 +17,7 @@ import {
 } from "@/lib/db/rsvps";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
-import { setGuestAnswer } from "@/lib/jobs";
+import { setGuestAnswer, setGuestOf } from "@/lib/jobs";
 import type { RsvpStatus } from "@/types/db";
 
 function text(formData: FormData, key: string): string | null {
@@ -102,29 +102,8 @@ export async function saveMealAction(
  * invite" for someone who hasn't got one yet).
  */
 export async function setGuestOfAction(guestId: string, eventId: string): Promise<{ error?: string }> {
-  const wedding = await getCurrentWedding();
-  if (!wedding) return { error: "Your wedding couldn't be found." };
-  try {
-    const [events, guests, rsvps] = await Promise.all([
-      listEvents(wedding.id),
-      listGuests(wedding.id),
-      listRsvps(wedding.id),
-    ]);
-    const guest = guests.find((g) => g.id === guestId);
-    const from = events.findIndex((e) => e.id === eventId);
-    if (!guest || from === -1) return { error: "That couldn't be found." };
-
-    const theirs = rsvps.filter((r) => r.contact_id === guestId);
-    const earlier = new Set(events.slice(0, from).map((e) => e.id));
-    for (const r of theirs.filter((r) => earlier.has(r.event_id))) await deleteRsvp(r.id);
-    for (const event of events.slice(from)) await inviteGuestsToEvent(wedding.id, event.id, [guest]);
-    const kept = theirs.find((r) => !earlier.has(r.event_id)) ?? theirs[0];
-    if (kept) await setContactStatus(guestId, kept.status);
-  } catch (error) {
-    console.error("setting day or evening failed", error);
-    return { error: `That didn't save. ${describe(error)}` };
-  }
-  revalidatePath("/people");
+  const result = await setGuestOf(guestId, eventId);
+  if (!result.ok) return { error: result.detail ? `${result.error} ${result.detail}` : result.error };
   return {};
 }
 

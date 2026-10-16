@@ -31,6 +31,13 @@ export type Proposal =
       };
     }
   | { kind: "set_guest_answer"; input: { guestId: string; status: "to_invite" | "pending" | "attending" | "declined" } }
+  | { kind: "move_guest"; input: { guestId: string; householdId?: string | null; newHousehold?: string | null } }
+  | { kind: "set_guest_of"; input: { guestId: string; eventId: string } }
+  | { kind: "set_guest_diet"; input: { guestId: string; diet: string | null } }
+  | { kind: "add_guest_to_group"; input: { guestId: string; groupId: string } }
+  | { kind: "set_todo_date"; input: { todoId: string; dueDate: string | null } }
+  | { kind: "tick_todo"; input: { todoId: string } }
+  | { kind: "mark_payment_paid"; input: { paymentId: string; paidOn?: string | null } }
   | { kind: "add_todo"; input: { title: string; dueDate?: string | null; area?: string | null; notes?: string | null } }
   | {
       kind: "add_payment";

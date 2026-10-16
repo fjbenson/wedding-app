@@ -1473,9 +1473,24 @@ additive — new tables hanging off `weddings`. None require changing the above.
      on the phone with **no further calls to the AI**; their choices (groups,
      places to stay, areas) go to the screen only, never back to Anthropic
      (`guestChoices()` in `lookups.ts`). A payment still uses the confirm
-     card; stepping payments and appointments is next, then changing things
-     that exist ("move Anna to the Greens"). Role, child and meal aren't
-     steps yet.
+     card; stepping payments and appointments is next. Role, child and meal
+     aren't steps yet.
+   - **Changing things that exist** (17 Oct 2026, owner: "move Anna from X
+     household to Y"): seven more tools, each a **before-and-after confirm
+     card** (Was / Now, Yes), nothing changes until Yes, nothing is ever
+     deleted: `move_guest` (to another household, a new one, or none),
+     `set_guest_of` (day ↔ evening, answer stays), `set_guest_diet` (the
+     whole new list), `add_guest_to_group` (add only — it can't take anyone
+     out), `set_todo_date`, `tick_todo`, `mark_payment_paid`. They find the
+     thing first with `find_guests` / `find_todos` / `find_payments` /
+     `find_groups` (`lookups.ts`; each returns ids and a few lines, and **the
+     matching to-do titles, payment descriptions and group names go to
+     Anthropic to answer, like the guest and money lookups — same privacy
+     list entry**). Jobs in `jobs.ts` (`moveGuest`, `setGuestOf` — the card's
+     day/evening action delegates to it — `setGuestDiet`, `addGuestToGroup`,
+     `setTodoDate`, `tickTodo`, `markPaymentPaid`) check the thing belongs to
+     this wedding before touching it. Not yet: renaming, changing a
+     supplier or appointment, un-ticking, taking out of a group, un-paying.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

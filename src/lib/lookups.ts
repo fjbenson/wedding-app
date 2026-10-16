@@ -482,3 +482,99 @@ export async function findSuppliers(
     return failed("finding suppliers failed", error);
   }
 }
+
+
+// ── Things to change: to-dos, payments and groups, with their ids ──────
+
+export interface TodoLine {
+  id: string;
+  title: string;
+  due: string | null;
+  area: string | null;
+  done: boolean;
+}
+
+/** To-dos by words in the title (open ones unless `includeDone`), or one by id. */
+export async function findTodos(
+  query: { text?: string; id?: string; includeDone?: boolean } = {},
+): Promise<Lookup<{ count: number; todos: TodoLine[] }>> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const [all, areaRows] = await Promise.all([listMilestones(wedding.id), listAreas(wedding.id)]);
+    const areas = areaOptions(areaRows);
+    const found = all
+      .filter((m) => (query.id ? m.id === query.id : true))
+      .filter((m) => query.id || query.includeDone || m.status !== "done")
+      .filter((m) => !query.text || has(m.title, query.text));
+    return {
+      ok: true,
+      count: found.length,
+      todos: found.slice(0, 10).map((m) => ({
+        id: m.id,
+        title: m.title,
+        due: m.due_date,
+        area: areaName(m.category, areas),
+        done: m.status === "done",
+      })),
+    };
+  } catch (error) {
+    return failed("find todos failed", error);
+  }
+}
+
+export interface PaymentLine {
+  id: string;
+  description: string;
+  amount: number;
+  due: string | null;
+  paidOn: string | null;
+}
+
+/** Payments by words in what they're for (still to pay unless `includePaid`), or one by id. */
+export async function findPayments(
+  query: { text?: string; id?: string; includePaid?: boolean } = {},
+): Promise<Lookup<{ count: number; payments: PaymentLine[] }>> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const all = (await listPayments(wedding.id)) ?? [];
+    const found = all
+      .filter((p) => (query.id ? p.id === query.id : true))
+      .filter((p) => query.id || query.includePaid || !p.paid_on)
+      .filter((p) => !query.text || has(p.description, query.text));
+    return {
+      ok: true,
+      count: found.length,
+      payments: found.slice(0, 10).map((p) => ({
+        id: p.id,
+        description: p.description,
+        amount: p.amount,
+        due: p.due_date,
+        paidOn: p.paid_on,
+      })),
+    };
+  } catch (error) {
+    return failed("find payments failed", error);
+  }
+}
+
+/** The wedding's groups of guests, by name, with how many are in each. */
+export async function findGroups(query: { name?: string; id?: string } = {}): Promise<
+  Lookup<{ groups: { id: string; name: string; people: number }[] }>
+> {
+  const wedding = await getCurrentWedding();
+  if (!wedding) return NO_WEDDING;
+  try {
+    const all = await listGroups(wedding.id);
+    return {
+      ok: true,
+      groups: all
+        .filter((g) => (query.id ? g.id === query.id : true))
+        .filter((g) => !query.name || has(g.name, query.name))
+        .map((g) => ({ id: g.id, name: g.name, people: g.members.length })),
+    };
+  } catch (error) {
+    return failed("find groups failed", error);
+  }
+}

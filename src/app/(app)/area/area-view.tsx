@@ -715,7 +715,8 @@ export default function AreaView({
           )}
           {shown.length > 0 ? (
             <ul>
-              {shown.map((s) => (
+              {/* The compared quotes are in the chart above, so not listed twice. */}
+              {shown.filter((s) => !quotes.some((q) => q.id === s.id) || quotes.length < 2).map((s) => (
                 <SupplierRow key={s.id} s={s} />
               ))}
             </ul>

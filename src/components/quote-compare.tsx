@@ -7,7 +7,7 @@ const OVER_STRIPES = { background: "repeating-linear-gradient(135deg,#B5523B 0 3
  * Quotes side by side against what's left of the budget (canvas 3 "Money ·
  * Comparing quotes", B, with A's tap-for-the-card; owner, 17 Oct 2026). One
  * bar per quote, cheapest first; a black line marks the room left in the
- * budget, and a quote past it runs on in rose stripes with "▲ Over by £…"
+ * budget (a tick through each bar), and a quote past it runs on in rose stripes with "▲ Over by £…"
  * in words (never colour alone). Each row is wrapped by `row` so the page
  * decides what a tap opens (the supplier's card).
  */
@@ -42,7 +42,6 @@ export default function QuoteCompare({
         </p>
       )}
       <ul className="relative">
-        {line && <span aria-hidden className="absolute inset-y-0 w-[1.5px] bg-ink" style={{ left: line }} />}
         {sorted.map((q, i) => {
           const over = room !== null && q.quote > room;
           const cheapest = i === 0 && sorted.length > 1;
@@ -65,6 +64,8 @@ export default function QuoteCompare({
                       className={`absolute inset-y-0 left-0 bg-champagne-400/60 ${over ? "rounded-l-full" : "rounded-full"}`}
                       style={{ width: over ? (line ?? "0%") : pct(q.quote) }}
                     />
+                    {/* The budget line, through each bar only — not over the names and prices. */}
+                    {line && <span aria-hidden className="absolute -inset-y-1.5 z-10 w-[1.5px] bg-ink" style={{ left: line }} />}
                     {over && (
                       <span
                         className={`absolute -inset-y-0.5 ${line ? "rounded-r-full" : "rounded-full"}`}

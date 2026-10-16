@@ -112,6 +112,10 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
   const Icon = areaIcon(area.key || "other", area.icon);
   const { suppliers, toPay, paid, balances } = area.detail;
   const live = suppliers.filter((s) => s.status !== "cancelled");
+  // Two or more quotes and no one booked: they're compared in the chart, so not listed again under it.
+  const quoted = live.filter((s) => s.status === "quoted" && s.quote > 0);
+  const comparing = area.key && !live.some((s) => s.status === "booked") && quoted.length >= 2 ? quoted : [];
+  const listed = live.filter((s) => !comparing.includes(s));
   const addPayment = area.key ? `/money/payments/new?area=${encodeURIComponent(area.key)}` : "/money/payments/new";
 
   return (
@@ -170,9 +174,9 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
             <section className="mt-7">
               <h3 className="section-label">Suppliers</h3>
               {/* Two or more quotes and no one booked: compare them; a tap opens their card on the area page, where you decide. */}
-              {area.key && !live.some((s) => s.status === "booked") && live.filter((s) => s.status === "quoted" && s.quote > 0).length >= 2 && (
+              {comparing.length > 0 && (
                 <QuoteCompare
-                  quotes={live.filter((s) => s.status === "quoted" && s.quote > 0).map((s) => ({ id: s.id, name: s.name, quote: s.quote }))}
+                  quotes={comparing.map((s) => ({ id: s.id, name: s.name, quote: s.quote }))}
                   room={area.budget !== null ? area.budget - area.committed : null}
                   row={(id, className, children) => (
                     <Link href={`/area/${encodeURIComponent(area.key)}?supplier=${id}`} className={className}>
@@ -182,7 +186,7 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
                 />
               )}
               <ul className="mt-1">
-                {live.map((s) => (
+                {listed.map((s) => (
                   <li key={s.id} className="row-press border-b border-linen last:border-b-0">
                     <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3">
                       <StageIcon status={s.status} small />

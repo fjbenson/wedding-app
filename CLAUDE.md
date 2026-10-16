@@ -1505,6 +1505,26 @@ additive — new tables hanging off `weddings`. None require changing the above.
      `setTodoDate`, `tickTodo`, `markPaymentPaid`) check the thing belongs to
      this wedding before touching it. Not yet: renaming, changing a
      supplier or appointment, un-ticking, taking out of a group, un-paying.
+   - **The general look-up** (17 Oct 2026, owner: "surely we don't have to
+     hand code everything"): `look_up` (`src/lib/lookup-general.ts`) reads
+     **any of 12 collections** — guests, households, groups, suppliers,
+     to-dos, appointments, payments, the run sheet (`moments`), tables,
+     stays, journeys, events — with filters (`is`, `contains`, `before`,
+     `after`, `empty`…), `count_by` and `sum` (the app counts and adds up, not
+     the AI), and shows a generic list/tally card (`lookup` block). It
+     **replaced `find_todos` / `find_payments` / `find_groups`**; the five
+     visual lookups (guests, money, this week, seating, suppliers) stay for
+     now. **What it can read is the list in that file** (rule one): never
+     notes, files, Inspo, addresses, or a guest's phone/email (only "has
+     one"); a supplier's phone, email and website are included. To add a
+     collection or field, edit that file only. **Direction agreed with the
+     owner:** a small set of general tools (look up · add · change a
+     detail · note · take me to…) with a short description per kind of
+     thing, and specific tools only where rules need protecting (household,
+     day/evening, invitation status). **Still to do:** the general "change a
+     detail", the general "add", "take me to…", and a 30-question test of
+     what it answers (before/after). Not tested against the live database
+     yet.
    - **How it acts (agreed with the owner, 13 Oct 2026):** never raw changes
      to the data — a short list of named actions, the same ones the forms
      use (add a guest, set an RSVP, add a to-do…), so it follows the same

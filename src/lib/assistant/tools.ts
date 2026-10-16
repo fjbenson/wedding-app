@@ -13,6 +13,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { DIETARY_NEEDS, joinNeeds, needsOf } from "@/lib/dietary";
 import { addNote } from "@/lib/jobs";
+import { collectionGuide, COLLECTION_NAMES, FILTER_OPS, lookUp, type Filter } from "@/lib/lookup-general";
 import { findGroups, findGuests, findPayments, findSuppliers, findTodos, guestChoices, moneySummary, overview, seating, supplierChoices, thisWeek, type Overview } from "@/lib/lookups";
 import { formatLongDate } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -179,26 +180,41 @@ export const TOOLS: Tool[] = [
     },
   },
   {
-    name: "find_todos",
-    description:
-      "Find to-dos by words in the title (open ones unless include_done), with their ids, due dates and areas. Use it before changing or ticking off a to-do. Not shown to the couple, so say what you found if it matters.",
-    input_schema: { type: "object", properties: { text: str, include_done: { type: "boolean" } } },
-  },
-  {
-    name: "find_payments",
-    description:
-      "Find payments by words in what they're for (still to pay unless include_paid), with their ids, amounts and due dates. Use it before marking one as paid. Not shown to the couple.",
-    input_schema: { type: "object", properties: { text: str, include_paid: { type: "boolean" } } },
-  },
-  {
-    name: "find_groups",
-    description: "The couple's groups of guests (e.g. 'Staying at the pub'), with ids and how many are in each. Use it before adding someone to a group.",
-    input_schema: { type: "object", properties: { name: str } },
+    name: "look_up",
+    description: `Look something up in the couple's wedding: any of the collections below. Narrow it with filters, and ask the app to count (count_by) or add up (sum) rather than doing sums yourself. Rows come back with their ids, for changing things afterwards. Use this for anything the other lookups don't cover — appointments, to-dos, payments, the run sheet, groups, places to stay, journeys, events, household and meal breakdowns. A list is shown under your reply unless show is false (use false for a single fact like a time or a phone number, and say it in words).\n${collectionGuide()}`,
+    input_schema: {
+      type: "object",
+      properties: {
+        collection: { type: "string", enum: COLLECTION_NAMES },
+        text: { ...str, description: "Words to find in a name or title" },
+        filters: {
+          type: "array",
+          description: "All must match. 'is' on a list field means it contains that item. Dates are yyyy-mm-dd; for before/after use a date or number. Booleans: true or false.",
+          items: {
+            type: "object",
+            properties: {
+              field: str,
+              op: { type: "string", enum: [...FILTER_OPS] },
+              value: { type: ["string", "number", "boolean"] },
+            },
+            required: ["field", "op"],
+          },
+        },
+        count_by: { ...str, description: "A field to count the matches by, e.g. meal, dietary, area, answer" },
+        sum: { ...str, description: "A number field to add up over the matches, e.g. amount, quote" },
+        sort_by: str,
+        descending: { type: "boolean" },
+        limit: { type: "number", description: "Rows to return, up to 50 (default 20)" },
+        title: { ...str, description: "A short heading for the list shown, e.g. 'Cake tasting'" },
+        show: { type: "boolean", description: "Show the list under your reply (default true)" },
+      },
+      required: ["collection"],
+    },
   },
   {
     name: "move_guest",
     description:
-      "Propose moving one guest to another household (use find_guests for their id, wedding_overview for household ids), or to a new household, or out of any. Shows a before-and-after card; nothing changes until Yes.",
+      "Propose moving one guest to another household (use find_guests or look_up for their id, wedding_overview for household ids), or to a new household, or out of any. Shows a before-and-after card; nothing changes until Yes.",
     input_schema: {
       type: "object",
       properties: {
@@ -222,22 +238,22 @@ export const TOOLS: Tool[] = [
   },
   {
     name: "add_guest_to_group",
-    description: "Propose adding a guest to one of the couple's groups (ids from find_groups). Shows a card; nothing changes until Yes. You can't take anyone out of a group.",
+    description: "Propose adding a guest to one of the couple's groups (ids from look_up on groups). Shows a card; nothing changes until Yes. You can't take anyone out of a group.",
     input_schema: { type: "object", properties: { guest_id: str, group_id: str }, required: ["guest_id", "group_id"] },
   },
   {
     name: "set_todo_date",
-    description: "Propose changing a to-do's date (ids from find_todos), or clearing it with no_date. Shows a card; nothing changes until Yes.",
+    description: "Propose changing a to-do's date (ids from look_up), or clearing it with no_date. Shows a card; nothing changes until Yes.",
     input_schema: { type: "object", properties: { todo_id: str, due_date: date, no_date: { type: "boolean" } }, required: ["todo_id"] },
   },
   {
     name: "tick_todo",
-    description: "Propose ticking a to-do off as done (ids from find_todos). Shows a card; nothing changes until Yes.",
+    description: "Propose ticking a to-do off as done (ids from look_up). Shows a card; nothing changes until Yes.",
     input_schema: { type: "object", properties: { todo_id: str }, required: ["todo_id"] },
   },
   {
     name: "mark_payment_paid",
-    description: "Propose marking a payment as paid (ids from find_payments), today unless paid_on is given. Shows a card; nothing changes until Yes.",
+    description: "Propose marking a payment as paid (ids from look_up), today unless paid_on is given. Shows a card; nothing changes until Yes.",
     input_schema: { type: "object", properties: { payment_id: str, paid_on: date }, required: ["payment_id"] },
   },
   {
@@ -279,6 +295,7 @@ export interface ToolOutcome {
   block?: Block;
 }
 
+const cap = (w: string) => w.replace(/^\w/, (c) => c.toUpperCase());
 const fail = (message: string): ToolOutcome => ({ result: JSON.stringify({ error: message }), isError: true });
 const STEPS_STARTED = JSON.stringify({
   status:
@@ -377,19 +394,54 @@ export async function runTool(name: string, input: Input, id: string): Promise<T
       return { result: STEPS_STARTED, block: step };
     }
 
-    case "find_todos": {
-      const r = await findTodos({ text: text(input.text) ?? undefined, includeDone: flag(input.include_done) });
-      return r.ok ? { result: JSON.stringify({ count: r.count, todos: r.todos }) } : fail(r.error);
-    }
-
-    case "find_payments": {
-      const r = await findPayments({ text: text(input.text) ?? undefined, includePaid: flag(input.include_paid) });
-      return r.ok ? { result: JSON.stringify({ count: r.count, payments: r.payments }) } : fail(r.error);
-    }
-
-    case "find_groups": {
-      const r = await findGroups({ name: text(input.name) ?? undefined });
-      return r.ok ? { result: JSON.stringify({ groups: r.groups }) } : fail(r.error);
+    case "look_up": {
+      const r = await lookUp({
+        collection: text(input.collection) ?? "",
+        text: text(input.text) ?? undefined,
+        filters: Array.isArray(input.filters)
+          ? input.filters
+              .filter((f): f is Record<string, unknown> => !!f && typeof f === "object")
+              .map((f) => ({
+                field: text(f.field) ?? "",
+                op: (text(f.op) ?? "is") as Filter["op"],
+                value: ["string", "number", "boolean"].includes(typeof f.value) ? (f.value as string | number | boolean) : null,
+              }))
+          : undefined,
+        count_by: text(input.count_by) ?? undefined,
+        sum: text(input.sum) ?? undefined,
+        sort_by: text(input.sort_by) ?? undefined,
+        descending: flag(input.descending),
+        limit: typeof input.limit === "number" ? input.limit : undefined,
+      });
+      if (!r.ok) return fail(r.error);
+      const show = flag(input.show) !== false && (r.rows.length > 0 || !!r.counts);
+      const MONEY = ["amount", "quote", "deposit_paid"];
+      const shown = (v: unknown, field = "") =>
+        typeof v === "number" ? (MONEY.includes(field) ? formatMoney(v) : String(v)) : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? formatLongDate(v) : Array.isArray(v) ? v.join(", ") : v == null ? "" : String(v);
+      return {
+        result: JSON.stringify({
+          collection: r.collection,
+          total: r.total,
+          rows: r.rows,
+          counts: r.counts,
+          sum: r.sum,
+          shownUnderYourReply: show,
+        }),
+        block: show
+          ? {
+              type: "lookup",
+              title: text(input.title) ?? cap(r.collection),
+              total: r.total,
+              counts: r.counts?.slice(0, 12),
+              sum: r.sum ? { label: r.sum.field.replace(/_/g, " "), total: formatMoney(r.sum.total) } : undefined,
+              rows: r.rows.map((row) => ({
+                primary: shown(row[r.display.primary], r.display.primary) || "—",
+                secondary: r.display.secondary.map((f) => shown(row[f], f)).filter(Boolean).join(" · "),
+              })),
+              link: r.link,
+            }
+          : undefined,
+      };
     }
 
     case "add_payment": {

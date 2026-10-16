@@ -164,6 +164,7 @@ export interface AppointmentStepsBlock {
 }
 
 export type Block =
+  | { type: "lookup"; title: string; total: number; counts?: { value: string; count: number }[]; sum?: { label: string; total: string }; rows: { primary: string; secondary: string }[]; link: string }
   | GuestStepsBlock
   | TodoStepsBlock
   | PaymentStepsBlock

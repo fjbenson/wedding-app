@@ -279,6 +279,38 @@ export default function AnswerBlock({ block, onGo }: { block: Block; onGo: () =>
       );
     }
 
+    case "lookup": {
+      const rows = block.rows.slice(0, SHOWN);
+      return (
+        <div className={CARD}>
+          <Big n={String(block.total)} title={block.title} meta={block.sum ? `${block.sum.total} ${block.sum.label}` : undefined} />
+          {block.counts && block.counts.length > 0 && (
+            <div className="border-t border-linen px-4 py-2.5">
+              {block.counts.map((c) => (
+                <div key={c.value} className="flex items-baseline gap-2 py-1 text-sm">
+                  <span className="text-ink">{c.value}</span>
+                  <span className="mb-1 flex-1 border-b border-dotted border-linen" aria-hidden />
+                  <span className="font-display text-champagne-600">{c.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {rows.map((row, i) => (
+            <div key={i} className={ROW}>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] text-ink">{row.primary}</span>
+                {row.secondary && <span className="block truncate text-xs text-stone">{row.secondary}</span>}
+              </span>
+            </div>
+          ))}
+          {block.total > rows.length && !block.counts && (
+            <p className="border-t border-linen px-4 py-2 text-xs text-stone">And {block.total - rows.length} more</p>
+          )}
+          <OpenLink href={block.link} label="Open it" onGo={onGo} />
+        </div>
+      );
+    }
+
     case "confirm":
     case "guest_steps":
     case "todo_steps":

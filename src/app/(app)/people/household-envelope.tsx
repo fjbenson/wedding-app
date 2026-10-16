@@ -185,11 +185,16 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
   );
 }
 
-/** The back's fold: a line from each bottom corner up to the flap's tip, so with the flap's own edges they make one cross. */
+/**
+ * The back's folds: a line from every corner to the flap's tip — one full
+ * cross. With the flap shut its edges lie exactly on the top two; with it
+ * open (folded up out of the way) the top two still show, so the cross stays
+ * whole (owner, 16 Oct 2026: before, only the bottom V was left).
+ */
 function Seams() {
   return (
     <svg aria-hidden viewBox="0 0 342 236" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-      <path d="M1 235 L171 103 L341 235" fill="none" stroke="#E2D5BC" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <path d="M1 1 L171 103 L341 1 M1 235 L171 103 L341 235" fill="none" stroke="#E2D5BC" strokeWidth="1" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }

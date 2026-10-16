@@ -4,7 +4,7 @@ import Link from "next/link";
 import AddButton from "@/components/add-button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronRight, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, LayoutList, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import PageTitle from "@/components/page-title";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
@@ -199,8 +199,8 @@ export default function SupplierList({
           </div>
 
           <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
-            <FilterMenu rows={filterRows} areaCount={areas.length} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
             <SortMenu sort={sort} onSort={setSort} />
+            <FilterMenu rows={filterRows} areaCount={areas.length} on={filters} onToggle={toggle} onClear={() => setFilters([])} />
           </div>
           {filters.length > 0 && (
             <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
@@ -434,7 +434,7 @@ function FilterMenu({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
           <div className="flex items-baseline justify-between py-1">
             <span className="section-label">Show only</span>
             {active > 0 && (
@@ -477,7 +477,7 @@ function FilterMenu({
   );
 }
 
-/** "BY AREA ⌄" on the line above the list — the guest list's Sort, for suppliers. */
+/** "☰ Area ⌄" on the line above the list, on the left with Filter on the right — the guest list's View, for suppliers (owner, 17 Oct 2026). */
 function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -502,16 +502,17 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`Sort: ${current.label}`}
+        aria-label={`View: ${current.label}`}
         onClick={() => setOpen((o) => !o)}
-        className="type-meta flex h-9 items-center gap-1 hover:text-ink"
+        className="type-meta flex h-9 items-center gap-1.5 hover:text-ink"
       >
-        {current.short}
+        <LayoutList className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+        {current.label.replace(", A–Z", "")}
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[14rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
-          <span className="section-label block py-1">Sort by</span>
+        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[14rem] rounded-[20px] border border-linen bg-white px-4 pb-1.5 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]">
+          <span className="section-label block py-1">View</span>
           <ul>
             {SORTS.map((o) => (
               <li key={o.key} className="border-t border-linen first:border-t-0">

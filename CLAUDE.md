@@ -313,8 +313,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   person, then round **Call** and **Email** buttons on the right; no quote
   on the row. A missing phone or email shows as a **faded dashed button**
   that opens the card with that box ready to type in (`editField` →
-  `TextRow startEditing`). A key under the list. **Sort** (like the guest
-  list, on the Filter line): By area (default) or Name, A–Z
+  `TextRow startEditing`). A key under the list. **View** (like the guest
+  list's, on the left with Filter on the right since 17 Oct 2026; was Sort): By area (default) or Name, A–Z
   (one plain list like the guest list, no letter dividers; a leading "The" ignored); kept on the phone
   (`supplier-list-sort` in localStorage). Tapping one opens the **supplier card**
   (`supplier-card.tsx`, a sheet / right panel like the guest card) — **since

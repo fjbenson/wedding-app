@@ -455,7 +455,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   meet in a full cross. Name / Address rows with Change, Copy
   (`renameHouseholdAction`, `saveAddressAction`) moved to a card under
   "Guests" (`HouseholdDetails`). The "Who's in it" card is now headed
-  **Guests**, and the page's headings are grey (`.section-label`), not gold. Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
+  **Guests**, with an **RSVP** column on the right: each person's answer in
+  words for a household (Coming · Not answered · Not invited yet · Can't
+  come) and the guest list's answer icon. `.label` and `.section-label`
+  now set the sans font themselves: on an `h2`/`h3` the headings' serif had
+  been leaking in, which is why gold capitals looked serif on some screens. Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
   Email** (they reach the household's people — straight through if one has
   a number, a pick-list if several, hidden if none), then "Who's in it" on
   a glass card (small initials, name, ›; owner preferred it to the guest

@@ -4,10 +4,10 @@ import { ownNeeds } from "@/lib/dietary";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
+import { ChevronLeft, Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
-import { eventWord } from "./guest-browser";
+import { AnswerIcon, eventWord } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
 import HouseholdEnvelope, { HouseholdDetails } from "./household-envelope";
@@ -51,6 +51,10 @@ export default function HouseholdView({
     .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
   const answersOf = (g: Contact) => rsvps.filter((r) => r.contact_id === g.id);
   const ownEvent = (g: Contact) => events.find((e) => answersOf(g).some((r) => r.event_id === e.id));
+  const statusOf = (g: Contact) => {
+    const e = ownEvent(g);
+    return e ? answersOf(g).find((r) => r.event_id === e.id)?.status : undefined;
+  };
 
   // "3 people · 1 child · day guests"
   const children = people.filter((p) => p.is_child).length;
@@ -71,7 +75,7 @@ export default function HouseholdView({
         <Link href="/people" aria-label="Back to the guest list" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-cream">
           <ChevronLeft className="h-6 w-6" strokeWidth={1.6} aria-hidden />
         </Link>
-        <span className="section-label">Household</span>
+        <span className="label">Household</span>
         <span className="w-11" aria-hidden />
       </div>
 
@@ -99,8 +103,8 @@ export default function HouseholdView({
       {/* Guests, on a card of its own (canvas 3 "Household · Round 3"). */}
       <section className="mt-7 rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-1.5 pt-4 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
         <div className="flex items-baseline justify-between">
-          <h2 className="section-label">Guests</h2>
-          <span className="text-xs text-stone">{people.length}</span>
+          <h2 className="label">Guests</h2>
+          <span className="label">RSVP</span>
         </div>
         {people.length === 0 ? (
           <p className="py-3 text-sm text-stone">No one in this household yet.</p>
@@ -120,7 +124,10 @@ export default function HouseholdView({
                     {fullName(g)}
                     {g.is_child && <em className="ml-1.5 font-display text-stone">child</em>}
                   </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-champagne-400" strokeWidth={1.8} aria-hidden />
+                  <span className="flex shrink-0 items-center gap-2 text-[13px] text-stone">
+                    {RSVP_WORD[statusOf(g) ?? "unset"]}
+                    <AnswerIcon status={statusOf(g)} small />
+                  </span>
                 </button>
               </li>
             ))}
@@ -154,6 +161,15 @@ export default function HouseholdView({
     </main>
   );
 }
+
+/** Each guest's answer, worded for a household: the invitation's been sent, have they replied? */
+const RSVP_WORD: Record<Rsvp["status"] | "unset", string> = {
+  attending: "Coming",
+  pending: "Not answered",
+  to_invite: "Not invited yet",
+  declined: "Can't come",
+  unset: "Day or evening?",
+};
 
 /**
  * Text · Call · Email for the household, as round buttons with their word

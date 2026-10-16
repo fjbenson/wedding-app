@@ -136,13 +136,14 @@ body::before {
   }
 
   /* "THE WEDDING OF", card labels, caps links — champagne small capitals. */
+  /* font-body: on an h2 or h3 the headings' serif would otherwise leak in (16 Oct 2026). */
   .label {
-    @apply text-xs font-medium uppercase tracking-label text-champagne-600;
+    @apply font-body text-xs font-medium uppercase tracking-label text-champagne-600;
   }
 
   /* "COMING UP", "SUPPLIERS" — the heading above a card, in stone. */
   .section-label {
-    @apply text-xs font-medium uppercase tracking-label text-stone;
+    @apply font-body text-xs font-medium uppercase tracking-label text-stone;
   }
 
   /* A row's title in a list: "Send save-the-dates". */

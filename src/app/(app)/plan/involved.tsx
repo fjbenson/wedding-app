@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
@@ -22,6 +22,7 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string>();
+  const box = useRef<HTMLInputElement>(null);
   const names = new Map(involved.guests.map((g) => [g.id, g.name]));
 
   const set = async (contactId: string, on: boolean) => {
@@ -38,7 +39,10 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
   };
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const matches = involved.guests.filter((g) => !ids.includes(g.id) && words.every((w) => g.name.toLowerCase().includes(w))).slice(0, 8);
+  // Only while typing: a tap makes them a pill and empties the search for the next (owner, 17 Oct 2026).
+  const matches = words.length
+    ? involved.guests.filter((g) => !ids.includes(g.id) && words.every((w) => g.name.toLowerCase().includes(w))).slice(0, 8)
+    : [];
 
   return (
     <fieldset className="mt-7 min-w-0">
@@ -83,6 +87,7 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <input
+                ref={box}
                 type="search"
                 autoFocus
                 value={query}
@@ -96,10 +101,10 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
               Done
             </button>
           </div>
-          <ul className={`${CARD} px-4`}>
+          {words.length > 0 && <ul className={`${CARD} px-4`}>
             {matches.map((g) => (
               <li key={g.id} className="border-b border-linen last:border-b-0">
-                <button type="button" onClick={() => set(g.id, true)} className="flex min-h-[48px] w-full items-center gap-3 py-2 text-left">
+                <button type="button" onClick={() => (set(g.id, true), setQuery(""), box.current?.focus())} className="flex min-h-[48px] w-full items-center gap-3 py-2 text-left">
                   <span aria-hidden className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cream text-[11px] font-medium text-stone">
                     {initialsOf(g.name)}
                   </span>
@@ -111,7 +116,7 @@ export function InvolvedPart({ kind, id, involved }: { kind: "todo" | "appointme
             {matches.length === 0 && (
               <li className="py-4 text-sm text-stone">{involved.guests.length ? "No one matches that." : "No one on the guest list yet."}</li>
             )}
-          </ul>
+          </ul>}
         </div>
       )}
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}

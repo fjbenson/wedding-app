@@ -725,7 +725,11 @@ function AnswersCard({
       >
         <span className="type-meta text-champagne-600">Guests</span>
         <span>
-          <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-champagne-600" : "text-ink"}`}>{total}</span>
+          <span
+            className={`type-figure block leading-none ${total >= 100 ? "text-[50px] sm:text-[56px]" : "text-[64px] sm:text-[72px]"} ${all ? "text-champagne-600" : "text-ink"}`}
+          >
+            {total}
+          </span>
           <span className="mt-1.5 block text-xs text-stone">
             {total === 1 ? "guest" : "guests"} · {homes} {homes === 1 ? "home" : "homes"}
           </span>
@@ -753,16 +757,6 @@ function AnswersCard({
             </button>
           );
         })}
-        {counts.declined > 0 && (
-          <button
-            type="button"
-            aria-pressed={showing === "declined"}
-            onClick={() => onShow(showing === "declined" ? "all" : "declined")}
-            className={`mt-0.5 self-start rounded-lg px-2 py-1 text-[13px] underline-offset-4 hover:text-ink hover:underline ${showing === "declined" ? "font-medium text-ink underline" : "text-stone"}`}
-          >
-            {counts.declined} can&apos;t come ›
-          </button>
-        )}
       </div>
     </section>
   );

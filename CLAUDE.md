@@ -222,9 +222,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   with **three small numbers** beside it — Coming · Invited · To invite, the
   furthest step first like Suppliers (owner, 17 Oct 2026; it was four, which
   felt messy). **The big number is everyone still expected** (those three
-  added up), so people who can't come aren't in it; they're one quiet "5
-  can't come ›" line under the three (tap to show just them; the list itself
-  still shows everyone, can't-come faded with their ✕) — every one is a button
+  added up), so people who can't come aren't in it (no line about them on the card —
+  it looked off, owner 17 Oct 2026; **View › RSVP** shows them under "Can't
+  come", and the list itself still shows everyone, can't-come faded with
+  their ✕). The big number is large (64px, 50px from 100 guests up) — every one is a button
   that shows just those people. **The card counts whatever the filters
   leave**, by each guest's answer for their own event. Then search with a
   **Filter** button that drops down a small menu (Day guests · Evening

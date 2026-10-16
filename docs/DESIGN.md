@@ -29,10 +29,21 @@ ring on a champagne cover described further down:
   day number in `champagne-600`.
 - **Glass cards below** (`.glass-card`): "coming up" and Inspo, straight on the paper
   (the soft glows behind them were taken out 12 Oct 2026 with the satin).
+  **16 Oct 2026:** lighter and airier — a 0.5px edge (no thick white rim or
+  inner highlight), 55% white, a soft wide shadow, and **no backdrop blur**
+  (it left a seam across the screen on iPhones). Only floating things (menu
+  bar, pen) are frosted.
+- **Tab tops (16 Oct 2026, canvas 3 "Tab tops · Round 1", A):** one row —
+  the title (Fraunces 32px) left, the view switch right; no back arrow, no
+  title drawings.
+- **Rows (16 Oct 2026):** to-dos, appointments and payments share one row —
+  the date large on the left (`DateStamp`), title and a grey line, the mark
+  on the right (tick / calendar / £).
 - **Background: paper under a lamp** (canvas 2, "Background · Round 2 ·
   Not boring, not amateur", option A, owner's pick 12 Oct 2026) — one light
   source: near-white at the top of the screen warming to a deeper ivory
-  (`#EFE5D5`) below and at the edges (`body::before` in `globals.css`). A
+  (`#EFE5D5`) below and at the edges (`body::before` in `globals.css`). **16 Oct 2026:** the light is whiter at the
+  top (from the canvas mock-ups) and the ground a touch lighter, `#EFE7DA`. A
   paper grain on top was tried and dropped the same day (owner: "doesn't
   feel right") — no texture. History: round 14's champagne
   satin (diagonal stripes) looked cheap; plain paper with a faint grain

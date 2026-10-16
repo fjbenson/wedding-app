@@ -1095,7 +1095,19 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 14 Oct 2026 afternoon chat):**
+   `calendar.tsx`). **Next up (end of the 15–16 Oct 2026 chat):** built this
+   chat — delegation agreed (top of these notes); the four plain forms made
+   visual; groups on Seating; the assistant writes group messages; area page
+   tidy + a black + per section; 16px side margins; Plan calendar on a card
+   with a month list; **one row for to-dos, appointments and payments**
+   (date left, mark right); **tab tops in one row** (no back arrow, no
+   drawings); lighter background and glass cards. The owner checks on the
+   phone: Money's area cards (is the seam under each row gone? if not, try
+   the shadows), The Day's title beside its 3-way switch, Money's By month
+   rows. Then: the other tabs' lists against the same eye (People rows, The
+   Day), the title drawing question for Your notes / Inspo / Settings is now
+   moot (no drawings), and the backlog.
+   **Earlier next-up (end of the 14 Oct 2026 afternoon chat):**
    built this chat — the household **envelope**, the guest card's **profile**
    (canvas 3 round 2, A), and **groups of guests** with emailing / texting a
    group (0019 run). The owner tries them on the phone (the envelope's turn,

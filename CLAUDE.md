@@ -446,11 +446,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   few flecks and a gold double border, the name in calligraphy (Pinyon
   Script, `font-script`, loaded in `layout.tsx` for this alone) and the
   address in plain italic. Tap it: it turns over (wax seal with the
-  initial), the flap opens and **the invitation** slides out — first names,
-  "to the day · date", each person's answer (tap one for their card), and
-  Name / Address rows with Change, Copy (`renameHouseholdAction`,
-  `saveAddressAction`); "Put it back" reverses it; reduce motion skips the
-  movement. Then "3 people · 1 child · day guests", round **Text · Call ·
+  initial), the flap opens and **the invitation** slides out — **simplified
+  16 Oct 2026 (owner)**: the household's name in calligraphy, then each
+  person's full name (tap for their card), then "to the day · date" when
+  they're all invited to the same part (if mixed, evening guests say
+  "evening" after their name); no answers. **Tapping the envelope again**
+  puts it back (the "Put it back" button is gone); the back's folds now
+  meet in a full cross. Name / Address rows with Change, Copy
+  (`renameHouseholdAction`, `saveAddressAction`) moved to a card under
+  "Who's in it" (`HouseholdDetails`). Reduce motion skips the movement. Then "3 people · 1 child · day guests", round **Text · Call ·
   Email** (they reach the household's people — straight through if one has
   a number, a pick-list if several, hidden if none), then "Who's in it" on
   a glass card (small initials, name, ›; owner preferred it to the guest

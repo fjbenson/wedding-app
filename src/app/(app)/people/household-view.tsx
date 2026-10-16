@@ -10,7 +10,7 @@ import GuestCard from "./guest-card";
 import { eventWord } from "./guest-browser";
 import { fullName, initials } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
-import HouseholdEnvelope from "./household-envelope";
+import HouseholdEnvelope, { HouseholdDetails } from "./household-envelope";
 import type { GroupSummary } from "./guest-groups";
 import { updateGuestAction } from "./actions";
 import type { TravelInfo } from "./guest-travel";
@@ -18,7 +18,8 @@ import type { TravelInfo } from "./guest-travel";
 /**
  * One household (screen 9). Since 14 Oct 2026 topped by its envelope
  * (`household-envelope.tsx`, canvas 3 "Household · Round 3"): the address on
- * the front, the invitation and answers inside. Then Text · Call · Email, and
+ * the front, the invitation (who's in it) inside; name and address to change
+ * on a card further down. Then Text · Call · Email, and
  * who's in it — the guest list's own rows, opening each person's card right
  * here.
  */
@@ -50,10 +51,6 @@ export default function HouseholdView({
     .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
   const answersOf = (g: Contact) => rsvps.filter((r) => r.contact_id === g.id);
   const ownEvent = (g: Contact) => events.find((e) => answersOf(g).some((r) => r.event_id === e.id));
-  const statusOf = (g: Contact) => {
-    const e = ownEvent(g);
-    return e ? answersOf(g).find((r) => r.event_id === e.id)?.status : undefined;
-  };
 
   // "3 people · 1 child · day guests"
   const children = people.filter((p) => p.is_child).length;
@@ -83,7 +80,6 @@ export default function HouseholdView({
         people={people}
         events={events}
         ownEvent={ownEvent}
-        statusOf={statusOf}
         onOpenGuest={setOpenId}
       />
       <p className="mt-3.5 text-center text-[13px] text-stone">{summary}</p>
@@ -136,6 +132,8 @@ export default function HouseholdView({
         others={guests.filter((g) => g.household_id !== household.id)}
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
+
+      <HouseholdDetails household={household} />
 
       <RemoveHousehold household={household} />
 

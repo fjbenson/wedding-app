@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition } from "react";
-import { Check } from "lucide-react";
-import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
+import type { Contact, Household, WeddingEvent } from "@/types/db";
+import { eventWord } from "./guest-browser";
 import { formatLongDate } from "@/lib/dates";
 import { renameHouseholdAction, saveAddressAction } from "./household-actions";
 
@@ -12,9 +12,11 @@ import { renameHouseholdAction, saveAddressAction } from "./household-actions";
  * business card and guests a place card). The front is only the address: the
  * name in calligraphy, the address in plain italic, a fine gold border, on
  * crisp white card with a few flecks. Tap it and it turns over, the flap
- * opens and the invitation slides out: who it's for, which part of the day,
- * each person's answer, and the household's name and address to change.
- * "Put it back" slides it in, closes the flap and turns it to the front.
+ * opens and the invitation slides out: the household's name and who's in it
+ * (owner, 16 Oct 2026: just the list — the name had been on it three times).
+ * Tapping the envelope again slides it in, closes the flap and turns it to
+ * the front (no "Put it back" button). The name and address are changed in
+ * `HouseholdDetails`, under the envelope.
  *
  * How it moves: the turn is a 3D flip of two faces. Once it's over, the flip
  * is swapped for a flat back (body, flap, invitation) that looks the same, so
@@ -26,14 +28,12 @@ export default function HouseholdEnvelope({
   people,
   events,
   ownEvent,
-  statusOf,
   onOpenGuest,
 }: {
   household: Household;
   people: Contact[];
   events: WeddingEvent[];
   ownEvent: (g: Contact) => WeddingEvent | undefined;
-  statusOf: (g: Contact) => Rsvp["status"] | undefined;
   onOpenGuest: (id: string) => void;
 }) {
   // turned: the faces are rotated; flat: the flat back is showing; open: flap up, invitation out.
@@ -117,19 +117,18 @@ export default function HouseholdEnvelope({
             className="absolute inset-x-3.5 z-[1] transition-[bottom,opacity] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none"
             style={{ bottom: open ? ENVELOPE - TUCKED : 8, opacity: open ? 1 : 0 }}
           >
-            <Invitation household={household} people={people} events={events} ownEvent={ownEvent} statusOf={statusOf} onOpenGuest={onOpenGuest} />
+            <Invitation household={household} people={people} events={events} ownEvent={ownEvent} onOpenGuest={onOpenGuest} />
           </div>
-          <div className="absolute inset-x-0 bottom-0 z-[2] rounded-md" style={{ height: ENVELOPE }}>
+          <button
+            type="button"
+            onClick={closeIt}
+            aria-label="Put the invitation back and turn the envelope over"
+            className="absolute inset-x-0 bottom-0 z-[2] block rounded-md"
+            style={{ height: ENVELOPE }}
+          >
             <Paper />
             <Seams />
-            <button
-              type="button"
-              onClick={closeIt}
-              className="absolute bottom-5 left-1/2 h-10 -translate-x-1/2 rounded-full border border-[#E2D5BC] bg-white px-5 text-[13px] text-ink hover:border-champagne-400"
-            >
-              Put it back
-            </button>
-          </div>
+          </button>
           <div
             className="pointer-events-none absolute inset-x-0 transition-[transform,z-index] duration-[360ms] ease-[cubic-bezier(.3,.7,.3,1)] [transform-origin:50%_0] motion-reduce:transition-none"
             style={{ bottom: ENVELOPE - 104, height: 104, zIndex: open ? 0 : 3, transform: `rotateX(${open ? 180 : 0}deg)`, transitionDelay: "0ms, 180ms" }}
@@ -184,11 +183,11 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
   );
 }
 
-/** The back's side seams, faint. */
+/** The back's folds: a line from each corner to the middle, meeting in a cross. */
 function Seams() {
   return (
     <svg aria-hidden viewBox="0 0 342 236" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-      <path d="M1 235 L132 128 M341 235 L210 128" fill="none" stroke="#EFE6D4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <path d="M1 1 L171 132 L341 1 M1 235 L171 132 L341 235" fill="none" stroke="#E6DAC3" strokeWidth="1" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -210,89 +209,72 @@ function Flap({ seal }: { seal?: string }) {
   );
 }
 
-const WORD: Record<Rsvp["status"], string> = {
-  attending: "Coming",
-  pending: "Invited",
-  to_invite: "To invite",
-  declined: "Can't come",
-};
-
-/** "Amy, Tom & Poppy" */
-function firstNames(people: Contact[]) {
-  const names = people.map((p) => p.first_name);
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : (names[0] ?? "");
-}
-
-/** The card inside: who it's for, the day, each answer, and the household's details. */
+/** The card inside: the household's name, then who's in it — tap a name for their card. */
 function Invitation({
   household,
   people,
   events,
   ownEvent,
-  statusOf,
   onOpenGuest,
 }: {
   household: Household;
   people: Contact[];
   events: WeddingEvent[];
   ownEvent: (g: Contact) => WeddingEvent | undefined;
-  statusOf: (g: Contact) => Rsvp["status"] | undefined;
   onOpenGuest: (id: string) => void;
 }) {
   const theirs = events.filter((e) => people.some((p) => ownEvent(p)?.id === e.id));
+  // Everyone invited to the same part: say it once. Mixed: each evening guest says so.
+  const one = theirs.length === 1 ? theirs[0] : undefined;
+  const mixed = theirs.length > 1;
   return (
-    <div className="relative rounded px-[22px] pb-4 pt-5 text-center shadow-[0_0_0_1px_#E6DCC8,0_-10px_24px_-18px_rgb(60_45_20/0.5)]">
+    <div className="relative rounded px-[22px] pb-6 pt-6 text-center shadow-[0_0_0_1px_#E6DCC8,0_-10px_24px_-18px_rgb(60_45_20/0.5)]">
       <Paper />
       <span aria-hidden className="pointer-events-none absolute inset-[7px] rounded-sm border border-[#D8C7A4]" />
       <div className="relative">
-        <p className="label">The invitation</p>
-        <p className="mt-1.5 font-display text-[21px] italic leading-tight text-ink">{people.length ? firstNames(people) : "No one in it yet"}</p>
-        {theirs.map((e) => (
-          <p key={e.id} className="mt-0.5 text-[13px] text-stone">
-            to <em className="font-display text-champagne-600">{e.name.replace(/^\w/, (c) => c.toLowerCase())}</em>
-            {e.starts_at && ` · ${formatLongDate(e.starts_at.slice(0, 10))}`}
-          </p>
-        ))}
-
-        {people.length > 0 && (
-          <>
-            <span aria-hidden className="mx-auto mb-1 mt-3 block h-px w-10 bg-[#D8C7A4]" />
-            <ul>
-              {people.map((p) => {
-                const status = statusOf(p);
-                return (
-                  <li key={p.id}>
-                    <button
-                      type="button"
-                      onClick={() => onOpenGuest(p.id)}
-                      className="flex min-h-9 w-full items-center justify-between gap-3 text-left text-sm text-ink hover:text-champagne-600"
-                    >
-                      <span>
-                        {p.first_name}
-                        {p.is_child && <em className="ml-1.5 font-display text-stone">child</em>}
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] ${
-                          status === "attending" ? "text-champagne-600" : "text-stone"
-                        }`}
-                      >
-                        {status === "attending" && <Check className="h-3 w-3" strokeWidth={3} aria-hidden />}
-                        {status ? WORD[status] : "Day or evening?"}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
+        <p className={`font-script leading-none text-ink ${household.name.length > 18 ? "text-[28px]" : "text-[34px]"}`}>{household.name}</p>
+        <span aria-hidden className="mx-auto mb-2 mt-3 block h-px w-10 bg-[#D8C7A4]" />
+        {people.length === 0 ? (
+          <p className="font-display text-[15px] italic text-stone">No one in it yet</p>
+        ) : (
+          <ul>
+            {people.map((p) => {
+              const own = ownEvent(p);
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => onOpenGuest(p.id)}
+                    className="min-h-9 w-full font-display text-[19px] italic leading-tight text-ink hover:text-champagne-600"
+                  >
+                    {p.first_name} {p.last_name}
+                    {mixed && own && own.id !== theirs[0].id && (
+                      <span className="ml-1.5 text-[14px] text-champagne-600">{eventWord(own)}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         )}
-
-        <div className="mt-2 border-t border-[#EFE9DF] pt-1 text-left">
-          <NameRow household={household} />
-          <AddressRow household={household} />
-        </div>
+        {one && (
+          <p className="mt-2 text-[13px] text-stone">
+            to <em className="font-display text-champagne-600">{one.name.replace(/^\w/, (c) => c.toLowerCase())}</em>
+            {one.starts_at && ` · ${formatLongDate(one.starts_at.slice(0, 10))}`}
+          </p>
+        )}
       </div>
     </div>
+  );
+}
+
+/** The household's name and address, to change or copy — on a card under the envelope. */
+export function HouseholdDetails({ household }: { household: Household }) {
+  return (
+    <section className="mt-4 rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 py-1.5 shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]">
+      <NameRow household={household} />
+      <AddressRow household={household} />
+    </section>
   );
 }
 

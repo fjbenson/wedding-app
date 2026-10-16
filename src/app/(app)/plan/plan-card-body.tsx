@@ -237,11 +237,18 @@ export function PaymentBody({
   const save = useSave("payment", p.id);
   const [paidOn, setPaidOn] = useState(p.paid_on ?? "");
   const [due, setDue] = useState(p.due_date ?? "");
-  const [area, setArea] = useState(p.area_key ?? "");
+  const known = new Set(areas.map((x) => x.key));
+  // With no area of its own a payment belongs to its supplier's (as Money counts it),
+  // so the card shows that one picked rather than none (owner, 17 Oct 2026).
+  const supplierArea = (id: string | null) => {
+    const a = suppliers.find((x) => x.id === id)?.area;
+    return a ? (known.has(a) ? a : "other") : "";
+  };
+  const [followsSupplier, setFollowsSupplier] = useState(!p.area_key);
+  const [area, setArea] = useState(p.area_key ?? supplierArea(p.contact_id));
   const [round, setRound] = useState(0);
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
-  const known = new Set(areas.map((x) => x.key));
   const original = p.area_key;
   const options = original && original !== "other" && !known.has(original) ? [...areas, { key: original, label: original }] : areas;
   const paid = !!paidOn;
@@ -309,9 +316,10 @@ export function PaymentBody({
           value={area}
           onChange={(v) => {
             setArea(v);
+            setFollowsSupplier(false);
             change({ area_key: v || null });
           }}
-          folded={!!p.area_key}
+          folded={!!area}
         />
       </Part>
 
@@ -333,7 +341,11 @@ export function PaymentBody({
                   const s = suppliers.find((x) => x.id === e.target.value);
                   const fields: Record<string, string | null> = { contact_id: e.target.value || null };
                   // Picking a supplier picks their area too, unless one's already chosen (as on the form).
-                  if (s?.area && !area) {
+                  if (followsSupplier) {
+                    // Still following its supplier: show the new one's area (nothing to save).
+                    setArea(supplierArea(e.target.value || null));
+                    setRound((r) => r + 1);
+                  } else if (s?.area && !area) {
                     const next = known.has(s.area) ? s.area : "other";
                     fields.area_key = next;
                     setArea(next);

@@ -58,8 +58,12 @@ export default function PaymentForm({
   const [due, setDue] = useState(payment?.due_date ?? "");
   const [paidOn, setPaidOn] = useState(payment?.paid_on ?? todayISO());
   const [supplier, setSupplier] = useState(payment?.contact_id ?? prefill?.supplier ?? "");
-  const [area, setArea] = useState(payment?.area_key ?? prefill?.area ?? "");
   const known = new Set(areas.map((a) => a.key));
+  // No area of its own: show its supplier's, the one Money counts it under.
+  const fromSupplier = suppliers.find((s) => s.id === payment?.contact_id)?.area;
+  const [area, setArea] = useState(
+    payment?.area_key ?? (fromSupplier ? (known.has(fromSupplier) ? fromSupplier : "other") : (prefill?.area ?? "")),
+  );
   const original = payment?.area_key;
   const options =
     original && original !== "other" && !known.has(original) ? [...areas, { key: original, label: original }] : areas;
@@ -162,7 +166,7 @@ export default function PaymentForm({
 
       <Part label="Area">
         {/* None picked means it follows the supplier's area, as before. */}
-        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} folded={!!payment?.area_key} />
+        <AreaTiles name="area" areas={options} otherValue="other" value={area} onChange={setArea} folded={!!payment && !!area} />
       </Part>
 
       {/* Nobody picked means the couple pay it; changed later on the payment's card. */}

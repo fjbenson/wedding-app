@@ -227,7 +227,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   column), and their answer as **one small
   round icon** on the right (canvas Round 14, option A: ✓ on gold coming — ink until 13 Oct 2026, when it was made gold and 26px so it doesn't compete with the black + —
   envelope on champagne invited, dashed envelope to invite, ✕ on grey
-  can't come, dashed ? not yet day or evening — `AnswerIcon`), with a key
+  can't come, dashed ? not yet day or evening — `AnswerIcon`; **16 Oct 2026**: 22px, Invited a solid gold ring, To invite a dashed gold one, Can't come a darker grey, so none fade into the page; and **no chevron** at the row's end — owner), with a key
   under the list. The laptop table shows the icon with its word. No
   household, diet or "child" under the name any more — those are on the
   card, in Filter, and in Sort › Household. Sun/moon icons were tried and

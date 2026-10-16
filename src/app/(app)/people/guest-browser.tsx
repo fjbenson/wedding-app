@@ -678,10 +678,12 @@ const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNo
   // Gold, not ink, and a little smaller (owner, 13 Oct 2026): black is kept
   // for the main action, the round +. Still darker than Invited's pale fill.
   attending: { ring: "bg-champagne-600 text-white", icon: <Check className="h-[55%] w-[55%]" strokeWidth={2.4} /> },
-  pending: { ring: "bg-champagne-100 text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
-  to_invite: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-400", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
-  declined: { ring: "bg-[#EEE9E1] text-[#8A837B]", icon: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
-  unset: { ring: "border-[1.5px] border-dashed border-champagne-400 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },
+  // Every answer has a ring as strong as Coming's fill, so none fade into the
+  // page (owner, 16 Oct 2026: Invited and Can't come were hard to see).
+  pending: { ring: "border-[1.5px] border-champagne-600 bg-white text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
+  to_invite: { ring: "border-[1.5px] border-dashed border-champagne-600 text-champagne-600", icon: <Mail className="h-1/2 w-1/2" strokeWidth={2} /> },
+  declined: { ring: "bg-[#D6D0C7] text-[#4F4A45]", icon: <X className="h-1/2 w-1/2" strokeWidth={2.4} /> },
+  unset: { ring: "border-[1.5px] border-dashed border-champagne-600 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },
 };
 
 export function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?: boolean }) {
@@ -689,7 +691,7 @@ export function AnswerIcon({ status, small = false }: { status?: Rsvp["status"];
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[26px] w-[26px] text-[15px]"}`}
+      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[22px] w-[22px] text-[13px]"}`}
     >
       {look.icon}
     </span>
@@ -780,7 +782,6 @@ export function GuestRow({
       </span>
       <AnswerIcon status={status} />
       <span className="sr-only">{answer.word}</span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
     </button>
   );
 }

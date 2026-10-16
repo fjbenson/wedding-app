@@ -418,15 +418,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **View sits on the left, Filter on the right** (owner: View is the bigger
   choice); the button is a list icon (same weight and colour as Filter's) and the current view's name ("☰ Household ⌄"). The numbers card (All ·
   Coming · Invited · Can't come) is unchanged.
-  **Filter has a second layer, "Narrow to"** (17 Oct 2026, owner: "filter to
-  specific members of a breakdown, e.g. veggies, and still get the headline
-  numbers"): under Show only and Groups, **Dietary needs ›**, **Bridal party
-  roles ›** and **Meal choice ›** each open a short list of the specific ones
-  with counts; tick one or several (any of them within a kind, every kind
-  together — Bridal party roles + Vegetarian = the vegetarians in the
-  bridal party). Each shows as a pill to take off; they live in the address
-  (`?s=diet:Vegetarian|role:Bridesmaid`) and the numbers card follows like
-  any filter.
+  **Filter is one list of things to filter by** (17 Oct 2026, owner picked
+  option A on canvas 3 "Guest list · Filter reimagined"; it replaced the
+  Show only / Groups / Narrow to mix, which felt higgledy-piggledy): rows
+  **Event · Group · Role on the day · Dietary needs · Meal choice · Age ·
+  Address**, each opening its own values with counts; tick several within a row (any
+  of them), rows combine (Bridesmaid + Vegetarian = vegetarian bridesmaids). Role and
+  Dietary start with an "Any" line (the Bridal party / Dietary needs filter);
+  ticking a value turns Any off, ticking Any clears the values. A row shows "2 picked".
+  Group stays one at a time (closes the menu). Specific picks live in the
+  address (`?s=diet:Vegetarian|role:Bridesmaid`), the numbers card follows.
+  The big Guests tile reads the number, then "39 households" (no repeated
+  "guests"). Option B (chips under the search) wasn't picked.
   **People who can't come** sit at the foot of the list in a **folded "Can't
   come" group** (open it with its chevron), so the list agrees with the
   Guests number; search and View › RSVP still show them in place.

@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import { Copy } from "lucide-react";
-import type { Rsvp } from "@/types/db";
 
 /**
- * The card at the top of the guest list once a filter is on (canvas 3
- * "Guest list · A card for every filter", owner, 14 Oct 2026). Filters narrow
- * the list, all together; this card adds up whoever is left: how many are
- * coming, large, with the other answers under it (each a button that shows
- * just those people, like the plain card's rows).
- *
- * Since 17 Oct 2026 (owner) it no longer adds up kinds — diets, roles, meals.
- * That's the list's job now: Sort › Dietary needs, Meal choice or Role gives
- * a heading per kind with its count, which you can fold. The one thing kept
- * here is "Copy the list for the caterer" when the list is about diets.
+ * Kinds of guest to add up (diets, roles, meals…), used for "Copy the list for
+ * the caterer". The card at the top of the guest list used to show a tally
+ * of these once a filter was on; since 17 Oct 2026 (owner) it's always the
+ * same numbers card, and the breakdown is the list's View instead.
  */
 
 export type SplitKind = "diet" | "role" | "meal" | "age" | "when";
@@ -39,73 +32,7 @@ export interface Split {
   copy?: string;
 }
 
-const LINK = "underline-offset-4 hover:text-ink hover:underline";
-
-/** The headline, switch and tally — inside the summary card here, or a group's card. */
-export function SummaryBody({
-  counts,
-  total,
-  homes,
-  showing,
-  onShow,
-  copy,
-}: {
-  counts: Record<Rsvp["status"], number>;
-  total: number;
-  homes: number;
-  showing: "all" | Rsvp["status"];
-  onShow: (s: "all" | Rsvp["status"]) => void;
-  /** Text for "Copy the list for the caterer"; left out, no button. */
-  copy?: string;
-}) {
-  const others: { status: Rsvp["status"]; word: string }[] = [
-    { status: "pending", word: "still to answer" },
-    { status: "to_invite", word: "to invite" },
-    { status: "declined", word: "can't come" },
-  ];
-  const toggle = (s: Rsvp["status"]) => onShow(showing === s ? "all" : s);
-
-  return (
-    <>
-      <button
-        type="button"
-        aria-pressed={showing === "attending"}
-        onClick={() => toggle("attending")}
-        className={`-mx-2 mt-2 flex items-baseline gap-2.5 rounded-2xl px-2 py-1 text-left transition ${showing === "attending" ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "hover:bg-white/60"}`}
-      >
-        <span className="type-figure text-[54px] font-light leading-none text-ink">{counts.attending}</span>
-        <span className="font-display text-xl italic text-champagne-600">coming</span>
-      </button>
-      <p className="mt-1 flex flex-wrap gap-x-1.5 text-[13px] text-stone">
-        {others
-          .filter((o) => counts[o.status] > 0)
-          .map((o, i) => (
-            <span key={o.status}>
-              {i > 0 && <span aria-hidden>· </span>}
-              <button
-                type="button"
-                aria-pressed={showing === o.status}
-                onClick={() => toggle(o.status)}
-                className={`${LINK} ${showing === o.status ? "font-medium text-ink underline" : ""}`}
-              >
-                {counts[o.status]} {o.word} ›
-              </button>
-            </span>
-          ))}
-        <span>
-          {others.some((o) => counts[o.status] > 0) && <span aria-hidden>· </span>}
-          of {total} {total === 1 ? "person" : "people"}
-          {homes > 0 && ` · ${homes} ${homes === 1 ? "home" : "homes"}`}
-        </span>
-      </p>
-
-      {copy && <CopyButton text={copy} label="Copy the list for the caterer" />}
-    </>
-  );
-}
-
-/** A pill that copies text; if the phone won't allow it, the text opens to select by hand. */
-function CopyButton({ text, label }: { text: string; label: string }) {
+export function CopyButton({ text, label }: { text: string; label: string }) {
   const [state, setState] = useState<"idle" | "copied" | "manual">("idle");
   async function copy() {
     try {
@@ -137,30 +64,5 @@ function CopyButton({ text, label }: { text: string; label: string }) {
         />
       )}
     </>
-  );
-}
-
-/** The card itself, for filters other than a group: an icon and what's filtered, then the body. */
-export function SummaryCard({
-  icon: Icon,
-  title,
-  ...body
-}: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number; "aria-hidden"?: boolean }>;
-  title: string;
-} & React.ComponentProps<typeof SummaryBody>) {
-  return (
-    <section
-      aria-label={title}
-      className="rounded-[22px] border-[0.5px] border-white/70 bg-white/55 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]"
-    >
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-          <Icon className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />
-        </span>
-        <p className="label min-w-0 text-champagne-600">{title}</p>
-      </div>
-      <SummaryBody {...body} />
-    </section>
   );
 }

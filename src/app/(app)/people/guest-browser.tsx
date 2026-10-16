@@ -4,7 +4,7 @@ import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Baby, CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Rows3, Search, SlidersHorizontal, Star, Sun, UserRound, Users, WheatOff, X } from "lucide-react";
+import { CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Rows3, Search, SlidersHorizontal, Star, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -15,7 +15,7 @@ import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
-import { SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
+import { CopyButton, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
@@ -376,19 +376,6 @@ export default function GuestBrowser({
   }
 
 
-  const summary = {
-    counts: {
-      to_invite: filtered.filter((g) => answerOf(g) === "to_invite").length,
-      attending: coming.length,
-      pending: filtered.filter((g) => answerOf(g) === "pending").length,
-      declined: filtered.filter((g) => answerOf(g) === "declined").length,
-    },
-    total: filtered.length,
-    homes: new Set(filtered.map((g) => g.household_id).filter(Boolean)).size,
-    showing,
-    onShow: setShowing,
-    copy: caterer,
-  };
 
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
   const az = groups.length === 1 && groups[0].key === "az";
@@ -400,19 +387,8 @@ export default function GuestBrowser({
   return (
     <>
       <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
-        {group ? (
-          <div>
-            <SummaryCard icon={Users} title={group.name} {...summary} />
-          </div>
-        ) : filters.length + guestOf.length > 0 ? (
-          <div>
-            <SummaryCard
-              icon={filters.includes("dietary") ? WheatOff : filters.includes("party") ? Star : filters.includes("children") ? Baby : filters.includes("noaddress") ? House : guestOf.length ? Sun : Users}
-              title={[...ofCounted.filter((o) => guestOf.includes(o.id)).map((o) => o.label), ...filters.map((f) => FILTERS.find((o) => o.key === f)!.label)].join(" · ")}
-              {...summary}
-            />
-          </div>
-        ) : events.length > 0 && (
+        {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
+        {events.length > 0 && (
           <div>
             <AnswersCard
               total={filtered.length}
@@ -426,6 +402,7 @@ export default function GuestBrowser({
               showing={showing}
               onShow={setShowing}
             />
+            {caterer && <CopyButton text={caterer} label="Copy the list for the caterer" />}
           </div>
         )}
 

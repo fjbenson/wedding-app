@@ -389,18 +389,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (People › Files, grouped by area, Filter and +), files on payments and
   area pages, and **C**, the assistant reading a file.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
-  **The card follows the filter, and the list does the breaking down**
-  (card 14 Oct 2026; **simplified 17 Oct 2026, owner's idea**): with a filter
-  on, the numbers card becomes a **summary card** (`guest-summary.tsx`): "13
-  coming" large, the other answers under it (tap to show them), "of 80
-  people · 43 homes" — and nothing more; it no longer adds up diets, roles or
-  meals (the tally, "Add up by" switch and tapping a line are gone), because
-  **Sort now breaks the list down**: Sort › **Dietary needs** (a heading per
-  need with its count, allergies after, in rose, "must avoid"; anyone with two
-  needs shows under both; "No dietary needs" last), **Meal choice** (most
-  first, "Not picked yet" last), **Role**, as well as Event, Group and
-  Household. So Filter › Dietary needs, then Sort › Dietary needs, reads
-  "Vegetarian · 5 guests", "Vegan · 3 guests"… with the people underneath.
+  **The numbers card never changes shape** (owner, 17 Oct 2026: "for any
+  filter now, we don't want to change the UI"): the same card — All · Coming ·
+  Invited · Can't come, with its home count — whatever is on; filters, a day
+  or evening, a group only change its numbers. (The 14 Oct "card for every
+  filter" summary card, its tally and "Add up by" switch are gone;
+  `guest-summary.tsx` keeps only the types and `CopyButton`.) **The list does
+  the breaking down**: Filter › Dietary needs, then View › Dietary needs reads
+  "Vegetarian · 5 guests", "Vegan · 3 guests"… (details below). One thing
+  sits under the card when the list is about diets: **Copy the list for the
+  caterer**.
   **Sort became "View" (17 Oct 2026, owner):** one pick sets how the rows
   are grouped and, for two of them, the filter behind it. The menu has three
   small headings — **Order** (First name, Surname), **Group by** (Household,

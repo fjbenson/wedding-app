@@ -2,7 +2,7 @@ import PaymentRow from "@/components/payment-row";
 import AddMenu from "@/components/add-menu";
 import { moneyChoices } from "@/components/add-choices";
 import Link from "next/link";
-import { Check, ChevronRight, Plus, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import FilterMenu from "@/components/filter-menu";
@@ -15,6 +15,7 @@ import { formatDayMonth, formatMonthYear, formatWeekdayDayMonth, todayISO } from
 import { formatMoney } from "@/lib/money";
 import type { Payment } from "@/types/db";
 import { markPaidAction } from "./actions";
+import MoneySearch from "./money-search";
 
 /*
  * Money (screens 22–24), as settled on canvas 2 ("Money · Round 4", owner's
@@ -49,7 +50,10 @@ export default function MoneyView({
   scope,
   open,
   month,
+  query,
 }: {
+  /** The search (`?q=`): narrows the areas or the payments, not the top card. */
+  query: string;
   view: "area" | "month";
   /** By month: the bar tapped (`?month=2026-10`, or `paid`), narrowing the list to it. */
   month: string | null;
@@ -74,16 +78,25 @@ export default function MoneyView({
 }) {
   // The area filter goes under the heading with the round black +, drawn like
   // the guest list's Filter (owner, 13 Oct 2026, for harmony).
+  const q = query ? `q=${encodeURIComponent(query)}` : "";
+  // Under the top card in both views, like the guest list and Plan's List
+  // (owner, 17 Oct 2026): search with the round black + at its end, then Filter.
   const filter = (
-    <FilterMenu
-      base={view === "month" ? "/money?view=month" : "/money"}
-      groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
-      // No heading, the + sits on the Filter's row (owner, 13 Oct 2026, as on
-      // The Day) — in both views since 17 Oct 2026, so the row sits in the
-      // same place under the top card whichever view you're in.
-      end={<AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} />}
-    />
+    <>
+      <MoneySearch
+        key={view}
+        initial={query}
+        placeholder={view === "month" ? "Find a payment" : "Find an area or supplier"}
+        end={<AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} />}
+      />
+      <FilterMenu
+        base={view === "month" ? `/money?view=month${q ? `&${q}` : ""}` : `/money${q ? `?${q}` : ""}`}
+        groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
+      />
+    </>
   );
+  const needle = query.toLowerCase();
+  const has = (...texts: (string | null | undefined)[]) => !needle || texts.some((t) => t?.toLowerCase().includes(needle));
   return (
     <main className="page pb-40 lg:pb-16">
       <CornerSwitch
@@ -112,19 +125,27 @@ export default function MoneyView({
       )}
 
       {view === "area" ? (
-        <ByArea total={total} byArea={byArea} scope={scope} open={open} filter={filter} />
+        <ByArea
+          total={total}
+          byArea={byArea.filter((a) => has(a.label, ...a.detail.suppliers.map((x) => x.name)))}
+          scope={scope}
+          open={open}
+          filter={filter}
+          searching={!!needle}
+        />
       ) : (
         <ByMonth
           total={total}
-          payments={payments}
+          payments={payments.filter((p) => has(p.description, p.notes, suppliers.find((x) => x.id === p.contact_id)?.name))}
+          searching={!!needle}
           suppliers={suppliers}
           // Each row names its area unless the list is already one area.
           areaOf={area ? undefined : (p) => areaName(p.area_key ?? suppliers.find((s) => s.id === p.contact_id)?.area ?? null, areas)}
-          balances={balances}
+          balances={balances.filter((b) => has(b.name, "balance"))}
           weddingDate={weddingDate}
           picked={month}
           filter={filter}
-          base={area ? `/money?view=month&area=${encodeURIComponent(area)}` : "/money?view=month"}
+          base={`/money?view=month${area ? `&area=${encodeURIComponent(area)}` : ""}${q ? `&${q}` : ""}`}
         />
       )}
     </main>
@@ -146,12 +167,14 @@ function ByArea({
   scope,
   open,
   filter,
+  searching,
 }: {
   total: Money;
   byArea: AreaCard[];
   scope: string | null;
   open: string | null;
   filter: React.ReactNode;
+  searching: boolean;
 }) {
   return (
     <>
@@ -173,8 +196,9 @@ function ByArea({
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the
           "Next to pay" banner went — By month has the schedule). No heading
           since 13 Oct 2026: Filter on the left, the round black + on the right. */}
-      <section className="mt-5">
+      <section>
         {filter}
+        {searching && byArea.length === 0 && <p className="mt-4 px-1 text-[15px] text-stone">No area or supplier matches that.</p>}
         <AreaCards areas={byArea} open={open} />
         {/* Owner, 13 Oct 2026: no "Change budgets ›" link (the top card already
             opens the budget page) and the explanation folded away (say less). */}
@@ -215,7 +239,9 @@ function ByMonth({
   picked,
   base,
   filter,
+  searching,
 }: {
+  searching: boolean;
   total: Money;
   payments: Payment[];
   suppliers: { id: string; name: string; area?: string | null }[];
@@ -336,7 +362,7 @@ function ByMonth({
 
       {/* Filter and + straight under the card, as on By area (owner, 17 Oct
           2026: the "What's due" heading pushed them onto a row of their own). */}
-      <div className="mt-5">{filter}</div>
+      {filter}
       {chosen && (
         <Link
           href={base}
@@ -400,16 +426,20 @@ function ByMonth({
         </section>
       )}
 
-      {!chosen && due.length === 0 && balances.length === 0 && (
+      {searching && payments.length === 0 && balances.length === 0 && <p className="mt-4 px-1 text-[15px] text-stone">No payment matches that.</p>}
+      {!searching && !chosen && due.length === 0 && balances.length === 0 && (
         <p className="mt-4 text-[15px] text-stone">Nothing to pay right now. Balances, the rings, the licence — anything with a due date shows here.</p>
       )}
 
       {!chosen && paid.length > 0 && (
-        <details className="mt-7 px-1">
-          <summary className="flex cursor-pointer list-none items-baseline gap-2 py-1">
-            <span className="section-label !text-stone">Paid · {paid.length}</span>
-            <span aria-hidden className="min-w-4 flex-1 -translate-y-[4px] border-b-[1.5px] border-dotted border-stone/35" />
-            <span className="type-figure text-base !font-light !text-stone">{formatMoney(sum(paid))}</span>
+        // Folded like Plan's Done (owner, 17 Oct 2026): the name left, the count right, a chevron.
+        <details className="group mt-7 border-t border-ink/[0.12] px-1 pt-3">
+          <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 py-1 [&::-webkit-details-marker]:hidden">
+            <span className="section-label">Paid</span>
+            <span className="type-meta flex items-center gap-1.5">
+              {count(paid.length)} · {formatMoney(sum(paid))}
+              <ChevronDown className="h-4 w-4 self-center text-stone/70 transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
+            </span>
           </summary>
           <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">{paid.map(row)}</ul>
         </details>

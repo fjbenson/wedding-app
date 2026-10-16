@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
-import { Check, ChevronRight, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar from "@/components/budget-bar";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaIcon, type AreaOption } from "@/lib/areas";
@@ -23,7 +23,12 @@ export interface AreaDetail {
   paid: { id: string; what: string; amount: number; on: string }[];
   /** Booked suppliers' balances nobody has put a date on yet. */
   balances: { supplierId: string; name: string; balance: number }[];
+  /** Food & drink: the cost per guest expected (owner, 17 Oct 2026); `budgeted` while nothing's agreed yet. */
+  perHead?: { amount: number; guests: number; budgeted: boolean } | null;
 }
+
+/** "£68 a head" — whole pounds, it's a rough guide. */
+const aHead = (p: NonNullable<AreaDetail["perHead"]>) => `${formatMoney(Math.round(p.amount))} a head`;
 
 export type AreaCard = AreaOption & Money & { detail: AreaDetail };
 
@@ -54,7 +59,8 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
 
   return (
     <>
-      <ul className="mt-3 grid grid-cols-2 gap-3">
+      <BudgetTable areas={areas} onOpen={show} />
+      <ul className="mt-3 grid grid-cols-2 gap-3 lg:hidden">
         {areas.map((a) => {
           const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
           const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";
@@ -78,6 +84,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
                 <span className={`mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] ${note.tone}`}>
                   {note.text}
                 </span>
+                {a.detail.perHead && <span className="mt-1 block text-xs text-stone">{aHead(a.detail.perHead)}</span>}
               </button>
             </li>
           );
@@ -148,6 +155,15 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           <div className="mt-3">
             <MoneyFigures money={area} size={36} />
           </div>
+          {area.detail.perHead && (
+            <p className="mt-4 flex items-baseline justify-between gap-3 border-t border-linen pt-3 text-sm text-stone">
+              <span>
+                {area.detail.perHead.budgeted ? "Budget per guest" : "Per guest"} · {area.detail.perHead.guests}{" "}
+                {area.detail.perHead.guests === 1 ? "guest" : "guests"} expected
+              </span>
+              <span className="type-figure text-lg !font-light text-ink">{aHead(area.detail.perHead)}</span>
+            </p>
+          )}
 
           {live.length > 0 && (
             <section className="mt-7">
@@ -238,6 +254,129 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type Column = "area" | "budget" | "quote" | "committed" | "paid" | "toPay" | "left";
+
+/**
+ * Laptops only: the budget as a table (owner's idea, agreed 12 Oct 2026 —
+ * "the phone stays high level; the laptop's budget can go to town"). One row
+ * per area: Budget · Best quote (the lowest still being weighed up) · Agreed
+ * · Paid · To pay · Left (budget minus agreed; over shows ▲ in words, never
+ * colour alone). Tap a heading to sort by it, again to flip; tap a row for
+ * the area's money, as the cards do on a phone. Totals along the foot.
+ */
+function BudgetTable({ areas, onOpen }: { areas: AreaCard[]; onOpen: (key: string) => void }) {
+  const [sort, setSort] = useState<{ by: Column; down: boolean } | null>(null);
+  const quote = (a: AreaCard) => {
+    const q = a.detail.suppliers.filter((x) => x.status === "quoted" && x.quote > 0).map((x) => x.quote);
+    return q.length ? Math.min(...q) : null;
+  };
+  const value = (a: AreaCard, by: Column): number | string | null =>
+    by === "area" ? a.label
+    : by === "budget" ? a.budget
+    : by === "quote" ? quote(a)
+    : by === "committed" ? a.committed
+    : by === "paid" ? a.paid
+    : by === "toPay" ? Math.max(a.committed - a.paid, 0)
+    : a.budget === null ? null : a.budget - a.committed;
+  const rows = sort
+    ? [...areas].sort((x, y) => {
+        const a = value(x, sort.by);
+        const b = value(y, sort.by);
+        // Empty cells always last.
+        if (a === null) return b === null ? 0 : 1;
+        if (b === null) return -1;
+        const c = typeof a === "string" ? a.localeCompare(String(b)) : a - (b as number);
+        return sort.down ? -c : c;
+      })
+    : areas;
+  const sum = (f: (a: AreaCard) => number | null) => areas.reduce((t, a) => t + (f(a) ?? 0), 0);
+  const budgeted = areas.some((a) => a.budget !== null);
+  const totalLeft = sum((a) => a.budget) - sum((a) => (a.budget === null ? 0 : a.committed));
+  const money = (n: number | null) => (n === null ? <span className="text-stone/60">—</span> : formatMoney(n));
+  const left = (n: number | null) =>
+    n === null ? <span className="text-stone/60">—</span>
+    : n < 0 ? <span className="font-medium text-[#9A3F2B]">▲ {formatMoney(-n)} over</span>
+    : formatMoney(n);
+  const cols: { key: Column; label: string }[] = [
+    { key: "area", label: "Area" },
+    { key: "budget", label: "Budget" },
+    { key: "quote", label: "Best quote" },
+    { key: "committed", label: "Agreed" },
+    { key: "paid", label: "Paid" },
+    { key: "toPay", label: "To pay" },
+    { key: "left", label: "Left" },
+  ];
+
+  return (
+    <div className="glass-card mt-3 hidden overflow-hidden rounded-[22px] lg:block">
+      <table className="w-full text-[15px] tabular-nums">
+        <thead>
+          <tr className="border-b border-linen">
+            {cols.map((c) => {
+              const on = sort?.by === c.key;
+              const Arrow = sort?.down ? ArrowDown : ArrowUp;
+              return (
+                <th
+                  key={c.key}
+                  scope="col"
+                  aria-sort={on ? (sort!.down ? "descending" : "ascending") : "none"}
+                  className={`px-4 py-3 font-normal ${c.key === "area" ? "text-left" : "text-right"}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSort(on ? { by: c.key, down: !sort!.down } : { by: c.key, down: c.key !== "area" })}
+                    className={`type-meta inline-flex items-center gap-1 hover:text-ink ${on ? "!text-ink" : ""}`}
+                  >
+                    {c.label}
+                    {on && <Arrow className="h-3 w-3" strokeWidth={2} aria-hidden />}
+                  </button>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((a) => {
+            const Icon = areaIcon(a.key || "other", a.icon);
+            return (
+              <tr
+                key={a.key || "other"}
+                onClick={() => onOpen(a.key || "other")}
+                className="cursor-pointer border-b border-linen last:border-b-0 hover:bg-white/70"
+              >
+                <th scope="row" className="px-4 py-3 text-left font-normal">
+                  {/* The row's real button, for keyboards; the whole row takes a click too. */}
+                  <button type="button" onClick={(e) => { e.stopPropagation(); onOpen(a.key || "other"); }} className="flex items-center gap-2 text-left text-ink">
+                    <Icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
+                    {a.label}
+                  </button>
+                </th>
+                <td className="px-4 py-3 text-right">{money(a.budget)}</td>
+                <td className="px-4 py-3 text-right text-stone">{money(quote(a))}</td>
+                <td className="px-4 py-3 text-right">{money(a.committed || null)}</td>
+                <td className="px-4 py-3 text-right">{money(a.paid || null)}</td>
+                <td className="px-4 py-3 text-right">{money(Math.max(a.committed - a.paid, 0) || null)}</td>
+                <td className="px-4 py-3 text-right">{left(a.budget === null ? null : a.budget - a.committed)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="border-t border-champagne-400 bg-white/40">
+            <th scope="row" className="px-4 py-3 text-left font-medium text-ink">All areas</th>
+            <td className="px-4 py-3 text-right font-medium">{money(budgeted ? sum((a) => a.budget) : null)}</td>
+            <td className="px-4 py-3" />
+            <td className="px-4 py-3 text-right font-medium">{money(sum((a) => a.committed))}</td>
+            <td className="px-4 py-3 text-right font-medium">{money(sum((a) => a.paid))}</td>
+            <td className="px-4 py-3 text-right font-medium">{money(sum((a) => Math.max(a.committed - a.paid, 0)))}</td>
+            <td className="px-4 py-3 text-right font-medium">{left(budgeted ? totalLeft : null)}</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   );
 }

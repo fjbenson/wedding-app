@@ -5,6 +5,9 @@ import { listAreas } from "@/lib/db/areas";
 import { listPayments } from "@/lib/db/money";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { listGuests } from "@/lib/db/contacts";
+import { listEvents, listRsvps } from "@/lib/db/rsvps";
+import { expectedGuests, guestFactsKind } from "@/lib/area-guests";
 import type { AreaDetail } from "./area-cards";
 import MoneyView from "./money-view";
 
@@ -16,17 +19,22 @@ export const metadata = { title: "Money — Wedding App" };
 export default async function MoneyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; tab?: string; area?: string; open?: string; month?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{ q?: string; view?: string; tab?: string; area?: string; open?: string; month?: string; error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { view, tab, area, open, month, error, detail } = await searchParams;
+  const { q, view, tab, area, open, month, error, detail } = await searchParams;
 
-  const [areaRows, allSuppliers, found] = await Promise.all([
+  const [areaRows, allSuppliers, found, guests, events, rsvps] = await Promise.all([
     listAreas(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
+    // For Food & drink's cost per guest: only the count leaves this page.
+    listGuests(wedding.id),
+    listEvents(wedding.id),
+    listRsvps(wedding.id),
   ]);
+  const expected = expectedGuests(guests ?? [], events ?? [], rsvps ?? []);
   const allPayments = found ?? [];
   const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
   // The area filter (`?area=<key>`, or `none` for Other): the same money,
@@ -81,7 +89,13 @@ export default async function MoneyPage({
       total={moneyFor(undefined, shownSuppliers, payments, filter === null ? (wedding.budget ?? null) : (picked?.budget ?? null))}
       byArea={moneyByArea(areas, allSuppliers, allPayments)
         .filter((a) => filter === null || (filter === "none" ? a.key === "" : a.key === filter))
-        .map((a) => ({ ...a, detail: detailFor(a.key) }))}
+        .map((a) => {
+          // Food & drink: what it comes to a head (agreed, or the budget until something's agreed).
+          const spend = a.committed > 0 ? a.committed : (a.budget ?? 0);
+          const perHead = guestFactsKind(a.key) === "food" && expected > 0 && spend > 0 ? { amount: spend / expected, guests: expected, budgeted: a.committed === 0 } : null;
+          return { ...a, detail: { ...detailFor(a.key), perHead } };
+        })}
+      query={q?.trim() || ""}
       open={open || null}
       month={month || null}
       payments={payments}

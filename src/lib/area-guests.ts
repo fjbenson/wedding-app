@@ -166,3 +166,18 @@ export function catererText(facts: Extract<AreaGuestFacts, { kind: "food" }>, co
   }
   return lines.join("\n");
 }
+
+/**
+ * Everyone still expected: invited to something and not "can't come" on their
+ * own event (the first they're invited to) — the guest list's big number.
+ * Money's cost per guest divides by it (owner, 17 Oct 2026).
+ */
+export function expectedGuests(guests: Contact[], events: WeddingEvent[], rsvps: Rsvp[]): number {
+  const answers = new Map<string, Rsvp[]>();
+  for (const r of rsvps) answers.set(r.contact_id, [...(answers.get(r.contact_id) ?? []), r]);
+  return guests.filter((g) => {
+    const theirs = answers.get(g.id) ?? [];
+    const own = events.map((e) => theirs.find((x) => x.event_id === e.id)).find(Boolean);
+    return !!own && own.status !== "declined";
+  }).length;
+}

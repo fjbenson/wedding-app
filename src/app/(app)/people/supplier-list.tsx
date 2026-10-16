@@ -169,7 +169,7 @@ export default function SupplierList({
 
   return (
     <>
-      <PageTitle drawing="suppliers" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="suppliers" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         Suppliers
       </PageTitle>
 

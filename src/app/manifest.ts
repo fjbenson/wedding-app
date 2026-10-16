@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Plan a wedding — contacts, timeline and RSVPs in one place.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F6EEE4",
-    theme_color: "#F6EEE5",
+    background_color: "#FBF9F5",
+    theme_color: "#FDFCFA",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png" },

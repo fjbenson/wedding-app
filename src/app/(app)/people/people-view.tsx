@@ -45,7 +45,7 @@ export default function PeopleView({
 }) {
   return (
     <>
-      <PageTitle drawing="guests" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="guests" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         {guests.length === 0 ? "No one on the list yet." : "The guest list"}
       </PageTitle>
 

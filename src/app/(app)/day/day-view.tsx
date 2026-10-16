@@ -172,7 +172,7 @@ function RunSheet({
 
   return (
     <>
-      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         The day
       </PageTitle>
       {items.length === 0 && (
@@ -306,7 +306,7 @@ function Seating({
 
   return (
     <>
-      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         Seating
       </PageTitle>
       <p className="mt-2 text-sm text-stone">

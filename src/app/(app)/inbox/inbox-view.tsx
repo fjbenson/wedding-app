@@ -44,7 +44,7 @@ export default function InboxView({
         Hub
       </Link>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <h1 className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">Your notes</h1>
+        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">Your notes</h1>
         <AddButton href="/capture?from=/inbox" label="Jot something down" />
       </div>
       <p className="mt-2 text-sm text-stone">

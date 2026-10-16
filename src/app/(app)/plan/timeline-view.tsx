@@ -62,7 +62,7 @@ export default function TimelineView({
           { label: "List", href: "/plan?view=list", active: view === "list" },
         ]}
       />
-      <PageTitle drawing="plan" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="plan" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         {nothing ? "Nothing planned yet." : "The plan"}
       </PageTitle>
       {nothing && (

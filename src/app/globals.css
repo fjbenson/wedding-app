@@ -69,8 +69,11 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-color: #efe5d5;
-  background-image: radial-gradient(130% 75% at 50% -8%, #fffcf6 0%, #fbf5eb 38%, rgb(246 238 225 / 0.6) 70%, rgb(239 229 213 / 0) 100%);
+  /* The canvas mock-ups' light (owner, 16 Oct 2026: "the gradient looks
+     really nice on those"): whiter at the top, a cooler ivory below. Was
+     #efe5d5 under #fffcf6 → #fbf5eb, warmer and flatter. */
+  background-color: #f4efe7;
+  background-image: radial-gradient(120% 60% at 50% -10%, #ffffff 0%, #fbf9f5 55%, #f4efe7 100%);
 }
 
 @media print {

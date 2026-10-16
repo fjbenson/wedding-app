@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 
 /**
  * Each tab's line drawing, in the app's gold (canvas 2, "Tab titles · The
- * set", 11 Oct 2026). Made with Canva's image tool and cut out; sharp vector
- * versions are a to-do. Width and height are the files' own pixel sizes.
+ * set", 11 Oct 2026). No longer on the tab titles (owner, 16 Oct 2026: out
+ * of place in a modern app); kept for `TabDrawing` where a heading still
+ * uses one.
  */
 const DRAWINGS = {
   guests: { src: "/illustrations/quill-and-scroll.png", width: 622, height: 512 },
@@ -16,46 +17,33 @@ const DRAWINGS = {
 
 export type Drawing = keyof typeof DRAWINGS;
 
-/**
- * Just the drawing, for a heading that stands for a tab somewhere else — the
- * area page's People, Plan and Money sections. Decoration only.
- */
+/** Just the drawing. Decoration only. */
 export function TabDrawing({ drawing, className }: { drawing: Drawing; className: string }) {
   const { src, width, height } = DRAWINGS[drawing];
   return <Image src={src} alt="" aria-hidden width={width} height={height} className={className} />;
 }
 
 /**
- * A tab's title with its drawing at the end of the same row. The drawing is
- * decoration only, so screen readers skip it, and it hides on the narrowest
- * phones (under 370px), where it would push the title onto more lines.
- * `className` styles the heading itself, so each screen keeps its own type;
- * `spacing` is the row's margin (the gap above it on that screen).
+ * A tab's title (canvas 3 "Tab tops · Round 1", option A, owner's pick 16
+ * Oct 2026): one row with the view switch (`CornerSwitch`, which floats
+ * right just before it), no drawing, no back arrow. It makes its own block
+ * beside the switch, so a long title wraps beside it rather than under it,
+ * and drops below it only when there's no room at all. `drawing` is no
+ * longer drawn; `className` styles the heading.
  */
 export default function PageTitle({
-  drawing,
   className,
   spacing = "",
   children,
 }: {
-  drawing: Drawing;
+  drawing?: Drawing;
   className: string;
   spacing?: string;
   children: ReactNode;
 }) {
-  const { src, width, height } = DRAWINGS[drawing];
   return (
-    <div className={`flex items-center justify-between gap-3 ${spacing}`}>
+    <div className={`flex min-h-10 items-center ${spacing}`}>
       <h1 className={`min-w-0 ${className}`}>{children}</h1>
-      <Image
-        src={src}
-        alt=""
-        aria-hidden
-        width={width}
-        height={height}
-        priority
-        className="-my-4 hidden h-auto max-h-[84px] w-[92px] shrink-0 object-contain min-[370px]:block sm:w-[120px]"
-      />
     </div>
   );
 }

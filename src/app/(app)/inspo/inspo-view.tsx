@@ -73,7 +73,7 @@ export default function InspoView({
   return (
     <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <div className="mt-3 flex items-center justify-between gap-3">
-        <h1 className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">{total === 0 ? "Nothing saved yet." : title}</h1>
+        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">{total === 0 ? "Nothing saved yet." : title}</h1>
         <AddButton href={newHref} label="Save an idea" />
       </div>
 

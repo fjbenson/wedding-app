@@ -56,7 +56,7 @@ export default function SettingsView({
 
   return (
     <main className="page pb-40 lg:pb-16">
-      <h1 className="type-display mt-3 text-[40px] leading-[1.05] tracking-[-0.02em]">Settings</h1>
+      <h1 className="type-display mt-3 text-[32px] leading-[1.1] tracking-[-0.02em]">Settings</h1>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">

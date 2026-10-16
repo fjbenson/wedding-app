@@ -90,7 +90,7 @@ export default function MoneyView({
           { label: "By month", href: area ? `/money?view=month&area=${encodeURIComponent(area)}` : "/money?view=month", active: view === "month" },
         ]}
       />
-      <PageTitle drawing="money" spacing="mt-3" className="type-display text-[40px] leading-[1.05] tracking-[-0.02em]">
+      <PageTitle drawing="money" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         {view === "area" ? "The budget" : "Payments"}
       </PageTitle>
 

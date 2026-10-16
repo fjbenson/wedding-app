@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CardLink from "@/components/card-link";
+import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
@@ -616,6 +617,13 @@ export default function AreaView({
   // Once someone's booked, everyone else folds away; before that, only the ones not taken.
   const shown = booked.length > 0 ? booked : live;
   const folded = sorted.filter((s) => !shown.includes(s));
+  // Two or more quotes in and no one booked yet: compare them against the budget.
+  const quotes =
+    booked.length === 0
+      ? live
+          .filter((s) => s.supplier_details?.status === "quoted" && (s.supplier_details?.quoted_cost ?? 0) > 0)
+          .map((s) => ({ id: s.id, name: supplierName(s), quote: Number(s.supplier_details!.quoted_cost) }))
+      : [];
 
   const openTodos = milestones.filter(isOpen).sort((a, b) => byDate(planDate(a), planDate(b)));
   const doneTodos = milestones.filter((m) => !isOpen(m));
@@ -694,6 +702,17 @@ export default function AreaView({
           add={{ href: `/people/suppliers/new?category=${key}`, label: "Add a supplier" }}
           empty={shown.length === 0 && folded.length === 0 && !area.diy}
         >
+          {quotes.length >= 2 && (
+            <QuoteCompare
+              quotes={quotes}
+              room={money.budget !== null ? money.budget - money.committed : null}
+              row={(id, className, children) => (
+                <SupplierLink id={id} className={className}>
+                  {children}
+                </SupplierLink>
+              )}
+            />
+          )}
           {shown.length > 0 ? (
             <ul>
               {shown.map((s) => (

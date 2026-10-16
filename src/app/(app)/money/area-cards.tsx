@@ -14,6 +14,7 @@ import { replaceQuery } from "@/lib/url-state";
 import type { SupplierStatus } from "@/types/db";
 import { StageIcon } from "../people/supplier-list";
 import MoneyFigures from "./money-figures";
+import QuoteCompare from "@/components/quote-compare";
 
 /** What an area's money card lists under its figures. */
 export interface AreaDetail {
@@ -168,6 +169,18 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           {live.length > 0 && (
             <section className="mt-7">
               <h3 className="section-label">Suppliers</h3>
+              {/* Two or more quotes and no one booked: compare them; a tap opens their card on the area page, where you decide. */}
+              {area.key && !live.some((s) => s.status === "booked") && live.filter((s) => s.status === "quoted" && s.quote > 0).length >= 2 && (
+                <QuoteCompare
+                  quotes={live.filter((s) => s.status === "quoted" && s.quote > 0).map((s) => ({ id: s.id, name: s.name, quote: s.quote }))}
+                  room={area.budget !== null ? area.budget - area.committed : null}
+                  row={(id, className, children) => (
+                    <Link href={`/area/${encodeURIComponent(area.key)}?supplier=${id}`} className={className}>
+                      {children}
+                    </Link>
+                  )}
+                />
+              )}
               <ul className="mt-1">
                 {live.map((s) => (
                   <li key={s.id} className="row-press border-b border-linen last:border-b-0">

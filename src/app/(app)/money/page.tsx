@@ -6,6 +6,7 @@ import { listPayments } from "@/lib/db/money";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listGuests } from "@/lib/db/contacts";
+import { listContributions } from "@/lib/db/contributions";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { expectedGuests, guestFactsKind } from "@/lib/area-guests";
 import type { AreaDetail } from "./area-cards";
@@ -25,7 +26,7 @@ export default async function MoneyPage({
   if (!wedding) redirect("/");
   const { q, view, tab, area, open, month, error, detail } = await searchParams;
 
-  const [areaRows, allSuppliers, found, guests, events, rsvps] = await Promise.all([
+  const [areaRows, allSuppliers, found, guests, events, rsvps, contributions] = await Promise.all([
     listAreas(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -33,6 +34,7 @@ export default async function MoneyPage({
     listGuests(wedding.id),
     listEvents(wedding.id),
     listRsvps(wedding.id),
+    listContributions(wedding.id),
   ]);
   const expected = expectedGuests(guests ?? [], events ?? [], rsvps ?? []);
   const allPayments = found ?? [];
@@ -40,6 +42,8 @@ export default async function MoneyPage({
   // The area filter (`?area=<key>`, or `none` for Other): the same money,
   // narrowed to one area, so an area page's "In Money ›" lands on just it.
   const filter = area || null;
+  // Money towards it, for the top card: all of it, or what's towards the filtered area.
+  const towards = contributions.filter((c) => filter === null || (filter === "none" ? !c.area_key || c.area_key === "other" : c.area_key === filter));
   const inArea = (key: string | null) =>
     filter === null ? true : filter === "none" ? !key || key === "other" || !areas.some((a) => a.key === key) : key === filter;
   const shownSuppliers = allSuppliers.filter((s) => inArea(s.supplier_details?.category ?? null));
@@ -96,6 +100,7 @@ export default async function MoneyPage({
           return { ...a, detail: { ...detailFor(a.key), perHead } };
         })}
       query={q?.trim() || ""}
+      towards={{ total: towards.reduce((t, c) => t + c.amount, 0), arrived: towards.filter((c) => c.received_on).reduce((t, c) => t + c.amount, 0) }}
       open={open || null}
       month={month || null}
       payments={payments}

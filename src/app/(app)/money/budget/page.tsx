@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { areaOptions } from "@/lib/areas";
+import { listContributions } from "@/lib/db/contributions";
 import BudgetForm from "./budget-form";
+import Paying from "./paying";
 
 export const metadata = { title: "Budget — Wedding App" };
 
@@ -15,7 +18,8 @@ export default async function BudgetPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { error, detail } = await searchParams;
-  const areas = ((await listAreas(wedding.id)) ?? []).filter((a) => a.enabled);
+  const [areaRows, contributions] = await Promise.all([listAreas(wedding.id), listContributions(wedding.id)]);
+  const areas = (areaRows ?? []).filter((a) => a.enabled);
 
   return (
     <FormPage backHref="/money" backLabel="Money" title="The budget" error={error} detail={detail}>
@@ -23,6 +27,7 @@ export default async function BudgetPage({
         total={wedding.budget ?? null}
         areas={areas.map((a) => ({ id: a.id, key: a.key, label: a.label, budget: a.budget ?? null }))}
       />
+      <Paying contributions={contributions} areas={areaOptions(areaRows)} />
     </FormPage>
   );
 }

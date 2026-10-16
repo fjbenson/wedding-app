@@ -51,7 +51,10 @@ export default function MoneyView({
   open,
   month,
   query,
+  towards,
 }: {
+  /** Money coming in towards it (who's paying), for the top card. */
+  towards: { total: number; arrived: number };
   /** The search (`?q=`): narrows the areas or the payments, not the top card. */
   query: string;
   view: "area" | "month";
@@ -132,6 +135,7 @@ export default function MoneyView({
           open={open}
           filter={filter}
           searching={!!needle}
+          towards={towards}
         />
       ) : (
         <ByMonth
@@ -168,7 +172,9 @@ function ByArea({
   open,
   filter,
   searching,
+  towards,
 }: {
+  towards: { total: number; arrived: number };
   total: Money;
   byArea: AreaCard[];
   scope: string | null;
@@ -191,6 +197,16 @@ function ByArea({
           </span>
         </p>
         <MoneyFigures money={total} />
+        {/* Who's paying (owner, 17 Oct 2026): what's coming in, under what's going out. */}
+        {towards.total > 0 && (
+          <p className="mt-3.5 flex items-baseline justify-between gap-3 border-t border-linen pt-3 text-sm text-stone">
+            <span>Money towards it</span>
+            <span>
+              <span className="type-figure text-lg !font-light text-ink">{formatMoney(towards.total)}</span>
+              {towards.arrived < towards.total && ` · ${formatMoney(towards.arrived)} arrived`}
+            </span>
+          </p>
+        )}
       </Link>
 
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the

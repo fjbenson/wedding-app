@@ -1,4 +1,4 @@
-import { CalendarDays, CircleCheck, PiggyBank, PoundSterling } from "lucide-react";
+import { CalendarDays, CircleCheck, HandCoins, PiggyBank, PoundSterling } from "lucide-react";
 import type { AddChoice } from "./add-menu";
 
 /**
@@ -22,5 +22,6 @@ export function moneyChoices({ area }: { area?: string } = {}): AddChoice[] {
   return [
     { icon: <PoundSterling />, title: "A payment", line: "Something to pay, or already paid", href: `/money/payments/new${tail}` },
     { icon: <PiggyBank />, title: "A budget", line: "For the wedding or an area", href: `/money/budget/new${tail}` },
+    { icon: <HandCoins />, title: "Money towards it", line: "From family, or what you're putting in", href: "/money/contributions/new" },
   ];
 }

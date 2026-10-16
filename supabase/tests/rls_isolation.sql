@@ -104,6 +104,14 @@ begin
     insert into appointment_guests (appointment_id, contact_id, wedding_id)
       select a.id, c.id, a.wedding_id from appointments a join contacts c on c.wedding_id = a.wedding_id;
   end if;
+  if to_regclass('public.contributions') is not null then
+    insert into contributions (wedding_id, name, contact_id, amount)
+      select wedding_id, 'Alice', id, 5000 from contacts where first_name = 'Alice';
+    insert into contributions (wedding_id, name, contact_id, amount)
+      select wedding_id, 'Bob', id, 3000 from contacts where first_name = 'Bob';
+    -- Couple A can't look Bob up (that's the point), so note his id now.
+    perform set_config('test.bob', (select id::text from contacts where first_name = 'Bob' limit 1), false);
+  end if;
   if to_regclass('public.payments') is not null then
     insert into payments (wedding_id, description, amount) values
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Rings', 900),
@@ -481,6 +489,27 @@ begin
     execute $q$select count(*) from contacts where first_name = 'Alice'$q$ into visible_contacts;
     if visible_contacts <> 1 then
       raise exception 'Removing a to-do removed its guest';
+    end if;
+  end if;
+
+  if to_regclass('public.contributions') is not null then
+    execute 'select count(*) from contributions' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % gifts towards the wedding, expected 1', visible_contacts;
+    end if;
+    -- Wedding A's gift can't name wedding B's guest.
+    begin
+      execute $q$insert into contributions (wedding_id, name, contact_id, amount)
+               values ('aaaaaaaa-0000-0000-0000-000000000001', 'Bob',
+                       current_setting('test.bob')::uuid, 100)$q$;
+      raise exception 'LEAK: couple A named wedding B''s guest on a gift';
+    exception
+      when insufficient_privilege or foreign_key_violation or not_null_violation then null;  -- expected
+    end;
+    execute $q$delete from contributions where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s gifts';
     end if;
   end if;
 

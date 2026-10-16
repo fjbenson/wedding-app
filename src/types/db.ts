@@ -200,6 +200,23 @@ export interface Payment {
   created_at: string;
 }
 
+/** Money coming in towards the wedding: "Mum and Dad, £5,000" (0022_contributions.sql). */
+export interface Contribution {
+  id: string;
+  wedding_id: string;
+  /** Who's giving, as the couple call them ("Mum and Dad", "Us"). */
+  name: string;
+  /** The guest it's from, when picked from the guest list. */
+  contact_id: string | null;
+  amount: number;
+  /** What it's towards: an area's key, or null for the wedding as a whole. */
+  area_key: string | null;
+  /** When it arrived; null means promised. */
+  received_on: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 /** A fitting, a tasting, a venue visit (0007_appointments.sql). */
 export interface Appointment {
   id: string;

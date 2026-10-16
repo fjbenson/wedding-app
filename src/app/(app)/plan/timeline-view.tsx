@@ -1,6 +1,7 @@
 import PageTitle from "@/components/page-title";
+import AddMenu from "@/components/add-menu";
+import { planChoices } from "@/components/add-choices";
 import Link from "next/link";
-import AddButton from "@/components/add-button";
 import StarterPlanCard from "@/components/starter-plan-card";
 import CornerSwitch from "@/components/corner-switch";
 import type { AreaOption } from "@/lib/areas";
@@ -96,7 +97,7 @@ export default function TimelineView({
             ))}
           </div>
 
-        <AddButton href={view === "list" && kind === "appointments" ? "/plan/appointments/new" : "/plan/new"} label="Add to the plan" />
+        <AddMenu label="Add to the plan" title="Add to the plan" choices={planChoices()} />
       </div>
       )}
 

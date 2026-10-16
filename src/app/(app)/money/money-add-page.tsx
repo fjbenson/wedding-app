@@ -10,7 +10,7 @@ import MoneyAddForm from "./money-add-form";
 /**
  * Adding to Money — `/money/payments/new` (starts on Payment) and
  * `/money/budget/new` (starts on Budget) are the same page, with the
- * Payment | Budget switch at the top (owner, 13 Oct 2026).
+ * no switch since 16 Oct 2026: the + asks which first (add-menu.tsx).
  * `?area=` picks the area; `?supplier=&amount=` come from "Add as a payment"
  * on a booked supplier's unscheduled balance.
  */
@@ -38,7 +38,7 @@ export default async function MoneyAddPage({
     <FormPage
       backHref={kind === "budget" ? "/money" : "/money?view=month"}
       backLabel="Money"
-      title="Add to Money"
+      title={kind === "budget" ? "Set a budget" : "New payment"}
       error={error}
       detail={detail}
     >

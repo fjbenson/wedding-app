@@ -9,7 +9,7 @@ import PlanAddForm from "./plan-add-form";
 /**
  * Adding to the plan — `/plan/new` (starts as a to-do) and
  * `/plan/appointments/new` (starts as an appointment) are the same page, with
- * the To-do | Appointment switch at the top (owner, 12 Oct 2026).
+ * no switch since 16 Oct 2026: the + asks which first (add-menu.tsx).
  * `?area=` and `?date=` fill those in.
  */
 export default async function PlanAddPage({
@@ -26,7 +26,7 @@ export default async function PlanAddPage({
   const fromArea = areas.some((a) => a.key === area) ? area : undefined;
 
   return (
-    <FormPage backHref="/plan" backLabel="Plan" title="Add to the plan" error={error} detail={detail}>
+    <FormPage backHref="/plan" backLabel="Plan" title={kind === "todo" ? "New to-do" : "New appointment"} error={error} detail={detail}>
       <PlanAddForm
         kind={kind}
         saveTodo={saveMilestoneAction.bind(null, null)}

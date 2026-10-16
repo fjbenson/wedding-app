@@ -40,32 +40,11 @@ export default function MoneyAddForm({
   prefill?: { supplier?: string; amount?: number; description?: string; area?: string };
   weddingDate?: string | null;
 }) {
-  const [kind, setKind] = useState<Kind>(startKind);
+  // Picked before the form opens (the + asks first, owner 16 Oct 2026).
+  const kind = startKind;
 
   return (
     <>
-      <div role="radiogroup" aria-label="Adding" className="mb-6 grid grid-cols-2 rounded-full bg-cream p-[3px]">
-        {(
-          [
-            ["payment", "Payment"],
-            ["budget", "Budget"],
-          ] as const
-        ).map(([k, label]) => (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={kind === k}
-            onClick={() => setKind(k)}
-            className={`h-10 rounded-full text-sm transition ${
-              kind === k ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "text-stone hover:text-ink"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       <div hidden={kind !== "payment"}>
         <PaymentForm
           action={savePayment}

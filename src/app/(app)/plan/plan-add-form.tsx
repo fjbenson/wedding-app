@@ -44,7 +44,8 @@ export default function PlanAddForm({
   defaultDate?: string;
   weddingDate?: string | null;
 }) {
-  const [kind, setKind] = useState<Kind>(startKind);
+  // Picked before the form opens (the + asks first, owner 16 Oct 2026).
+  const kind = startKind;
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(defaultDate ?? "");
   const [time, setTime] = useState("");
@@ -56,28 +57,6 @@ export default function PlanAddForm({
   return (
     <form action={appt ? saveAppointment : saveTodo}>
       <ReturnTo href="/plan" />
-
-      <div role="radiogroup" aria-label="Adding" className="mb-6 grid grid-cols-2 rounded-full bg-cream p-[3px]">
-        {(
-          [
-            ["todo", "To-do"],
-            ["appointment", "Appointment"],
-          ] as const
-        ).map(([k, label]) => (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={kind === k}
-            onClick={() => setKind(k)}
-            className={`h-10 rounded-full text-sm transition ${
-              kind === k ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "text-stone hover:text-ink"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
 
       <input
         name="title"

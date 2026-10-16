@@ -1,4 +1,6 @@
 import Link from "next/link";
+import AddMenu, { type AddChoice } from "@/components/add-menu";
+import { planChoices } from "@/components/add-choices";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock, MoreHorizontal, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
 import AddButton from "@/components/add-button";
 import PaymentRow from "@/components/payment-row";
@@ -253,7 +255,7 @@ function Section({
   seeHref?: string;
   seeLabel?: string;
   /** The round black + beside the heading (owner, 16 Oct 2026, in place of "In People ›"). */
-  add?: { href: string; label: string; stays?: boolean };
+  add?: { href: string; label: string; stays?: boolean; choices?: AddChoice[] };
   /** Nothing to show yet: just the heading and its +, no empty card. */
   empty?: boolean;
   children?: React.ReactNode;
@@ -275,7 +277,11 @@ function Section({
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2.5">{heading}</div>
         )}
-        {add && <AddButton href={add.href} label={add.label} scroll={add.stays ? false : undefined} />}
+        {add?.choices ? (
+          <AddMenu label={add.label} title={add.label} choices={add.choices} />
+        ) : (
+          add && <AddButton href={add.href} label={add.label} scroll={add.stays ? false : undefined} />
+        )}
       </div>
       {!empty && (
         <div className="glass-card relative overflow-hidden rounded-[22px] px-4 py-0.5 [--row-bleed:16px]">{children}</div>
@@ -724,7 +730,7 @@ export default function AreaView({
           icon={CalendarDays}
           seeHref={`/plan?view=list&area=${key}`}
           seeLabel={`The plan for ${area.label}`}
-          add={{ href: `/plan/new?area=${key}`, label: "Add a to-do or appointment" }}
+          add={{ href: `/plan/new?area=${key}`, label: "Add a to-do or appointment", choices: planChoices({ area: key }) }}
           empty={planNow.length === 0 && planDone === 0}
         >
           {planNow.length > 0 ? (

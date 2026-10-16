@@ -1,5 +1,6 @@
 import Link from "next/link";
-import AddButton from "@/components/add-button";
+import AddMenu from "@/components/add-menu";
+import { planChoices } from "@/components/add-choices";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatMonthYear } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
@@ -197,7 +198,7 @@ export default function Agenda({
         undatedPanel={undatedPanel}
         toggle={
           // The one way in (owner, 12 Oct 2026): the round black +, at the end of the key's row under the month (16 Oct 2026).
-          <AddButton href="/plan/new" label="Add to the plan" />
+          <AddMenu label="Add to the plan" title="Add to the plan" choices={planChoices()} />
         }
         weddingPanel={
           <Link href="/day" className="mt-2 block font-display text-xl italic text-ink hover:text-champagne-600">

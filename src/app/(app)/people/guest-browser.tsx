@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import AddButton from "@/components/add-button";
+import AddMenu from "@/components/add-menu";
+import { createHouseholdAction } from "./household-actions";
+import { createGroupAction } from "./group-actions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Baby, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, Users, WheatOff, X } from "lucide-react";
+import { Baby, CalendarHeart, Check, ChevronDown, ChevronRight, House, Mail, Search, SlidersHorizontal, Star, Sun, UserRound, Users, WheatOff, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -396,7 +398,32 @@ export default function GuestBrowser({
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
             </label>
-            <AddButton href="/people/new" label="Add a guest" />
+            {/* Pick what to add first (owner, 16 Oct 2026): a guest has its form; a
+                household or a group needs only a name, then opens. */}
+            <AddMenu
+              label="Add to the guest list"
+              title="Add to the guest list"
+              choices={[
+                { icon: <UserRound />, title: "A guest", line: "Someone on the list", href: "/people/new" },
+                {
+                  icon: <House />,
+                  title: "A household",
+                  line: "People at one address",
+                  ask: { label: "The household's name", placeholder: "e.g. The Reids", button: "Add the household" },
+                  save: createHouseholdAction,
+                  done: (id) => setHouseholdId(id),
+                },
+                {
+                  icon: <Users />,
+                  title: "A group",
+                  line: "Like the football lot",
+                  ask: { label: "The group's name", placeholder: "e.g. Staying at the pub", button: "Add the group" },
+                  save: (name) => createGroupAction(name),
+                  done: (id) => setGroupId(id),
+                },
+                { icon: <CalendarHeart />, title: "A part of the day", line: "Like the evening do", href: "/people/events/new" },
+              ]}
+            />
           </div>
 
           {/* Find or add on the row above; how the list is shown here: Filter left, Sort right (owner, 12 Oct 2026). */}

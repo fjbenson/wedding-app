@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { deleteHousehold, updateHousehold } from "@/lib/db/contacts";
+import { createHousehold, deleteHousehold, updateHousehold } from "@/lib/db/contacts";
+import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 
 /** Remove a household from its page. Its people stay on the guest list. */
@@ -49,4 +50,20 @@ export async function renameHouseholdAction(householdId: string, name: string): 
   }
   revalidatePath("/people");
   return {};
+}
+
+/** A new, empty household from the guest list's + (owner, 16 Oct 2026); its card opens next. */
+export async function createHouseholdAction(name: string): Promise<{ error?: string; id?: string }> {
+  const tidy = name.trim();
+  if (!tidy) return { error: "Please give the household a name." };
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "No wedding found." };
+  try {
+    const household = await createHousehold({ weddingId: wedding.id, name: tidy });
+    revalidatePath("/people");
+    return { id: household.id };
+  } catch (error) {
+    console.error("creating household failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
 }

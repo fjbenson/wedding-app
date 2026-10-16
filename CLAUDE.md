@@ -969,6 +969,16 @@ access control is RLS. No column-level encryption is planned.
   `BackLink`) returns to it. Plan's to-do and appointment forms also send a
   hidden `<ReturnTo>` so Save and Remove land there (`returnTo()` in
   `src/lib/return-to.ts`); other screens' saves can opt in the same way.
+- **Pick what to add first, then its form** (owner, 16 Oct 2026). Where a
+  tab can add more than one kind of thing, the round black + opens a small
+  card of choices (`AddMenu`, `src/components/add-menu.tsx`): Guests → a
+  guest · a household · a group · a part of the day (a household or group
+  needs only a name, asked right there, then opens; `createHouseholdAction`);
+  Plan (calendar, List, area pages) → a to-do · an appointment; Money → a
+  payment · a budget (`add-choices.tsx`). The To-do | Appointment and
+  Payment | Budget switches on the add forms are gone; their pages are
+  titled "New to-do", "New appointment", "New payment", "Set a budget".
+  A tab with one kind of thing (Suppliers, Inspo, notes) keeps a plain +.
 - **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
   button should be the loudest thing on the page). **The round black + is one
   size everywhere: 40px** (`AddButton`, `src/components/add-button.tsx`;

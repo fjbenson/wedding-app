@@ -1,6 +1,7 @@
 import PaymentRow from "@/components/payment-row";
+import AddMenu from "@/components/add-menu";
+import { moneyChoices } from "@/components/add-choices";
 import Link from "next/link";
-import AddButton from "@/components/add-button";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
 import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
@@ -79,7 +80,7 @@ export default function MoneyView({
       groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
       // By area: no heading, the + sits on the Filter's row (owner, 13 Oct
       // 2026, as on The Day). Opens on Budget; the same page as By month's +.
-      end={view === "area" ? <AddButton href="/money/budget/new" label="Add a budget or payment" /> : undefined}
+      end={view === "area" ? <AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} /> : undefined}
     />
   );
   return (
@@ -330,7 +331,7 @@ function ByMonth({
 
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">{chosen === "paid" ? "Paid so far" : "What's due"}</h2>
-        <AddButton href="/money/payments/new" label="Add a payment or budget" />
+        <AddMenu label="Add to Money" title="Add to Money" choices={moneyChoices()} />
       </div>
       {filter}
       {chosen && (

@@ -225,7 +225,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   any mix); with filters on, the button goes dark with a count and each
   filter shows as a pill to take off (on their own line). Search has a round black + (add a guest) at its end; the line under it has
   Filter on the left and the order ("BY FIRST NAME ⌄") on the right — tapping that is **Sort**: first name, surname,
-  household, or day guests then evening (9 Oct 2026; no separate sort
+  household, **group** (16 Oct 2026: under each group's name, A–Z, someone
+  in two groups shows under both, the heading opens the group, then "Not in
+  a group"), or **event** (day guests then evening; 9 Oct 2026; no separate sort
   button by the search); "Rename the
   day / evening" and "Add an event" sit at the foot of the list.
   **Rows (rounds 8–12):** initials, the name with "day" or "evening"

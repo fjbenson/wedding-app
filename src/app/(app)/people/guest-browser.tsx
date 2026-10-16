@@ -21,7 +21,7 @@ import type { TravelInfo } from "./guest-travel";
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
 /** How the list is ordered (the Sort button). */
-type SortBy = "first" | "last" | "household" | "type";
+type SortBy = "first" | "last" | "household" | "group" | "type";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
@@ -60,6 +60,7 @@ const SORTS: { key: SortBy; label: string; short: string }[] = [
   { key: "first", label: "First name, A–Z", short: "by first name" },
   { key: "last", label: "Surname, A–Z", short: "by surname" },
   { key: "household", label: "Household", short: "by household" },
+  { key: "group", label: "Group", short: "by group" },
   { key: "type", label: "Event", short: "by event" },
 ];
 
@@ -292,6 +293,22 @@ export default function GuestBrowser({
       .filter((group) => group.guests.length > 0);
     const loose = shown.filter((g) => !ownEvent(g));
     if (loose.length > 0) groups.push({ key: "none", title: "Day or evening?", guests: loose });
+  } else if (sort === "group" && !filters.includes("noaddress")) {
+    // By group (owner, 16 Oct 2026): someone in two groups shows under both;
+    // a group's heading opens it (its card, Email them · Text).
+    const members = (g: GroupSummary) => new Set(g.members);
+    groups = [...guestGroups]
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
+      .map((group) => ({
+        key: group.id,
+        title: group.name,
+        onOpen: () => setGroupId(group.id),
+        guests: shown.filter((g) => members(group).has(g.id)),
+      }))
+      .filter((group) => group.guests.length > 0);
+    const grouped = new Set(guestGroups.flatMap((g) => g.members));
+    const loose = shown.filter((g) => !grouped.has(g.id));
+    if (loose.length > 0) groups.push({ key: "none", title: "Not in a group", guests: loose });
   } else if (sort === "household" || filters.includes("noaddress")) {
     groups = households
       .map((h) => ({

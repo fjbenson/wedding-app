@@ -218,10 +218,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Inspo, Your notes and Settings titles are 32px to match. **Guest list
   design settled 8 Oct 2026** (canvas "Guest list · Round 2"):
   `guest-browser.tsx`. **Reworked 9 Oct 2026** (canvas "Guest list ·
-  Rounds 3–7"): no event switch any more. The card is a big **All** (champagne when picked; was dark until 12 Oct 2026)
-  with the breakdown beside it (To invite · Invited · Coming · Can't come, each with
-  an arrow, so they add up to All — To invite was added 17 Oct 2026, owner:
-  six guests weren't shown anywhere) — every one is a button
+  Rounds 3–7"): no event switch any more. The card is a big **Guests** tile (champagne when picked; was dark until 12 Oct 2026)
+  with **three small numbers** beside it — Coming · Invited · To invite, the
+  furthest step first like Suppliers (owner, 17 Oct 2026; it was four, which
+  felt messy). **The big number is everyone still expected** (those three
+  added up), so people who can't come aren't in it; they're one quiet "5
+  can't come ›" line under the three (tap to show just them; the list itself
+  still shows everyone, can't-come faded with their ✕) — every one is a button
   that shows just those people. **The card counts whatever the filters
   leave**, by each guest's answer for their own event. Then search with a
   **Filter** button that drops down a small menu (Day guests · Evening

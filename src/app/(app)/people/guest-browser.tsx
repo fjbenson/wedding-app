@@ -427,8 +427,8 @@ export default function GuestBrowser({
         {events.length > 0 && (
           <div>
             <AnswersCard
-              total={filtered.length}
-              homes={new Set(filtered.map((g) => g.household_id).filter(Boolean)).size}
+              total={filtered.filter((g) => answerOf(g) !== "declined").length}
+              homes={new Set(filtered.filter((g) => answerOf(g) !== "declined").map((g) => g.household_id).filter(Boolean)).size}
               counts={{
                 to_invite: filtered.filter((g) => answerOf(g) === "to_invite").length,
                 attending: filtered.filter((g) => answerOf(g) === "attending").length,
@@ -702,13 +702,12 @@ function AnswersCard({
 }) {
   const all = showing === "all";
   const rows: { status: Rsvp["status"]; label: string; tone: string }[] = [
-    // All four in champagne, in the order a guest moves through them, so they add up to All
-    // (owner, 17 Oct 2026: To invite was left off before and six guests weren't shown anywhere).
-    // The big All is champagne too: ink is kept for the Add button (12 Oct 2026).
-    { status: "to_invite", label: "To invite", tone: "text-champagne-600" },
-    { status: "pending", label: "Invited", tone: "text-champagne-600" },
+    // Three small numbers, the furthest step first like Suppliers (Booked first); the big
+    // number is everyone still expected, so Can't come isn't in it, just a quiet line under
+    // (owner, 17 Oct 2026). The big tile is champagne too: ink is kept for the Add button.
     { status: "attending", label: "Coming", tone: "text-champagne-600" },
-    { status: "declined", label: "Can't come", tone: "text-champagne-600" },
+    { status: "pending", label: "Invited", tone: "text-champagne-600" },
+    { status: "to_invite", label: "To invite", tone: "text-champagne-600" },
   ];
 
   return (
@@ -724,7 +723,7 @@ function AnswersCard({
           all ? "glass-tile-on text-ink" : "glass-tile text-ink hover:bg-champagne-100/60"
         }`}
       >
-        <span className="type-meta text-champagne-600">All</span>
+        <span className="type-meta text-champagne-600">Guests</span>
         <span>
           <span className={`type-figure block text-[46px] leading-none sm:text-[52px] ${all ? "text-champagne-600" : "text-ink"}`}>{total}</span>
           <span className="mt-1.5 block text-xs text-stone">
@@ -754,6 +753,16 @@ function AnswersCard({
             </button>
           );
         })}
+        {counts.declined > 0 && (
+          <button
+            type="button"
+            aria-pressed={showing === "declined"}
+            onClick={() => onShow(showing === "declined" ? "all" : "declined")}
+            className={`mt-0.5 self-start rounded-lg px-2 py-1 text-[13px] underline-offset-4 hover:text-ink hover:underline ${showing === "declined" ? "font-medium text-ink underline" : "text-stone"}`}
+          >
+            {counts.declined} can&apos;t come ›
+          </button>
+        )}
       </div>
     </section>
   );

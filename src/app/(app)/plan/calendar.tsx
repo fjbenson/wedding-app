@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { Calendar, CalendarOff, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 
 export type Dot = "todo" | "appointment";
@@ -234,10 +234,10 @@ export default function PlanCalendar({
           <button
             type="button"
             onClick={() => setSelected("undated")}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-champagne-400/70 bg-white px-3 text-[13px] text-ink transition hover:bg-cream"
+            className="flex h-9 shrink-0 items-center gap-1 text-[13px] text-stone transition hover:text-ink"
           >
-            <CalendarOff className="h-3.5 w-3.5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-            {undatedCount} undated
+            {/* Quiet, like the key beside it (owner, 16 Oct 2026: the pill "jumps out a lot"). */}
+            {undatedCount} with no date
             <ChevronRight className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden />
           </button>
         )}
@@ -249,7 +249,7 @@ export default function PlanCalendar({
       {monthTops[month]}
       {/* Straight on the page, not a second card (owner, 16 Oct 2026: two
           cards the same weight competed): the calendar card is the hero. */}
-      <div className="mt-4 border-t border-linen">
+      <div className="mt-5">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}

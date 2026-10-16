@@ -34,7 +34,7 @@ export function MilestoneRow({
       ? "Start now"
       : `Start ${formatMonthYear(start).split(" ")[0]}`
     : m.due_date
-      ? `By ${formatDayMonth(m.due_date)}`
+      ? formatDayMonth(m.due_date)
       : showNoDate && !done && "No date";
   const details = [when, area].filter(Boolean);
 
@@ -71,7 +71,13 @@ export function MilestoneRow({
                   {details.slice(1).map((d) => ` · ${d}`)}
                 </>
               ) : (
-                details.join(" · ")
+                // The date darker than the rest, so it reads first (owner, 16 Oct 2026: no "By").
+                details.map((d, i) => (
+                  <span key={i} className={i === 0 && m.due_date && !done ? "text-ink/75" : ""}>
+                    {i > 0 && " · "}
+                    {d}
+                  </span>
+                ))
               )}
             </span>
           )}

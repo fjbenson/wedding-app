@@ -151,6 +151,13 @@ export default function Agenda({
       return [
         key,
         <div key={key}>
+          {/* The month's heading, the same pattern as Done below: name on the left, count on the right. */}
+          {open.length > 0 && (
+            <p className="flex items-baseline justify-between gap-3 pt-1">
+              <span className="section-label">{monthName(key)}</span>
+              <span className="type-meta">{open.length}</span>
+            </p>
+          )}
           {open.length > 0 && <ul className="mt-1">{open.map((e) => row(e))}</ul>}
           {done.length > 0 && (
             <Fold

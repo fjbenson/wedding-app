@@ -495,6 +495,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   are a size up; the month's list sits straight on the page under a hairline
   (a second card competed with the calendar's — owner asked; no gold rule),
   with "still open from before" just above it.
+  **Then (owner's list, 16 Oct 2026):** the list has a heading like Done's
+  — the month's name left, the count right ("OCTOBER · 4", "DONE · 1"), no
+  divider; "3 undated" is now quiet stone text "3 with no date ›" beside the
+  key; a to-do's line drops "By" and its date is darker ("Overdue · 15 Oct ·
+  Flowers"). The tab's top (back arrow, corner switch, title + drawing) is
+  the shared pattern on every tab — left as is.
   **Calendar round 2, built** (canvas 2 "Plan · Calendar · Round 2 · The
   month underneath", option B, owner's pick 11 Oct 2026): under the grid,
   **everything in the month** as one list in date order — no day headings,

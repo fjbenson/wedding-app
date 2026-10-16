@@ -79,9 +79,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the assistant", A, owner's pick 13 Oct 2026 — says assistant, never "AI";
   the Hub stays the most beautiful screen, so no line of examples under it),
   opening **Your assistant** full screen (`AssistantSheet`; "Your assistant ·
-  Round 3 · Opening it", A's centred "What can I do for you?" and box with
-  B's prompts grouped **Ask · Do · Jot** under it; a conversation once you
-  ask) — then **This week** on one glass card
+  Round 3 · Opening it", A's centred "What can I do for you?" and box, with —
+  since 17 Oct 2026, owner: the grouped rows looked messy — **one flat set
+  of pills with a small icon each** under it (who hasn't replied, what's
+  left to pay, what's on this week, add a guest, record a payment, add a
+  to-do, a thought for later; `PROMPTS` in `assistant-sheet.tsx`); a
+  conversation once you ask) — then **This week** on one glass card
   (`this-week.tsx`; owner, 13 Oct 2026, replacing "Your top three": a week
   has an end you can reach): everything due by Sunday plus anything overdue,
   ticked off right there (to-dos done, payments paid, Undo note, the row

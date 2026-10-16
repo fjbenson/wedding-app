@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUp, Camera, Check, PenLine, X } from "lucide-react";
+import { ArrowUp, CalendarDays, Camera, Check, ListPlus, PenLine, PoundSterling, StickyNote, UserPlus, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
 import { guestFlow } from "@/components/assistant/guest-steps";
@@ -355,29 +355,23 @@ function Panel({
                 <p className="type-meta mt-3">Your assistant{subtitle ? ` · ${subtitle.split(" · ")[0]}` : ""}</p>
               </div>
               <div className="mt-7">{composer(true)}</div>
-              <div className="mt-6 space-y-3">
-                {GROUPS.map((group) => (
-                  <div key={group.label} className="flex items-start gap-3">
-                    <span className="section-label w-10 shrink-0 pt-3">{group.label}</span>
-                    <div className="flex flex-wrap gap-2">
-                      {group.items.map((item) => (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => {
-                            if (item.say) send(item.say);
-                            else {
-                              setHint("Jot a thought…");
-                              input.current?.focus();
-                            }
-                          }}
-                          className="h-10 rounded-full border border-linen bg-white/80 px-4 text-sm text-ink hover:border-champagne-400"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {PROMPTS.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => {
+                      if (item.say) send(item.say);
+                      else {
+                        setHint("Jot a thought…");
+                        input.current?.focus();
+                      }
+                    }}
+                    className="flex h-10 items-center gap-2 rounded-full border border-linen bg-white/80 pl-3 pr-4 text-sm text-ink hover:border-champagne-400"
+                  >
+                    <item.icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
+                    {item.label}
+                  </button>
                 ))}
               </div>
             </div>
@@ -474,25 +468,15 @@ function Panel({
   );
 }
 
-/** The opening screen's prompts, grouped by what the assistant does (round 3, B's idea). */
-const GROUPS: { label: string; items: { label: string; say?: string }[] }[] = [
-  {
-    label: "Ask",
-    items: [
-      { label: "Who hasn’t replied?", say: "Who hasn’t replied?" },
-      { label: "What’s left to pay?", say: "What’s left to pay?" },
-      { label: "What’s on this week?", say: "What’s on this week?" },
-    ],
-  },
-  {
-    label: "Do",
-    items: [
-      { label: "Add a guest", say: "I’d like to add a guest." },
-      { label: "Record a payment", say: "I’d like to record a payment." },
-      { label: "Add a to-do", say: "I’d like to add a to-do." },
-    ],
-  },
-  { label: "Jot", items: [{ label: "A thought for later" }] },
+/** The opening screen's prompts: one flat set of pills, each with a small picture (owner, 17 Oct 2026). */
+const PROMPTS: { label: string; icon: LucideIcon; say?: string }[] = [
+  { label: "Who hasn’t replied?", icon: Users, say: "Who hasn’t replied?" },
+  { label: "What’s left to pay?", icon: Wallet, say: "What’s left to pay?" },
+  { label: "What’s on this week?", icon: CalendarDays, say: "What’s on this week?" },
+  { label: "Add a guest", icon: UserPlus, say: "I’d like to add a guest." },
+  { label: "Record a payment", icon: PoundSterling, say: "I’d like to record a payment." },
+  { label: "Add a to-do", icon: ListPlus, say: "I’d like to add a to-do." },
+  { label: "A thought for later", icon: StickyNote },
 ];
 
 /** The assistant's mark: a gold pen in a ring. */

@@ -14,9 +14,6 @@ import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } fro
 import { DetailLabel } from "../people/guest-table";
 import { updatePlanFieldsAction } from "./card-actions";
 
-/** Taps on the hour for the time card (as on the add form). */
-const TIMES = ["10:00", "11:00", "12:00", "14:00", "15:00", "18:00"];
-
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
 /** Saves one change and refreshes the page behind, so its list matches. */
@@ -137,20 +134,6 @@ export function AppointmentBody({
               </button>
             )}
           </Line>
-          <div className="flex gap-2 overflow-x-auto border-t border-linen px-4 py-3 [scrollbar-width:none]">
-            {TIMES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTimeTo(t)}
-                className={`h-9 shrink-0 rounded-full border px-3.5 text-[13px] tabular-nums transition ${
-                  time === t ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
         </div>
       </Part>
 
@@ -197,11 +180,14 @@ export function AppointmentBody({
                 style={{ backgroundImage: CHEVRON }}
               >
                 <option value="">No one in particular</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                {/* That area's suppliers when it has some (16 Oct 2026), plus whoever's already picked. */}
+                {suppliers
+                  .filter((s) => s.id === a.contact_id || !suppliers.some((x) => x.area === area) || s.area === area)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
               </select>
             </dd>
           </div>

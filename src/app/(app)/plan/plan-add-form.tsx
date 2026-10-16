@@ -10,20 +10,13 @@ import type { AreaOption } from "@/lib/areas";
 type Kind = "todo" | "appointment";
 type Action = (formData: FormData) => void | Promise<void>;
 
-/** Tap one to fill in the name — the usual wedding appointments. */
-const IDEAS = ["Venue visit", "Menu tasting", "Cake tasting", "Dress fitting", "Suit fitting", "Hair trial", "Make-up trial", "Florist meeting", "Meet the photographer", "Ceremony rehearsal"];
-
-/** Taps on the hour for the time card. */
-const TIMES = ["10:00", "11:00", "12:00", "14:00", "15:00", "18:00"];
-
 /**
- * Adding to the plan, one form for both (owner, 12 Oct 2026: one black + on
- * Plan, "where you choose if it's a to-do or an appointment"): a To-do |
- * Appointment switch at the top, then what's shared — the name, the date,
- * the area, notes — with an appointment adding the time, where and who, and
- * one-tap name ideas. What's typed stays when switching. Each kind still
- * saves through its own action; editing one uses its own form
- * (milestone-form.tsx, appointment-form.tsx).
+ * Adding to the plan: a to-do or an appointment, picked from the + first.
+ * The name, the date (with quick picks — where suggestions help most), the
+ * area, then for an appointment the time and where and who, then notes.
+ * Since 16 Oct 2026 (owner): no name or time suggestions — free text and the
+ * phone's own time picker — and the area comes before "With", so the
+ * supplier list is that area's.
  */
 export default function PlanAddForm({
   kind: startKind,
@@ -51,6 +44,14 @@ export default function PlanAddForm({
   const [time, setTime] = useState("");
   const [area, setArea] = useState(defaultArea ?? "");
   const [notes, setNotes] = useState("");
+  const [supplier, setSupplier] = useState("");
+  // The area comes first, so "With" lists that area's suppliers (owner, 16 Oct
+  // 2026: pick Photos, then choose from the photographers). No area, or an
+  // area with none yet: everyone.
+  const inArea = suppliers.filter((s) => area && area !== "other" && s.area === area);
+  const picked = suppliers.find((s) => s.id === supplier);
+  const areaSuppliers =
+    inArea.length === 0 ? suppliers : picked && !inArea.includes(picked) ? [picked, ...inArea] : inArea;
   const known = new Set(areas.map((a) => a.key));
   const appt = kind === "appointment";
 
@@ -69,22 +70,6 @@ export default function PlanAddForm({
         placeholder={appt ? "What is it?" : "What needs doing?"}
         className={TITLE_INPUT}
       />
-      {appt && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {IDEAS.map((idea) => (
-            <button
-              key={idea}
-              type="button"
-              onClick={() => setTitle(idea)}
-              className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-                title === idea ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
-              }`}
-            >
-              {idea}
-            </button>
-          ))}
-        </div>
-      )}
 
       <Part label="When">
         <DateCard name={appt ? "on_date" : "when"} value={date} onChange={setDate} weddingDate={weddingDate} required={appt} />
@@ -104,21 +89,18 @@ export default function PlanAddForm({
                 </button>
               )}
             </Line>
-            {!time && (
-              <div className="flex flex-wrap gap-2 border-t border-linen px-4 py-3">
-                {TIMES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTime(t)}
-                    className="h-9 rounded-full border border-linen bg-white/80 px-3.5 text-[13px] tabular-nums text-ink transition hover:border-champagne-400"
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
+        )}
+      </Part>
+
+      <Part label="Area">
+        {/* One set of tiles for both; each kind is sent the way its action reads it
+            (a to-do stores Other as no area, an appointment as "other"). */}
+        <AreaTiles name="area_pick" areas={areas} otherValue="other" value={area} onChange={setArea} />
+        {appt ? (
+          <input type="hidden" name="area" value={area} />
+        ) : (
+          <input type="hidden" name="category" value={area === "other" ? "" : area} />
         )}
       </Part>
 
@@ -131,8 +113,9 @@ export default function PlanAddForm({
             <Line icon={UsersRound} label="With">
               <select
                 name="supplier"
-                defaultValue=""
+                value={supplier}
                 onChange={(e) => {
+                  setSupplier(e.target.value);
                   // Picking a supplier picks their area too, unless one's already chosen.
                   const s = suppliers.find((x) => x.id === e.target.value);
                   if (s?.area && !area) setArea(known.has(s.area) ? s.area : "other");
@@ -140,7 +123,7 @@ export default function PlanAddForm({
                 className={`${BARE} appearance-none`}
               >
                 <option value="">With a supplier? (optional)</option>
-                {suppliers.map((s) => (
+                {areaSuppliers.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
@@ -151,16 +134,6 @@ export default function PlanAddForm({
         </Part>
       )}
 
-      <Part label="Area">
-        {/* One set of tiles for both; each kind is sent the way its action reads it
-            (a to-do stores Other as no area, an appointment as "other"). */}
-        <AreaTiles name="area_pick" areas={areas} otherValue="other" value={area} onChange={setArea} />
-        {appt ? (
-          <input type="hidden" name="area" value={area} />
-        ) : (
-          <input type="hidden" name="category" value={area === "other" ? "" : area} />
-        )}
-      </Part>
 
       <section className="mt-7">
         <h2 className="section-label font-body">Notes</h2>

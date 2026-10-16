@@ -604,10 +604,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   day**: the name, then an optional **date card** (the day written out large,
   ✕ to take it off, quick picks — shown only while there's no date — that wrap onto two
   lines rather than scroll sideways: next week, next month, in 3 months, 6 months / a month / the
-  week before the day), area tiles, and notes always open; appointments offer one-tap name ideas (Venue visit, Dress
-  fitting…), the date card, a time card with quick taps (10:00…18:00), a
-  Where and who card (picking a supplier picks their area), then the area as
-  picture tiles ending in Other; notes folded under "Add notes".
+  week before the day), area tiles, and notes always open; appointments: the
+  name as free text, the date card (quick picks — where suggestions help
+  most), the time (the phone's own picker), **then the area, then Where and
+  who** — "With" lists only that area's suppliers once one's picked (all of
+  them if it has none). **16 Oct 2026, owner:** the name ideas and time
+  quick taps were taken out (on the add form and the appointment card), and
+  the area moved above Where and who.
 - **Everything opens as a card** (16 Oct 2026, owner: "look at something
   in a card, add something new on a full screen" — "makes all the tabs feel
   really cohesive"). To-dos, appointments, payments, run sheet moments and

@@ -35,7 +35,7 @@ export default function PaymentRow({
         <DateStamp date={p.due_date ?? p.paid_on ?? null} today={today} overdue={late} done={paid} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${paid ? "!text-stone" : ""}`}>{p.description}</span>
-          <RowLine kind={paid ? `Paid ${formatDayMonth(p.paid_on!)}` : "To pay"} details={[who, area]} overdue={late} />
+          <RowLine status={paid ? `Paid ${formatDayMonth(p.paid_on!)}` : null} details={[who || area]} overdue={late} />
         </span>
         <span className={`type-figure shrink-0 text-[18px] ${paid ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
       </CardLink>

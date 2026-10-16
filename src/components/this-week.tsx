@@ -1,3 +1,4 @@
+import RowLine from "./row-line";
 import DateStamp from "./date-stamp";
 import Link from "next/link";
 import { areaName, type AreaOption } from "@/lib/areas";
@@ -89,7 +90,7 @@ export default function ThisWeek({
         return [{
           key: `t-${m.id}`, kind: "todo" as const, id: m.id, date, order: 2, href: `/plan/${m.id}`,
           title: m.title, italic: isNudge(m), overdue,
-          meta: line(isNudge(m) ? "Start now" : "To do", named(m.category)),
+          meta: line(isNudge(m) && "Start now", named(m.category)),
         }];
       }),
     ...appointments
@@ -97,12 +98,10 @@ export default function ThisWeek({
       .map((a) => ({
         key: `a-${a.id}`, kind: "appointment" as const, id: a.id, date: a.on_date, order: 0,
         href: `/plan/appointments/${a.id}`, title: a.title, overdue: false,
-        // Says what it is, like "To do" and "To pay" (owner, 16 Oct 2026).
+        // Time, then who it's with — else where, else the area (RowLine's rule).
         meta: line(
-          "Appointment",
           a.at_time && formatTime(a.at_time),
-          supplier(a.contact_id)?.name ?? a.location,
-          named(a.area_key ?? supplier(a.contact_id)?.area),
+          supplier(a.contact_id)?.name ?? a.location ?? named(a.area_key),
         ),
       })),
     ...payments
@@ -112,7 +111,7 @@ export default function ThisWeek({
         return {
           key: `p-${p.id}`, kind: "payment" as const, id: p.id, date: p.due_date!, order: 1,
           href: `/money/payments/${p.id}`, title: p.description, amount: formatMoney(p.amount), overdue,
-          meta: line("To pay", supplier(p.contact_id)?.name, named(p.area_key ?? supplier(p.contact_id)?.area)),
+          meta: line(supplier(p.contact_id)?.name ?? named(p.area_key)),
         };
       }),
   ].sort((a, b) => a.date.localeCompare(b.date) || a.order - b.order);
@@ -162,10 +161,7 @@ export default function ThisWeek({
                         <CardLink href={e.href} className="flex min-w-0 flex-1 items-center gap-3 py-3">
                           <span className="min-w-0 flex-1">
                             <span className={`type-item block ${e.italic ? "italic" : ""}`}>{e.title}</span>
-                            <span className="type-meta mt-1 block">
-                              {e.overdue && <span className="text-[#9A3F2B]">Overdue · </span>}
-                              {e.meta}
-                            </span>
+                            <RowLine details={[e.meta]} overdue={e.overdue} />
                           </span>
                           {e.amount && <span className="type-figure shrink-0 text-[18px]">{e.amount}</span>}
                         </CardLink>

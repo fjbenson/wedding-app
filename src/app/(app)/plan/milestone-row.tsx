@@ -46,7 +46,7 @@ export function MilestoneRow({
         <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>{m.title}</span>
-          <RowLine kind={done ? "Done" : (nudgeWhen ?? "To do")} details={[area]} overdue={late} />
+          <RowLine status={done ? "Done" : nudgeWhen} details={[area]} overdue={late} />
         </span>
       </CardLink>
       <TickForm

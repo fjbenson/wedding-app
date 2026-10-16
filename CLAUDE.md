@@ -547,10 +547,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (appointment), £ circle (payment; `PaymentRow`, `src/components/
   payment-row.tsx`, with Undo). No chevrons. **The grey line is one rule
   everywhere** (owner, 16 Oct 2026; `RowLine`, `src/components/row-line.tsx`):
-  *kind first* — To do / Appointment / To pay (Done / Been / Paid 3 Oct once
-  done) — then the most useful detail (an appointment's day and time, who
-  it's with or to), then the **area, left off where the list is already one
-  area** (area pages, a filtered Money); "Overdue · " leads in rose. Used by `MilestoneRow`,
+  **short, at most two facts** (owner, later 16 Oct 2026 — no kind word,
+  the mark on the right says it): a status only if off or finished
+  ("Overdue" in rose, Done, Been, Paid 3 Oct), then an appointment's day and
+  time, then who it's with or paid to — **the area only when there's no
+  one** (and left off where the list is already one area). "Fri 10am · Wild
+  & Gather", "Overdue · Flowers", "Wild & Gather". Used by `MilestoneRow`,
   `AppointmentRow`, Money's By month, area pages' payments, and the Hub's
   This week (weekday under the date there). The tab's top (back arrow, corner switch, title + drawing) is
   the shared pattern on every tab — left as is.

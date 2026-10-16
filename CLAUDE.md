@@ -174,6 +174,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   "+ Add a supplier", "1 other", "Set it ›" are sentence case; supplier
   rows show initials with the stage badge (`StageIcon`, as on the Suppliers
   list) and the stage in words under the name, so long names fit.
+  **Later on 16 Oct 2026 (owner):** the last section is "**Attire notes**"
+  (the area's name + "notes"), not "Just for Attire"; the icon beside the
+  name has **no black pen badge** any more (it read as "save an idea"; a tap
+  still changes the icon).
   **Section headings, 16 Oct 2026 (owner):** "In People ›" / "In Plan ›" /
   "In Money ›" are gone. Each heading now has the **round black +** on its
   right (`AddButton`; People → add a supplier, Plan → the To-do |

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { PenLine, X } from "lucide-react";
+import { X } from "lucide-react";
 import IconPicker from "@/components/icon-picker";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaIcon } from "@/lib/areas";
@@ -60,10 +60,8 @@ export default function AreaIcon({ id, areaKey, icon }: { id: string; areaKey: s
         aria-label="Change the icon"
         className="glass-card pointer-events-auto relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-champagne-600"
       >
+        {/* No pen badge (owner, 16 Oct 2026): it read as "save an idea"; a tap still changes it. */}
         <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden />
-        <span aria-hidden className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-ivory">
-          <PenLine className="h-2.5 w-2.5" strokeWidth={2.2} />
-        </span>
       </button>
 
       {open && (

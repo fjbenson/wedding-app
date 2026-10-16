@@ -843,7 +843,7 @@ export default function AreaView({
 
         <Section
           id="notes"
-          title={`Just for ${area.label}`}
+          title={`${area.label} notes`}
           icon={areaIcon(area.key, area.icon)}
           add={{ href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }}
         >

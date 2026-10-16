@@ -51,13 +51,10 @@ function postmark(answers: (Rsvp["status"] | undefined)[]) {
   return { top: "Replied", main: `${replied} of ${n}`, say: `${replied} of ${n} have replied` };
 }
 
-/** A round gold postmark in the corner, slightly askew, with its wavy lines. */
+/** A round gold postmark in the corner, slightly askew (no wavy lines — owner, 16 Oct 2026). */
 function Postmark({ top, main }: { top: string; main: string }) {
   return (
     <span aria-hidden className="absolute right-[18px] top-[18px] flex rotate-[-8deg] items-center">
-      <svg viewBox="0 0 40 24" className="mr-[-5px] h-5 w-8 text-[#C9B07E]">
-        <path d="M0 5 q5 -4 10 0 t10 0 t10 0 t10 0 M0 12 q5 -4 10 0 t10 0 t10 0 t10 0 M0 19 q5 -4 10 0 t10 0 t10 0 t10 0" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
       <span className="flex h-[58px] w-[58px] flex-col items-center justify-center rounded-full border-[1.5px] border-[#B8914F] text-champagne-600 shadow-[inset_0_0_0_3px_#FFFFFF,inset_0_0_0_4px_#D8C7A4]">
         <span className="font-body text-[7.5px] font-semibold uppercase tracking-[0.16em]">{top}</span>
         <span className="mt-0.5 whitespace-nowrap font-display text-[11px] italic leading-none">{main}</span>

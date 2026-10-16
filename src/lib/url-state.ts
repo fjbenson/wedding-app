@@ -9,12 +9,18 @@ import { rememberView } from "./last-view";
  *
  * Browser-only: call from event handlers or effects.
  */
-export function replaceQuery(changes: Record<string, string | null>) {
+export function replaceQuery(changes: Record<string, string | null>, { sync = false }: { sync?: boolean } = {}) {
   const url = new URL(window.location.href);
   for (const [key, value] of Object.entries(changes)) {
     if (value) url.searchParams.set(key, value);
     else url.searchParams.delete(key);
   }
-  window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  // Passing the current history entry on marks the change as Next.js's own,
+  // so `useSearchParams()` doesn't hear of it — right for a screen keeping
+  // its own view (search, filters). `sync` passes none, so Next.js copies its
+  // bits in and every `useSearchParams()` updates: the cards (?todo=, ?idea=…)
+  // open and close by it (16 Oct 2026: without it, tapping an Inspo picture
+  // did nothing and its card wouldn't close).
+  window.history.replaceState(sync ? null : window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
   rememberView(`${url.pathname}${url.search}`);
 }

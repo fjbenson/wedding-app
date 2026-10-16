@@ -613,7 +613,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `MomentBody`, `IdeaBody`, plus `TitleEditor`, `TimeCard`). One action
   saves a field: `updatePlanFieldsAction` in `plan/card-actions.ts` (named
   fields per kind only); `removePlanCardAction` removes. `DateCard` takes
-  `clearable={false}` where a date is required. Card frame: `CardSheet`,
+  `clearable={false}` where a date is required. **Opening and closing must
+  use `replaceQuery(…, { sync: true })`** (16 Oct 2026 bug: plain
+  `replaceQuery` hands Next.js the current history entry, which marks the
+  change as its own, so `useSearchParams()` never heard it — an Inspo
+  picture did nothing on tap and its card wouldn't close). Card frame: `CardSheet`,
   `src/components/card-sheet.tsx`. The old full edit pages still work for
   old links.
 - **Money** (`/money`, screens 22–24; `0006_money.sql`): **rebuilt 12 Oct

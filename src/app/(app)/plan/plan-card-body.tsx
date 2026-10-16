@@ -446,7 +446,7 @@ export function IdeaBody({ idea, folderIds, areas }: { idea: InspoWithPicture; f
   const at = folderIds.indexOf(idea.id);
   const prev = at > 0 ? folderIds[at - 1] : null;
   const next = at >= 0 && at < folderIds.length - 1 ? folderIds[at + 1] : null;
-  const go = (id: string) => replaceQuery({ idea: id });
+  const go = (id: string) => replaceQuery({ idea: id }, { sync: true });
   const step = "flex h-11 w-11 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
 
   return (

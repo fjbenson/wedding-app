@@ -38,7 +38,7 @@ export default function CardLink({
         if (!todo && !appointment && !payment && !moment && !idea) return;
         if (event.metaKey || event.ctrlKey || event.shiftKey) return;
         event.preventDefault();
-        replaceQuery({ todo: todo ?? null, appointment: appointment ?? null, payment: payment ?? null, moment: moment ?? null, idea: idea ?? null });
+        replaceQuery({ todo: todo ?? null, appointment: appointment ?? null, payment: payment ?? null, moment: moment ?? null, idea: idea ?? null }, { sync: true });
       }}
     >
       {children}

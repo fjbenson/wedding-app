@@ -41,7 +41,7 @@ export default function PlanCards() {
             : null;
   const id = todo ?? appointment ?? payment ?? moment ?? idea;
 
-  const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null, moment: null, idea: null }), []);
+  const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null, moment: null, idea: null }, { sync: true }), []);
   if (!kind || !id) return null;
   return <PlanCard key={`${kind}:${id}`} kind={kind} id={id} onClose={close} />;
 }

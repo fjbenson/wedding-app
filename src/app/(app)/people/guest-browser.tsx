@@ -15,14 +15,14 @@ import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
-import { SummaryBody, SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
+import { SummaryCard, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
 export type GuestView = "az" | "households";
 /** How the list is ordered (the Sort button). */
-type SortBy = "first" | "last" | "household" | "group" | "type";
+type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
@@ -40,6 +40,8 @@ interface Group {
   title: string;
   /** Household groups open the household's card. */
   onOpen?: () => void;
+  /** An allergy: what the kitchen must avoid. */
+  rose?: boolean;
   guests: Contact[];
 }
 
@@ -63,6 +65,9 @@ const SORTS: { key: SortBy; label: string; short: string }[] = [
   { key: "household", label: "Household", short: "by household" },
   { key: "group", label: "Group", short: "by group" },
   { key: "type", label: "Event", short: "by event" },
+  { key: "diet", label: "Dietary needs", short: "by dietary needs" },
+  { key: "meal", label: "Meal choice", short: "by meal" },
+  { key: "role", label: "Role", short: "by role" },
 ];
 
 /** How each answer reads at the end of a row. */
@@ -141,10 +146,6 @@ export default function GuestBrowser({
     return asked && guestGroups.some((g) => g.id === asked) ? asked : undefined;
   });
   const group = guestGroups.find((g) => g.id === groupId);
-  /** Which filter the card adds up (?by=), when more than one has kinds. */
-  const [splitBy, setSplitBy] = useState<SplitKind | undefined>(() => (params.get("by") as SplitKind | null) ?? undefined);
-  /** A line tapped in the card's tally (?pick=, e.g. "diet:Vegan"): narrows the list again. */
-  const [pick, setPick] = useState<string | undefined>(() => params.get("pick") ?? undefined);
   useEffect(() => {
     replaceQuery({
       q: query.trim() || null,
@@ -152,13 +153,22 @@ export default function GuestBrowser({
       f: filters.length ? filters.join(",") : null,
       of: guestOf.length ? guestOf.join(",") : null,
       group: group?.id ?? null,
-      by: splitBy ?? null,
-      pick: pick ?? null,
+      by: null,
+      pick: null,
       tab: null,
     });
-  }, [query, showing, filters, guestOf, group, splitBy, pick]);
+  }, [query, showing, filters, guestOf, group]);
   const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
   const [openId, setOpenId] = useState(initialGuestId);
+  /** Headings folded away (owner, 17 Oct 2026): tap a heading's chevron to fold or open its guests. */
+  const [folded, setFolded] = useState<Set<string>>(new Set());
+  const toggleFold = (key: string) =>
+    setFolded((all) => {
+      const next = new Set(all);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   const close = useCallback(() => setOpenId(undefined), []);
   // An open card too, so coming back reopens it — and closing it clears it.
   useEffect(() => {
@@ -243,7 +253,6 @@ export default function GuestBrowser({
     setFilters([]);
     setGuestOf([]);
     setGroupId(undefined);
-    setPick(undefined);
   };
   const pickGroup = (id: string) => {
     setGroupId((on) => (on === id ? undefined : id));
@@ -258,27 +267,16 @@ export default function GuestBrowser({
     .filter((g) => filters.every((f) => tests[f](g)));
   const answerOf = (g: Contact) => statusFor(g, ownEvent(g));
 
-  // What the card adds up: each filter with kinds, in the order picked.
   const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
   const mealOf = (g: Contact) => ownRsvp(g)?.meal_choice?.trim() || null;
-  const kinds: SplitKind[] = [];
-  if (guestOf.length === 1) kinds.push(guestOf[0] === events[0]?.id ? "meal" : "age");
-  else if (guestOf.length > 1) kinds.push("when");
-  for (const f of filters) {
-    const kind = ({ dietary: "diet", party: "role", children: "when", noaddress: undefined } as const)[f];
-    if (kind && !kinds.includes(kind)) kinds.push(kind);
-  }
   const coming = filtered.filter((g) => answerOf(g) === "attending");
-  const splits = kinds.map((kind) => splitOf(kind, coming, { dietOf, mealOf, ownEvent }));
-  const split = splits.find((s) => s.kind === splitBy) ?? splits[splits.length - 1];
-  const picked = split && pick?.startsWith(`${split.kind}:`) ? pick : undefined;
-  const pickedLine = picked ? split?.sections.flatMap((s) => s.lines).find((l) => l.id === picked) : undefined;
-  const pickTest = (g: Contact) => !pickedLine || partOf(split!.kind, g, { dietOf, mealOf, ownEvent }).includes(pickedLine.label);
+  const look = { dietOf, mealOf, ownEvent };
+  /** "Copy the list for the caterer", under the card when the list is about dietary needs. */
+  const caterer = filters.includes("dietary") || sort === "diet" ? splitOf("diet", coming, look).copy : undefined;
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const shown = filtered
     .filter((g) => showing === "all" || answerOf(g) === showing)
-    .filter(pickTest)
     .filter((g) => {
       if (words.length === 0) return true;
       const hay = [fullName(g), g.household_id && data.household.get(g.household_id)?.name, ...rolesOf(g)]
@@ -294,6 +292,26 @@ export default function GuestBrowser({
   if (filters.includes("party")) {
     const roles = [...new Set(shown.flatMap(rolesOf))].sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b));
     groups = roles.map((role) => ({ key: role, title: role, guests: shown.filter((g) => rolesOf(g).includes(role)) }));
+  } else if ((sort === "diet" || sort === "meal" || sort === "role") && !filters.includes("noaddress")) {
+    // A breakdown (owner, 17 Oct 2026): the headings are the kinds, each with its count.
+    const kind = sort;
+    const tally = new Map<string, Contact[]>();
+    for (const g of shown) for (const part of partOf(kind, g, look)) tally.set(part, [...(tally.get(part) ?? []), g]);
+    const labels = [...tally.keys()];
+    const most = (a: string, b: string) => tally.get(b)!.length - tally.get(a)!.length || a.localeCompare(b);
+    const ordered =
+      kind === "diet"
+        ? [
+            ...labels.filter((l) => !isAllergy(l)).sort((a, b) => needRank(a) - needRank(b) || a.localeCompare(b)),
+            ...labels.filter(isAllergy).sort((a, b) => needRank(a) - needRank(b) || a.localeCompare(b)),
+          ]
+        : kind === "role"
+          ? labels.sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b))
+          : [...labels.filter((l) => l !== NOT_PICKED).sort(most), ...labels.filter((l) => l === NOT_PICKED)];
+    groups = ordered.map((label) => ({ key: label, title: isAllergy(label) && kind === "diet" ? `${label} · must avoid` : label, rose: kind === "diet" && isAllergy(label), guests: tally.get(label)! }));
+    const none = kind === "diet" ? "No dietary needs" : kind === "role" ? "No role" : null;
+    const loose = none ? shown.filter((g) => partOf(kind, g, look).length === 0) : [];
+    if (loose.length > 0) groups.push({ key: "none", title: none!, guests: loose });
   } else if (sort === "type" && !filters.includes("noaddress")) {
     groups = events
       .map((e) => ({
@@ -347,20 +365,7 @@ export default function GuestBrowser({
     homes: new Set(filtered.map((g) => g.household_id).filter(Boolean)).size,
     showing,
     onShow: setShowing,
-    splits,
-    splitBy: split?.kind,
-    onSplit: (kind: SplitKind) => {
-      setSplitBy(kind);
-      setPick(undefined);
-    },
-    pick: picked,
-    onPick: setPick,
-  };
-  // Under each name, what the card is adding up: their diet, role, meal…
-  const detailOf = (g: Contact) => {
-    if (!split || split.kind === "when" || split.kind === "age") return undefined;
-    const parts = partOf(split.kind, g, { dietOf, mealOf, ownEvent }).filter((p) => p !== NOT_PICKED);
-    return parts.length ? { text: parts.join(" · "), rose: split.kind === "diet" && parts.some(isAllergy) } : undefined;
+    copy: caterer,
   };
 
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
@@ -458,17 +463,6 @@ export default function GuestBrowser({
                   <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
                 </button>
               )}
-              {pickedLine && (
-                <button
-                  type="button"
-                  onClick={() => setPick(undefined)}
-                  aria-label={`Take off ${pickedLine.label}`}
-                  className="flex h-8 items-center gap-1.5 rounded-full bg-ink pl-3 pr-2.5 text-[13px] text-ivory"
-                >
-                  {pickedLine.label}
-                  <X className="h-3 w-3" strokeWidth={2.2} aria-hidden />
-                </button>
-              )}
               {ofCounted
                 .filter((o) => guestOf.includes(o.id))
                 .map((o) => (
@@ -512,11 +506,11 @@ export default function GuestBrowser({
             <div className="min-w-0 flex-1">
               {groups.map((group) => (
                 <section key={group.key}>
-                  {group.title && <GroupTitle group={group} />}
+                  {group.title && <GroupTitle group={group} folded={folded.has(group.key)} onFold={() => toggleFold(group.key)} />}
                   <ul>
-                    {group.guests.map((g) => (
+                    {(folded.has(group.key) ? [] : group.guests).map((g) => (
                       <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b-[0.5px] border-champagne-400">
-                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} detail={detailOf(g)} onOpen={() => setOpenId(g.id)} />
+                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => setOpenId(g.id)} />
                       </li>
                     ))}
                   </ul>
@@ -530,6 +524,8 @@ export default function GuestBrowser({
           {/* Laptops: every detail at once. */}
           <GuestTable
             groups={groups}
+            folded={folded}
+            onFold={toggleFold}
             answers={data.answers}
             ownEvent={ownEvent}
             showEvent={sort !== "type"}
@@ -592,23 +588,38 @@ export default function GuestBrowser({
   );
 }
 
-function GroupTitle({ group }: { group: Group }) {
+function GroupTitle({ group, folded, onFold }: { group: Group; folded: boolean; onFold: () => void }) {
   const inner = (
     <>
-      <span className="label">{group.title}</span>
+      <span className={`label ${group.rose ? "!text-[#9A3F2B]" : ""}`}>{group.title}</span>
       <span className="text-xs text-stone">
         {guestCount(group.guests.length)}
         {group.onOpen && " ›"}
       </span>
     </>
   );
-  const className = "mt-5 flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-1.5 pt-1";
-  return group.onOpen ? (
-    <button type="button" onClick={group.onOpen} className={`${className} w-full text-left hover:[&>span]:text-ink`}>
-      {inner}
-    </button>
-  ) : (
-    <div className={className}>{inner}</div>
+  const className = "flex min-w-0 flex-1 items-baseline justify-between gap-3 text-left";
+  return (
+    <div className="mt-5 flex items-center gap-1 border-b border-champagne-400 pb-1.5 pt-1">
+      {group.onOpen ? (
+        <button type="button" onClick={group.onOpen} className={`${className} hover:[&>span]:text-ink`}>
+          {inner}
+        </button>
+      ) : (
+        <button type="button" onClick={onFold} aria-expanded={!folded} className={className}>
+          {inner}
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onFold}
+        aria-expanded={!folded}
+        aria-label={`${folded ? "Show" : "Hide"} ${group.title}`}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
+      >
+        <ChevronDown className={`h-4 w-4 transition ${folded ? "-rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+      </button>
+    </div>
   );
 }
 
@@ -776,12 +787,10 @@ export function GuestRow({
   event,
   status,
   showEvent,
-  detail,
   onOpen,
 }: {
   guest: Contact;
   /** A line under the name: what the summary card is adding up (their diet, role…). */
-  detail?: { text: string; rose: boolean };
   /** Off when the list is already grouped into day and evening guests. */
   showEvent: boolean;
   /** The event they're a guest of — their first invitation. */
@@ -819,7 +828,6 @@ export function GuestRow({
             <Star aria-hidden className="ml-1.5 inline h-3 w-3 fill-champagne-400 align-baseline text-champagne-400 min-[360px]:hidden" strokeWidth={1.4} />
           )}
         </span>
-        {detail && <span className={`mt-0.5 block text-xs ${detail.rose ? "text-[#9A3F2B]" : "text-champagne-600"}`}>{detail.text}</span>}
         {roles.length > 0 && <span className="sr-only">Role: {roles.join(", ")}</span>}
       </span>
       <AnswerIcon status={status} />
@@ -1093,12 +1101,16 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
  */
 function GuestTable({
   groups,
+  folded,
+  onFold,
   answers,
   ownEvent,
   showEvent,
   onOpen,
 }: {
   groups: Group[];
+  folded: Set<string>;
+  onFold: (key: string) => void;
   answers: Map<string, Rsvp[]>;
   ownEvent: (g: Contact) => WeddingEvent | undefined;
   showEvent: boolean;
@@ -1130,13 +1142,22 @@ function GuestTable({
                       {group.title}
                     </button>
                   ) : (
-                    <span className="font-display text-lg text-ink">{group.title}</span>
+                    <span className={`font-display text-lg ${group.rose ? "text-[#9A3F2B]" : "text-ink"}`}>{group.title}</span>
                   )}
                   <span className="type-meta ml-3">{guestCount(group.guests.length)}</span>
+                  <button
+                    type="button"
+                    onClick={() => onFold(group.key)}
+                    aria-expanded={!folded.has(group.key)}
+                    aria-label={`${folded.has(group.key) ? "Show" : "Hide"} ${group.title}`}
+                    className="ml-2 inline-flex h-7 w-7 items-center justify-center rounded-full align-middle text-stone hover:text-ink"
+                  >
+                    <ChevronDown className={`h-4 w-4 transition ${folded.has(group.key) ? "-rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+                  </button>
                 </th>
               </tr>
             )}
-            {group.guests.map((g) => {
+            {(folded.has(group.key) ? [] : group.guests).map((g) => {
               const event = ownEvent(g);
               // Meal and diet are recorded per event: show the ones for their own.
               const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;

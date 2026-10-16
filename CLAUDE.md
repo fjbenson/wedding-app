@@ -389,21 +389,25 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (People › Files, grouped by area, Filter and +), files on payments and
   area pages, and **C**, the assistant reading a file.
   Categories in `src/lib/areas.ts` use the plan's starter-area ids.
-  **The card follows the filter** (14 Oct 2026; canvas 3 "Guest list · A
-  card for every filter", owner's pick): with a filter on, the numbers card
-  becomes a **summary card** (`guest-summary.tsx`): "13 coming" large, the
-  other answers under it (tap to show them), then a **tally** (label, dotted
-  line, number — no bars, owner: most lines are 1s) for what the filter has
-  kinds of: Dietary needs → each need, allergies apart under "must avoid",
-  plus Copy the list for the caterer; Bridal party → roles; Day guests →
-  meals ("Not picked yet" faded); Evening guests → adults / children;
-  Children or both events → day / evening. No address and groups show the
-  headline only (a tally would repeat the list; No address groups the list
-  by household). Filters always combine; when two have kinds, an **"Add up
-  by"** switch picks which (`?by=`). Tapping a tally line narrows the list
-  again (a dark pill, `?pick=`), and each row shows that detail under the
-  name. Counts are of guests coming. A group's card keeps Email · Text · Edit
-  with the same body. Filters stay under the card; on phones **Filter opens
+  **The card follows the filter, and the list does the breaking down**
+  (card 14 Oct 2026; **simplified 17 Oct 2026, owner's idea**): with a filter
+  on, the numbers card becomes a **summary card** (`guest-summary.tsx`): "13
+  coming" large, the other answers under it (tap to show them), "of 80
+  people · 43 homes" — and nothing more; it no longer adds up diets, roles or
+  meals (the tally, "Add up by" switch and tapping a line are gone), because
+  **Sort now breaks the list down**: Sort › **Dietary needs** (a heading per
+  need with its count, allergies after, in rose, "must avoid"; anyone with two
+  needs shows under both; "No dietary needs" last), **Meal choice** (most
+  first, "Not picked yet" last), **Role**, as well as Event, Group and
+  Household. So Filter › Dietary needs, then Sort › Dietary needs, reads
+  "Vegetarian · 5 guests", "Vegan · 3 guests"… with the people underneath.
+  **Every heading folds** (a chevron on its right, in the phone list and the
+  laptop table; open by default, not remembered). The one thing kept on the
+  card is **Copy the list for the caterer**, shown when the list is about
+  diets. Filters always combine; No address and groups show the headline
+  only. A group's own **Filter › Groups** keeps a summary card titled with
+  its name and a pill to take it off.
+  Filters stay under the card; on phones **Filter opens
   as a sheet from the bottom** with "Show N guests" (owner, 14 Oct 2026:
   the growing card pushed the dropdown away; moving search and Filter above
   the card was tried and dropped — it split Sort from its list).

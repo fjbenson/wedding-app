@@ -7,19 +7,14 @@ import type { Rsvp } from "@/types/db";
 /**
  * The card at the top of the guest list once a filter is on (canvas 3
  * "Guest list · A card for every filter", owner, 14 Oct 2026). Filters narrow
- * the list, all together; this card adds up whoever is left, so nobody opens
- * card after card to count:
+ * the list, all together; this card adds up whoever is left: how many are
+ * coming, large, with the other answers under it (each a button that shows
+ * just those people, like the plain card's rows).
  *
- * - a headline: how many are coming, large, with the other answers under it
- *   (each a button that shows just those people, like the plain card's rows);
- * - a tally for what the filter has kinds of — diets, roles, meals… — a line
- *   per kind, as many as there are, the number in the big serif. Tapping a
- *   line narrows the list again. With two filters that both have kinds, a
- *   small "Add up by" switch picks which one is added up.
- *
- * No bars (owner, 14 Oct 2026): most lines are 1s and 2s, where the number is
- * what matters. Filters whose kinds would just repeat the list (no address,
- * a group) show the headline only.
+ * Since 17 Oct 2026 (owner) it no longer adds up kinds — diets, roles, meals.
+ * That's the list's job now: Sort › Dietary needs, Meal choice or Role gives
+ * a heading per kind with its count, which you can fold. The one thing kept
+ * here is "Copy the list for the caterer" when the list is about diets.
  */
 
 export type SplitKind = "diet" | "role" | "meal" | "age" | "when";
@@ -53,31 +48,22 @@ export function SummaryBody({
   homes,
   showing,
   onShow,
-  splits,
-  splitBy,
-  onSplit,
-  pick,
-  onPick,
+  copy,
 }: {
   counts: Record<Rsvp["status"], number>;
   total: number;
   homes: number;
   showing: "all" | Rsvp["status"];
   onShow: (s: "all" | Rsvp["status"]) => void;
-  splits: Split[];
-  splitBy?: SplitKind;
-  onSplit: (kind: SplitKind) => void;
-  pick?: string;
-  onPick: (id: string | undefined) => void;
+  /** Text for "Copy the list for the caterer"; left out, no button. */
+  copy?: string;
 }) {
-  const split = splits.find((s) => s.kind === splitBy) ?? splits[splits.length - 1];
   const others: { status: Rsvp["status"]; word: string }[] = [
     { status: "pending", word: "still to answer" },
     { status: "to_invite", word: "to invite" },
     { status: "declined", word: "can't come" },
   ];
   const toggle = (s: Rsvp["status"]) => onShow(showing === s ? "all" : s);
-  const lines = split?.sections.some((s) => s.lines.length > 0);
 
   return (
     <>
@@ -113,59 +99,7 @@ export function SummaryBody({
         </span>
       </p>
 
-      {splits.length > 1 && (
-        <div className="mt-3.5 flex items-center justify-between gap-3">
-          <span className="type-meta">Add up by</span>
-          <span role="group" aria-label="Add up by" className="inline-flex rounded-full bg-cream p-[3px] text-[13px]">
-            {splits.map((s) => (
-              <button
-                key={s.kind}
-                type="button"
-                aria-pressed={s.kind === split?.kind}
-                onClick={() => onSplit(s.kind)}
-                className={`h-8 rounded-full px-3 transition ${s.kind === split?.kind ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "text-stone hover:text-ink"}`}
-              >
-                {s.word}
-              </button>
-            ))}
-          </span>
-        </div>
-      )}
-
-      {split && lines && (
-        <div className="mt-3.5 border-t border-linen pt-1">
-          {split.sections
-            .filter((section) => section.lines.length > 0)
-            .map((section, i) => (
-              <div key={section.title ?? i}>
-                {section.title && (
-                  <p className={`type-meta mt-3 ${section.rose ? "text-[#9A3F2B]" : ""}`}>{section.title}</p>
-                )}
-                {section.lines.map((line) => {
-                  const on = pick === line.id;
-                  return (
-                    <button
-                      key={line.id}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => onPick(on ? undefined : line.id)}
-                      className={`-mx-2 flex min-h-11 w-[calc(100%+1rem)] items-baseline gap-1.5 rounded-xl px-2 py-2 text-left text-[15px] transition ${
-                        on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.14)]" : "hover:bg-white/60"
-                      } ${line.rose ? "text-[#9A3F2B]" : line.faded ? "text-stone" : "text-ink"}`}
-                    >
-                      <span className="min-w-0">{line.label}</span>
-                      <span aria-hidden className="min-w-4 flex-1 -translate-y-1 border-b-[1.5px] border-dotted border-[#C9BBA0]" />
-                      <span className="type-figure text-xl leading-none tabular-nums">{line.count}</span>
-                      <span aria-hidden className="ml-0.5 text-sm text-stone">›</span>
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-        </div>
-      )}
-
-      {split?.copy && lines && <CopyButton text={split.copy} label="Copy the list for the caterer" />}
+      {copy && <CopyButton text={copy} label="Copy the list for the caterer" />}
     </>
   );
 }

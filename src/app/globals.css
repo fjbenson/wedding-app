@@ -192,9 +192,12 @@ body::before {
     /* Lighter and airier (owner, 16 Oct 2026: the thick white rim on top
        was too much): a hairline edge instead of a white border plus an inner
        highlight, and a softer, wider shadow. */
-    background: rgb(255 255 255 / 0.5);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* No backdrop blur (owner, 16 Oct 2026: a hard line ran across the
+       screen under every row of cards): on iPhones a blurred card over the
+       fixed lamp-lit background is painted in its own layer, and the seam
+       shows. The cards sit on a plain background, so the blur added nothing.
+       The floating menu bar and pen keep theirs (.glass). */
+    background: rgb(255 255 255 / 0.55);
     border: 0.5px solid rgb(255 255 255 / 0.7);
     box-shadow:
       0 0 0 0.5px rgb(60 50 40 / 0.06),

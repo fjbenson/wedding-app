@@ -218,7 +218,7 @@ export function SummaryCard({
   return (
     <section
       aria-label={title}
-      className="rounded-[22px] border-[0.5px] border-white/70 bg-white/55 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)] backdrop-blur-xl"
+      className="rounded-[22px] border-[0.5px] border-white/70 bg-white/55 p-[18px] shadow-[0_18px_40px_-28px_rgb(60_45_20/0.4)]"
     >
       <div className="flex items-center gap-2.5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">

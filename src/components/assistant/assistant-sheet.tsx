@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUp, CalendarDays, Camera, Check, ListPlus, PenLine, PoundSterling, StickyNote, UserPlus, Users, Wallet, X, type LucideIcon } from "lucide-react";
+import { ArrowUp, CalendarDays, Camera, Check, PenLine, StickyNote, UserPlus, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
 import { appointmentFlow } from "@/components/assistant/appointment-steps";
@@ -478,8 +478,6 @@ const PROMPTS: { label: string; icon: LucideIcon; say?: string }[] = [
   { label: "What’s left to pay?", icon: Wallet, say: "What’s left to pay?" },
   { label: "What’s on this week?", icon: CalendarDays, say: "What’s on this week?" },
   { label: "Add a guest", icon: UserPlus, say: "I’d like to add a guest." },
-  { label: "Record a payment", icon: PoundSterling, say: "I’d like to record a payment." },
-  { label: "Add a to-do", icon: ListPlus, say: "I’d like to add a to-do." },
   { label: "A thought for later", icon: StickyNote },
 ];
 

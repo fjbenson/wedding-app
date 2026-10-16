@@ -63,21 +63,23 @@ export function MilestoneRow({
             {m.title}
           </span>
           {(details.length > 0 || overdue) && (
+            // One pattern for every row (owner, 16 Oct 2026): the date first, in
+            // gold and bold — rose when it's overdue, "Overdue" after it — then
+            // the rest in the usual grey.
             <span className="type-meta mt-1 block">
-              {overdue && !nudge && <span className="text-champagne-600">Overdue · </span>}
               {nudge && !done ? (
                 <>
-                  <span className="text-champagne-600">{details[0]}</span>
+                  <span className="font-semibold text-champagne-600">{details[0]}</span>
+                  {details.slice(1).map((d) => ` · ${d}`)}
+                </>
+              ) : m.due_date ? (
+                <>
+                  <span className={`font-semibold ${done ? "" : overdue ? "text-[#9A3F2B]" : "text-champagne-600"}`}>{details[0]}</span>
+                  {overdue && <span className="text-[#9A3F2B]"> · Overdue</span>}
                   {details.slice(1).map((d) => ` · ${d}`)}
                 </>
               ) : (
-                // The date darker than the rest, so it reads first (owner, 16 Oct 2026: no "By").
-                details.map((d, i) => (
-                  <span key={i} className={i === 0 && m.due_date && !done ? "text-ink/75" : ""}>
-                    {i > 0 && " · "}
-                    {d}
-                  </span>
-                ))
+                details.join(" · ")
               )}
             </span>
           )}

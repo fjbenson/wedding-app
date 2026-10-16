@@ -505,8 +505,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   **Then (owner's list, 16 Oct 2026):** the list has a heading like Done's
   — the month's name left, the count right ("OCTOBER · 4", "DONE · 1"), no
   divider; "3 undated" is now quiet stone text "Undated ›" beside the
-  key; a to-do's line drops "By" and its date is darker ("Overdue · 15 Oct ·
-  Flowers"). The tab's top (back arrow, corner switch, title + drawing) is
+  key. **Every row's line is one pattern** (owner, 16 Oct 2026): the date
+  first in **bold gold** ("20 Oct · Flowers"); overdue turns the date rose
+  with "· Overdue" after it ("15 Oct · Overdue"); an appointment adds its day
+  and time after the date ("24 Oct · Sat 2pm · Ashcombe Barn"). No "By".
+  `MilestoneRow` / `AppointmentRow`, so the same everywhere they show. The tab's top (back arrow, corner switch, title + drawing) is
   the shared pattern on every tab — left as is.
   Counts say "4 items" / "1 item" (a bare number didn't say what it
   counted); row dividers in Plan's lists are darker (`border-ink/[0.12]`

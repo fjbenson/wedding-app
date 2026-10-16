@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Calendar, Check, ChevronRight } from "lucide-react";
-import { formatTime, formatWeekdayDayMonth } from "@/lib/dates";
+import { formatDayMonth, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import type { Appointment } from "@/types/db";
 
 /**
@@ -21,8 +21,11 @@ export function AppointmentRow({
   supplier?: string;
   area?: string | null;
 }) {
+  // The same line as a to-do's (owner, 16 Oct 2026): the date first, in
+  // gold, then what only an appointment has — the day and time — then the rest.
+  const weekday = formatWeekdayDayMonth(a.on_date).split(" ")[0];
   const details = [
-    `${formatWeekdayDayMonth(a.on_date)}${a.at_time ? ` · ${formatTime(a.at_time)}` : ""}`,
+    `${weekday}${a.at_time ? ` ${formatTime(a.at_time)}` : ""}`,
     a.location,
     // "at Hazel Gap Barn · with Hazel Gap Barn" says it twice.
     supplier && !a.location?.includes(supplier) && `with ${supplier}`,
@@ -38,7 +41,10 @@ export function AppointmentRow({
       <Link href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3">
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
-          <span className="type-meta mt-1 block">{details.join(" · ")}</span>
+          <span className="type-meta mt-1 block">
+            <span className={`font-semibold ${been ? "" : "text-champagne-600"}`}>{formatDayMonth(a.on_date)}</span>
+            {details.map((d) => ` · ${d}`)}
+          </span>
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
       </Link>

@@ -766,7 +766,9 @@ existing sign-in, new-wedding and hub screens use them. Final glass use is
 still open. **Background (12 Oct 2026):** the satin stripes were replaced by
 **paper under a lamp** — one light from the top of the screen, no grain
 (a grain was tried and dropped; **16 Oct 2026** the light became the canvas
-mock-ups' — white at the top to a cooler ivory `#f4efe7`, owner's pick) (canvas 2 "Background · Round 2", option A; `body::before` in
+mock-ups' white top; then, same day, the light stops sooner over a warm
+ivory ground `#efe7da` and glass cards are a touch whiter with a firmer
+shadow — owner: all-white made the cards stop popping) (canvas 2 "Background · Round 2", option A; `body::before` in
 `globals.css`); the Hub's and area pages' gold glows were taken out. B (oat
 ground) and C (real texture) wait on the canvas.
 **T is part done** — hosting is live, the screens are not.

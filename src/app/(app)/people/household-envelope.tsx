@@ -84,7 +84,7 @@ export default function HouseholdEnvelope({
 
   const lines = [household.address_line1, household.address_line2, household.city, household.postcode].filter(Boolean) as string[];
   const ENVELOPE = 236;
-  const TUCKED = 66; // how much of the invitation stays in the pocket when it's out
+  const TUCKED = 28; // how much of the invitation stays in the pocket when it's out (only its bottom margin)
 
   return (
     <div
@@ -183,11 +183,11 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
   );
 }
 
-/** The back's folds: a line from each corner to the middle, meeting in a cross. */
+/** The back's fold: a line from each bottom corner up to the flap's tip, so with the flap's own edges they make one cross. */
 function Seams() {
   return (
     <svg aria-hidden viewBox="0 0 342 236" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-      <path d="M1 1 L171 132 L341 1 M1 235 L171 132 L341 235" fill="none" stroke="#E6DAC3" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <path d="M1 235 L171 103 L341 235" fill="none" stroke="#E2D5BC" strokeWidth="1" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -228,7 +228,7 @@ function Invitation({
   const one = theirs.length === 1 ? theirs[0] : undefined;
   const mixed = theirs.length > 1;
   return (
-    <div className="relative rounded px-[22px] pb-6 pt-6 text-center shadow-[0_0_0_1px_#E6DCC8,0_-10px_24px_-18px_rgb(60_45_20/0.5)]">
+    <div className="relative rounded px-[22px] pb-10 pt-6 text-center shadow-[0_0_0_1px_#E6DCC8,0_-10px_24px_-18px_rgb(60_45_20/0.5)]">
       <Paper />
       <span aria-hidden className="pointer-events-none absolute inset-[7px] rounded-sm border border-[#D8C7A4]" />
       <div className="relative">

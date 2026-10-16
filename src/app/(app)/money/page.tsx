@@ -85,7 +85,7 @@ export default async function MoneyPage({
       open={open || null}
       month={month || null}
       payments={payments}
-      suppliers={allSuppliers.map((s) => ({ id: s.id, name: name(s) }))}
+      suppliers={allSuppliers.map((s) => ({ id: s.id, name: name(s), area: s.supplier_details?.category ?? null }))}
       areas={areas}
       area={filter}
       scope={filter === null ? null : filter === "none" ? "Other" : (picked?.label ?? filter)}

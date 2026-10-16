@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { listAppointments } from "@/lib/db/appointments";
 import { listAreas } from "@/lib/db/areas";
+import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
 import { countInspo, listInspo } from "@/lib/db/inspo";
 import { listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
-import { STARTER_AREAS } from "@/lib/areas";
+import { areaOptions, STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
 import HubTiles from "@/components/hub-tiles";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
@@ -28,9 +29,10 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas, appointments, payments, unfiled, inspo, latestInspo] = await Promise.all([
+  const [milestones, areas, suppliers, appointments, payments, unfiled, inspo, latestInspo] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
+    listSuppliers(wedding.id),
     listAppointments(wedding.id),
     listPayments(wedding.id),
     listNotes(wedding.id, { area: null }),
@@ -72,6 +74,12 @@ export default async function HomePage() {
           appointments={appointments ?? []}
           payments={payments ?? []}
           hasDate={wedding.wedding_date !== null}
+          areas={areaOptions(areas)}
+          suppliers={suppliers.map((s) => ({
+            id: s.id,
+            name: s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" "),
+            area: s.supplier_details?.category ?? null,
+          }))}
         />
         <HubTiles
           note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}

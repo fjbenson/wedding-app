@@ -1,4 +1,5 @@
 import CardLink from "@/components/card-link";
+import RowLine from "@/components/row-line";
 import { Calendar, Check } from "lucide-react";
 import { formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import DateStamp from "@/components/date-stamp";
@@ -24,20 +25,15 @@ export function AppointmentRow({
   area?: string | null;
 }) {
   const weekday = formatWeekdayDayMonth(a.on_date).split(" ")[0];
-  const details = [
-    `${weekday}${a.at_time ? ` ${formatTime(a.at_time)}` : ""}`,
-    a.location,
-    // "at Hazel Gap Barn · with Hazel Gap Barn" says it twice.
-    supplier && !a.location?.includes(supplier) && `with ${supplier}`,
-    area,
-  ].filter(Boolean);
+  // Kind, day and time, who it's with (else where), then the area (RowLine).
+  const details = [`${weekday}${a.at_time ? ` ${formatTime(a.at_time)}` : ""}`, supplier ?? a.location, area];
   return (
     <li className={`row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0 ${been ? "opacity-60" : ""}`}>
       <CardLink href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
         <DateStamp date={a.on_date} today={todayISO()} done={been} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
-          <span className="type-meta mt-1 block">{details.join(" · ")}</span>
+          <RowLine kind={been ? "Been" : "Appointment"} details={details} />
         </span>
       </CardLink>
       {/* White with a firm edge, like a to-do's circle and a payment's £ (owner, 16 Oct 2026: the faint beige disc looked different). */}

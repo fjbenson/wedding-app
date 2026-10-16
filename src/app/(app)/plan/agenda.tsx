@@ -44,7 +44,7 @@ export default function Agenda({
 }: {
   milestones: Milestone[];
   appointments: Appointment[] | null;
-  suppliers: { id: string; name: string }[];
+  suppliers: { id: string; name: string; area?: string | null }[];
   areas: AreaOption[];
   weddingDate: string | null;
   today: string;
@@ -98,7 +98,9 @@ export default function Agenda({
         />
       );
     }
-    return <AppointmentRow key={`a-${entry.appointment.id}`} appointment={entry.appointment} been={faded} supplier={supplierName(entry.appointment.contact_id)} />;
+    const a = entry.appointment;
+    const areaKey = a.area_key ?? suppliers.find((s) => s.id === a.contact_id)?.area ?? null;
+    return <AppointmentRow key={`a-${a.id}`} appointment={a} been={faded} supplier={supplierName(a.contact_id)} area={areaName(areaKey, areas)} />;
   };
 
   const earlierMonth = fromEarlier[0]?.date?.slice(0, 7);

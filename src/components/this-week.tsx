@@ -1,5 +1,6 @@
 import DateStamp from "./date-stamp";
 import Link from "next/link";
+import { areaName, type AreaOption } from "@/lib/areas";
 import CardLink from "./card-link";
 import { Calendar, Check } from "lucide-react";
 import StarterPlanCard from "@/components/starter-plan-card";
@@ -59,13 +60,22 @@ export default function ThisWeek({
   appointments,
   payments,
   hasDate,
+  areas = [],
+  suppliers = [],
 }: {
   milestones: Milestone[];
   appointments: Appointment[];
   payments: Payment[];
   hasDate: boolean;
+  /** For each row's grey line: its area and who it's with (RowLine's rule). */
+  areas?: AreaOption[];
+  suppliers?: { id: string; name: string; area: string | null }[];
 }) {
   const today = todayISO();
+  const supplier = (id: string | null) => suppliers.find((s) => s.id === id);
+  const named = (key: string | null | undefined) => (key ? areaName(key, areas) : null);
+  // Kind first, then the most useful detail, then the area — as on every row (16 Oct 2026).
+  const line = (...parts: (string | null | undefined | false)[]) => parts.filter(Boolean).join(" · ");
   const [monday, sunday] = weekBounds(today);
 
   const all: Entry[] = [
@@ -79,7 +89,7 @@ export default function ThisWeek({
         return [{
           key: `t-${m.id}`, kind: "todo" as const, id: m.id, date, order: 2, href: `/plan/${m.id}`,
           title: m.title, italic: isNudge(m), overdue,
-          meta: isNudge(m) ? "Start now" : "To do",
+          meta: line(isNudge(m) ? "Start now" : "To do", named(m.category)),
         }];
       }),
     ...appointments
@@ -88,7 +98,12 @@ export default function ThisWeek({
         key: `a-${a.id}`, kind: "appointment" as const, id: a.id, date: a.on_date, order: 0,
         href: `/plan/appointments/${a.id}`, title: a.title, overdue: false,
         // Says what it is, like "To do" and "To pay" (owner, 16 Oct 2026).
-        meta: a.at_time ? `${formatTime(a.at_time)} · Appointment` : "Appointment",
+        meta: line(
+          "Appointment",
+          a.at_time && formatTime(a.at_time),
+          supplier(a.contact_id)?.name ?? a.location,
+          named(a.area_key ?? supplier(a.contact_id)?.area),
+        ),
       })),
     ...payments
       .filter((p) => !p.paid_on && p.due_date)
@@ -97,7 +112,7 @@ export default function ThisWeek({
         return {
           key: `p-${p.id}`, kind: "payment" as const, id: p.id, date: p.due_date!, order: 1,
           href: `/money/payments/${p.id}`, title: p.description, amount: formatMoney(p.amount), overdue,
-          meta: "To pay",
+          meta: line("To pay", supplier(p.contact_id)?.name, named(p.area_key ?? supplier(p.contact_id)?.area)),
         };
       }),
   ].sort((a, b) => a.date.localeCompare(b.date) || a.order - b.order);

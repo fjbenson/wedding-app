@@ -7,7 +7,7 @@ import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
 import CornerSwitch from "@/components/corner-switch";
 import FilterMenu from "@/components/filter-menu";
 import PageTitle from "@/components/page-title";
-import { areaFilterRows, type AreaOption } from "@/lib/areas";
+import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import AreaCards, { type AreaCard } from "./area-cards";
 import MoneyFigures from "./money-figures";
 import type { Money } from "@/lib/budget";
@@ -64,7 +64,7 @@ export default function MoneyView({
   /** The area whose money card is open (`?open=`). */
   open: string | null;
   payments: Payment[];
-  suppliers: { id: string; name: string }[];
+  suppliers: { id: string; name: string; area?: string | null }[];
   balances: { supplierId: string; name: string; balance: number }[];
   weddingDate: string | null;
   /** False until 0006_money.sql has been run. */
@@ -117,6 +117,8 @@ export default function MoneyView({
           total={total}
           payments={payments}
           suppliers={suppliers}
+          // Each row names its area unless the list is already one area.
+          areaOf={area ? undefined : (p) => areaName(p.area_key ?? suppliers.find((s) => s.id === p.contact_id)?.area ?? null, areas)}
           balances={balances}
           weddingDate={weddingDate}
           picked={month}
@@ -206,6 +208,7 @@ function ByMonth({
   total,
   payments,
   suppliers,
+  areaOf,
   balances,
   weddingDate,
   picked,
@@ -214,7 +217,8 @@ function ByMonth({
 }: {
   total: Money;
   payments: Payment[];
-  suppliers: { id: string; name: string }[];
+  suppliers: { id: string; name: string; area?: string | null }[];
+  areaOf?: (p: Payment) => string | null;
   balances: { supplierId: string; name: string; balance: number }[];
   weddingDate: string | null;
   picked: string | null;
@@ -256,7 +260,7 @@ function ByMonth({
 
   // The same row as Plan's and the Hub's This week (owner, 16 Oct 2026).
   const row = (p: Payment) => (
-    <PaymentRow key={p.id} payment={p} today={today} who={suppliers.find((s) => s.id === p.contact_id)?.name} />
+    <PaymentRow key={p.id} payment={p} today={today} who={suppliers.find((s) => s.id === p.contact_id)?.name} area={areaOf?.(p)} />
   );
 
   const count = (n: number) => (n === 1 ? "1 payment" : `${n} payments`);

@@ -1,4 +1,5 @@
 import CardLink from "./card-link";
+import RowLine from "./row-line";
 import { Check } from "lucide-react";
 import DateStamp from "./date-stamp";
 import TickForm from "./tick-form";
@@ -14,22 +15,27 @@ import type { Payment } from "@/types/db";
  * (a gold tick once paid; tap again to undo). Tap the row and its card opens
  * over the page (`plan-cards.tsx`).
  */
-export default function PaymentRow({ payment: p, today, who }: { payment: Payment; today: string; who?: string | null }) {
+export default function PaymentRow({
+  payment: p,
+  today,
+  who,
+  area,
+}: {
+  payment: Payment;
+  today: string;
+  who?: string | null;
+  /** Left off where the list is already one area. */
+  area?: string | null;
+}) {
   const paid = !!p.paid_on;
   const late = !paid && !!p.due_date && p.due_date < today;
-  const sub = [paid ? `Paid ${formatDayMonth(p.paid_on!)}` : null, who].filter(Boolean);
   return (
     <li className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
       <CardLink href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
         <DateStamp date={p.due_date ?? p.paid_on ?? null} today={today} overdue={late} done={paid} />
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${paid ? "!text-stone" : ""}`}>{p.description}</span>
-          {(late || sub.length > 0) && (
-            <span className="type-meta mt-1 block">
-              {late && <span className="text-[#9A3F2B]">Overdue{sub.length ? " · " : ""}</span>}
-              {sub.join(" · ")}
-            </span>
-          )}
+          <RowLine kind={paid ? `Paid ${formatDayMonth(p.paid_on!)}` : "To pay"} details={[who, area]} overdue={late} />
         </span>
         <span className={`type-figure shrink-0 text-[18px] ${paid ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
       </CardLink>

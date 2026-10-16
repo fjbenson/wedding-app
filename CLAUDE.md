@@ -540,7 +540,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   where · with …"; payment: "Overdue" / "Paid 3 Oct" + who) and the amount,
   then **the mark on the right**: tick circle (to-do), little calendar
   (appointment), £ circle (payment; `PaymentRow`, `src/components/
-  payment-row.tsx`, with Undo). No chevrons. Used by `MilestoneRow`,
+  payment-row.tsx`, with Undo). No chevrons. **The grey line is one rule
+  everywhere** (owner, 16 Oct 2026; `RowLine`, `src/components/row-line.tsx`):
+  *kind first* — To do / Appointment / To pay (Done / Been / Paid 3 Oct once
+  done) — then the most useful detail (an appointment's day and time, who
+  it's with or to), then the **area, left off where the list is already one
+  area** (area pages, a filtered Money); "Overdue · " leads in rose. Used by `MilestoneRow`,
   `AppointmentRow`, Money's By month, area pages' payments, and the Hub's
   This week (weekday under the date there). The tab's top (back arrow, corner switch, title + drawing) is
   the shared pattern on every tab — left as is.

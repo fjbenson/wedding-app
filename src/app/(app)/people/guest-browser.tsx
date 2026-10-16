@@ -633,7 +633,7 @@ function GroupTitle({ group, folded, onFold }: { group: Group; folded: boolean; 
         onClick={onFold}
         aria-expanded={!folded}
         aria-label={`${folded ? "Show" : "Hide"} ${group.title}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
+        className="-my-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
       >
         <ChevronDown className={`h-4 w-4 transition ${folded ? "-rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
       </button>
@@ -1171,7 +1171,7 @@ function GuestTable({
                     onClick={() => onFold(group.key)}
                     aria-expanded={!folded.has(group.key)}
                     aria-label={`${folded.has(group.key) ? "Show" : "Hide"} ${group.title}`}
-                    className="ml-2 inline-flex h-7 w-7 items-center justify-center rounded-full align-middle text-stone hover:text-ink"
+                    className="-my-2 ml-2 inline-flex h-7 w-7 items-center justify-center rounded-full align-middle text-stone hover:text-ink"
                   >
                     <ChevronDown className={`h-4 w-4 transition ${folded.has(group.key) ? "-rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
                   </button>

@@ -59,16 +59,25 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
   { key: "noaddress", label: "No address yet" },
 ];
 
-const SORTS: { key: SortBy; label: string; short: string }[] = [
+/**
+ * The View button (owner, 17 Oct 2026; was Sort): one pick says how the rows
+ * are grouped and, for two of them, who is shown — Bridal party switches the
+ * Bridal party filter on, Dietary needs the Dietary needs one. The filter
+ * shows as a pill and can be taken off or joined by others.
+ */
+const SORTS: { key: SortBy; label: string; short: string; hint?: string }[] = [
   { key: "first", label: "First name, A–Z", short: "by first name" },
   { key: "last", label: "Surname, A–Z", short: "by surname" },
   { key: "household", label: "Household", short: "by household" },
   { key: "group", label: "Group", short: "by group" },
   { key: "type", label: "Event", short: "by event" },
-  { key: "diet", label: "Dietary needs", short: "by dietary needs" },
+  { key: "role", label: "Bridal party", short: "by bridal party", hint: "Just the bridal party, by role" },
+  { key: "diet", label: "Dietary needs", short: "by dietary needs", hint: "Just those with a need, by need" },
   { key: "meal", label: "Meal choice", short: "by meal" },
-  { key: "role", label: "Role", short: "by role" },
 ];
+
+/** The filter a view switches on with it. */
+const VIEW_FILTER: Partial<Record<SortBy, GuestFilter>> = { role: "party", diet: "dietary" };
 
 /** How each answer reads at the end of a row. */
 const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> = {
@@ -158,7 +167,18 @@ export default function GuestBrowser({
       tab: null,
     });
   }, [query, showing, filters, guestOf, group]);
-  const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : "first");
+  const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : initialFilter === "party" ? "role" : "first");
+  /** Picks a view, and switches on (or off) the filter that goes with it. */
+  const chooseView = (next: SortBy) => {
+    setFilters((on) => {
+      const before = VIEW_FILTER[sort];
+      const add = VIEW_FILTER[next];
+      let now = before && before !== add ? on.filter((f) => f !== before) : on;
+      if (add && !now.includes(add)) now = [...now, add];
+      return now;
+    });
+    setSort(next);
+  };
   const [openId, setOpenId] = useState(initialGuestId);
   /** Headings folded away (owner, 17 Oct 2026): tap a heading's chevron to fold or open its guests. */
   const [folded, setFolded] = useState<Set<string>>(new Set());
@@ -199,7 +219,7 @@ export default function GuestBrowser({
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(SORT_KEY) as SortBy | null;
-      if (saved && SORTS.some((o) => o.key === saved) && initialView !== "households") setSort(saved);
+      if (saved && SORTS.some((o) => o.key === saved) && !VIEW_FILTER[saved] && initialView !== "households" && !initialFilter) setSort(saved);
     } catch {
       // Private browsing or blocked storage: start from the default.
     }
@@ -210,7 +230,8 @@ export default function GuestBrowser({
   useEffect(() => {
     if (!remembered) return;
     try {
-      window.localStorage.setItem(SORT_KEY, sort);
+      // Views that filter (bridal party, dietary needs) aren't kept: the filter wouldn't be.
+      if (!VIEW_FILTER[sort]) window.localStorage.setItem(SORT_KEY, sort);
     } catch {
       // Not remembered, but still works.
     }
@@ -289,10 +310,7 @@ export default function GuestBrowser({
   // How the list is grouped: by role for the bridal party, by household or
   // by day/evening if sorted that way, otherwise one A–Z run.
   let groups: Group[];
-  if (filters.includes("party")) {
-    const roles = [...new Set(shown.flatMap(rolesOf))].sort((a, b) => roleRank(a) - roleRank(b) || a.localeCompare(b));
-    groups = roles.map((role) => ({ key: role, title: role, guests: shown.filter((g) => rolesOf(g).includes(role)) }));
-  } else if ((sort === "diet" || sort === "meal" || sort === "role") && !filters.includes("noaddress")) {
+  if ((sort === "diet" || sort === "meal" || sort === "role") && !filters.includes("noaddress")) {
     // A breakdown (owner, 17 Oct 2026): the headings are the kinds, each with its count.
     const kind = sort;
     const tally = new Map<string, Contact[]>();
@@ -448,7 +466,7 @@ export default function GuestBrowser({
               onClear={clearAll}
               results={filtered.length}
             />
-            <SortMenu sort={sort} onSort={setSort} />
+            <SortMenu sort={sort} onSort={chooseView} />
           </div>
           {filters.length + guestOf.length + (group ? 1 : 0) > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
@@ -1058,7 +1076,7 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`Sort: ${SORTS.find((o) => o.key === sort)!.label}`}
+        aria-label={`View: ${SORTS.find((o) => o.key === sort)!.label}`}
         onClick={() => setOpen((o) => !o)}
         className="type-meta flex h-9 min-w-0 items-center gap-1 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
@@ -1068,7 +1086,7 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
 
       {open && (
         <div className={`${MENU} w-[16rem] pb-1.5 pt-2.5`}>
-          <span className="section-label block py-1">Sort by</span>
+          <span className="section-label block py-1">View</span>
           <ul>
             {SORTS.map((o) => (
               <li key={o.key} className="border-t border-linen first:border-t-0">
@@ -1082,7 +1100,10 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
                   }}
                   className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
                 >
-                  <span className="flex-1">{o.label}</span>
+                  <span className="flex-1">
+                    {o.label}
+                    {o.hint && <span className="block text-xs text-stone">{o.hint}</span>}
+                  </span>
                   {sort === o.key && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
                 </button>
               </li>

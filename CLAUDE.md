@@ -401,6 +401,15 @@ Next.js scaffold. Built so far, against the plan's tabs:
   first, "Not picked yet" last), **Role**, as well as Event, Group and
   Household. So Filter › Dietary needs, then Sort › Dietary needs, reads
   "Vegetarian · 5 guests", "Vegan · 3 guests"… with the people underneath.
+  **Sort became "View" (17 Oct 2026, owner):** one pick sets how the rows
+  are grouped and, for two of them, the filter behind it — **Bridal party**
+  switches the Bridal party filter on (grouped by role) and **Dietary needs**
+  the Dietary needs filter (grouped by need); First name, Surname, Household,
+  Group, Event and Meal choice just group. The filter shows as a pill, can be
+  taken off, and others can be added from Filter (day/evening, children…);
+  switching view takes off the filter the last view added. Views that filter
+  aren't remembered on the phone (the filter wouldn't be); the others are.
+  The numbers card (All · Coming · Invited · Can't come) is unchanged.
   **Every heading folds** (a chevron on its right, in the phone list and the
   laptop table; open by default, not remembered). The one thing kept on the
   card is **Copy the list for the caterer**, shown when the list is about

@@ -1525,7 +1525,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 All private to the owner; open with the Artifact tool's `read` action.
 
 - **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
-  envelope; Guest card round 2, the profile; Groups round 1 — built): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+  envelope; Guest card round 2, the profile; Groups round 1 — built; **Tab tops · Round 1**, 16 Oct 2026: owner wants the back arrow and title drawings gone — A one row (title + switch), B a gold line above the title, C no title, switch centred; on Plan and Guests; not picked yet): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **full** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026); new rounds go on canvas 3: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Name Lab** — a this-or-that game for the name (`results` collection;

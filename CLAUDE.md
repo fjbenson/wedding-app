@@ -511,7 +511,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   for the key's row under it (key left, + right, like Guests' search row),
   so ‹ the month › sits centred on the card; "Undated" left the key's row
   for the foot of the list — a heading like the month's and Done's
-  ("UNDATED · 6 items ›") opening the No date yet card.
+  ("UNDATED · 6 items"), and since the same day a **fold that opens in place
+  like Done** (owner: one opened a pop-up, the other expanded).
   **Then (owner's list, 16 Oct 2026):** the list has a heading like Done's
   — the month's name left, the count right ("OCTOBER · 4", "DONE · 1"), no
   divider; "3 undated" is now quiet stone text "Undated ›" beside the

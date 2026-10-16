@@ -6,6 +6,7 @@ import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
 import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
+import { Fold } from "./fold";
 
 export type Dot = "todo" | "appointment";
 
@@ -67,7 +68,7 @@ export default function PlanCalendar({
   /** Everything in each month, for the list under the grid. */
   monthLists: Record<string, ReactNode>;
   monthTops: Record<string, ReactNode>;
-  /** To-dos with no date: a line under the month opens them in a card (`?day=undated`). */
+  /** To-dos with no date: a fold under the month's list, like Done (old `?day=undated` links still open their card). */
   undatedCount: number;
   undatedPanel: ReactNode;
   toggle: ReactNode;
@@ -241,20 +242,22 @@ export default function PlanCalendar({
         )}
       </div>
 
-      {/* To-dos with no date, after the month: a heading like the month's and
-          Done's, opening their card (owner, 16 Oct 2026). */}
+      {/* To-dos with no date, after the month: a fold like Done's, opening in
+          place (owner, 16 Oct 2026: Done expanded but Undated opened a
+          pop-up — two behaviours for the same kind of heading). */}
       {undatedCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setSelected("undated")}
-          className="mt-3 flex w-full items-baseline justify-between gap-3 border-t border-ink/[0.12] pb-1 pt-3 text-left hover:[&>span]:text-ink"
+        <Fold
+          id="calendar-undated"
+          className="mt-3 border-t border-ink/[0.12] pt-3"
+          header={
+            <span className="flex items-baseline justify-between gap-3">
+              <span className="section-label">Undated</span>
+              <span className="type-meta">{undatedCount === 1 ? "1 item" : `${undatedCount} items`}</span>
+            </span>
+          }
         >
-          <span className="section-label">Undated</span>
-          <span className="type-meta flex items-center gap-1">
-            {undatedCount === 1 ? "1 item" : `${undatedCount} items`}
-            <ChevronRight className="h-3.5 w-3.5 self-center" strokeWidth={1.8} aria-hidden />
-          </span>
-        </button>
+          {undatedPanel}
+        </Fold>
       )}
 
 

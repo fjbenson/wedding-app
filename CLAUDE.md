@@ -758,7 +758,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   day it was paid; who it's to (picking a supplier picks their area); area
   tiles; notes folded. then a dashed **No
   date yet** card holding undated payments and unscheduled supplier
-  balances (faded rows, tap to add with a date); Paid folded at the foot. "Agreed" is the UI word for what
+  balances (faded rows, tap to add with a date); Paid folded at the foot (like Plan's Done since 17 Oct 2026).
+  **17 Oct 2026 (owner):** both views read the same under the top card —
+  a search with the round black + at its end (`money-search.tsx`, `?q=`;
+  By area finds areas and suppliers, By month payments; the top card
+  ignores it), then Filter. Food & drink shows **£… a head** (agreed, or
+  the budget until something's agreed, ÷ everyone still expected —
+  `expectedGuests()` in `src/lib/area-guests.ts`; only the count reaches
+  Money) on its card and money sheet. Quote comparison options are on
+  canvas 3 "Money · Comparing quotes" (A side by side, B against the budget
+  line, C pick one, then book). "Agreed" is the UI word for what
   `src/lib/budget.ts` calls committed (committed = booked suppliers' quotes
   + payments not for a supplier; paid = supplier deposits + payments marked
   paid; area pages use it too). A laptop table view is for the laptop

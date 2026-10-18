@@ -469,7 +469,7 @@ export default function GuestBrowser({
 
   return (
     <>
-      <div className="pane-stack mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
+      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
         {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
         {events.length > 0 && (
           <div>
@@ -599,7 +599,7 @@ export default function GuestBrowser({
       ) : (
         <>
           {/* Phones and tablets: compact rows, tap for the card. */}
-          <div className="pane-narrow flex lg:hidden">
+          <div className="flex lg:hidden">
             <div className="min-w-0 flex-1">
               {groups.map((group) => (
                 <section key={group.key}>
@@ -1285,7 +1285,7 @@ function GuestTable({
   const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-stone";
 
   return (
-    <div className="pane-wide mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
+    <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
       <table className="w-full border-collapse text-left text-sm">
         <thead>
           <tr className="border-b border-champagne-400">

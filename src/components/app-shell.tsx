@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import CaptureButton from "@/components/capture-button";
 import CapturedToast from "@/components/captured-toast";
 import MenuBar from "@/components/menu-bar";
-import PaneMode from "@/components/pane-mode";
 import TopBar from "@/components/top-bar";
 
 /**
@@ -23,7 +22,6 @@ export default function AppShell({
   return (
     <div>
       <TopBar name={wedding.name} inboxCount={inboxCount} />
-      <PaneMode />
       <div className="min-w-0">{children}</div>
       <MenuBar />
       <CaptureButton />

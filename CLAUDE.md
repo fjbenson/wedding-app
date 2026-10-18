@@ -1392,17 +1392,8 @@ additive — new tables hanging off `weddings`. None require changing the above.
    the right; This week beside the notes / Inspo tiles; then **At a glance**
    (`at-a-glance.tsx`): People · Plan · Money · The Day cards using Where
    things stand's figures (`loadStanding()` in `src/lib/standing-data.ts`,
-   shared with `/standing`). Phones unchanged. **List left, card right
-   (built 18 Oct 2026, owner "go ahead"):** on People, Plan, Money and The
-   Day a card opens *beside* the list on laptops — under the top bar, lined
-   up with its right edge, no dimming, the list still scrolls and a tap on
-   another row swaps the card; while it's open the list moves left of it
-   (the guest list's table gives way to its rows). `pane-mode.tsx` marks
-   `body[data-panes="two"]`; the cards carry `data-sheet` /
-   `data-sheet-backdrop` / `data-sheet-panel` (CardSheet, supplier card,
-   travel, Money's area sheet, Plan's day card, the group email sheet); the
-   rules are at the foot of `globals.css`. A new card on those tabs needs the
-   three attributes. Every other screen keeps the overlay. Earlier note:
+   shared with `/standing`). Phones unchanged. **Next:** list-left /
+   card-right for People, Plan, Money, The Day. Earlier note:
    **Desktop version** (the owner wants to start thinking about it): from
    canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
    the favourite; proposed order — settle the frame (top bar or sidebar, page

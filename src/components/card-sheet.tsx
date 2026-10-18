@@ -35,18 +35,18 @@ export default function CardSheet({
   const drag = usePullToClose(onClose);
 
   return (
-    <div data-sheet className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={label}>
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={label}>
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
         style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
-        data-sheet-backdrop className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+        className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
       />
 
       <div
         style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-        data-sheet-panel className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
           drag.dragging ? "" : "transition-transform duration-200 ease-out"
         }`}
       >

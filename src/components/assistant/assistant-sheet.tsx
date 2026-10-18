@@ -21,8 +21,8 @@ import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, 
  * a job gets a card that saves only on Yes.
  *
  * `variant` is the door: the Hub's pill under the ring, the round pen
- * above the menu bar on the other tabs, or the laptop sidebar (open: a
- * pill, folded to a rail: a round pen).
+ * above the menu bar on the other tabs, or a round pen in the laptop's
+ * top bar.
  */
 
 type Part = { kind: "text"; text: string } | { kind: "block"; block: Block };
@@ -37,7 +37,7 @@ const isSteps = (block: Block): block is StepsBlock =>
 
 type CardState = { state: "saving" } | { state: "saved"; link?: string; note?: string } | { state: "changed" } | { state: "error"; message: string };
 
-export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "fab" | "sidebar" | "rail"; subtitle?: string }) {
+export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "fab" | "bar"; subtitle?: string }) {
   const [open, setOpen] = useState(false);
   // The conversation lasts while the page is open, so closing and reopening keeps it.
   const conversation = useConversation();
@@ -55,24 +55,15 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
             <span className="font-display text-[18px] italic">Ask your assistant</span>
           </button>
         </div>
-      ) : variant === "sidebar" ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="glass-card flex h-11 w-full items-center gap-2.5 rounded-full px-4 text-ink transition hover:border-champagne-400"
-        >
-          <PenLine className="h-4 w-4 text-champagne-600" strokeWidth={1.8} aria-hidden />
-          <span className="font-display text-[16px] italic">Ask your assistant</span>
-        </button>
-      ) : variant === "rail" ? (
+      ) : variant === "bar" ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Ask your assistant"
           title="Ask your assistant"
-          className="glass-card flex h-[52px] w-[52px] items-center justify-center rounded-full text-champagne-600 transition hover:border-champagne-400"
+          className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-champagne-600 transition hover:border-champagne-400"
         >
-          <PenLine className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+          <PenLine className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
         </button>
       ) : (
         <button

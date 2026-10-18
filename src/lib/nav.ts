@@ -2,7 +2,7 @@ import { CalendarDays, Clock, House, PoundSterling, Users, type LucideIcon } fro
 
 /**
  * The five tabs from docs/information-architecture.md. The phone's bottom
- * menu bar and the desktop sidebar both draw from this list, so they can't
+ * menu bar and the laptop top bar both draw from this list, so they can't
  * drift apart.
  */
 export interface NavItem {

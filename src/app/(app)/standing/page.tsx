@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarDays, Check, ChevronDown, CircleDot, Clock, PoundSterling, Users, type LucideIcon } from "lucide-react";
-import { listAppointments } from "@/lib/db/appointments";
-import { listAreas } from "@/lib/db/areas";
-import { listGuests, listHouseholds } from "@/lib/db/contacts";
-import { getDay } from "@/lib/db/day";
-import { countInspo } from "@/lib/db/inspo";
-import { listMilestones } from "@/lib/db/milestones";
-import { listPayments } from "@/lib/db/money";
-import { listEvents, listRsvps } from "@/lib/db/rsvps";
-import { listSuppliers } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { daysUntil } from "@/lib/dates";
-import { whereThingsStand, type Line, type Section } from "@/lib/where-things-stand";
+import { loadStanding } from "@/lib/standing-data";
+import type { Line, Section } from "@/lib/where-things-stand";
 
 export const metadata = { title: "Where things stand — Wedding App" };
 
@@ -33,34 +25,7 @@ export default async function StandingPage() {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
-  const [areas, guests, households, events, rsvps, suppliers, payments, milestones, appointments, ideas, day] = await Promise.all([
-    listAreas(wedding.id),
-    listGuests(wedding.id),
-    listHouseholds(wedding.id),
-    listEvents(wedding.id),
-    listRsvps(wedding.id),
-    listSuppliers(wedding.id),
-    listPayments(wedding.id),
-    listMilestones(wedding.id),
-    listAppointments(wedding.id),
-    countInspo(wedding.id),
-    getDay(wedding.id),
-  ]);
-
-  const { sections, doneSoFar } = whereThingsStand({
-    budget: wedding.budget ?? null,
-    areas: areas ?? [],
-    guests,
-    households,
-    events,
-    rsvps,
-    suppliers,
-    payments: payments ?? [],
-    milestones,
-    appointments: appointments ?? [],
-    ideas,
-    day,
-  });
+  const { sections, doneSoFar } = await loadStanding(wedding);
 
   const days = wedding.wedding_date ? daysUntil(wedding.wedding_date) : null;
   const countdown =

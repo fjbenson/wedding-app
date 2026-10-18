@@ -27,7 +27,7 @@ export default function HubTiles({
   const words = note ? note.body?.trim() || (note.url ? host(note.url) : "") : "";
 
   return (
-    <div className="relative mx-5 mt-4 grid grid-cols-2 gap-3 lg:mx-0">
+    <div className="relative mx-5 mt-4 grid grid-cols-2 gap-3 lg:mx-0 lg:mt-0">
       {note !== undefined && (
         <Link href="/inbox" className="glass-card row-press flex flex-col rounded-[22px] p-3.5 [--row-bleed:0px]">
           <span className="section-label !text-[11px] !tracking-[0.22em]">Your notes</span>

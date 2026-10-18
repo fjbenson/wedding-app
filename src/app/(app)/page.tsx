@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { listAppointments } from "@/lib/db/appointments";
@@ -15,6 +16,7 @@ import HubTiles from "@/components/hub-tiles";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
 import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
+import AtAGlance from "@/components/at-a-glance";
 import { involvedNames } from "@/lib/db/involved";
 import { RowPeopleProvider } from "@/components/row-people";
 
@@ -55,21 +57,28 @@ export default async function HomePage() {
   // Your assistant (13 Oct 2026) — that brings up its panel, This week on one glass card (in place of
   // the top three, owner, 13 Oct 2026), then Your notes and Inspo as two
   // tiles side by side ("Home · Round 3", option A).
+  const subtitle = [wedding.name, wedding.wedding_date && `${formatDayMonth(wedding.wedding_date)} ${wedding.wedding_date.slice(0, 4)}`]
+    .filter(Boolean)
+    .join(" · ");
+
   // Phone: the names and ring, then those under them.
-  // Desktop: the ring fills the left, with those in a column beside it.
+  // Laptop (canvas 3 "Laptop · Round 2", 3 with the names on the left, owner's
+  // pick 18 Oct 2026): the names on the left with the assistant's pill under
+  // them and the ring large on the right; then This week beside the notes and
+  // Inspo tiles; then "At a glance", a card per tab.
   return (
-    <main className="relative min-h-dvh overflow-hidden pb-28 lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-8 lg:p-8 lg:pb-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-      <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
-      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:max-w-none lg:overflow-y-auto lg:pt-6">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:max-w-[1328px] lg:px-14 lg:pb-16 lg:pt-4">
+      <Cover
+        name={wedding.name}
+        weddingDate={wedding.wedding_date}
+        areas={onHub}
+        aside={unfiled && <AssistantSheet variant="hub" subtitle={subtitle} />}
+      />
+      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-4 lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start lg:gap-5">
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
-          <div className="mb-6 flex justify-center">
-            <AssistantSheet
-              variant="hub"
-              subtitle={[wedding.name, wedding.wedding_date && `${formatDayMonth(wedding.wedding_date)} ${wedding.wedding_date.slice(0, 4)}`]
-                .filter(Boolean)
-                .join(" · ")}
-            />
+          <div className="mb-6 flex justify-center lg:hidden">
+            <AssistantSheet variant="hub" subtitle={subtitle} />
           </div>
         )}
         <RowPeopleProvider people={people}>
@@ -92,8 +101,13 @@ export default async function HomePage() {
           pictures={(latestInspo ?? []).map((i) => i.picture)}
           ideas={ideas}
         />
-        {email && <SignedIn email={email} />}
       </div>
+      <div className="hidden lg:block">
+        <Suspense fallback={null}>
+          <AtAGlance wedding={wedding} />
+        </Suspense>
+      </div>
+      {email && <SignedIn email={email} />}
     </main>
   );
 }

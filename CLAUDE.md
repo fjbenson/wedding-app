@@ -1377,17 +1377,23 @@ additive — new tables hanging off `weddings`. None require changing the above.
    Travel · Decor are its pieces — the owner likes **option 1** (three small
    tiles under the numbers card, each with one fact), not built; a piece
    opened shows a "The Day ›" pill above its title (no back arrow).
-   **Desktop, begun 18 Oct 2026** (canvas 3 "Laptop · Round 1 · The frame"):
-   the owner picked **a sidebar that folds into a slim rail** (A + C; B, the
-   top bar, was dropped as more website than app). **Built:** `sidebar.tsx`
-   — names, days to go, the five tabs, Your notes (count) and Inspo, "Ask
-   your assistant" (`AssistantSheet` variants `sidebar` / `rail`), Settings;
-   the panel icon folds it, kept in localStorage (`sidebar-folded`). **Drawn,
-   not built:** the Hub on a laptop (board "Picked · The Hub": canvas 2's
-   magazine spread inside the sidebar — huge names, the ring with days to
-   go, This week, notes and Inspo tiles, an "At a glance" row of each tab's
-   signature) — waits on the owner's look; then list-left / card-right for
-   People, Plan, Money, The Day. Earlier note:
+   **Desktop, begun 18 Oct 2026.** Round 1 (canvas 3 "Laptop · Round 1 ·
+   The frame") built a folding sidebar; the owner then found side tabs "a
+   bit TOO modern… this is about weddings and love", so **round 2** (canvas
+   3 "Laptop · Round 2 · The ring as the star") went back to **tabs along
+   the top** and made the ring the Hub's star. **Picked and built: 3 with
+   the names on the left** (like canvas 2's magazine spread). **Built:**
+   `top-bar.tsx` (laptops only, sticky: "The wedding of" on the Hub, the
+   couple's names elsewhere; the five tabs in a glass pill; Notes with its
+   count, Inspo, the assistant's pen — `AssistantSheet variant="bar"`, not
+   on the Hub — and Settings); `sidebar.tsx` is gone. The **laptop Hub**
+   (`page.tsx`, `cover.tsx`): names huge on the left (each on its own line,
+   the & in gold), the date, the "Ask your assistant" pill; the ring large on
+   the right; This week beside the notes / Inspo tiles; then **At a glance**
+   (`at-a-glance.tsx`): People · Plan · Money · The Day cards using Where
+   things stand's figures (`loadStanding()` in `src/lib/standing-data.ts`,
+   shared with `/standing`). Phones unchanged. **Next:** list-left /
+   card-right for People, Plan, Money, The Day. Earlier note:
    **Desktop version** (the owner wants to start thinking about it): from
    canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
    the favourite; proposed order — settle the frame (top bar or sidebar, page

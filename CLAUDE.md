@@ -1392,8 +1392,11 @@ additive — new tables hanging off `weddings`. None require changing the above.
    the right; This week beside the notes / Inspo tiles; then **At a glance**
    (`at-a-glance.tsx`): People · Plan · Money · The Day cards using Where
    things stand's figures (`loadStanding()` in `src/lib/standing-data.ts`,
-   shared with `/standing`). Phones unchanged. **Next:** list-left /
-   card-right for People, Plan, Money, The Day. Earlier note:
+   shared with `/standing`). Phones unchanged. **Cards stay as pop-ups
+   from the right** (owner, 18 Oct 2026): a "list left, card beside it"
+   version (the card docked, the list moving left) was built and taken back
+   out the same day — "it worked better as it was… so that it doesn't move
+   the content anywhere". Earlier note:
    **Desktop version** (the owner wants to start thinking about it): from
    canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
    the favourite; proposed order — settle the frame (top bar or sidebar, page

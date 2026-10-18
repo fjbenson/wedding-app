@@ -469,7 +469,10 @@ export default function GuestBrowser({
 
   return (
     <>
-      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-8">
+      {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the numbers
+          card and "Who's coming" side by side, then search, View and Filter on
+          one row, then the table across the width. */}
+      <div className="mt-6 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-x-4">
         {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
         {events.length > 0 && (
           <div>
@@ -485,12 +488,22 @@ export default function GuestBrowser({
               showing={showing}
               onShow={setShowing}
             />
-            {caterer && <CopyButton text={caterer} label="Copy the list for the caterer" />}
+            {/* Laptops have it on "Who's coming". */}
+            {caterer && <div className="lg:hidden"><CopyButton text={caterer} label="Copy the list for the caterer" /></div>}
           </div>
         )}
+        {events.length > 0 && (
+          <WhoComing
+            guests={filtered.filter((g) => answerOf(g) !== "declined")}
+            dayId={events[0]?.id}
+            ownEvent={ownEvent}
+            dietOf={dietOf}
+            caterer={splitOf("diet", coming, look).copy}
+          />
+        )}
 
-        <div className="mt-5 lg:mt-0">
-          <div className="flex items-center gap-2">
+        <div className="mt-5 lg:col-span-2 lg:mt-6 lg:flex lg:flex-wrap lg:items-center lg:gap-x-6">
+          <div className="flex items-center gap-2 lg:w-[520px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a guest</span>
@@ -516,7 +529,7 @@ export default function GuestBrowser({
           </div>
 
           {/* Find or add on the row above; how the list is shown here: View left, Filter right (owner, 17 Oct 2026: View is the bigger choice; was Filter left, Sort right). */}
-          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
+          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 lg:mt-0 lg:flex-1">
             <SortMenu sort={sort} onSort={chooseView} />
             <FilterMenu
               guestOf={ofCounted}
@@ -536,7 +549,7 @@ export default function GuestBrowser({
             />
           </div>
           {filters.length + guestOf.length + picks.length + (group ? 1 : 0) > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 lg:mt-3 lg:w-full">
               {group && (
                 <button
                   type="button"
@@ -682,6 +695,60 @@ export default function GuestBrowser({
         />
       )}
     </>
+  );
+}
+
+/**
+ * Laptops only, beside the numbers card: who's coming — day, evening and
+ * children as bars — and the dietary needs, with the caterer's copy. Counts
+ * whatever the filters leave, like the numbers card, leaving out "can't come".
+ */
+function WhoComing({
+  guests,
+  dayId,
+  ownEvent,
+  dietOf,
+  caterer,
+}: {
+  guests: Contact[];
+  dayId: string | undefined;
+  ownEvent: (g: Contact) => WeddingEvent | undefined;
+  dietOf: (g: Contact) => string | null;
+  caterer?: string;
+}) {
+  const total = guests.length;
+  const day = guests.filter((g) => ownEvent(g)?.id === dayId).length;
+  const tally = new Map<string, number>();
+  for (const g of guests) for (const need of needsOf(dietOf(g))) tally.set(need, (tally.get(need) ?? 0) + 1);
+  const needs = [...tally.entries()].sort((a, b) => b[1] - a[1] || needRank(a[0]) - needRank(b[0])).slice(0, 4);
+  const most = Math.max(1, ...needs.map(([, n]) => n));
+  const bar = (label: string, n: number, of: number) => (
+    <div key={label} className="grid grid-cols-[110px_1fr_36px] items-center gap-3 py-1.5">
+      <span className="truncate text-sm text-ink">{label}</span>
+      <span className="h-2 overflow-hidden rounded-full bg-[#E9E1D3]">
+        <span className="block h-full rounded-full bg-champagne-400" style={{ width: `${of ? Math.round((n / of) * 100) : 0}%` }} />
+      </span>
+      <span className="type-figure text-right text-[17px]">{n}</span>
+    </div>
+  );
+  return (
+    <section aria-label="Who's coming" className="glass-card hidden rounded-[22px] px-5 py-4 lg:grid lg:grid-cols-2 lg:gap-7">
+      <div>
+        <h2 className="section-label">Who&apos;s coming</h2>
+        <div className="mt-2">
+          {bar("Day", day, total)}
+          {bar("Evening", total - day, total)}
+          {bar("Children", guests.filter((g) => g.is_child).length, total)}
+        </div>
+      </div>
+      <div>
+        <h2 className="section-label">Dietary needs</h2>
+        <div className="mt-2">
+          {needs.length > 0 ? needs.map(([need, n]) => bar(need, n, most)) : <p className="py-1.5 text-sm italic text-stone">None yet</p>}
+        </div>
+        {needs.length > 0 && caterer && <CopyButton text={caterer} label="Copy the list for the caterer" />}
+      </div>
+    </section>
   );
 }
 

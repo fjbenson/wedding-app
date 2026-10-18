@@ -117,7 +117,10 @@ export default function PlanCalendar({
   };
 
   return (
-    <section className="mt-6">
+    <section className="mt-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
+          calendar on the left, the month's list beside it. */}
+      <div className="lg:sticky lg:top-[100px]">
       {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
           flat" — everything printed straight on the background). ‹ the
           month › centred; the round + moved out to the key's row (owner,
@@ -183,7 +186,7 @@ export default function PlanCalendar({
               aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                 marks.length ? `, ${marks.length} ${marks.length === 1 ? "item" : "items"}` : ""
               }`}
-              className="flex h-[48px] flex-col items-center gap-[3px] pt-0.5"
+              className="flex h-[48px] flex-col items-center gap-[3px] pt-0.5 lg:h-[64px] lg:pt-1.5"
             >
               <span className={`flex h-8 w-8 items-center justify-center rounded-full font-display text-base ${circle}`}>
                 {i + 1}
@@ -222,7 +225,9 @@ export default function PlanCalendar({
         </span>
         {toggle}
       </div>
+      </div>
 
+      <div>
       {/* The month's things, straight under the key: the month is already
           the title above the grid, and every row has its date (owner, 12 Oct
           2026 — no "All of October · 2 things"). */}
@@ -231,7 +236,7 @@ export default function PlanCalendar({
           cards the same weight competed): the calendar card is the hero. */}
       {/* Dividers within the page's margins (full width was tried and taken
           back, owner, 16 Oct 2026), one above the first row too. */}
-      <div className="mt-5 [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
+      <div className="mt-5 lg:mt-0 [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}
@@ -259,6 +264,7 @@ export default function PlanCalendar({
           {undatedPanel}
         </Fold>
       )}
+      </div>
 
 
       {selected === "undated" && (

@@ -90,7 +90,7 @@ export default function DayView({
   const data: DayData = day ?? { runSheet: [], tables: [], seats: [], runs: [], passengers: [] };
 
   return (
-    <main className="page pb-40 lg:pb-16 print:p-0">
+    <main className={`page pb-40 lg:pb-16 print:p-0 ${tab === "run-sheet" ? "lg:max-w-[1368px]" : ""}`}>
       <div className="print:hidden">
         <CornerSwitch
           label="The Day"
@@ -127,7 +127,15 @@ export default function DayView({
           ready={guests.length === 0 || guests[0].own_way !== undefined}
         />
       ) : (
-        <RunSheet items={data.runSheet} coupleName={coupleName} weddingDate={weddingDate} areas={areas} area={area} query={query} />
+        <RunSheet
+          items={data.runSheet}
+          coupleName={coupleName}
+          weddingDate={weddingDate}
+          areas={areas}
+          area={area}
+          query={query}
+          pieces={pieces(data, guests, rsvps)}
+        />
       )}
     </main>
   );
@@ -155,7 +163,10 @@ function RunSheet({
   areas,
   area,
   query,
+  pieces,
 }: {
+  /** For the laptop's Seating and Travel tiles beside the numbers. */
+  pieces: { coming: number; seated: number; noLift: number };
   query: string;
   items: RunSheetItem[];
   coupleName: string;
@@ -191,6 +202,10 @@ function RunSheet({
       </PageTitle>
       {/* The tab's numbers, search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
       <div className="print:hidden">
+      {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
+          numbers beside the day's pieces, then the order of the day long and
+          thin like paper ("it should stay long and thin"). Decor waits. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4">
       <NumbersCard
         big={{
           label: "Moments",
@@ -203,6 +218,12 @@ function RunSheet({
           { value: partCount("24:00", "18:00"), label: "Evening" },
         ]}
       />
+      <div className="hidden lg:mt-6 lg:grid lg:grid-cols-2 lg:gap-3">
+        <PieceTile href="/day?tab=seating" title="Seating" figure={pieces.seated} line={`of ${pieces.coming} seated`} />
+        <PieceTile href="/day?tab=travel" title="Travel" figure={pieces.noLift} line={pieces.noLift === 1 ? "guest without a lift" : "without a lift"} />
+      </div>
+      </div>
+      <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
         initial={query}
         placeholder="Find a moment"
@@ -213,19 +234,22 @@ function RunSheet({
           />
         }
       />
-      </div>
       {all.length > 0 && (
+        <div className="lg:flex-1">
         <FilterMenu
           base={query ? `/day?q=${encodeURIComponent(query)}` : "/day"}
           groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
           end={items.length > 0 ? <PrintButton /> : undefined}
         />
+        </div>
       )}
+      </div>
+      </div>
       {needle && items.length === 0 && <p className="mt-6 px-1 text-sm text-stone">No moment matches that.</p>}
       {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (
-        <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:max-w-xl print:shadow-none">
+        <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-auto lg:max-w-xl print:shadow-none">
           <div className="border border-champagne-400 px-[18px] pb-3 pt-7 outline outline-1 -outline-offset-[5px] outline-champagne-100">
             <header className="text-center">
               <p className="label">{forWhom ? `The order of the day · ${forWhom}` : "The order of the day"}</p>
@@ -304,6 +328,30 @@ function Flourish() {
 }
 
 /** Everyone except those who've said no to everything they were asked to. */
+/** The Seating and Travel figures for the laptop's tiles beside the run sheet's numbers. */
+function pieces(data: DayData, guests: Contact[], rsvps: Rsvp[]) {
+  const coming = comingGuests(guests, rsvps);
+  const seatedIds = new Set(data.seats.map((s) => s.contact_id));
+  const onBoard = new Set(data.passengers.map((p) => p.contact_id));
+  return {
+    coming: coming.length,
+    seated: coming.filter((g) => seatedIds.has(g.id)).length,
+    noLift: coming.filter((g) => !onBoard.has(g.id) && !g.own_way).length,
+  };
+}
+
+/** One of the day's pieces as a small glass tile: its name, one figure, open it. */
+function PieceTile({ href, title, figure, line }: { href: string; title: string; figure: number; line: string }) {
+  return (
+    <Link href={href} className="glass-card row-press flex flex-col rounded-[22px] px-[18px] py-4 [--row-bleed:0px]">
+      <span className="section-label">{title}</span>
+      <span className="type-figure mt-2 text-[34px] leading-none !text-champagne-600">{figure}</span>
+      <span className="mt-1 text-[13px] text-stone">{line}</span>
+      <span className="mt-auto pt-2.5 text-[13px] text-champagne-600">Open ›</span>
+    </Link>
+  );
+}
+
 function comingGuests(guests: Contact[], rsvps: Rsvp[]): Contact[] {
   return guests.filter((g) => {
     const theirs = rsvps.filter((r) => r.contact_id === g.id);

@@ -1404,7 +1404,18 @@ additive — new tables hanging off `weddings`. None require changing the above.
    `money-view.tsx`, shared with By month; a column opens By month on that
    month) side by side, search and Filter on one row, the area cards four
    across; By month puts the chart and search on the left (sticky) and the
-   payments beside them. Phones unchanged. Earlier note:
+   payments beside them. Phones unchanged. **People, Plan and The Day
+   built the same way** (canvas 3 "Laptop · Round 4", owner's go 18 Oct
+   2026): People — the numbers card beside a new **Who's coming** card
+   (`WhoComing` in `guest-browser.tsx`: day / evening / children bars, top
+   dietary needs, Copy for the caterer; laptops only), search · View ·
+   Filter on one row, the table across 1328px. Plan's calendar — the
+   calendar on the left (sticky, taller days), the month's list, Undated and
+   Done beside it; the List stays a 4xl column. The Day's run sheet — the
+   numbers card beside **Seating** and **Travel** tiles (`PieceTile`,
+   `pieces()` in `day-view.tsx`; Decor left off until it's built), then the
+   order of the day **kept long and thin like paper, centred** (owner).
+   Seating and Travel keep their old width. Earlier note:
    **Desktop version** (the owner wants to start thinking about it): from
    canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
    the favourite; proposed order — settle the frame (top bar or sidebar, page

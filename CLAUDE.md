@@ -1396,7 +1396,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
    from the right** (owner, 18 Oct 2026): a "list left, card beside it"
    version (the card docked, the list moving left) was built and taken back
    out the same day — "it worked better as it was… so that it doesn't move
-   the content anywhere". Earlier note:
+   the content anywhere". **Tabs that use the width** (canvas 3 "Laptop ·
+   Round 3 · A tab that uses the width (Money)", owner picked **C**, 18 Oct
+   2026 — the pattern for People, Plan and The Day next): **Money built** —
+   the page is 1328px wide like the top bar; By area puts the budget card and
+   a "When it's due" month chart (`MonthChart` / `monthColumns()` in
+   `money-view.tsx`, shared with By month; a column opens By month on that
+   month) side by side, search and Filter on one row, the area cards four
+   across; By month puts the chart and search on the left (sticky) and the
+   payments beside them. Phones unchanged. Earlier note:
    **Desktop version** (the owner wants to start thinking about it): from
    canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
    the favourite; proposed order — settle the frame (top bar or sidebar, page

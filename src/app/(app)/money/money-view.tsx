@@ -85,7 +85,8 @@ export default function MoneyView({
   // Under the top card in both views, like the guest list and Plan's List
   // (owner, 17 Oct 2026): search with the round black + at its end, then Filter.
   const filter = (
-    <>
+    // Laptops: search and Filter on one row (canvas 3 "Laptop · Round 3", C).
+    <div className="lg:mt-6 lg:flex lg:items-center lg:gap-5 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
         key={view}
         initial={query}
@@ -96,12 +97,12 @@ export default function MoneyView({
         base={view === "month" ? `/money?view=month${q ? `&${q}` : ""}` : `/money${q ? `?${q}` : ""}`}
         groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
       />
-    </>
+    </div>
   );
   const needle = query.toLowerCase();
   const has = (...texts: (string | null | undefined)[]) => !needle || texts.some((t) => t?.toLowerCase().includes(needle));
   return (
-    <main className="page pb-40 lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1368px] lg:pb-16">
       <CornerSwitch
         label="Show the money"
         tabs={[
@@ -136,6 +137,8 @@ export default function MoneyView({
           filter={filter}
           searching={!!needle}
           towards={towards}
+          payments={payments}
+          weddingDate={weddingDate}
         />
       ) : (
         <ByMonth
@@ -173,8 +176,13 @@ function ByArea({
   filter,
   searching,
   towards,
+  payments,
+  weddingDate,
 }: {
   towards: { total: number; arrived: number; bills: number };
+  /** For the laptop's "When it's due" chart beside the budget. */
+  payments: Payment[];
+  weddingDate: string | null;
   total: Money;
   byArea: AreaCard[];
   scope: string | null;
@@ -182,12 +190,16 @@ function ByArea({
   filter: React.ReactNode;
   searching: boolean;
 }) {
+  const chart = monthColumns(payments, total, weddingDate);
   return (
     <>
+      {/* Laptops (canvas 3 "Laptop · Round 3 · A tab that uses the width", C,
+          owner's pick 18 Oct 2026): the budget and when it's due side by side. */}
+      <div className="mt-6 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4">
       <Link
         href="/money/budget"
         aria-label={`${scope ?? "All areas"} — change the budget`}
-        className="card-white row-press mt-6 block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
+        className="card-white row-press block overflow-hidden rounded-[26px] p-5 [--row-bleed:20px]"
       >
         <p className="flex items-baseline justify-between gap-3">
           <span className="type-meta">{scope ?? "All areas"}</span>
@@ -218,6 +230,19 @@ function ByArea({
           </div>
         )}
       </Link>
+      <section aria-label="When it's due" className="glass-card hidden rounded-[26px] px-5 pb-4 pt-5 lg:flex lg:flex-col">
+        <p className="flex items-baseline justify-between gap-3">
+          <span className="type-meta">When it&apos;s due</span>
+          <Link href="/money?view=month" className="type-meta flex items-center !text-champagne-600">
+            By month
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+          </Link>
+        </p>
+        <div className="mt-auto pt-4">
+          <MonthChart chart={chart} chosen={null} hrefFor={(key) => `/money?view=month&month=${key}`} />
+        </div>
+      </section>
+      </div>
 
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the
           "Next to pay" banner went — By month has the schedule). No heading
@@ -280,32 +305,13 @@ function ByMonth({
   filter: React.ReactNode;
 }) {
   const today = todayISO();
-  const thisMonth = monthKey(today);
   const due = payments.filter((p) => !p.paid_on);
   const paid = payments.filter((p) => p.paid_on).sort((a, b) => b.paid_on!.localeCompare(a.paid_on!));
-  const dated = due.filter((p) => p.due_date).sort((a, b) => a.due_date!.localeCompare(b.due_date!));
   const undated = due.filter((p) => !p.due_date);
   const stillToPay = Math.max(total.committed - total.paid, 0);
-
-  // Anything overdue counts in this month: it needs paying now.
-  const bucket = (p: Payment) => (monthKey(p.due_date!) < thisMonth ? thisMonth : monthKey(p.due_date!));
-  const byMonth = new Map<string, Payment[]>();
-  for (const p of dated) byMonth.set(bucket(p), [...(byMonth.get(bucket(p)) ?? []), p]);
+  const chart = monthColumns(payments, total, weddingDate);
+  const { byMonth, columns } = chart;
   const sum = (list: Payment[]) => list.reduce((s, p) => s + p.amount, 0);
-
-  // A column per month from now to the wedding (or the last payment due).
-  const last = [weddingDate && monthKey(weddingDate), ...byMonth.keys()].filter((k): k is string => !!k && k >= thisMonth).sort().pop() ?? thisMonth;
-  const months: string[] = [];
-  for (let k = thisMonth; k <= last && months.length < 24; k = shiftMonth(k, 1)) months.push(k);
-  const peak = Math.max(total.paid, ...months.map((k) => sum(byMonth.get(k) ?? [])), 1);
-  const columns = [
-    { key: "paid", label: "Paid", amount: total.paid, paid: true, title: `Paid so far: ${formatMoney(total.paid)}` },
-    ...months.map((k) => {
-      const amount = sum(byMonth.get(k) ?? []);
-      return { key: k, label: shortMonth(k), amount, paid: false, title: `${formatMonthYear(`${k}-01`)}: ${amount ? `${formatMoney(amount)} due` : "nothing due"}` };
-    }),
-  ];
-  const weddingMonth = weddingDate && monthKey(weddingDate);
   // Tapping a column narrows the list to it; tapping it again shows everything.
   const chosen = picked && columns.some((c) => c.key === picked) ? picked : null;
   const columnHref = (key: string) => (key === chosen ? base : `${base}&month=${key}`);
@@ -326,6 +332,9 @@ function ByMonth({
     <>
       {/* Canvas 2 "Money · Round 6", option D (owner's pick 12 Oct 2026): the
           chart on a glass card, then a glass card per month listing its payments. */}
+      {/* Laptops: the chart and search on the left, the payments beside them. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+      <div className="lg:sticky lg:top-[100px]">
       <section className="card-white mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -337,48 +346,9 @@ function ByMonth({
             <p className="type-figure mt-1.5 text-[22px] !font-light !text-champagne-600">{formatMoney(total.paid)}</p>
           </div>
         </div>
-        <div className="mt-5 overflow-x-auto pb-1">
-          <div className="flex h-[140px] min-w-full items-end gap-1 border-b border-stone/30" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
-            {columns.map((c) => (
-              <Link
-                key={c.key}
-                href={columnHref(c.key)}
-                replace
-                scroll={false}
-                title={c.title}
-                aria-label={c.key === chosen ? `${c.title} — show every month` : `${c.title} — show just this`}
-                aria-current={c.key === chosen ? "true" : undefined}
-                className={`flex h-full min-w-[26px] flex-1 flex-col items-center justify-end transition-opacity ${
-                  chosen && c.key !== chosen ? "opacity-35" : ""
-                }`}
-              >
-                {c.amount > 0 && <span className="mb-1 whitespace-nowrap text-[11px] tabular-nums text-ink/80">{shortMoney(c.amount)}</span>}
-                <span
-                  className={`w-full max-w-[20px] rounded-t ${c.paid ? PAID_BAR : AGREED_BAR}`}
-                  style={{ height: c.amount ? `${Math.max(4, Math.round((c.amount / peak) * 108))}px` : 0 }}
-                />
-              </Link>
-            ))}
-          </div>
-          <div className="mt-1.5 flex gap-1" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
-            {columns.map((c) => (
-              <span
-                key={c.key}
-                className={`min-w-[26px] flex-1 text-center text-[11px] ${
-                  c.key === chosen ? "font-semibold text-ink underline decoration-champagne-400 decoration-2 underline-offset-4"
-                  : c.paid || c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"
-                } ${chosen && c.key !== chosen ? "opacity-50" : ""}`}
-              >
-                {c.label}
-              </span>
-            ))}
-          </div>
+        <div className="mt-5">
+          <MonthChart chart={chart} chosen={chosen} hrefFor={columnHref} />
         </div>
-        <p className="mt-3 flex items-center gap-4 text-xs text-stone">
-          <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${PAID_BAR}`} />Paid</span>
-          <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${AGREED_BAR}`} />Due</span>
-          {weddingMonth && <span className="ml-auto text-champagne-600">Wedding · {shortMonth(weddingMonth)}</span>}
-        </p>
       </section>
 
       {/* Filter and + straight under the card, as on By area (owner, 17 Oct
@@ -395,6 +365,8 @@ function ByMonth({
           <X className="h-3.5 w-3.5 text-stone" strokeWidth={2} aria-label="Show every month" />
         </Link>
       )}
+      </div>
+      <div className="lg:pt-3">
 
       {chosen === "paid" &&
         (paid.length > 0 ? (
@@ -473,6 +445,91 @@ function ByMonth({
           <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">{paid.map(row)}</ul>
         </details>
       )}
+      </div>
+      </div>
+    </>
+  );
+}
+
+/** The month columns from now to the wedding, with "Paid so far" first. */
+function monthColumns(payments: Payment[], total: Money, weddingDate: string | null) {
+  const thisMonth = monthKey(todayISO());
+  const dated = payments.filter((p) => !p.paid_on && p.due_date).sort((a, b) => a.due_date!.localeCompare(b.due_date!));
+  // Anything overdue counts in this month: it needs paying now.
+  const bucket = (p: Payment) => (monthKey(p.due_date!) < thisMonth ? thisMonth : monthKey(p.due_date!));
+  const byMonth = new Map<string, Payment[]>();
+  for (const p of dated) byMonth.set(bucket(p), [...(byMonth.get(bucket(p)) ?? []), p]);
+  const sum = (list: Payment[]) => list.reduce((s, p) => s + p.amount, 0);
+
+  // A column per month from now to the wedding (or the last payment due).
+  const last = [weddingDate && monthKey(weddingDate), ...byMonth.keys()].filter((k): k is string => !!k && k >= thisMonth).sort().pop() ?? thisMonth;
+  const months: string[] = [];
+  for (let k = thisMonth; k <= last && months.length < 24; k = shiftMonth(k, 1)) months.push(k);
+  const peak = Math.max(total.paid, ...months.map((k) => sum(byMonth.get(k) ?? [])), 1);
+  const columns = [
+    { key: "paid", label: "Paid", amount: total.paid, paid: true, title: `Paid so far: ${formatMoney(total.paid)}` },
+    ...months.map((k) => {
+      const amount = sum(byMonth.get(k) ?? []);
+      return { key: k, label: shortMonth(k), amount, paid: false, title: `${formatMonthYear(`${k}-01`)}: ${amount ? `${formatMoney(amount)} due` : "nothing due"}` };
+    }),
+  ];
+  return { byMonth, columns, peak, weddingMonth: weddingDate ? monthKey(weddingDate) : null };
+}
+
+/** Canvas 2 "Money · Round 6", D: a column per month, the Paid column first; a tap picks a month. */
+function MonthChart({
+  chart: { columns, peak, weddingMonth },
+  chosen,
+  hrefFor,
+}: {
+  chart: ReturnType<typeof monthColumns>;
+  chosen: string | null;
+  hrefFor: (key: string) => string;
+}) {
+  return (
+    <>
+      <div className="overflow-x-auto pb-1">
+        <div className="flex h-[140px] min-w-full items-end gap-1 border-b border-stone/30" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
+          {columns.map((c) => (
+            <Link
+              key={c.key}
+              href={hrefFor(c.key)}
+              replace
+              scroll={false}
+              title={c.title}
+              aria-label={c.key === chosen ? `${c.title} — show every month` : `${c.title} — show just this`}
+              aria-current={c.key === chosen ? "true" : undefined}
+              className={`flex h-full min-w-[26px] flex-1 flex-col items-center justify-end transition-opacity ${
+                chosen && c.key !== chosen ? "opacity-35" : ""
+              }`}
+            >
+              {c.amount > 0 && <span className="mb-1 whitespace-nowrap text-[11px] tabular-nums text-ink/80">{shortMoney(c.amount)}</span>}
+              <span
+                className={`w-full max-w-[20px] rounded-t ${c.paid ? PAID_BAR : AGREED_BAR}`}
+                style={{ height: c.amount ? `${Math.max(4, Math.round((c.amount / peak) * 108))}px` : 0 }}
+              />
+            </Link>
+          ))}
+        </div>
+        <div className="mt-1.5 flex gap-1" style={{ width: `max(100%, ${columns.length * 30}px)` }}>
+          {columns.map((c) => (
+            <span
+              key={c.key}
+              className={`min-w-[26px] flex-1 text-center text-[11px] ${
+                c.key === chosen ? "font-semibold text-ink underline decoration-champagne-400 decoration-2 underline-offset-4"
+                : c.paid || c.key === weddingMonth ? "font-semibold text-champagne-600" : "text-stone"
+              } ${chosen && c.key !== chosen ? "opacity-50" : ""}`}
+            >
+              {c.label}
+            </span>
+          ))}
+        </div>
+      </div>
+      <p className="mt-3 flex items-center gap-4 text-xs text-stone">
+        <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${PAID_BAR}`} />Paid</span>
+        <span className="flex items-center gap-1.5" aria-hidden><span className={`h-2.5 w-2.5 rounded-sm ${AGREED_BAR}`} />Due</span>
+        {weddingMonth && <span className="ml-auto text-champagne-600">Wedding · {shortMonth(weddingMonth)}</span>}
+      </p>
     </>
   );
 }

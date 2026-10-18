@@ -46,7 +46,7 @@ function flag(m: Money): { text: string; tone: string } {
 }
 
 /**
- * Money's areas as little cards, two to a row (owner, 12 Oct 2026). Tapping
+ * Money's areas as little cards, two to a row (owner, 12 Oct 2026; four on a laptop). Tapping
  * one brings up that area's money from the bottom (a right-hand panel on a
  * laptop) — simple first, detail on tap — rather than leaving for the area
  * page; the card links on to it. The open one lives in the address (`?open=`).
@@ -61,7 +61,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
 
   return (
     <>
-      <ul className="mt-3 grid grid-cols-2 gap-3">
+      <ul className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:grid-cols-4 lg:gap-3.5">
         {areas.map((a) => {
           const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
           const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";

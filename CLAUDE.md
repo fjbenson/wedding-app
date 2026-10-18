@@ -927,6 +927,32 @@ Next.js scaffold. Built so far, against the plan's tabs:
   going** (`PeoplePicker`, everyone coming; saved as passengers after the
   journey, `saveTransportRun` now returns the id), notes folded.
 
+- **The menu and Drinks** (18 Oct 2026; canvas 3 "Food & drink · Round 1",
+  owner picked A + C; `0024_menu_and_drinks.sql`, run 18 Oct 2026 with the
+  owner's OK). On the **Food & drink** area page, two more lines in
+  "Everything for Food & drink" (`food` in `area-view.tsx`, `FoodSummary`):
+  **The menu** → `/menu` (`menu-editor.tsx`): the menu as a printed card —
+  couple, date, then courses (Canapés, Wedding breakfast, Evening…, each
+  with a time, a note and "evening guests join") and their dishes, tagged
+  V · VG · GF with an optional "Vegetarians: …" line; tap to change, "+ Add
+  a dish" under each course, the black + adds a course; **Copy for the
+  caterer** and **Print the menu**. **One menu for everyone** (owner: a
+  choice of dish is the edge case, so no per-guest picking; a guest's meal
+  stays free text). **Drinks** → `/drinks` (`drinks-editor.tsx`): numbers
+  card (bottles, to order, ordered, not decided), grouped Fizz · Wine · Beer
+  and spirits · Soft and hot, each with how much, when, who supplies it; the
+  circle on the right moves it on (to order → ordered → delivered). Tables
+  `menu_courses`, `menu_dishes` (tied to `(id, wedding_id)`), `drinks`; RLS
+  like groups, in `rls_isolation.sql` (passes against a scratch database
+  with all 24 migrations); queries `src/lib/db/menu.ts`, actions
+  `menu/actions.ts` (return messages). No guest details in them, and the
+  assistant isn't given them. The demo wedding has the canvas examples.
+  **Not built yet:** adding on its own full screen (it's a small form on the
+  same screen for now — the owner's "adding is a full screen" rule),
+  suggested drink quantities ("a rough guide"), the menu's times showing on
+  the run sheet, showing the printed card on the area page itself (offered:
+  the owner hadn't seen it as it's one tap inside the line).
+
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
 area's `key` as text rather than the plan's `area_id`. Older to-dos may carry
@@ -1023,14 +1049,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0023_payment_payers.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0024_menu_and_drinks.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0023 are now in** (0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026 with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0024 are now in** (0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1331,7 +1357,33 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 16 Oct 2026 evening chat):**
+   `calendar.tsx`). **Next up (end of the 18 Oct 2026 chat) — decor, The Day, desktop:**
+   built this chat: the menu and Drinks (above). Agreed but **not built**:
+   **"Decor"** — the owner's little bits and bobs (chairs, candles, the easel
+   for the seating plan, the guest book pen…). Canvas 3 "Decor · Round 1".
+   Decided: **a "Decor" list inside every area page** (a line in "Everything
+   for …", shown once it has something; layout A, a simple list grouped
+   Still to get · Got it · Packed, each with quantity, where it's from — own,
+   borrowed, hired, bought, made — dates to collect and give back, who sets
+   it up) **plus one list across all areas on The Day** as a pack list
+   (canvas C: before the day · set up at the venue · after the day). The
+   owner's working name is **Decor** ("go with decor for now"; it isn't all
+   decor — cake knife, pens — so "Decor & extras" or "Bits & bobs" are the
+   fallbacks; avoid "Supplies", it clashes with Suppliers). **Decor is NOT an
+   area of its own** (a starter area was added then taken out again the same
+   day). Needs a new table (an item row pointing at an area) — **explain and
+   wait for the owner's OK before running it.** **The Day tab hierarchy**
+   (canvas 3 "The Day · Round 2"): the run sheet is the whole day, Seating ·
+   Travel · Decor are its pieces — the owner likes **option 1** (three small
+   tiles under the numbers card, each with one fact), not built; a piece
+   opened shows a "The Day ›" pill above its title (no back arrow).
+   **Desktop version** (the owner wants to start thinking about it): from
+   canvas 2 "Laptop · The Hub" (11 Oct 2026), option B magazine spread was
+   the favourite; proposed order — settle the frame (top bar or sidebar, page
+   width), then two panes side by side (list left, open card right), then
+   Hub, People, Plan, Money, The Day. Money's laptop budget table stays out.
+   More feedback from the owner's phone user testing was mentioned but not
+   yet shared. **Earlier next-up (end of the 16 Oct 2026 evening chat):**
    built this chat — the household envelope front-only with a postmark and
    the household as a card; Add menus (pick what to add, then a full
    screen); everything opens as a card, edited in place; Plan's List like

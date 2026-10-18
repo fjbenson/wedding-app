@@ -327,3 +327,49 @@ export interface WeddingFile {
   mime_type: string | null;
   created_at: string;
 }
+
+/** A course of the menu — canapés, the wedding breakfast, evening food (0024_menu_and_drinks.sql). */
+export interface MenuCourse {
+  id: string;
+  wedding_id: string;
+  name: string;
+  /** "HH:MM:SS" or null. */
+  serve_time: string | null;
+  note: string | null;
+  /** Evening guests are fed this one too. */
+  evening: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+/** One dish on a course. `tags` are "V", "VG", "GF". */
+export interface MenuDish {
+  id: string;
+  course_id: string;
+  wedding_id: string;
+  name: string;
+  tags: string[];
+  /** "Vegetarians: mushroom wellington". */
+  instead: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export type DrinkKind = "fizz" | "wine" | "beer" | "spirits" | "soft" | "hot" | "other";
+export type DrinkStatus = "undecided" | "to_order" | "ordered" | "delivered";
+
+/** A drink through the day, with how much and who's supplying it (0024). */
+export interface Drink {
+  id: string;
+  wedding_id: string;
+  name: string;
+  moment: string | null;
+  kind: DrinkKind;
+  serve_time: string | null;
+  quantity: number | null;
+  unit: string | null;
+  supplied_by: string | null;
+  status: DrinkStatus;
+  sort_order: number;
+  created_at: string;
+}

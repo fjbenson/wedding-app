@@ -1,4 +1,4 @@
--- DRAFT: NOT RUN YET. Waiting for the owner's OK before it goes into Supabase.
+-- Run 18 Oct 2026 with the owner's OK.
 --
 -- The menu and the drinks (18 Oct 2026, canvas 3 "Food & drink · Round 1",
 -- A and C). One menu for everyone: the day's courses (canapés, the wedding

@@ -3,7 +3,7 @@ import CardLink from "@/components/card-link";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, NotebookPen, Plus, PoundSterling, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, NotebookPen, Plus, PoundSterling, UtensilsCrossed, Users, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -45,6 +45,8 @@ const byDate = (a: string | null, b: string | null) => (a ?? "9999").localeCompa
 function supplierName(s: Supplier) {
   return s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" ");
 }
+
+const dishCount = (n: number) => `${n} ${n === 1 ? "dish" : "dishes"}`;
 
 function plural(n: number, word: string) {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -204,6 +206,11 @@ function AreaCover({
  * narrowed to this area and its add link at the foot. The page's one black +
  * sits by the area's name; these adds are quiet links.
  */
+export interface FoodSummary {
+  courses: { id: string; name: string; time: string | null; dishes: number }[];
+  drinks: { id: string; name: string; quantity: number | null; unit: string | null; status: string }[];
+}
+
 function Everything({
   id,
   icon: Icon,
@@ -531,6 +538,7 @@ export default function AreaView({
   detail,
   areas,
   guestFacts,
+  food,
   moments,
   couple,
 }: {
@@ -538,6 +546,8 @@ export default function AreaView({
   moments: RunSheetItem[];
   /** Facts from the guest list, for the areas that show them (src/lib/area-guests.ts). */
   guestFacts: AreaGuestFacts | null;
+  /** Food & drink only: the menu's courses and the drinks, for their two lines (0024). */
+  food?: FoodSummary | null;
   couple: string;
   area: AreaRow;
   /** The wedding's areas with their budgets, for the supplier card. */
@@ -1007,6 +1017,61 @@ export default function AreaView({
               <Everything id="guests" icon={Users} title="Guests" line={guestsLine} see={{ href: "/people", label: "The guest list" }}>
                 <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} />
               </Everything>
+            )}
+
+            {food && (
+              <>
+                <Everything
+                  id="menu"
+                  icon={UtensilsCrossed}
+                  title="The menu"
+                  line={
+                    food.courses.length === 0
+                      ? "Not started"
+                      : `${plural(food.courses.length, "course")} · ${dishCount(food.courses.reduce((n, c) => n + c.dishes, 0))}`
+                  }
+                  see={{ href: "/menu", label: "The menu" }}
+                  add={{ href: "/menu", label: "Add a dish" }}
+                >
+                  {food.courses.length > 0 && (
+                    <ul>
+                      {food.courses.map((c) => (
+                        <li key={c.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
+                          <span className="truncate">{c.name}</span>
+                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
+                            {[c.time && formatClock(c.time), dishCount(c.dishes)].filter(Boolean).join(" · ")}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Everything>
+                <Everything
+                  id="drinks"
+                  icon={Wine}
+                  title="Drinks"
+                  line={
+                    food.drinks.length === 0
+                      ? "Not started"
+                      : `${plural(food.drinks.length, "drink")}${food.drinks.some((d) => d.status === "undecided") ? ` · ${food.drinks.filter((d) => d.status === "undecided").length} to decide` : ""}`
+                  }
+                  see={{ href: "/drinks", label: "Drinks" }}
+                  add={{ href: "/drinks", label: "Add a drink" }}
+                >
+                  {food.drinks.length > 0 && (
+                    <ul>
+                      {food.drinks.map((d) => (
+                        <li key={d.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
+                          <span className="truncate">{d.name}</span>
+                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
+                            {d.quantity !== null ? `${d.quantity}${d.unit ? ` ${d.unit}` : ""}` : "–"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Everything>
+              </>
             )}
 
             <Everything

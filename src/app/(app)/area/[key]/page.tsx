@@ -12,6 +12,7 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { getDay } from "@/lib/db/day";
+import { listDrinks, listMenu } from "@/lib/db/menu";
 import { areaGuestFacts, guestFactsKind } from "@/lib/area-guests";
 import { coupleName } from "@/lib/couple-name";
 import AreaView from "../area-view";
@@ -64,6 +65,15 @@ export default async function AreaPage({
     ]);
     guestFacts = areaGuestFacts(kind, { guests, households, events, rsvps, runs: day?.runs, passengers: day?.passengers });
   }
+  // Food & drink also has the menu and the drinks (0024_menu_and_drinks.sql).
+  let food = null;
+  if (kind === "food") {
+    const [courses, drinks] = await Promise.all([listMenu(wedding.id), listDrinks(wedding.id)]);
+    food = {
+      courses: courses.map((c) => ({ id: c.id, name: c.name, time: c.serve_time, dishes: c.dishes.length })),
+      drinks: drinks.map((d) => ({ id: d.id, name: d.name, quantity: d.quantity, unit: d.unit, status: d.status })),
+    };
+  }
   const areaSuppliers = suppliers.filter((s) => s.supplier_details?.category === area.key);
   const supplierIds = new Set(areaSuppliers.map((s) => s.id));
 
@@ -87,6 +97,7 @@ export default async function AreaPage({
         edit === "facts" || edit === "note" || (edit && /^note:[0-9a-f-]{36}$/i.test(edit)) ? edit : null
       }
       guestFacts={guestFacts}
+      food={food}
       moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key)}
       couple={coupleName(wedding.name)}
       error={error}

@@ -27,7 +27,7 @@ export const NAV: NavItem[] = [
  * their own "back" link instead. A new screen that isn't a form goes here.
  */
 const SCREENS: RegExp[] = [
-  /^\/(people|plan|money|day|inbox|inspo|settings|standing)?$/,
+  /^\/(people|plan|money|day|inbox|inspo|settings|standing|menu|drinks)?$/,
   /^\/area\/(?!new$)[^/]+$/,
   /^\/inspo\/(?!new$)[^/]+$/,
   /^\/people\/household\/[^/]+$/,

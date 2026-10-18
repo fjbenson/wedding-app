@@ -81,6 +81,17 @@ begin
     insert into guest_group_members (group_id, contact_id, wedding_id)
       select 'bbbbbbbb-2222-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
   end if;
+  if to_regclass('public.menu_courses') is not null then
+    insert into menu_courses (id, wedding_id, name) values
+      ('aaaaaaaa-5555-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Canapés'),
+      ('bbbbbbbb-5555-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Canapés');
+    insert into menu_dishes (course_id, wedding_id, name) values
+      ('aaaaaaaa-5555-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Blini'),
+      ('bbbbbbbb-5555-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Secret dish');
+    insert into drinks (wedding_id, name) values
+      ('aaaaaaaa-0000-0000-0000-000000000001', 'Prosecco'),
+      ('bbbbbbbb-0000-0000-0000-000000000002', 'Secret fizz');
+  end if;
   if to_regclass('public.stays') is not null then
     insert into stays (id, wedding_id, name) values
       ('aaaaaaaa-3333-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'The Swan'),
@@ -538,6 +549,47 @@ begin
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A removed wedding B''s payment tags';
     end if;
+  end if;
+
+  if to_regclass('public.menu_courses') is not null then
+    execute 'select count(*) from menu_courses' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % menu courses, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from menu_dishes' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % dishes, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from drinks' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % drinks, expected 1', visible_contacts;
+    end if;
+    -- A dish in wedding A can't go on wedding B's course, even knowing its id.
+    begin
+      execute $q$insert into menu_dishes (course_id, wedding_id, name)
+               values ('bbbbbbbb-5555-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A put a dish on wedding B''s course';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    begin
+      execute $q$insert into drinks (wedding_id, name) values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added a drink to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    execute $q$update menu_courses set name = 'Hacked' where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A renamed wedding B''s courses';
+    end if;
+    execute $q$delete from drinks where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s drinks';
+    end if;
+    -- And they can use their own.
+    execute $q$insert into drinks (wedding_id, name) values ('aaaaaaaa-0000-0000-0000-000000000001', 'Pimm''s')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

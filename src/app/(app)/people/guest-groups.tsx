@@ -394,9 +394,9 @@ function MessageSheet({
 
   const who = `${reachable.length} ${reachable.length === 1 ? "person" : "people"}`;
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`${email ? "Email" : "Text"} ${group.name}`}>
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 h-full w-full cursor-default bg-ink/30" />
-      <div className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-[28px] bg-ivory px-[22px] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] lg:pt-8">
+    <div data-sheet className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`${email ? "Email" : "Text"} ${group.name}`}>
+      <button type="button" aria-label="Close" onClick={onClose} data-sheet-backdrop className="absolute inset-0 h-full w-full cursor-default bg-ink/30" />
+      <div data-sheet-panel className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-[28px] bg-ivory px-[22px] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] lg:pt-8">
         <span aria-hidden className="mx-auto block h-[5px] w-10 rounded-full bg-linen lg:hidden" />
         <div className="mt-3 flex items-start justify-between gap-3">
           <div className="min-w-0">

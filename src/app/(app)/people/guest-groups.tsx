@@ -190,7 +190,7 @@ export function GroupSheet({
   const [editing, setEditing] = useState(false);
   const coming = people.filter((p) => answerOf(p) === "attending").length;
   const invited = people.filter((p) => answerOf(p) === "pending").length;
-  const counts = [`${coming} coming`, invited > 0 && `${invited} invited`].filter(Boolean).join(" · ");
+  const counts = [`${coming} coming`, invited > 0 && `${invited} yet to respond`].filter(Boolean).join(" · ");
 
   return (
     <CardSheet label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
@@ -267,7 +267,7 @@ export function GroupSheet({
 
 const GROUP_RSVP_WORD: Record<Rsvp["status"] | "unset", string> = {
   attending: "Coming",
-  pending: "Invited",
+  pending: "Yet to respond",
   to_invite: "To invite",
   declined: "Can’t come",
   unset: "Day or evening?",

@@ -58,7 +58,7 @@ interface Ctx {
 
 const fullName = (c: Contact) => [c.first_name, c.last_name].filter(Boolean).join(" ");
 const eventWord = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").toLowerCase();
-const ANSWER_WORD = { to_invite: "to invite", pending: "invited", attending: "coming", declined: "can't come" } as const;
+const ANSWER_WORD = { to_invite: "to invite", pending: "yet to respond", attending: "coming", declined: "can't come" } as const;
 const clock = (t: string | null | undefined) => (t ? String(t).slice(0, 5) : null);
 
 const COLLECTIONS: Record<string, Collection> = {
@@ -68,7 +68,7 @@ const COLLECTIONS: Record<string, Collection> = {
       name: { kind: "text" },
       household: { kind: "text" },
       guest_of: { kind: "text", hint: "day or evening" },
-      answer: { kind: "text", hint: "to invite, invited, coming or can't come" },
+      answer: { kind: "text", hint: "to invite, yet to respond, coming or can't come" },
       roles: { kind: "list", hint: "bridesmaid, best man…" },
       meal: { kind: "text" },
       dietary: { kind: "list", hint: "dietary needs, e.g. Vegan, Nut allergy" },

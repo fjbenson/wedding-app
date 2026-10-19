@@ -36,7 +36,7 @@ const firstName = (b: GuestStepsBlock) => splitName(b.prefill.fullName).first;
 
 const ANSWER_WORDS: [Values["answer"], string][] = [
   ["to_invite", "To invite"],
-  ["pending", "Invited"],
+  ["pending", "Yet to respond"],
   ["attending", "Coming"],
   ["declined", "Can’t come"],
 ];

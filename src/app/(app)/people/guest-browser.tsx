@@ -87,7 +87,7 @@ const VIEW_FILTER: Partial<Record<SortBy, GuestFilter>> = { role: "party", diet:
 const ANSWER_WORD: Record<Rsvp["status"], { word: string; className: string }> = {
   attending: { word: "Coming", className: "text-ink" },
   to_invite: { word: "To invite", className: "text-stone" },
-  pending: { word: "Invited", className: "italic text-champagne-600" },
+  pending: { word: "Yet to respond", className: "italic text-champagne-600" },
   declined: { word: "Can't come", className: "text-stone" },
 };
 
@@ -371,7 +371,7 @@ export default function GuestBrowser({
   } else if (sort === "rsvp") {
     const words: [Rsvp["status"] | undefined, string][] = [
       ["attending", "Coming"],
-      ["pending", "Invited"],
+      ["pending", "Yet to respond"],
       ["to_invite", "To invite"],
       ["declined", "Can't come"],
       [undefined, "Day or evening?"],
@@ -835,7 +835,7 @@ function AnswersCard({
     // number is everyone still expected, so Can't come isn't in it, just a quiet line under
     // (owner, 17 Oct 2026). The big tile is champagne too: ink is kept for the Add button.
     { status: "attending", label: "Coming", tone: "text-champagne-600" },
-    { status: "pending", label: "Invited", tone: "text-champagne-600" },
+    { status: "pending", label: "Yet to respond", tone: "text-champagne-600" },
     { status: "to_invite", label: "To invite", tone: "text-champagne-600" },
   ];
 
@@ -924,7 +924,7 @@ export function AnswerIcon({ status, small = false }: { status?: Rsvp["status"];
 function AnswerKey({ unset }: { unset: boolean }) {
   const items: [Rsvp["status"] | undefined, string][] = [
     ["attending", "Coming"],
-    ["pending", "Invited"],
+    ["pending", "Yet to respond"],
     ["to_invite", "To invite"],
     ["declined", "Can't come"],
     ...(unset ? ([[undefined, "Day or evening?"]] as [undefined, string][]) : []),

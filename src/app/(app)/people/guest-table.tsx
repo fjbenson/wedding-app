@@ -25,7 +25,7 @@ const ANSWER: Record<RsvpStatus, { label: string; className: string; icon: typeo
   declined: { label: "Can't come", className: "bg-cream text-stone", icon: X },
   to_invite: { label: "To invite", className: "border border-linen text-stone", icon: Minus },
   pending: {
-    label: "Invited",
+    label: "Yet to respond",
     className: "border border-dashed border-champagne-400 text-champagne-600",
     icon: Minus,
   },

@@ -524,7 +524,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   is put on that event and every later one, an evening guest on the
   evening only (`saveGuestAction`).
   **Answer statuses** (9 Oct 2026): **To invite** (`to_invite`, new in
-  `0013_to_invite.sql`) → **Invited** (`pending`) → **Coming** / **Can't
+  `0013_to_invite.sql`) → **Invited** (`pending`; **shown as "Yet to
+  respond"** since 19 Oct 2026, owner: clearer) → **Coming** / **Can't
   come**. New guests start at To invite and are moved on from their card
   (the "We've sent them" strip was taken out, owner's call). Until
   0013 is run, new guests go straight to Invited (`inviteGuestsToEvent`

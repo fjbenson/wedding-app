@@ -179,7 +179,7 @@ function Profile({
   const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
   const answer: Record<Rsvp["status"], string> = {
     attending: "Coming",
-    pending: "Invited",
+    pending: "Yet to respond",
     to_invite: "To invite",
     declined: "Can't come",
   };
@@ -515,7 +515,7 @@ function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit)
 const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
   // All picked the same way, like "Guest of" above (owner's call).
   { status: "to_invite", label: "To invite", on: "bg-white text-ink" },
-  { status: "pending", label: "Invited", on: "bg-white text-ink" },
+  { status: "pending", label: "Yet to respond", on: "bg-white text-ink" },
   { status: "attending", label: "Coming", on: "bg-white text-ink" },
   { status: "declined", label: "Can't come", on: "bg-white text-ink" },
 ];
@@ -533,7 +533,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
   const word = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
   // One-line sliders, like the switches elsewhere: a cream track, the picked one lifted out.
   const track = "mt-2.5 grid auto-cols-fr grid-flow-col gap-0.5 rounded-2xl bg-cream p-[3px]";
-  const cell = "h-10 min-w-0 rounded-xl px-1 text-[13px] transition";
+  const cell = "min-h-10 min-w-0 rounded-xl px-1 py-1 text-[13px] leading-tight transition";
   const lifted = "shadow-[0_1px_4px_rgb(60_50_40/0.14)]";
   const off = "text-stone hover:text-ink";
 

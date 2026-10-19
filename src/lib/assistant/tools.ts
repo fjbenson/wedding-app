@@ -282,7 +282,7 @@ const oneOf = <T extends string>(v: unknown, options: readonly T[]): T | undefin
 
 const ANSWER_WORD: Record<(typeof ANSWERS)[number], string> = {
   to_invite: "To invite",
-  pending: "Invited",
+  pending: "Yet to respond",
   attending: "Coming",
   declined: "Can't come",
 };

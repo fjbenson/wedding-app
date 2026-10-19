@@ -154,7 +154,7 @@ export default function HouseholdSheet({
 /** Each guest's answer, worded for a household: the invitation's been sent, have they replied? */
 const RSVP_WORD: Record<Rsvp["status"] | "unset", string> = {
   attending: "Coming",
-  pending: "Not answered",
+  pending: "Yet to respond",
   to_invite: "Not invited yet",
   declined: "Can't come",
   unset: "Day or evening?",

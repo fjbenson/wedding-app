@@ -1,5 +1,6 @@
 "use server";
 
+import { logStage } from "@/lib/db/timeline";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { guessIcon, iconByName } from "@/lib/area-icons";
@@ -251,6 +252,8 @@ function refreshNotes(key: string) {
 export async function unbookSupplierAction(key: string, supplierId: string, hasQuote: boolean) {
   try {
     await updateSupplierParts(supplierId, {}, { status: hasQuote ? "quoted" : "enquired" });
+    const wedding = await getCurrentWedding();
+    if (wedding) await logStage(wedding.id, supplierId, /^[a-z0-9-]+$/.test(key) ? key : null, "Not booked after all");
   } catch (error) {
     failed(`/area/${key}`, "That didn't change.", error);
   }

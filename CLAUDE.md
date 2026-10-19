@@ -1091,6 +1091,50 @@ Next.js scaffold. Built so far, against the plan's tabs:
   sound check list" makes a note of tick-boxes filed under Music and sits
   there until a note starting "Sound check" exists.
 
+- **The timeline** (19 Oct 2026; canvas 3 "History · Round 2" and
+  "Timeline · Round 3", owner: "bloody LOVE IT"; `0032_timeline.sql`, run the
+  same day with the owner's OK). It grew out of "comms" (owner: everything
+  said and sent, with anyone): rather than a sixth tab, **every supplier,
+  guest and household card, and every area page, has a Timeline** —
+  everything with them, past and to come, newest first: **Coming up** (to
+  pay, to do, to go to; dashed marks) above a black **Today** line, then what
+  happened (filled marks), five then "N earlier ›"; chips **All · Comms ·
+  Money · Plan · Files**; one mark per kind (phone / people / envelope /
+  speech bubble / pen for comms, £, the to-do circle, the little calendar, a
+  gold tick for a stage, a page for a file). Only comms is new data
+  (`timeline_entries`: kind call · meeting · email · message · note ·
+  save_the_date · invitation · thank_you · stage, the date, a line about what
+  was said, `how` for sendings, tied to a contact, household, group or area —
+  composite keys, RLS like groups, in `rls_isolation.sql`); payments, to-dos,
+  appointments and files are only read and put in order (`loadTimeline()` in
+  `src/lib/db/timeline.ts`, `buildTimeline()` in `src/lib/timeline.ts`). The
+  app writes **"Quote in · £…" / "Booked" / "Not booked after all"** itself
+  when a supplier's stage changes (`logStage`, in `updateSupplierAction` and
+  `unbookSupplierAction`; earlier stages have no date, so they don't show).
+  **Add to history** is a full screen (`/timeline/new?with=supplier:<id>|
+  guest:<id>|household:<id>|area:<key>&back=…`, `entry-form.tsx`): Call ·
+  Meeting · Email · Message · Note tiles, the date (today), what was said on a
+  slip of paper, and **"Anything to do?"** — to-dos saved with
+  `milestones.timeline_entry_id`, shown as pills under the call and in Plan.
+  Tap an entry for "Take this off the timeline". Where: the supplier card
+  (after Progress), the guest card (after In the plan: their entries, to-dos
+  and appointments they're on, bills they're paying), the household card
+  (after Guests: its own and its people's), the area page's "Everything for…"
+  (a **Timeline** line: the area's and its suppliers'), and a payment's card
+  (**All payments to …**, money only). `Timeline` in
+  `src/components/timeline.tsx` (loads through `timelineAction`). Nothing is
+  sent anywhere and the assistant isn't given it. Demo: calls, meetings and
+  stages with Wild & Gather, Petal & Stem, Ashcombe Barn and Paper & Post
+  Co., and a to-do from the florist call (also in `demo-wedding.sql`).
+  **Next (agreed, not built):** Stationery as its own special area (like
+  Decor) running **Save the date · Invitation · Thank-you**, each with how many
+  households have had it; the guest list's View › Invitation (Not sent / Sent,
+  canvas 3 "Sent · Round 1", B); **"Did it go?"** after every "Open in my
+  email" (keeping the subject, who and when, never the message) writing an
+  email entry; then thank-yous, which need a small gifts table (owner's OK
+  first). Comms stays a thread on every card, no tab, until a guest portal
+  brings messages in.
+
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
 area's `key` as text rather than the plan's `area_id`. Older to-dos may carry
@@ -1187,14 +1231,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0031_moment_in_charge.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0032_timeline.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0031 are now in** (0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0032 are now in** (0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

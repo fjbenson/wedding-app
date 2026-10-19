@@ -483,3 +483,31 @@ begin
     (w, null, 'Honeymoon: Puglia or the Amalfi coast?', null, now() - interval '3 hours');
 end
 $$;
+
+-- Timeline (0032): calls, meetings and stages with a few demo suppliers and a household.
+with w as (select id from weddings where name = 'Olivia & Theo'),
+s as (
+  select c.id, sd.company_name, sd.category from contacts c join supplier_details sd on sd.contact_id = c.id
+  where c.wedding_id = (select id from w)
+)
+insert into timeline_entries (wedding_id, kind, happened_on, summary, contact_id, area_key)
+select (select id from w), v.kind, v.on_date::date, v.summary, s.id, s.category
+from (values
+  ('Wild & Gather', 'email',   '2026-09-12', 'First enquiry: June, about 80 guests, peonies if possible'),
+  ('Wild & Gather', 'stage',   '2026-09-22', 'Quote in · £1,800'),
+  ('Wild & Gather', 'meeting', '2026-09-30', 'Studio visit. Loved the arch, less keen on pampas.'),
+  ('Wild & Gather', 'call',    '2026-10-14', 'Ellie says peonies are fine in June. Wants the colour swatches.'),
+  ('Petal & Stem',  'call',    '2026-10-02', 'Can do the arch but not the buttonholes on the day.'),
+  ('Ashcombe Barn', 'meeting', '2026-03-08', 'First viewing with both mums. The barn lights at dusk!'),
+  ('Ashcombe Barn', 'stage',   '2026-03-20', 'Booked'),
+  ('Ashcombe Barn', 'call',    '2026-09-18', 'Confirmed last orders at 11.30 and the 12.30 carriages.'),
+  ('Paper & Post Co.', 'email', '2026-02-02', 'Asked for samples of the deckle-edge card'),
+  ('Paper & Post Co.', 'stage', '2026-02-20', 'Booked')
+) as v(company, kind, on_date, summary)
+join s on s.company_name = v.company;
+
+-- A to-do that came out of the florist call.
+insert into milestones (wedding_id, title, category, due_date, status, timeline_entry_id)
+select t.wedding_id, 'Send Ellie the colour swatches', 'flowers', '2026-10-23', 'todo', t.id
+from timeline_entries t
+where t.wedding_id = (select id from weddings where name = 'Olivia & Theo') and t.kind = 'call' and t.summary like 'Ellie says peonies%';

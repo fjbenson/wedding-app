@@ -183,6 +183,8 @@ export interface Milestone {
   status: MilestoneStatus;
   assigned_to: string | null;
   completed_at: string | null;
+  /** The call or meeting it came from (0032_timeline.sql). */
+  timeline_entry_id?: string | null;
   created_at: string;
 }
 
@@ -428,5 +430,24 @@ export interface Drink {
   supplied_by: string | null;
   status: DrinkStatus;
   sort_order: number;
+  created_at: string;
+}
+
+export type TimelineKind =
+  | "call" | "meeting" | "email" | "message" | "note"
+  | "save_the_date" | "invitation" | "thank_you" | "stage";
+
+/** What was said or sent, with a supplier, guest, household, group or area (0032_timeline.sql). */
+export interface TimelineEntry {
+  id: string;
+  wedding_id: string;
+  kind: TimelineKind;
+  happened_on: string;
+  summary: string | null;
+  how: "email" | "post" | "hand" | "text" | null;
+  contact_id: string | null;
+  household_id: string | null;
+  group_id: string | null;
+  area_key: string | null;
   created_at: string;
 }

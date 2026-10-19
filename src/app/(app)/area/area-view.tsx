@@ -1,9 +1,10 @@
 import Link from "next/link";
 import CardLink from "@/components/card-link";
+import Timeline from "@/components/timeline";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -1292,6 +1293,12 @@ export default function AreaView({
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
               <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} />
+            </Everything>
+
+            {/* Everything with this area's suppliers and the area itself, past and to
+                come (canvas 3 "History · Round 2", 5 and "Timeline · Round 3"). */}
+            <Everything id="timeline" icon={History} title="Timeline" line="Calls, payments and to-dos, in date order">
+              <Timeline scope={`area:${area.key}`} bare />
             </Everything>
 
             <Everything

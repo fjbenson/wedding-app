@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteContact } from "@/lib/db/contacts";
 import { createSupplier, getSupplier, updateSupplier, updateSupplierParts } from "@/lib/db/suppliers";
+import { logStage } from "@/lib/db/timeline";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { parseMoney } from "@/lib/money";
@@ -142,7 +143,19 @@ export async function updateSupplierAction(supplierId: string, edit: SupplierEdi
       await updateSupplierParts(supplierId, {}, { [edit.field]: amount });
     } else if (edit.field === "status") {
       if (!SUPPLIER_STATUSES.some((s) => s.status === value)) return { error: "That isn't a stage we know." };
+      const before = await getSupplier(supplierId);
       await updateSupplierParts(supplierId, {}, { status: value as SupplierStatus });
+      // Reaching Quote in or Booked goes on their timeline, with today's date.
+      const was = before?.supplier_details?.status;
+      if (before && was !== value && (value === "quoted" || value === "booked")) {
+        const quote = before.supplier_details?.quoted_cost;
+        await logStage(
+          before.wedding_id,
+          supplierId,
+          before.supplier_details?.category ?? null,
+          value === "booked" ? "Booked" : quote != null ? `Quote in · £${Number(quote).toLocaleString("en-GB")}` : "Quote in",
+        );
+      }
     } else {
       await updateSupplierParts(supplierId, {}, { [edit.field]: value || null });
     }

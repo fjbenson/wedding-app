@@ -1,5 +1,6 @@
 "use client";
 
+import Timeline from "@/components/timeline";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -333,6 +334,15 @@ export function PaymentBody({
 
       {/* Family paying a bill themselves (owner, 17 Oct 2026). Nobody tagged = the couple. */}
       <InvolvedPart kind="payment" id={p.id} involved={involved} label="Who's paying" nobody="Us" />
+
+      {/* Every payment to the same supplier, paid and to come (canvas 3 "Timeline · Round 3", 2). */}
+      {p.contact_id && (
+        <Timeline
+          scope={`supplier:${p.contact_id}`}
+          only="money"
+          label={`All payments to ${suppliers.find((x) => x.id === p.contact_id)?.name ?? "them"}`}
+        />
+      )}
 
       <section className="mt-7">
         <h3 className="section-label">Details</h3>

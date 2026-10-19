@@ -111,6 +111,12 @@ begin
       ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Plasters'),
       ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Secret line');
   end if;
+  if to_regclass('public.timeline_entries') is not null then
+    insert into timeline_entries (wedding_id, kind, summary, contact_id)
+      select wedding_id, 'call', 'Peonies fine', id from contacts where first_name = 'Alice';
+    insert into timeline_entries (wedding_id, kind, summary, contact_id)
+      select wedding_id, 'call', 'Secret call', id from contacts where first_name = 'Bob';
+  end if;
   if to_regclass('public.stays') is not null then
     insert into stays (id, wedding_id, name) values
       ('aaaaaaaa-3333-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'The Swan'),
@@ -706,6 +712,41 @@ begin
     -- And they can use their own.
     execute $q$insert into list_items (list_id, wedding_id, text)
              values ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Mints')$q$;
+  end if;
+
+  if to_regclass('public.timeline_entries') is not null then
+    execute 'select count(*) from timeline_entries' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % timeline entries, expected 1', visible_contacts;
+    end if;
+    begin
+      execute $q$insert into timeline_entries (wedding_id, kind, summary) values ('bbbbbbbb-0000-0000-0000-000000000002', 'note', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added to wedding B''s timeline';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    -- Nor log a call with wedding B's guest, even knowing the id.
+    if current_setting('test.bob_decor', true) is not null then
+      begin
+        execute format($q$insert into timeline_entries (wedding_id, kind, contact_id)
+                        values ('aaaaaaaa-0000-0000-0000-000000000001', 'call', %L)$q$, current_setting('test.bob_decor'));
+        raise exception 'LEAK: couple A logged a call with wedding B''s guest';
+      exception
+        when insufficient_privilege or foreign_key_violation then null;  -- expected
+      end;
+    end if;
+    execute $q$update timeline_entries set summary = 'Hacked' where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A changed wedding B''s timeline';
+    end if;
+    execute $q$delete from timeline_entries where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s timeline';
+    end if;
+    -- And they can use their own.
+    execute $q$insert into timeline_entries (wedding_id, kind, summary) values ('aaaaaaaa-0000-0000-0000-000000000001', 'meeting', 'Venue visit')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

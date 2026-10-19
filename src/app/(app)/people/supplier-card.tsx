@@ -18,6 +18,7 @@ import { withCommas } from "@/lib/money";
 import { deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
 import SupplierFiles from "@/components/supplier-files";
 import SupplierDecor from "@/components/supplier-decor";
+import Timeline from "@/components/timeline";
 
 export function supplierName(s: Supplier) {
   return s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" ");
@@ -130,6 +131,9 @@ export default function SupplierCard({
           <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
 
           <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} onError={setError} />
+
+          {/* Everything with them, past and to come (canvas 3 "Timeline · Round 3"). */}
+          <Timeline scope={`supplier:${supplier.id}`} />
 
           <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
 

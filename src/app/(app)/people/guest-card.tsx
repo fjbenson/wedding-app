@@ -17,6 +17,7 @@ import { RoundAction, RoundActions } from "@/components/round-actions";
 import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 import { GuestPlanSection } from "./guest-plan";
+import Timeline from "@/components/timeline";
 import { setGuestTableAction } from "../day/actions";
 import type { GuestSeating } from "@/lib/db/day";
 import { jumpTo } from "@/lib/jump-to";
@@ -154,6 +155,11 @@ export default function GuestCard({
       {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
 
       <GuestPlanSection guestId={guest.id} />
+
+      {/* What's been said and sent, past and to come (canvas 3 "Timeline · Round 3"). */}
+      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
+        <Timeline scope={`guest:${guest.id}`} />
+      </section>
 
       {/* A hairline right across the card between sections. */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">

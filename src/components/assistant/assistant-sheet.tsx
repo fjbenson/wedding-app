@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowUp, CalendarDays, Camera, Check, PenLine, StickyNote, UserPlus, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import AnswerBlock from "@/components/assistant/answer-blocks";
+import SearchResults from "@/components/assistant/search-results";
 import { confirmProposalAction, saveNoteAction } from "@/app/(app)/assistant/actions";
 import { appointmentFlow } from "@/components/assistant/appointment-steps";
 import { guestFlow } from "@/components/assistant/guest-steps";
@@ -295,6 +296,7 @@ function Panel({
   }
 
   const empty = turns.length === 0;
+  const searching = draft.trim().length >= 2;
   const composer = (big: boolean) => (
     <form
       onSubmit={(e) => {
@@ -305,7 +307,7 @@ function Panel({
     >
       <div className={`flex items-end gap-2 rounded-[30px] border border-linen bg-white pl-5 pr-1.5 shadow-[0_16px_34px_-18px_rgb(60_45_20/0.45)] ${big ? "py-2.5" : "py-1.5"}`}>
         <label className="min-w-0 flex-1">
-          <span className="sr-only">Jot or ask</span>
+          <span className="sr-only">Search, jot or ask</span>
           <textarea
             ref={input}
             value={draft}
@@ -318,7 +320,7 @@ function Panel({
             }}
             rows={1}
             autoFocus={big && canHover()}
-            placeholder={hint ?? "Jot or ask…"}
+            placeholder={hint ?? "Search, jot or ask…"}
             className={`block max-h-32 w-full resize-none bg-transparent py-2 leading-snug ${big ? "text-[17px]" : "text-[16px]"} text-ink [field-sizing:content] placeholder:text-stone focus:outline-none`}
           />
         </label>
@@ -359,8 +361,8 @@ function Panel({
             <div className="flex shrink-0 justify-end px-4 pt-[max(1rem,env(safe-area-inset-top))]">
               <CloseButton onClose={onClose} />
             </div>
-            <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto overscroll-contain px-5 pb-10">
-              <div className="text-center">
+            <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 pb-10 ${searching ? "justify-start pt-4" : "justify-center"}`}>
+              <div className={`text-center ${searching ? "hidden" : ""}`}>
                 <Mark size="lg" />
                 <h2 className="mt-4 font-display text-[34px] font-light leading-[1.1] tracking-[-0.01em] text-ink">
                   What can I do
@@ -370,7 +372,9 @@ function Panel({
                 <p className="type-meta mt-3">Your assistant{subtitle ? ` · ${subtitle.split(" · ")[0]}` : ""}</p>
               </div>
               <div className="mt-7">{composer(true)}</div>
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {/* Typing searches the whole wedding at once (owner, 19 Oct 2026); send asks the assistant. */}
+              <SearchResults query={draft} onGo={onClose} />
+              <div className={`mt-6 flex flex-wrap justify-center gap-2 ${searching ? "hidden" : ""}`}>
                 {PROMPTS.map((item) => (
                   <button
                     key={item.label}

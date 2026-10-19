@@ -1034,6 +1034,23 @@ Next.js scaffold. Built so far, against the plan's tabs:
   name)", then "Family and friends on the guest list" (`FromSelect`); a
   guest card's "Lending: …" line was dropped as not worth it.
 
+- **Search across the whole wedding** (19 Oct 2026; owner: "search the
+  word easels and it finds it all across the app"; owner picked **inside
+  Your assistant** over a Hub button or a menu-bar button). Typing two or
+  more letters in the assistant's box ("Search, jot or ask…") shows matches
+  straight away under it, grouped (Guests · Suppliers · Plan · Money · The
+  Day · Decor · Lists and notes · Areas · Inspo · Food & drink); a tap opens
+  the thing in its card or page and closes the assistant; **Send still asks
+  the assistant**. No AI and nothing leaves the app: `searchWedding()` in
+  `src/lib/db/search.ts` runs ilike queries as the signed-in person (RLS),
+  six per kind, over guests (names, role, notes; "Jo Hale" across first and
+  last name), households, groups, suppliers (business name), to-dos,
+  appointments, payments, moments (incl. music), decor, lists and their
+  lines, notes, areas (name, key facts), Inspo, the menu, drinks, tables
+  and places to stay — not addresses, phones or emails. `searchAction` in
+  `search/actions.ts`; results in `components/assistant/search-results.tsx`.
+  Works the same in the laptop top bar's assistant.
+
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
 area's `key` as text rather than the plan's `area_id`. Older to-dos may carry

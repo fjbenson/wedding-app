@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { listGuests } from "@/lib/db/contacts";
+import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { getDay } from "@/lib/db/day";
 import { listAreas } from "@/lib/db/areas";
 import { areaOptions } from "@/lib/areas";
@@ -19,7 +19,7 @@ export default async function DayPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { q, tab, view, area, open, error, detail } = await searchParams;
-  const [day, guests, rsvps, areaRows, stays, groups] = await Promise.all([
+  const [day, guests, rsvps, areaRows, stays, groups, households] = await Promise.all([
     getDay(wedding.id),
     listGuests(wedding.id),
     listRsvps(wedding.id),
@@ -27,6 +27,8 @@ export default async function DayPage({
     listStays(wedding.id),
     // Only Seating uses them (seat a group together).
     tab === "seating" ? listGroups(wedding.id) : Promise.resolve([]),
+    // Seating seats a household together too.
+    tab === "seating" ? listHouseholds(wedding.id) : Promise.resolve([]),
   ]);
   // Transport became Travel (15 Oct 2026); old ?tab=transport links still land there.
   const current: DayTab = tab === "seating" ? "seating" : tab === "travel" || tab === "transport" ? "travel" : "run-sheet";
@@ -36,6 +38,7 @@ export default async function DayPage({
       tab={current}
       stays={stays}
       groups={groups}
+      households={households.map((h) => ({ id: h.id, name: h.name }))}
       open={open ?? null}
       seatingView={view === "list" ? "list" : "plan"}
       coupleName={wedding.name}

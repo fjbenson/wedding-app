@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { UsersRound, WheatOff } from "lucide-react";
+import { House, UsersRound, WheatOff } from "lucide-react";
 import TableView from "./table-view";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
 import { moveTableAction, seatAtAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
@@ -76,6 +76,7 @@ export default function FloorPlan({
   seats,
   guests,
   groups = [],
+  households = [],
   needs = {},
 }: {
   tables: SeatingTable[];
@@ -84,6 +85,8 @@ export default function FloorPlan({
   guests: Contact[];
   /** Groups of guests: tap one, then a table, to sit them together. */
   groups?: { id: string; name: string; members: string[] }[];
+  /** Households, seated together the same way (owner, 19 Oct 2026). */
+  households?: { id: string; name: string }[];
   /** Guest id → their dietary needs, marked on the plan (owner, 19 Oct 2026: "really, really important"). */
   needs?: Record<string, string[]>;
 }) {
@@ -130,8 +133,15 @@ export default function FloorPlan({
     guests
       .filter((g) => tableOf.get(g.id) === id)
       .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
+  // Groups and households of two or more, seated together in one go.
+  const parties: { id: string; name: string; kind: "group" | "household"; members: string[] }[] = [
+    ...groups.map((g) => ({ ...g, id: `g:${g.id}`, kind: "group" as const })),
+    ...households
+      .map((h) => ({ id: `h:${h.id}`, name: h.name, kind: "household" as const, members: guests.filter((g) => g.household_id === h.id).map((g) => g.id) }))
+      .filter((h) => h.members.length > 1),
+  ];
   const groupUnseated = (groupId: string) => {
-    const members = new Set(groups.find((g) => g.id === groupId)?.members ?? []);
+    const members = new Set(parties.find((g) => g.id === groupId)?.members ?? []);
     return unseated.filter((g) => members.has(g.id));
   };
   /** Chair by chair: the guest's id, or null for a free chair. */
@@ -158,8 +168,39 @@ export default function FloorPlan({
     save(() => seatAtAction(contactId, t.id, chair, pins));
   }
 
+  /**
+   * Sits several people in a table's free chairs, in order — a group or a
+   * household from the close-up. Returns how many didn't fit.
+   */
+  function seatManyAt(ids: string[], t: SeatingTable): number {
+    const chairs = chairsAt(t);
+    const free = chairs.flatMap((id, i) => (id ? [] : [i + 1]));
+    const placing = ids.slice(0, free.length).map((id, i) => ({ id, chair: free[i] }));
+    if (placing.length === 0) return ids.length;
+    const pins = chairs.flatMap((id, i) => (id && chairOf.get(id) !== i + 1 ? [{ contactId: id, seatNo: i + 1 }] : []));
+    setChairOf((m) => {
+      const next = new Map(m);
+      pins.forEach((p) => next.set(p.contactId, p.seatNo));
+      placing.forEach((p) => next.set(p.id, p.chair));
+      return next;
+    });
+    setTableOf((m) => {
+      const next = new Map(m);
+      placing.forEach((p) => next.set(p.id, t.id));
+      return next;
+    });
+    save(async () => {
+      for (const [i, p] of placing.entries()) {
+        const message = await seatAtAction(p.id, t.id, p.chair, i === 0 ? pins : []);
+        if (message) return message;
+      }
+      return null;
+    });
+    return ids.length - placing.length;
+  }
+
   // Groups with someone coming still to seat.
-  const openGroups = groups.map((g) => ({ ...g, waiting: groupUnseated(g.id).length })).filter((g) => g.waiting > 0);
+  const openGroups = parties.map((g) => ({ ...g, waiting: groupUnseated(g.id).length })).filter((g) => g.waiting > 0);
   const inPickedGroup = new Set(selectedGroup ? groupUnseated(selectedGroup).map((g) => g.id) : []);
 
   function seat(contactId: string, tableId: string) {
@@ -390,7 +431,11 @@ export default function FloorPlan({
                         : "border-dashed border-champagne-400 bg-champagne-100/60 text-ink hover:border-champagne-600"
                     }`}
                   >
-                    <UsersRound className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                    {g.kind === "household" ? (
+                      <House className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                    ) : (
+                      <UsersRound className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                    )}
                     {g.name}
                     <span className="opacity-60">{g.waiting}</span>
                   </button>
@@ -437,6 +482,8 @@ export default function FloorPlan({
           unseated={unseated}
           needs={needs}
           onSeatAt={(id, chair) => seatAt(id, table, chair)}
+          parties={openGroups.map((g) => ({ id: g.id, name: g.name, kind: g.kind, people: groupUnseated(g.id).map((p) => p.id) }))}
+          onSeatMany={(ids) => seatManyAt(ids, table)}
           onUnseat={unseat}
           onShape={(shape) => changeShape(table.id, shape)}
           onStep={(by) => setSelectedTable(tables[(tableIndex + by + tables.length) % tables.length].id)}

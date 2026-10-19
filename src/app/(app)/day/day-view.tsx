@@ -55,6 +55,7 @@ export default function DayView({
   tab,
   stays,
   groups,
+  households,
   open,
   seatingView,
   coupleName,
@@ -75,6 +76,8 @@ export default function DayView({
   stays: Stay[];
   /** Groups of guests, for seating a group together (Seating only). */
   groups: { id: string; name: string; members: string[] }[];
+  /** Households, for seating one together (Seating only). */
+  households: { id: string; name: string }[];
   /** Travel's open card (`?open=`). */
   open: string | null;
   seatingView: "plan" | "list";
@@ -119,7 +122,7 @@ export default function DayView({
       )}
 
       {tab === "seating" ? (
-        <Seating data={data} guests={guests} rsvps={rsvps} groups={groups} view={seatingView} />
+        <Seating data={data} guests={guests} rsvps={rsvps} groups={groups} households={households} view={seatingView} />
       ) : tab === "travel" ? (
         <Travel
           stays={stays}
@@ -367,12 +370,14 @@ function Seating({
   guests,
   rsvps,
   groups,
+  households,
   view,
 }: {
   data: DayData;
   guests: Contact[];
   rsvps: Rsvp[];
   groups: { id: string; name: string; members: string[] }[];
+  households: { id: string; name: string }[];
   view: "plan" | "list";
 }) {
   const coming = comingGuests(guests, rsvps);
@@ -418,7 +423,7 @@ function Seating({
       </div>
 
       {view === "plan" ? (
-        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} needs={needs} />
+        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} households={households} needs={needs} />
       ) : (
         <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} needs={needs} />
       )}

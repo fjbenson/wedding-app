@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, House, Plus, Search, UsersRound, X } from "lucide-react";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
 import type { Contact, SeatingTable, TableShape } from "@/types/db";
@@ -79,6 +79,8 @@ export default function TableView({
   unseated,
   needs,
   onSeatAt,
+  parties = [],
+  onSeatMany,
   onUnseat,
   onShape,
   onStep,
@@ -97,6 +99,10 @@ export default function TableView({
   needs: Record<string, string[]>;
   /** Sits someone in chair `chair` (from 1), swapping with anyone there. */
   onSeatAt: (contactId: string, chair: number) => void;
+  /** Groups and households with people still to seat (their ids, in order). */
+  parties?: { id: string; name: string; kind: "group" | "household"; people: string[] }[];
+  /** Sits them in the free chairs in turn; returns how many didn't fit. */
+  onSeatMany?: (contactIds: string[]) => number;
   onUnseat: (contactId: string) => void;
   onShape: (shape: TableShape) => void;
   /** -1 the table before, +1 the next. */
@@ -108,6 +114,8 @@ export default function TableView({
   /** Someone tapped, waiting for the chair to move them to. */
   const [moving, setMoving] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  /** After seating a group: "2 didn't fit". */
+  const [note, setNote] = useState<string | null>(null);
   const swipe = useRef<{ x: number; y: number } | null>(null);
 
   const sitting = [...guests].sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
@@ -128,6 +136,7 @@ export default function TableView({
     .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
 
   const pick = (chair: number) => {
+    setNote(null);
     setQuery("");
     setMoving(null);
     setPicking(chair);
@@ -271,6 +280,12 @@ export default function TableView({
         </div>
       )}
 
+      {note && (
+        <p role="status" className="mt-4 rounded-2xl bg-cream px-4 py-3 text-center text-sm text-ink">
+          {note}
+        </p>
+      )}
+
       {mover && (
         <p role="status" className="mt-4 rounded-2xl bg-ink px-4 py-3 text-center text-sm text-ivory">
           Moving {mover.first_name}: tap an empty chair, or someone to swap with.{" "}
@@ -292,6 +307,35 @@ export default function TableView({
             <p className="px-1 py-3 text-sm text-stone">Everyone coming has a seat.</p>
           ) : (
             <>
+              {parties.length > 0 && onSeatMany && (
+                <div className="mt-2 px-1">
+                  <p className="text-[13px] text-stone">A whole group, in the free chairs</p>
+                  <ul aria-label="Groups and households" className="mt-1.5 flex flex-wrap gap-2">
+                    {parties.map((p) => (
+                      <li key={p.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const left = onSeatMany(p.people);
+                            setPicking(null);
+                            setNote(left > 0 ? `${p.people.length - left} of ${p.name} sat down. ${left} didn't fit: they're still to seat.` : null);
+                          }}
+                          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-dashed border-champagne-400 bg-champagne-100/60 px-3 text-sm text-ink hover:border-champagne-600"
+                        >
+                          {p.kind === "household" ? (
+                            <House className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                          ) : (
+                            <UsersRound className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                          )}
+                          {p.name}
+                          <span className="opacity-60">{p.people.length}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-[13px] text-stone">Or one person</p>
+                </div>
+              )}
               <label className="mt-2 flex h-10 items-center gap-2 rounded-full border border-linen bg-ivory px-3.5">
                 <Search className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
                 <input

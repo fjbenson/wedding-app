@@ -930,7 +930,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   behind it on the map (so its people face the room), one upright row of
   chairs in the close-up ("Facing the room"). Long and top close-ups are as
   tall as their chairs need (`ROW` px each). The demo's Top table is one
-  now. The old panel under the plan is gone. Options A (pinch to zoom) and
+  now. **Groups and households sit down together** (owner, 19 Oct
+  2026): households of two or more join the groups' dashed pills under "Not
+  seated yet" on the map (a house icon; tap it, then a table), and in the
+  close-up "Who sits in chair N?" starts with "A whole group, in the free
+  chairs" — a tap fills the free chairs in turn and says how many didn't fit
+  (`seatManyAt` in `floor-plan.tsx`). People are then arranged by tap-to-move;
+  dragging between chairs was offered, not built. The old panel under the plan is gone. Options A (pinch to zoom) and
   C (tables as cards) weren't picked. `DietLine` moved to
   `src/components/diet-line.tsx`.
   **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view

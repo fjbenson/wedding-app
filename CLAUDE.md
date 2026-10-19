@@ -1045,14 +1045,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Your assistant** over a Hub button or a menu-bar button). Typing two or
   more letters in the assistant's box ("Search, jot or ask…") shows matches
   straight away under it, grouped (Guests · Suppliers · Plan · Money · The
-  Day · Decor · Lists and notes · Areas · Inspo · Food & drink); a tap opens
+  Day · Decor · Notes · Areas · Inspo · Food & drink); a tap opens
   the thing in its card or page and closes the assistant; **Send still asks
   the assistant**. No AI and nothing leaves the app: `searchWedding()` in
   `src/lib/db/search.ts` runs ilike queries as the signed-in person (RLS),
   six per kind, over guests (names, role, notes; "Jo Hale" across first and
   last name), households, groups, suppliers (business name), to-dos,
-  appointments, payments, moments (incl. music), decor, lists and their
-  lines, notes, areas (name, key facts), Inspo, the menu, drinks, tables
+  appointments, payments, moments (incl. music), decor, notes (tick-box
+  and bullet marks stripped), areas (name, key facts), Inspo, the menu, drinks, tables
   and places to stay — not addresses, phones or emails. `searchAction` in
   `search/actions.ts`; results in `components/assistant/search-results.tsx`.
   Works the same in the laptop top bar's assistant.
@@ -1068,7 +1068,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Assigned to / Responsible), picked from the suppliers first, then
   "Someone else (type a name)", then guests (`FromSelect`;
   `run_sheet_items.contact_id`, `0031_moment_in_charge.sql`, run the same
-  day with her OK, tied to `(id, wedding_id)`, in `rls_isolation.sql`; the
+  day with the owner's OK, tied to `(id, wedding_id)`, in `rls_isolation.sql`; the
   typed `who` stays for anyone else). **Played by and Presses play were
   dropped** (owner: it's whoever's in charge); 0030's columns stay unused.
   Music is A song | A playlist as a switch above the name, then the link.
@@ -1087,8 +1087,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `inChargeEmail`) with the time, date, place, song, link and notes
   written in, or "Email it" when there's no address; "Copy it" beside. The
   app sends and keeps nothing (so it can't know it was sent). **The Sound check
-  list lives under the Music page's notes only** (it showed twice):
-  "Start a sound check list" sits there until it's made.
+  list lives under the Music page's notes only** (it showed twice): "Start a
+  sound check list" makes a note of tick-boxes filed under Music and sits
+  there until a note starting "Sound check" exists.
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
@@ -1963,7 +1964,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
      long, all day with no time, "With …" and notes in the description).
      Nothing is sent anywhere; the phone adds it if the couple say so.
      **Which calendar** (owner, 19 Oct 2026: the iPhone file went to a
-     default calendar she couldn't find): the button now opens a choice —
+     default calendar the owner couldn't find): the button now opens a choice —
      iPhone or Mac calendar (the .ics, into the default calendar: Settings ›
      Calendar › Default Calendar), **Google Calendar**, **Outlook**
      (Outlook.com) and **Outlook for work or school**
@@ -1998,7 +1999,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
      its song, and **Copy for the band or DJ** (`DaySection` with
      `musicFor`). Links get https:// added; nothing is sent anywhere.
      **How it's played** (owner, 19 Oct 2026: "the main thing with music is
-     the technology"; `0030_moment_music_how.sql`, run the same day with her
+     the technology"; `0030_moment_music_how.sql`, run the same day with the owner's
      OK: `music_kind` song | playlist, `music_played` band | dj | venue |
      device, `music_who`): on a moment's card and form — A song | A
      playlist, **Played by** Band · DJ · Venue speakers · Our phone or
@@ -2015,23 +2016,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
   7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
      rule was no made-up human name — the owner now wants one; ties to the
      Rondé brand).
-  8. ~~**Lists**~~ — **built 19 Oct 2026** (owner's OK; `0029_lists.sql`,
-     run the same day: `lists` and `list_items`, tied to `(id, wedding_id)`,
-     RLS like groups, in `rls_isolation.sql`). **Lists are NOT Decor** (Decor
-     is detailed per item; a list is a name and lines to tick). **They live
-     with Your notes** (owner picked this over a piece of The Day: "the
-     ability to create lists anywhere"): the notes page's + asks **A note ·
-     A list**; a list sits on the wall first as a paper with its first lines
-     and boxes ("2 of 6 ticked"); a tap opens its card (`?list=`, `ListCard`
-     in `lists/list-bits.tsx`): tick lines (at once), ✕ to take one off, "Add
-     a line" in place (Enter adds and keeps the box), rename, **Filed under**
-     an area (optional), Remove. Filed lists show on that area page under its
-     notes (`ListRows`), with "+ Add a list" there too. New list:
-     `/lists/new` (name large with ideas — Toilet baskets, Bridesmaids'
-     room, Emergency kit…, first lines one per line, area optional; `?back=`
-     Your notes or the area page, then its card opens). Queries
-     `src/lib/db/lists.ts`, actions `lists/actions.ts` (return messages). No
-     people's details; the assistant isn't given them.
+  8. ~~**Lists**~~ — **folded into notes, 19 Oct 2026** (owner: canvas 3
+     "Notes · Round 1", option **A**, one box with a little toolbar, "as long
+     as you have the functionality to create a bullet list or a checklist";
+     no tagging of kinds). **Lists are NOT Decor** (Decor is detailed per
+     item; a list is lines to tick). **A note is now words, bullets and
+     tick-boxes mixed**: `NoteEditor` (`src/components/note-editor.tsx`,
+     one line per box, a Bullet / Tick-box toolbar, Enter carries the mark
+     on, Backspace on an empty marked line takes the mark off) on the jot
+     page, the notes panel's edit and an area page's notes. Stored as plain
+     text in `notes.body`: `- ` a bullet, `[ ] ` / `[x] ` a tick-box
+     (`parseNote`, `writeNote`, `toggleLine`, `tickCount` in
+     `src/lib/note-lines.ts`). **Ticks are tapped in place** wherever a
+     note shows (`TickableNote`, `rich-text.tsx`'s `onToggle`; saves through
+     `saveInboxNoteAction`); the wall shows the boxes and "1 of 4 ticked".
+     The separate lists (the wall's list papers, `/lists/new`, `ListCard`,
+     `src/lib/db/lists.ts`) were taken out; `/lists/new` redirects to the
+     jot page. **The `lists` / `list_items` tables (0029) stay as a backup**
+     — their one list (the demo's Sound check) was copied into a note with
+     the owner's OK. Photos inside a note wait on storage.
   9. ~~**Money's important numbers**~~ — **built 19 Oct 2026**
      (`money-figures.tsx`, the top card and an area's money sheet): with
      nothing agreed or paid it leads with the **budget** ("No budget yet"

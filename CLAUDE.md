@@ -1934,7 +1934,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
      iPhone or Mac calendar (the .ics, into the default calendar: Settings ›
      Calendar › Default Calendar), **Google Calendar**, **Outlook**
      (Outlook.com) and **Outlook for work or school**
-     (`googleCalendarUrl()`, `outlookCalendarUrl()` in `src/lib/ics.ts`; Google uses the `/r/eventedit` address, as the `render` one lost the event after Google sign-in; the iPhone file asks which calendar first, then the tick).
+     (`googleCalendarUrl()`, `outlookCalendarUrl()` in `src/lib/ics.ts`; Google uses the `/r/eventedit` address, as the `render` one lost the event after Google sign-in; the choice is a pop-up in the middle (owner, 19 Oct 2026), and its iPhone line says to tap Add to Calendar at the bottom of the iPhone's own screen, then the calendar — its blue tick does nothing and can't be changed from the app).
      The web ones open the couple's own account with the event filled in —
      the title, place, "With …" and notes go to Google or Microsoft only when
      they tap it (the owner asked for it). No live calendar feed.

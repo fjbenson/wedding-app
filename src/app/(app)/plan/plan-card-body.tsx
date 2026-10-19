@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarPlus, Check, ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react";
+import { createPortal } from "react-dom";
+import { CalendarPlus, Check, ChevronLeft, ChevronRight, Clock, ExternalLink, X } from "lucide-react";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
@@ -636,47 +637,77 @@ export function TitleEditor({ value, onSave }: { value: string; onSave: (v: stri
 }
 
 /**
- * "Add to my calendar" opens a choice (owner, 19 Oct 2026: the iPhone file
- * went to a default calendar she couldn't find): the phone's own calendar
- * (an .ics file, into its default calendar), Google Calendar or
- * Outlook. The web ones open the couple's own account with the event filled
- * in; nothing is saved anywhere until they press Save there.
+ * "Add to my calendar" opens a choice in a pop-up in the middle (owner,
+ * 19 Oct 2026: the choice opening under the button "doesn't feel right"):
+ * the phone's own calendar (an .ics file), Google Calendar or Outlook. The
+ * iPhone's own screen can't be changed from here, so the pop-up says what to
+ * tap on it: Add to Calendar at the bottom, then the calendar (its blue tick
+ * does nothing). The web ones open the couple's own account with the event
+ * filled in; nothing is saved anywhere until they press Save there.
  */
 function AddToCalendar({ appointment: a, withWhom }: { appointment: Appointment; withWhom: string | null }) {
   const [open, setOpen] = useState(false);
-  const row = "flex min-h-12 items-center justify-between gap-3 border-b border-linen px-1 text-[15px] text-ink last:border-b-0 hover:text-champagne-600";
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  const row = "flex min-h-[56px] items-center justify-between gap-3 border-b border-linen px-1 text-left text-[15px] text-ink last:border-b-0 hover:text-champagne-600";
+  const go = () => setOpen(false);
   return (
-    <div className="mt-6">
+    <>
       <button
         type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
+        onClick={() => setOpen(true)}
+        className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
       >
         <CalendarPlus className="h-4 w-4" strokeWidth={1.6} aria-hidden />
         Add to my calendar
       </button>
-      {open && (
-        <div className="mt-2 rounded-2xl border border-linen bg-white px-3">
-          <a href={`/plan/appointments/${a.id}/calendar`} className={row}>
-            <span>iPhone or Mac calendar<span className="block text-[12px] text-stone">Pick which calendar, then tap the tick</span></span>
-            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
-          </a>
-          <a href={googleCalendarUrl(a, withWhom)} target="_blank" rel="noopener noreferrer" className={row}>
-            Google Calendar
-            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
-          </a>
-          <a href={outlookCalendarUrl(a, withWhom, false)} target="_blank" rel="noopener noreferrer" className={row}>
-            Outlook (Hotmail, Outlook.com)
-            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
-          </a>
-          <a href={outlookCalendarUrl(a, withWhom, true)} target="_blank" rel="noopener noreferrer" className={row}>
-            Outlook for work or school
-            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
-          </a>
-        </div>
+      {/* Over the whole screen, not inside the card (which can move as it's pulled). */}
+      {open && createPortal(
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-label="Add to my calendar">
+          <button type="button" aria-label="Close" onClick={go} className="absolute inset-0 h-full w-full cursor-default bg-ink/40" />
+          <div className="relative w-full max-w-sm rounded-[26px] bg-ivory p-5 shadow-[0_24px_60px_-20px_rgb(30_27_24/0.5)]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-[22px] font-light leading-tight text-ink">Add to my calendar</h2>
+                <p className="mt-1 text-[13px] text-stone">Which calendar do you use?</p>
+              </div>
+              <button type="button" onClick={go} aria-label="Close" className="-mr-2 -mt-1 flex h-10 w-10 items-center justify-center rounded-full text-stone hover:text-ink">
+                <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+              </button>
+            </div>
+            <div className="mt-3 rounded-2xl border border-linen bg-white px-3">
+              <a href={`/plan/appointments/${a.id}/calendar`} onClick={go} className={row}>
+                <span>
+                  iPhone or Mac calendar
+                  <span className="mt-0.5 block text-[12px] leading-snug text-stone">On the next screen, tap Add to Calendar at the bottom, then pick the calendar (Home, Work…)</span>
+                </span>
+                <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+              </a>
+              <a href={googleCalendarUrl(a, withWhom)} target="_blank" rel="noopener noreferrer" onClick={go} className={row}>
+                Google Calendar
+                <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+              </a>
+              <a href={outlookCalendarUrl(a, withWhom, false)} target="_blank" rel="noopener noreferrer" onClick={go} className={row}>
+                Outlook (Hotmail, Outlook.com)
+                <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+              </a>
+              <a href={outlookCalendarUrl(a, withWhom, true)} target="_blank" rel="noopener noreferrer" onClick={go} className={row}>
+                Outlook for work or school
+                <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+              </a>
+            </div>
+            <button type="button" onClick={go} className="mt-4 h-11 w-full rounded-full text-[15px] text-stone hover:text-ink">
+              Cancel
+            </button>
+          </div>
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   );
 }
 

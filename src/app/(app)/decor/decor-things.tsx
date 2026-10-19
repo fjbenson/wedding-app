@@ -28,7 +28,7 @@ type Items = DecorWithHelpers[];
 const ROW = "row-press flex items-center gap-3 border-b border-ink/[0.12] last:border-b-0";
 const GROUP_HEAD = "mt-6 flex items-baseline justify-between px-1";
 
-/** Opens a thing's card over the page (`?thing=`), wherever its row is. */
+/** Opens an item's card over the page (`?thing=`), wherever its row is. */
 const open = (id: string) => replaceQuery({ thing: id }, { sync: true });
 
 /** The circle at a row's end: dashed still to get, a ring got it, gold packed or given back. A tap moves it on. */
@@ -121,13 +121,13 @@ export function DecorThings({ items, people, areaKey, weddingDate }: { items: It
   const counts = decorCounts(items);
   const back = encodeURIComponent(`/area/${areaKey}`);
   return (
-    <section aria-label="The things">
+    <section aria-label="Items">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="section-label">The things</h2>
-        <AddButton href={`/decor/new?back=${back}`} label="Add a thing" />
+        <h2 className="section-label">Items</h2>
+        <AddButton href={`/decor/new?back=${back}`} label="Add an item" />
       </div>
       <NumbersCard
-        big={{ label: "Things", value: counts.all, sub: counts.goBack ? `${counts.goBack} go back after` : undefined }}
+        big={{ label: "Items", value: counts.all, sub: counts.goBack ? `${counts.goBack} go back after` : undefined }}
         rows={[
           { value: counts.toGet, label: "Still to get" },
           { value: counts.got, label: "Got it" },
@@ -152,7 +152,7 @@ export function DecorThings({ items, people, areaKey, weddingDate }: { items: It
             <div key={g.place}>
               <h3 className={GROUP_HEAD}>
                 <span className="section-label">{g.place}</span>
-                <span className="text-[12px] text-stone">{g.items.length === 1 ? "1 thing" : `${g.items.length} things`}</span>
+                <span className="text-[12px] text-stone">{g.items.length === 1 ? "1 item" : `${g.items.length} items`}</span>
               </h3>
               <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
                 {g.items.map((item) => (
@@ -187,18 +187,18 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
         ]}
       />
       <div className="mt-4 flex justify-end">
-        <AddButton href="/decor/new?back=%2Fday%2Fdecor" label="Add a thing" />
+        <AddButton href="/decor/new?back=%2Fday%2Fdecor" label="Add an item" />
       </div>
 
       {items.length === 0 && (
-        <p className="mt-6 px-1 text-[15px] text-stone">Nothing on the list yet. Add the first thing with the +.</p>
+        <p className="mt-6 px-1 text-[15px] text-stone">Nothing on the list yet. Add the first item with the +.</p>
       )}
 
       {before.length > 0 && (
         <>
           <h2 className={GROUP_HEAD}>
             <span className="section-label">Before the day</span>
-            <span className="text-[12px] text-stone">{before.length === 1 ? "1 thing" : `${before.length} things`}</span>
+            <span className="text-[12px] text-stone">{before.length === 1 ? "1 item" : `${before.length} items`}</span>
           </h2>
           <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             {before.map((item) => (
@@ -287,7 +287,7 @@ function ThingCard({ items, people, weddingDate }: { items: Items; people: Decor
   if (!id) return null;
   const close = () => replaceQuery({ thing: null }, { sync: true });
   return (
-    <CardSheet label={item?.name ?? "A thing"} onClose={close} top={<span className="label">Decor{item?.place ? ` · ${item.place}` : ""}</span>}>
+    <CardSheet label={item?.name ?? "An item"} onClose={close} top={<span className="label">Decor{item?.place ? ` · ${item.place}` : ""}</span>}>
       {item ? <ThingBody key={item.id} item={item} people={people} weddingDate={weddingDate} onGone={close} /> : <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t here any more.</p>}
     </CardSheet>
   );
@@ -425,7 +425,7 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
           }}
           className="text-xs text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
         >
-          Remove this thing
+          Remove this item
         </button>
       </div>
     </div>

@@ -69,7 +69,7 @@ export async function saveDecorAction(formData: FormData) {
     id = await createDecor(wedding.id, fields);
     if (helpers.length) await setDecorHelpers(wedding.id, id, helpers);
   } catch (error) {
-    const result = failed("Adding a decor thing", error);
+    const result = failed("Adding a decor item", error);
     redirect(`/decor/new?back=${encodeURIComponent(back)}&error=${encodeURIComponent(result.error ?? "That didn't save.")}`);
   }
   done();
@@ -103,7 +103,7 @@ export async function updateDecorFieldsAction(id: string, fields: Record<string,
   try {
     await updateDecor(id, tidy);
   } catch (error) {
-    return failed("Changing a decor thing", error);
+    return failed("Changing a decor item", error);
   }
   done();
   return {};
@@ -125,7 +125,7 @@ export async function removeDecorAction(id: string): Promise<Result> {
   try {
     await deleteDecor(id);
   } catch (error) {
-    return failed("Removing a decor thing", error);
+    return failed("Removing a decor item", error);
   }
   done();
   return {};

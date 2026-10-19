@@ -101,7 +101,7 @@ export function decorNextUp(items: DecorItem[], people: { id: string; name: stri
     .filter((i) => i.status === "to_get" && i.collect_on)
     .sort((a, b) => (a.collect_on ?? "").localeCompare(b.collect_on ?? ""))[0];
   const toGet = items.filter((i) => i.status === "to_get");
-  if (items.length === 0) return { title: "Start the list of things", line: "Jam jars, candles, the easel for the table plan…" };
+  if (items.length === 0) return { title: "Start your decor list", line: "Jam jars, candles, the easel for the table plan…" };
   if (toCollect) {
     const who = people.find((p) => p.id === toCollect.from_contact_id)?.name ?? toCollect.from_name;
     return {
@@ -111,8 +111,8 @@ export function decorNextUp(items: DecorItem[], people: { id: string; name: stri
   }
   if (toGet.length) return { title: `Get ${withQuantity(toGet[0]).toLowerCase()}`, line: toGet.length > 1 ? `Then ${toGet.length - 1} more to get` : undefined };
   const toPack = items.filter((i) => i.status === "got");
-  if (toPack.length) return { title: `Pack ${toPack.length === 1 ? withQuantity(toPack[0]).toLowerCase() : `the last ${toPack.length} things`}`, line: "Tap a ring when it's packed." };
+  if (toPack.length) return { title: `Pack ${toPack.length === 1 ? withQuantity(toPack[0]).toLowerCase() : `the last ${toPack.length} items`}`, line: "Tap a ring when it's packed." };
   const back = items.filter((i) => goesBack(i) && i.status !== "returned");
-  if (back.length) return { title: `Give back ${back.length === 1 ? withQuantity(back[0]).toLowerCase() : `${back.length} things`}`, line: "After the day." };
+  if (back.length) return { title: `Give back ${back.length === 1 ? withQuantity(back[0]).toLowerCase() : `${back.length} items`}`, line: "After the day." };
   return { title: "All packed. Ready to dance." };
 }

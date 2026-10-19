@@ -386,6 +386,51 @@ begin
   select (select id from transport_runs where wedding_id = w and at_time = '12:45'), ct.id, w
   from contacts ct where ct.wedding_id = w and ct.first_name = 'Richard' and ct.last_name = 'Bennett';
 
+  -- Decor (0027_decor.sql): its own area, and the things for the day.
+  insert into areas (wedding_id, key, label, enabled, show_on_hub, sort_order, budget, details, icon) values (w, 'decor', 'Decor', true, true, 10, 800, '- Wild, warm, lots of candlelight
+- Borrow before buying', 'Palette');
+  insert into decor_items (wedding_id, place, name, quantity, status, source, from_contact_id, from_name, collect_on, return_on, setup_names, notes, sort_order)
+  select w, v.place, v.name, v.qty, v.status, v.source,
+         (select id from contacts where wedding_id = w and first_name = v.fn and last_name = v.ln limit 1),
+         v.from_name, v.collect_on::date, v.return_on::date, v.setup_names, v.notes, v.n
+  from (values
+    (1,  'Ceremony', 'Aisle runner', 1, 'to_get', 'hired', null, null, 'Glow Hire', null, '2027-06-14', null, null),
+    (2,  'Ceremony', 'Chair-end flowers', 16, 'got', 'made', null, null, null, null, null, null, null),
+    (3,  'Ceremony', 'Confetti cones', 80, 'packed', 'bought', null, null, 'Etsy', null, null, null, null),
+    (4,  'Ceremony', 'Ring box', 1, 'packed', 'own', null, null, null, null, null, null, null),
+    (5,  'Arrival and entrance', 'Easel for the table plan', 1, 'to_get', 'borrowed', 'Jo', 'Hale', null, '2027-06-06', '2027-06-15', null, 'Ask Jo for the clips too'),
+    (6,  'Arrival and entrance', 'Welcome sign', 1, 'to_get', 'bought', null, null, 'Etsy', '2027-06-03', null, null, null),
+    (7,  'Arrival and entrance', 'Guest book and pen', 1, 'packed', 'own', null, null, null, null, null, null, null),
+    (8,  'Arrival and entrance', 'Card box', 1, 'got', 'borrowed', 'Margaret', 'Bennett', null, '2027-05-30', '2027-06-14', null, null),
+    (9,  'Arrival and entrance', 'Umbrella basket', 1, 'got', 'own', null, null, null, null, null, null, null),
+    (10, 'The tables', 'Jam jars', 40, 'got', 'borrowed', 'Claire', 'Bennett', null, '2027-06-10', '2027-06-15', null, null),
+    (11, 'The tables', 'Tea lights', 120, 'got', 'bought', null, null, 'Ikea', null, null, null, null),
+    (12, 'The tables', 'Table numbers', 10, 'to_get', 'made', null, null, null, null, null, null, 'Pressed flowers in frames'),
+    (13, 'The tables', 'Place cards', 79, 'to_get', 'made', null, null, null, null, null, 'Olivia', null),
+    (14, 'The tables', 'Favours', 79, 'to_get', 'made', null, null, null, null, null, null, 'Seed packets'),
+    (15, 'The room', 'Strings of fairy lights', 3, 'to_get', 'hired', null, null, 'Glow Hire', '2027-06-11', '2027-06-14', 'Glow Hire', null),
+    (16, 'Outside', 'Lawn games', 1, 'got', 'borrowed', 'Richard', 'Bennett', null, '2027-06-11', '2027-06-14', null, 'Giant Jenga and quoits'),
+    (17, 'Bar and cake', 'Cake knife and server', 1, 'packed', 'own', null, null, null, null, null, null, null),
+    (18, 'Bar and cake', 'Cake stand', 1, 'got', 'borrowed', 'Jo', 'Barnes', null, null, '2027-06-14', null, null),
+    (19, 'Toilets', 'Toilet baskets', 2, 'to_get', 'made', null, null, null, null, null, null, null),
+    (20, 'Kit box', 'Emergency kit', 1, 'to_get', 'own', null, null, null, null, null, null, 'Safety pins, plasters, a lighter, tape, scissors')
+  ) as v(n, place, name, qty, status, source, fn, ln, from_name, collect_on, return_on, setup_names, notes);
+  insert into decor_helpers (decor_id, contact_id, wedding_id)
+  select d.id, c.id, w
+  from (values
+    ('Aisle runner', 'Jack', 'Turner'), ('Aisle runner', 'Sam', 'Okafor'),
+    ('Chair-end flowers', 'Grace', 'Whitfield'),
+    ('Confetti cones', 'Isla', 'Moore'),
+    ('Ring box', 'Oscar', 'Hale'),
+    ('Easel for the table plan', 'Sam', 'Okafor'),
+    ('Guest book and pen', 'Priya', 'Shah'),
+    ('Jam jars', 'Hannah', 'Cole'), ('Jam jars', 'Sophie', 'Moore'),
+    ('Tea lights', 'Hannah', 'Cole'),
+    ('Lawn games', 'Jack', 'Turner')
+  ) as h(item, fn, ln)
+  join decor_items d on d.wedding_id = w and d.name = h.item
+  join contacts c on c.wedding_id = w and c.first_name = h.fn and c.last_name = h.ln;
+
   -- Notes
   insert into notes (wedding_id, area_key, body, url, created_at) values
     (w, null, 'Ask the barn if dogs are allowed — Biscuit as ring bearer?', null, now() - interval '2 days'),

@@ -1019,8 +1019,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `decor_helpers` (tied to `(id, wedding_id)`; RLS like groups; in
   `rls_isolation.sql`, which passes with all 27 migrations); queries
   `src/lib/db/decor.ts`, actions `decor/actions.ts` (the card's return
-  messages). Not yet: a guest's card showing "Lending: the easel", Decor in
-  the demo wedding.
+  messages). **The word is "items"** (owner, 19 Oct 2026, over pieces,
+  details or bits and bobs: "Items", "Add an item", "Start your decor
+  list"); the code still says things (`ThingCard`, `?thing=`). The demo
+  wedding has a Decor area (the owner's own, leaf icon) with 20 items, 5 lent
+  by guests or suppliers, 11 with helpers (also in `demo-wedding.sql`). Not
+  yet: a guest's card showing "Lending: the easel".
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an

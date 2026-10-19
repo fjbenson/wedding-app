@@ -1852,6 +1852,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
       of guests and run sheet moments (a moment tagged with a group or
       people, then "the bridesmaids' morning" is the run sheet narrowed to
       them, printable or sent to them).
+  17. **Dietary needs on the seating plan — "really, really important"**
+      (owner). Make it obvious on the floor plan and the list which seats
+      have a dietary need (a mark on the guest's initials, a count per
+      table, the need itself on tap), and **highlight them on the plan sent
+      to the venue** (item 12): each table with its guests' needs written
+      next to them. Allergies are health data (checklist item 5): fine for
+      the venue's catering, nothing more.
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

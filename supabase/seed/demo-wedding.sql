@@ -554,3 +554,28 @@ begin
   update drinks set moment_id = m_speech where wedding_id = w and name = 'Champagne for the toast';
   update drinks set moment_id = m_evening where wedding_id = w and name in ('Local cask ale', 'Gin, spirits, soft drinks');
 end $$;
+
+-- What's been sent (Stationery): every household had the save the date, and
+-- the invitation has gone to everyone not still "to invite".
+with hh as (
+  select h.id, h.address_line1, h.postcode,
+    bool_or(c.email is not null and trim(c.email) <> '') has_email,
+    bool_or(r.status = 'to_invite') any_to_invite
+  from households h
+  join contacts c on c.household_id = h.id
+  left join rsvps r on r.contact_id = c.id
+  where h.wedding_id = (select id from weddings where name = 'Olivia & Theo')
+  group by h.id, h.address_line1, h.postcode
+),
+std as (
+  insert into timeline_entries (wedding_id, kind, how, happened_on, household_id)
+  select (select id from weddings where name = 'Olivia & Theo'), 'save_the_date',
+    case when has_email then 'email' when address_line1 is not null or postcode is not null then 'post' else 'hand' end,
+    case when has_email then date '2026-06-15' else date '2026-06-20' end, id
+  from hh returning 1
+)
+insert into timeline_entries (wedding_id, kind, how, happened_on, household_id)
+select (select id from weddings where name = 'Olivia & Theo'), 'invitation',
+  case when address_line1 is not null or postcode is not null then 'post' when has_email then 'email' else 'hand' end,
+  date '2026-09-14', id
+from hh where not any_to_invite;

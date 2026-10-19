@@ -2456,6 +2456,22 @@ additive — new tables hanging off `weddings`. None require changing the above.
   — a version that shows only journeys and named places (the pub, the
   church), never a guest's home address, avoids it. Dots for people should be
   initials, never children's names. Mock on canvas 3 first.
+- **Invitations: a supplier, then maybe a service** (owner and Claude, 19 Oct
+  2026, parked). **Decided:** the designer or printer is **a supplier in the
+  Stationery area like any other** (quote, booked, payments, contract and
+  proofs as files, timeline); the app does not become the printer, and
+  "What you send" stays the couple's own tracking of who's had what. **Small
+  steps, not built:** an **address export** for a stationer or printer (a
+  spreadsheet or address-label sheet of every household, in place of today's
+  "copy the addresses"); nothing leaves the app except to the couple.
+  **Later, the owner's call:** a **"Send these for me"** button handing the
+  ticked households to a print-and-post partner (couple picks the partner,
+  addresses go only when they press send; could earn a referral fee, fits the
+  couples-pay model), or full design, print and post inside the app (biggest
+  job: payments, refunds, returned post). **Rule one before either:** a
+  service is sent guests' names and home addresses, so it needs the owner's
+  OK, a signed data processing agreement and a privacy-policy line; it also
+  costs money (printing and postage), which is the owner's call.
 - **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box
   above the grid listing that month's "start around" nudges, to help
   couples along. The owner likes the idea but not yet the look; it was

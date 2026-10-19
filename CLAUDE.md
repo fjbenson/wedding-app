@@ -1884,8 +1884,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
      rule was no made-up human name — the owner now wants one; ties to the
      Rondé brand).
   8. **Lists** — somewhere to make a plain list with no date (not Plan,
-     which is to-dos and appointments by date); maybe on area pages. Close
-     to the agreed Decor list — one "lists" piece could serve both.
+     which is to-dos and appointments by date). **Owner, 19 Oct 2026: Lists
+     are NOT Decor** — Decor is detailed per item (quantity, from, collect /
+     give back, who sets it up); a list is just a name and lines to tick
+     ("Toilet baskets: hairspray, plasters, mints", "Bridesmaids' room").
+     Proposed home: **a piece of The Day** beside Seating, Travel and Decor,
+     with an optional area tag so a list shows on that area page too. Needs
+     a small new table (a list and its lines) — owner's OK first.
   9. ~~**Money's important numbers**~~ — **built 19 Oct 2026**
      (`money-figures.tsx`, the top card and an area's money sheet): with
      nothing agreed or paid it leads with the **budget** ("No budget yet"
@@ -2012,9 +2017,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
   details reach one solely when the couple sends them.
 
 - **From the information-architecture review (12 Oct 2026)** — the owner
-  asked for the app's map ("Wedding App Map", a sitemap:
+  asked for the app's map ("Wedding App Map":
   https://claude.ai/artifact/GfcFVHZX4vuf1Ykzdk1i5B) and what doesn't line
-  up. Done the same day: payments off the Plan calendar, appointments in
+  up. **Rebuilt 19 Oct 2026** (owner: "slightly losing sight of all the
+  stuff"): the five tabs with their views, cards and add screens, what cuts
+  across, and where each backlog idea would live, marked built / agreed /
+  idea. **Agreed habit: anything new goes on the map before it's built**;
+  if it fits no tab or the area page, stop and decide with the owner. Done the same day: payments off the Plan calendar, appointments in
   Plan's List, Money's area filter, guest facts on area pages. Still open:
   - ~~**Your notes and Inspo are two homes for one thing**~~ — settled
     13 Oct 2026 (owner): they stay two things — notes are quick words, Inspo

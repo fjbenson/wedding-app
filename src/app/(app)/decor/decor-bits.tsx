@@ -56,14 +56,16 @@ export function FromSelect({
   value,
   onChange,
   className,
+  label = "Who it's from",
 }: {
   people: DecorPerson[];
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  label?: string;
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Who it's from" className={className}>
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} className={className}>
       <option value="">No one in particular</option>
       <optgroup label="Suppliers">
         {people.filter((p) => p.kind === "supplier").map((p) => (

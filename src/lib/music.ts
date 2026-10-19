@@ -44,3 +44,12 @@ export const SOUND_CHECK = {
     "The venue's sound contact's number",
   ],
 };
+
+/**
+ * The run sheet shows who's in charge of each moment by name: the supplier or
+ * guest picked (0031) when there is one, else the typed name.
+ */
+export function withInCharge<T extends { contact_id?: string | null; who: string | null }>(items: T[], people: { id: string; name: string }[]): T[] {
+  const names = new Map(people.map((p) => [p.id, p.name]));
+  return items.map((i) => (i.contact_id && names.has(i.contact_id) ? { ...i, who: names.get(i.contact_id)! } : i));
+}

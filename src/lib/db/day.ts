@@ -34,7 +34,7 @@ export async function getDay(weddingId: string): Promise<{
 
 // Run sheet ------------------------------------------------------------------
 
-type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes" | "area_key" | "music" | "music_url" | "music_kind" | "music_played" | "music_who">;
+type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes" | "area_key" | "music" | "music_url" | "music_kind" | "music_played" | "music_who" | "contact_id">;
 
 export async function getRunSheetItem(id: string): Promise<RunSheetItem | null> {
   const supabase = await createClient();

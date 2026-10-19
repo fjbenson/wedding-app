@@ -61,14 +61,14 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       at_time: at,
       title,
       location: text(formData, "location"),
-      who: text(formData, "who"),
+      // In charge: one supplier or guest from the list, or a typed name (0031).
+      contact_id: /^[0-9a-f-]{36}$/i.test(text(formData, "in_charge") ?? "") ? text(formData, "in_charge") : null,
+      who: text(formData, "in_charge") === "typed" ? text(formData, "who") : null,
       notes: text(formData, "notes"),
       area_key: text(formData, "area_key"),
       music: text(formData, "music"),
       music_url: musicUrl(text(formData, "music_url")),
       music_kind: text(formData, "music_kind") === "playlist" ? "playlist" : text(formData, "music") ? "song" : null,
-      music_played: (["band", "dj", "venue", "device"] as const).find((v) => v === text(formData, "music_played")) ?? null,
-      music_who: text(formData, "music_who"),
     });
   } catch (error) {
     failed(back, "That didn't save.", error);

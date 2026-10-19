@@ -5,6 +5,7 @@ import { listAreas } from "@/lib/db/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveRunSheetItemAction } from "../../actions";
 import { RunSheetForm } from "../../day-forms";
+import { decorPeople } from "../../../decor/decor-people";
 
 export const metadata = { title: "Add to the run sheet — Wedding App" };
 
@@ -28,7 +29,7 @@ export default async function NewRunSheetItemPage({
       error={error}
       detail={detail}
     >
-      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} defaultArea={picked} fromArea={fromArea} />
+      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} people={await decorPeople(wedding.id)} defaultArea={picked} fromArea={fromArea} />
     </FormPage>
   );
 }

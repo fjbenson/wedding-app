@@ -22,6 +22,7 @@ import { listDecor } from "@/lib/db/decor";
 import { listLists } from "@/lib/db/lists";
 import { isDecorArea } from "@/lib/decor";
 import { decorPeople } from "../../decor/decor-people";
+import { withInCharge } from "@/lib/music";
 
 export const metadata = { title: "Area — Wedding App" };
 
@@ -111,7 +112,7 @@ export default async function AreaPage({
       lists={lists.filter((l) => l.area_key === area.key)}
       music={area.key === "music"}
       // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
-      moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}
+      moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}
       couple={coupleName(wedding.name)}
       error={error}
       detail={detail}

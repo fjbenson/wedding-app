@@ -123,7 +123,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
           ) : data.kind === "appointment" ? (
             <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} involved={data.involved} />
           ) : data.kind === "moment" ? (
-            <MomentBody moment={data.moment} areas={data.areas} />
+            <MomentBody moment={data.moment} areas={data.areas} people={data.people} />
           ) : data.kind === "idea" ? (
             <IdeaBody idea={data.idea} folderIds={data.folderIds} areas={data.areas} />
           ) : (

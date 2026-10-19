@@ -408,6 +408,25 @@ begin
   ) as v(title, kind, played, who)
   where r.wedding_id = w and r.title = v.title;
   update run_sheet_items set music = 'Welcome drinks' where wedding_id = w and title = 'Guests arrive, welcome drinks';
+  -- Who's in charge of each moment, from the list (0031_moment_in_charge.sql).
+  update run_sheet_items r set contact_id = sd.contact_id, who = null
+  from (values
+    ('Hair and make-up begins', 'Glow by Mia'),
+    ('Photographer arrives for prep shots', 'Ellie Rose Photography'),
+    ('Olivia leaves in the Bentley', 'Cotswold Classic Cars'),
+    ('Group photos', 'Ellie Rose Photography'),
+    ('Wedding breakfast', 'Fork & Field'),
+    ('First dance', 'The Velvet Notes'),
+    ('Cake cutting', 'Sugar Loft'),
+    ('Pizza from the wood-fired oven', 'Fork & Field'),
+    ('Carriages', 'Swift Coaches')
+  ) as v(title, company)
+  join supplier_details sd on sd.company_name = v.company
+  join contacts c on c.id = sd.contact_id and c.wedding_id = w
+  where r.wedding_id = w and r.title = v.title;
+  update run_sheet_items r set contact_id = c.id, who = null
+  from contacts c
+  where r.wedding_id = w and r.title = 'Guests arrive, welcome drinks' and c.wedding_id = w and c.first_name = 'Sam' and c.last_name = 'Okafor';
 
   -- Decor (0027_decor.sql): its own area, and the things for the day.
   insert into areas (wedding_id, key, label, enabled, show_on_hub, sort_order, budget, details, icon) values (w, 'decor', 'Decor', true, true, 10, 800, '- Wild, warm, lots of candlelight

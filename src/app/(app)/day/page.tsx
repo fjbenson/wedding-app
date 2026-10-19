@@ -8,6 +8,8 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { listStays } from "@/lib/db/stays";
 import { listGroups } from "@/lib/db/groups";
 import { listDecor } from "@/lib/db/decor";
+import { withInCharge } from "@/lib/music";
+import { decorPeople } from "../decor/decor-people";
 import DayView, { type DayTab } from "./day-view";
 
 export const metadata = { title: "The Day — Wedding App" };
@@ -20,7 +22,7 @@ export default async function DayPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { q, tab, view, area, open, error, detail } = await searchParams;
-  const [day, guests, rsvps, areaRows, stays, groups, households, decor] = await Promise.all([
+  const [day, guests, rsvps, areaRows, stays, groups, households, decor, people] = await Promise.all([
     getDay(wedding.id),
     listGuests(wedding.id),
     listRsvps(wedding.id),
@@ -32,6 +34,8 @@ export default async function DayPage({
     tab === "seating" ? listHouseholds(wedding.id) : Promise.resolve([]),
     // Only the run sheet's Decor tile uses it.
     tab === "seating" || tab === "travel" ? Promise.resolve([]) : listDecor(wedding.id),
+    // Who's in charge of each moment, by name (0031).
+    tab === "seating" || tab === "travel" ? Promise.resolve([]) : decorPeople(wedding.id),
   ]);
   // Transport became Travel (15 Oct 2026); old ?tab=transport links still land there.
   const current: DayTab = tab === "seating" ? "seating" : tab === "travel" || tab === "transport" ? "travel" : "run-sheet";
@@ -47,7 +51,7 @@ export default async function DayPage({
       seatingView={view === "list" ? "list" : "plan"}
       coupleName={wedding.name}
       weddingDate={wedding.wedding_date}
-      day={day}
+      day={day && { ...day, runSheet: withInCharge(day.runSheet, people) }}
       guests={guests}
       rsvps={rsvps}
       areas={areaOptions(areaRows)}

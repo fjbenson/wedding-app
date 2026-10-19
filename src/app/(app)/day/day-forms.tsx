@@ -5,9 +5,10 @@ import { SubmitBar } from "@/components/form-bits";
 import { Bus, BusFront, Car, CarFront, CarTaxiFront, Clock, Flag, Footprints, Link2, MapPin, Music, NotebookPen, UserRound } from "lucide-react";
 import PeoplePicker from "../people/people-picker";
 import { ReturnTo } from "@/components/back-link";
-import { AreaTiles, BARE, CARD, Folded, Line, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
+import { AreaTiles, BARE, CARD, Folded, Ideas, Line, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
-import { PLAYED_BY } from "@/lib/music";
+import { FromSelect } from "../decor/decor-bits";
+import type { DecorPerson } from "../decor/decor-people";
 import type { RunSheetItem, TransportRun } from "@/types/db";
 
 type Action = (formData: FormData) => void | Promise<void>;
@@ -22,15 +23,20 @@ export function RunSheetForm({
   action,
   item,
   areas,
+  people,
   defaultArea,
   fromArea,
 }: {
   action: Action;
   item?: RunSheetItem;
   areas: AreaOption[];
+  /** Suppliers and guests, to put one in charge (0031). */
+  people: DecorPerson[];
   defaultArea?: string;
   fromArea?: string;
 }) {
+  const [title, setTitle] = useState(item?.title ?? "");
+  const [inCharge, setInCharge] = useState(item?.contact_id ?? (item?.who ? "typed" : ""));
   return (
     <form action={action}>
       <ReturnTo href="/day" />
@@ -40,11 +46,13 @@ export function RunSheetForm({
         required
         autoFocus={!item}
         autoComplete="off"
-        defaultValue={item?.title}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
         aria-label="What happens"
         placeholder="What happens?"
         className={TITLE_INPUT}
       />
+      {!item && <Ideas ideas={MOMENT_IDEAS} value={title} onPick={setTitle} />}
 
       <Part label="When">
         <div className={CARD}>
@@ -60,26 +68,45 @@ export function RunSheetForm({
         </div>
       </Part>
 
-      <Part label="Area (optional)">
-        <AreaTiles name="area_key" areas={areas} otherValue="other" defaultValue={item ? (item.area_key ?? "") : (defaultArea ?? "")} folded={!!item} optional />
-      </Part>
-
+      {/* Where, and the one person in charge, picked from the list (canvas 3 "Moment · Round 1", owner 19 Oct 2026). */}
       <section className="mt-7">
         <h2 className="section-label font-body">Where and who</h2>
         <div className={CARD}>
           <Line icon={MapPin} label="Where">
-            <input name="location" defaultValue={item?.location ?? ""} placeholder="Where — e.g. The orchard" className={BARE} />
+            <input name="location" defaultValue={item?.location ?? ""} placeholder="Where — e.g. The barn" className={BARE} />
           </Line>
-          <Line icon={UserRound} label="Who's in charge">
-            <input name="who" defaultValue={item?.who ?? ""} placeholder="Who's in charge — e.g. the band" className={BARE} />
+          <Line icon={UserRound} label="In charge">
+            <input type="hidden" name="in_charge" value={inCharge} />
+            <FromSelect
+              label="Who's in charge"
+              people={people}
+              value={inCharge}
+              onChange={setInCharge}
+              className={`${BARE} cursor-pointer appearance-none ${inCharge ? "" : "text-stone/60"}`}
+            />
           </Line>
+          {inCharge === "typed" && (
+            <Line icon={UserRound} label="Their name">
+              <input name="who" defaultValue={item?.who ?? ""} placeholder="Their name" className={BARE} />
+            </Line>
+          )}
         </div>
       </section>
 
-      {/* A song for the moment (owner, 19 Oct 2026): open from the Music area, folded elsewhere. */}
-      <Folded label="Add a song" open={!!item?.music || !!item?.music_url || defaultArea === "music"}>
+      {/* A song or playlist (open from the Music area, folded elsewhere), notes and an area: the extras. */}
+      <Folded label="Add a song or playlist" open={!!item?.music || !!item?.music_url || defaultArea === "music"}>
         <section className="mt-7">
           <h2 className="section-label font-body">Music</h2>
+          <div className="mt-2.5 flex rounded-full bg-cream p-[3px]">
+            {(["song", "playlist"] as const).map((k) => (
+              <label key={k} className="flex-1 cursor-pointer">
+                <input type="radio" name="music_kind" value={k} defaultChecked={(item?.music_kind ?? "song") === k} className="peer sr-only" />
+                <span className="flex h-9 items-center justify-center rounded-full text-[13.5px] text-stone peer-checked:bg-white peer-checked:text-ink peer-checked:shadow-[0_1px_4px_rgb(60_50_40/0.12)]">
+                  {k === "song" ? "A song" : "A playlist"}
+                </span>
+              </label>
+            ))}
+          </div>
           <div className={CARD}>
             <Line icon={Music} label="Song or playlist">
               <input name="music" defaultValue={item?.music ?? ""} placeholder="e.g. Harvest Moon, Neil Young" className={BARE} />
@@ -87,53 +114,39 @@ export function RunSheetForm({
             <Line icon={Link2} label="Link">
               <input name="music_url" type="url" inputMode="url" defaultValue={item?.music_url ?? ""} placeholder="Spotify, YouTube or Apple Music link" className={BARE} />
             </Line>
-            <Line icon={UserRound} label="Who presses play">
-              <input name="music_who" defaultValue={item?.music_who ?? ""} placeholder="Who presses play — e.g. Sam" className={BARE} />
-            </Line>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(["song", "playlist"] as const).map((k) => (
-              <label key={k} className="cursor-pointer">
-                <input type="radio" name="music_kind" value={k} defaultChecked={(item?.music_kind ?? "song") === k} className="peer sr-only" />
-                <span className="flex h-9 items-center rounded-full border border-linen bg-white/80 px-3.5 text-[13px] text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
-                  {k === "song" ? "A song" : "A playlist"}
-                </span>
-              </label>
-            ))}
-          </div>
-          <p className="type-meta mt-4">Played by</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {PLAYED_BY.map((p) => (
-              <label key={p.value} className="cursor-pointer">
-                <input type="radio" name="music_played" value={p.value} defaultChecked={item?.music_played === p.value} className="peer sr-only" />
-                <span className="flex h-9 items-center rounded-full border border-linen bg-white/80 px-3.5 text-[13px] text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
-                  {p.label}
-                </span>
-              </label>
-            ))}
           </div>
         </section>
       </Folded>
 
-      <section className="mt-7">
-        <h2 className="section-label font-body">Notes</h2>
-        <div className={CARD}>
-          <Line icon={NotebookPen} label="Notes" top>
-            <textarea
-              name="notes"
-              rows={3}
-              defaultValue={item?.notes ?? ""}
-              placeholder="e.g. Ushers hand out order of service"
-              className={`${BARE} w-full resize-none`}
-            />
-          </Line>
-        </div>
-      </section>
+      <Folded label="Add notes" open={!!item?.notes}>
+        <section className="mt-7">
+          <h2 className="section-label font-body">Notes</h2>
+          <div className={CARD}>
+            <Line icon={NotebookPen} label="Notes" top>
+              <textarea
+                name="notes"
+                rows={3}
+                defaultValue={item?.notes ?? ""}
+                placeholder="e.g. Ushers hand out order of service"
+                className={`${BARE} w-full resize-none`}
+              />
+            </Line>
+          </div>
+        </section>
+      </Folded>
+
+      <Folded label="File it under an area" open={!!item?.area_key || !!defaultArea}>
+        <Part label="Area (optional)">
+          <AreaTiles name="area_key" areas={areas} otherValue="other" defaultValue={item ? (item.area_key ?? "") : (defaultArea ?? "")} folded={!!item} optional />
+        </Part>
+      </Folded>
 
       <SubmitBar label={item ? "Save changes" : "Add to the run sheet"} whenChanged={!!item} />
     </form>
   );
 }
+
+const MOMENT_IDEAS = ["Ceremony", "First dance", "Speeches", "Cake cutting", "The entrance", "Group photos"];
 
 /** What's taking them, as picture tiles; a tap names the journey (it can still be typed). */
 const VEHICLES = [

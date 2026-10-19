@@ -22,7 +22,7 @@ import { DecorThings } from "../decor/decor-things";
 import type { ListWithItems } from "@/lib/db/lists";
 import { ListCard, ListRows } from "../lists/list-bits";
 import { startSoundCheckAction } from "../lists/actions";
-import { musicTitle, playedByLabel, SOUND_CHECK } from "@/lib/music";
+import { musicTitle, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
 import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
@@ -517,13 +517,9 @@ function DaySection({
                       {musicTitle(m)}
                     </span>
                   )}
-                  {/* How it's played, and the moment's own area when it isn't this one (owner, 19 Oct 2026). */}
-                  {musicFor && (m.music_played || m.music_who || (m.area_key && m.area_key !== areaKey)) && (
-                    <span className="type-meta mt-0.5 block truncate">
-                      {[playedByLabel(m.music_played), m.music_who && `${m.music_who} presses play`, m.area_key && m.area_key !== areaKey ? areaLabels[m.area_key] ?? null : null]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
+                  {/* The moment's own area when it isn't this one (owner, 19 Oct 2026). */}
+                  {musicFor && m.area_key && m.area_key !== areaKey && areaLabels[m.area_key] && (
+                    <span className="type-meta mt-0.5 block truncate">{areaLabels[m.area_key]}</span>
                   )}
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
@@ -541,7 +537,7 @@ function DaySection({
               ...withMusic.map((m) =>
                 [
                   `${formatClock(m.at_time)}  ${m.title}: ${musicTitle(m) ?? ""}`,
-                  [playedByLabel(m.music_played) && `Played by: ${playedByLabel(m.music_played)}`, m.music_who && `Presses play: ${m.music_who}`, m.music_url].filter(Boolean).join("  "),
+                  [m.who && `In charge: ${m.who}`, m.music_url].filter(Boolean).join("  "),
                 ]
                   .filter(Boolean)
                   .join("\n      "),

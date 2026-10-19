@@ -1057,6 +1057,28 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `search/actions.ts`; results in `components/assistant/search-results.tsx`.
   Works the same in the laptop top bar's assistant.
 
+- **A moment's card, rebuilt** (19 Oct 2026; canvas 3 "Moment · Round 1",
+  owner picked **B's cue card on top with C's lines underneath**): the cue
+  card is the moment at a glance — the time large in gold, what happens
+  (tap to rename), "where · who's in charge" in italics, its area as a tag,
+  and the song as a chip (tap to play). Under it one line each — **When ·
+  Where · In charge · Music · Notes · Area** — showing what's there or "Add
+  …" in gold, each opening in place (`Fold` in `plan-card-body.tsx`).
+  **One person in charge** (owner: "who" was ambiguous; "In charge" over
+  Assigned to / Responsible), picked from the suppliers first, then
+  "Someone else (type a name)", then guests (`FromSelect`;
+  `run_sheet_items.contact_id`, `0031_moment_in_charge.sql`, run the same
+  day with her OK, tied to `(id, wedding_id)`, in `rls_isolation.sql`; the
+  typed `who` stays for anyone else). **Played by and Presses play were
+  dropped** (owner: it's whoever's in charge); 0030's columns stay unused.
+  Music is A song | A playlist as a switch above the name, then the link.
+  The run sheet and area pages show the in-charge name (`withInCharge()` in
+  `src/lib/music.ts`); the band/DJ copy says "In charge: …". **The add form
+  follows the card** (`RunSheetForm`): what happens with one-tap ideas, the
+  time, where and in charge, then folded: a song or playlist (open from the
+  Music area), notes, an area. Demo moments are put in their suppliers'
+  charge (also in `demo-wedding.sql`).
+
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
 area's `key` as text rather than the plan's `area_id`. Older to-dos may carry
@@ -1153,14 +1175,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0030_moment_music_how.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0031_moment_in_charge.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0030 are now in** (0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0031 are now in** (0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

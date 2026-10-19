@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { CalendarPlus, Check, ChevronLeft, ChevronRight, Clock, ExternalLink, X } from "lucide-react";
+import { CalendarPlus, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Music as MusicIcon, NotebookPen, Sparkles, UserRound, X, type LucideIcon } from "lucide-react";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
-import { todayISO, formatDayMonth, formatLongDate } from "@/lib/dates";
+import { todayISO, formatClock, formatDayMonth, formatLongDate } from "@/lib/dates";
 import { googleCalendarUrl, outlookCalendarUrl } from "@/lib/ics";
-import { musicSource, PLAYED_BY } from "@/lib/music";
+import { musicSource, musicTitle } from "@/lib/music";
+import { FromSelect } from "../decor/decor-bits";
+import type { DecorPerson } from "../decor/decor-people";
 import { replaceQuery } from "@/lib/url-state";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
@@ -430,67 +432,137 @@ function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) =>
  * A run sheet moment (The Day), by the same rule: the time and the area
  * save at once; what happens, where, who and notes get a small Save.
  */
-export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: AreaOption[] }) {
+/**
+ * A moment on the day (canvas 3 "Moment · Round 1", owner's pick 19 Oct 2026:
+ * B's cue card on top, then C's lines that open in place). The cue card is
+ * the moment at a glance — the time, what happens (tap to rename), where and
+ * who's in charge, its song. Under it one line each — When, Where, In charge,
+ * Music, Notes, Area — saying what's there or "Add …" in gold; tap to open
+ * and change it in place. One person **in charge**, picked from the
+ * suppliers and guests (0031), or a typed name for anyone else.
+ */
+export function MomentBody({ moment: m, areas, people }: { moment: RunSheetItem; areas: AreaOption[]; people: DecorPerson[] }) {
   const save = useSave("moment", m.id);
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
   const original = m.area_key;
   const options = original && original !== "other" && !areas.some((a) => a.key === original) ? [...areas, { key: original, label: original }] : areas;
+  const inCharge = people.find((p) => p.id === m.contact_id)?.name ?? m.who ?? null;
+  const [pick, setPick] = useState(m.contact_id ?? (m.who ? "typed" : ""));
+  const areaLabel = original ? (areaName(original, options) ?? original) : null;
+  const music = musicTitle(m);
 
   return (
     <>
-      <TitleEditor value={m.title} onSave={(v) => save({ title: v })} />
+      {/* The cue card: the whole moment at a glance (B). */}
+      <div className="relative rounded-[20px] bg-[#FFFDF8] p-[18px] shadow-[0_0_0_1px_#E3D3AE,0_18px_40px_-24px_rgb(60_50_40/0.35)]">
+        {areaLabel && (
+          <span className="absolute right-3.5 top-3.5 rounded-full bg-champagne-100 px-2.5 py-0.5 text-[11.5px] font-medium text-champagne-600">{areaLabel}</span>
+        )}
+        <p className="font-display text-[40px] font-light leading-none text-champagne-600">{formatClock(m.at_time)}</p>
+        <div className="mt-1.5 pr-16">
+          <TitleEditor value={m.title} onSave={(v) => save({ title: v })} />
+        </div>
+        {(m.location || inCharge) && (
+          <p className="mt-1 font-display text-[15px] italic text-stone">{[m.location, inCharge].filter(Boolean).join(" · ")}</p>
+        )}
+        {music && (
+          <a
+            href={m.music_url ?? undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => !m.music_url && e.preventDefault()}
+            className="mt-3 flex items-center gap-2.5 rounded-[14px] bg-cream px-3 py-2.5"
+          >
+            <span aria-hidden className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-ink text-ivory">
+              <MusicIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[14.5px] text-ink">{m.music}</span>
+              <span className="block text-[12px] text-stone">
+                {m.music_kind === "playlist" ? "Playlist" : "Song"}
+                {m.music_url ? ` · Play on ${musicSource(m.music_url)}` : ""}
+              </span>
+            </span>
+          </a>
+        )}
+      </div>
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      <Part label="When">
-        <TimeCard value={m.at_time.slice(0, 5)} onSave={(v) => change({ at_time: v })} required />
-      </Part>
-
-      <Part label="Area">
-        <AreaTiles name="area" areas={options} otherValue="other" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded optional />
-      </Part>
-
-      <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
-          <TextRow label="Where" value={m.location} onSave={(v) => save({ location: v })} />
-          <TextRow label="Who" value={m.who} onSave={(v) => save({ who: v })} />
-          <TextRow label="Notes" value={m.notes} multiline onSave={(v) => save({ notes: v })} />
-        </dl>
-      </section>
-
-      {/* A song or playlist for the moment (owner, 19 Oct 2026): the walk in, the first dance… */}
-      <section className="mt-7">
-        <h3 className="section-label">Music</h3>
-        <dl className="mt-1">
-          <TextRow label={m.music_kind === "playlist" ? "Playlist" : "Song"} value={m.music ?? null} onSave={(v) => save({ music: v })} />
-          <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
-          <TextRow label="Presses play" value={m.music_who ?? null} onSave={(v) => save({ music_who: v })} />
-        </dl>
-        {/* Song or playlist, then who or what plays it: taps save at once (owner, 19 Oct 2026). */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(["song", "playlist"] as const).map((k) => {
-            const on = (m.music_kind ?? "song") === k;
-            return (
-              <button key={k} type="button" aria-pressed={on} onClick={() => change({ music_kind: k })} className={musicPill(on)}>
-                {k === "song" ? "A song" : "A playlist"}
-              </button>
-            );
-          })}
-        </div>
-        <p className="type-meta mt-4">Played by</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {PLAYED_BY.map((p) => {
-            const on = m.music_played === p.value;
-            return (
-              <button key={p.value} type="button" aria-pressed={on} onClick={() => change({ music_played: on ? null : p.value })} className={musicPill(on)}>
-                {p.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      {/* One line each, opening in place (C). */}
+      <div className="glass-card mt-5 overflow-hidden rounded-[22px] px-4">
+        <Fold icon={Clock} title="When" value={formatClock(m.at_time)}>
+          <TimeCard value={m.at_time.slice(0, 5)} onSave={(v) => change({ at_time: v })} required />
+        </Fold>
+        <Fold icon={MapPin} title="Where" value={m.location} add="Add where">
+          <dl><TextRow label="Where" value={m.location} onSave={(v) => save({ location: v })} /></dl>
+        </Fold>
+        <Fold icon={UserRound} title="In charge" value={inCharge} add="Add who's in charge">
+          <FromSelect
+            label="Who's in charge"
+            people={people}
+            value={pick}
+            onChange={(v) => {
+              setPick(v);
+              if (v !== "typed") change({ contact_id: v || null, who: null });
+            }}
+            className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-linen bg-white bg-[length:14px] bg-[right_12px_center] bg-no-repeat px-3.5 pr-8 text-[15px] text-ink focus:outline-none"
+          />
+          {pick === "typed" && (
+            <dl className="mt-1">
+              <TextRow label="Their name" value={m.who} startEditing={!m.who} onSave={(v) => save({ who: v, contact_id: null })} />
+            </dl>
+          )}
+        </Fold>
+        <Fold icon={MusicIcon} title="Music" value={music} add="Add a song or playlist">
+          <div className="flex rounded-full bg-cream p-[3px]">
+            {(["song", "playlist"] as const).map((k) => {
+              const on = (m.music_kind ?? "song") === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => change({ music_kind: k })}
+                  className={`h-9 flex-1 rounded-full text-[13.5px] transition ${on ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone"}`}
+                >
+                  {k === "song" ? "A song" : "A playlist"}
+                </button>
+              );
+            })}
+          </div>
+          <dl className="mt-1">
+            <TextRow label={m.music_kind === "playlist" ? "Playlist" : "Song"} value={m.music ?? null} onSave={(v) => save({ music: v })} />
+            <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
+          </dl>
+        </Fold>
+        <Fold icon={NotebookPen} title="Notes" value={m.notes} add="Add notes">
+          <dl><TextRow label="Notes" value={m.notes} multiline onSave={(v) => save({ notes: v })} /></dl>
+        </Fold>
+        <Fold icon={Sparkles} title="Area" value={areaLabel} add="Add an area">
+          <AreaTiles name="area" areas={options} otherValue="other" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded optional />
+        </Fold>
+      </div>
     </>
+  );
+}
+
+/** One line of a moment's card: what's there (or "Add …" in gold), opening in place to change it. */
+function Fold({ icon: Icon, title, value, add, children }: { icon: LucideIcon; title: string; value: string | null | undefined; add?: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-b border-ink/[0.12] last:border-b-0">
+      <summary className="flex min-h-[60px] cursor-pointer list-none items-center gap-3 py-2.5 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+          <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15.5px] text-ink">{title}</span>
+          <span className={`block truncate text-[13px] ${value ? "text-stone" : "text-champagne-600"}`}>{value || add || "Not set"}</span>
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
+      </summary>
+      <div className="pb-4 pl-[46px]">{children}</div>
+    </details>
   );
 }
 
@@ -740,5 +812,3 @@ function MusicLinkRow({ url, onSave }: { url: string | null; onSave: (v: string)
   );
 }
 
-const musicPill = (on: boolean) =>
-  `h-9 rounded-full border px-3.5 text-[13px] transition ${on ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"}`;

@@ -262,6 +262,8 @@ export interface RunSheetItem {
   music_kind?: "song" | "playlist" | null;
   music_played?: "band" | "dj" | "venue" | "device" | null;
   music_who?: string | null;
+  /** Who's in charge: a supplier or guest from the list (0031_moment_in_charge.sql); `who` is a typed name. */
+  contact_id?: string | null;
   created_at: string;
 }
 

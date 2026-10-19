@@ -658,6 +658,18 @@ begin
              values ('aaaaaaaa-0000-0000-0000-000000000001', 'Candles', 'The tables', 'got', 'bought')$q$;
   end if;
 
+  -- A moment can only be put in the charge of someone from the same wedding (0031).
+  if exists (select 1 from information_schema.columns where table_name = 'run_sheet_items' and column_name = 'contact_id')
+     and current_setting('test.bob_decor', true) is not null then
+    begin
+      execute format($q$insert into run_sheet_items (wedding_id, at_time, title, contact_id)
+                      values ('aaaaaaaa-0000-0000-0000-000000000001', '20:00', 'Sneaky', %L)$q$, current_setting('test.bob_decor'));
+      raise exception 'LEAK: couple A put wedding B''s guest in charge of a moment';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+  end if;
+
   if to_regclass('public.lists') is not null then
     execute 'select count(*) from lists' into visible_contacts;
     if visible_contacts <> 1 then

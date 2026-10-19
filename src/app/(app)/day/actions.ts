@@ -209,6 +209,16 @@ export async function unseatOnPlanAction(contactId: string): Promise<string | nu
   return null;
 }
 
+/**
+ * Sits a guest at a table, or takes them off (null), from their guest card.
+ * Returns a message rather than redirecting, like the card's other saves.
+ */
+export async function setGuestTableAction(contactId: string, tableId: string | null): Promise<{ error?: string }> {
+  const message = tableId ? await seatOnPlanAction(contactId, tableId) : await unseatOnPlanAction(contactId);
+  revalidatePath("/people");
+  return message ? { error: message } : {};
+}
+
 // Transport ------------------------------------------------------------------
 
 const TRANSPORT = "/day?tab=travel";

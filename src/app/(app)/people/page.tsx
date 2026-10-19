@@ -4,7 +4,7 @@ import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { listSuppliers } from "@/lib/db/suppliers";
 import { listPayments } from "@/lib/db/money";
 import { listAreas } from "@/lib/db/areas";
-import { tableNames } from "@/lib/db/day";
+import { guestSeating, tableNamesOf } from "@/lib/db/day";
 import { listGroups } from "@/lib/db/groups";
 import { travelForGuests } from "@/lib/db/stays";
 import { areaOptions } from "@/lib/areas";
@@ -44,8 +44,9 @@ export default async function PeoplePage({
   const current = tab === "suppliers" ? "suppliers" : "guests";
   // The supplier card shows each one's payments (null until 0006 is run).
   const payments = current === "suppliers" ? ((await listPayments(wedding.id)) ?? []) : [];
-  // The guest card's place card shows their table.
-  const tables = current === "guests" ? await tableNames(wedding.id) : {};
+  // The guest card shows their table, and can change it.
+  const seating = current === "guests" ? await guestSeating(wedding.id) : { tables: [], tableOf: {} };
+  const tables = tableNamesOf(seating);
   const groups = current === "guests" ? await listGroups(wedding.id) : [];
   // The guest card's Travel part: where they're staying, their journeys.
   const travel = current === "guests" ? await travelForGuests(wedding.id) : undefined;
@@ -63,13 +64,14 @@ export default async function PeoplePage({
           events={events}
           rsvps={rsvps}
           tables={tables}
+          seating={seating}
           travel={travel}
           groups={groups.map((g) => ({ id: g.id, name: g.name, members: g.members }))}
           weddingName={wedding.name}
           guestId={guest}
           householdId={household}
           filter={tab === "party" ? "party" : undefined}
-          view={view === "households" ? "households" : undefined}
+          view={view === "households" || view === "diet" ? view : undefined}
           error={error}
           detail={detail}
         />

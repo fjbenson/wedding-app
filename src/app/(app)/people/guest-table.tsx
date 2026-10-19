@@ -1,4 +1,4 @@
-import { Baby, Check, House, Mail, MapPin, Minus, PenLine, Phone, Tag, UsersRound, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
+import { Armchair, Baby, Check, House, Mail, MapPin, Minus, PenLine, Phone, Tag, UsersRound, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
 import { rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, RsvpStatus } from "@/types/db";
 
@@ -81,6 +81,7 @@ const DETAIL_ICONS: Record<string, LucideIcon> = {
   Phone,
   Email: Mail,
   Meal: UtensilsCrossed,
+  Table: Armchair,
   Allergies: WheatOff,
   Dietary: WheatOff,
   Notes: PenLine,

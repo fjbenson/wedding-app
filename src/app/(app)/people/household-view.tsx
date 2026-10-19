@@ -14,6 +14,8 @@ import HouseholdEnvelope, { HouseholdDetails } from "./household-envelope";
 import type { GroupSummary } from "./guest-groups";
 import { updateGuestAction } from "./actions";
 import type { TravelInfo } from "./guest-travel";
+import type { GuestSeating } from "@/lib/db/day";
+import { jumpTo } from "@/lib/jump-to";
 
 /**
  * One household (screen 9), as a card over the guest list — since 16 Oct 2026
@@ -30,6 +32,7 @@ export default function HouseholdSheet({
   events,
   rsvps,
   tables,
+  seating,
   travel,
   groups,
   onClose,
@@ -41,6 +44,7 @@ export default function HouseholdSheet({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables: Record<string, string>;
+  seating?: GuestSeating;
   travel?: TravelInfo;
   groups: GroupSummary[];
   onClose: () => void;
@@ -73,8 +77,13 @@ export default function HouseholdSheet({
 
   return (
     <CardSheet label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
-      <HouseholdEnvelope household={household} answers={people.map(statusOf)} />
-      <p className="mt-3.5 text-center text-[13px] text-stone">{summary}</p>
+      {/* The envelope goes to the name and address to change them; the line under it to who's in it (owner, 19 Oct 2026). */}
+      <button type="button" onClick={() => jumpTo("household-details")} className="block w-full text-left">
+        <HouseholdEnvelope household={household} answers={people.map(statusOf)} />
+      </button>
+      <button type="button" onClick={() => jumpTo("household-guests")} className="mx-auto mt-2.5 block rounded-lg px-2 py-1 text-center text-[13px] text-stone hover:bg-cream/70 hover:text-ink">
+        {summary}
+      </button>
 
       <div className="mt-5 flex justify-center gap-8">
         {(["text", "phone", "email"] as const).map((kind) => (
@@ -89,7 +98,7 @@ export default function HouseholdSheet({
       </div>
 
       {/* Guests, on a card of its own (canvas 3 "Household · Round 3"). */}
-      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+      <section id="household-guests" className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
         <div className="flex items-baseline justify-between">
           <h2 className="label">Guests</h2>
           <span className="label">RSVP</span>
@@ -128,7 +137,9 @@ export default function HouseholdSheet({
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
 
-      <HouseholdDetails household={household} />
+      <div id="household-details">
+        <HouseholdDetails household={household} />
+      </div>
 
       <RemoveHousehold household={household} onRemoved={onClose} />
 
@@ -140,6 +151,7 @@ export default function HouseholdSheet({
           events={events}
           rsvps={answersOf(open)}
           table={tables[open.id] ?? null}
+          seating={seating}
           travel={travel}
           groups={groups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UsersRound, X } from "lucide-react";
+import { UsersRound, WheatOff, X } from "lucide-react";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
 import { moveTableAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
 
@@ -62,6 +62,7 @@ export default function FloorPlan({
   seats,
   guests,
   groups = [],
+  needs = {},
 }: {
   tables: SeatingTable[];
   seats: Seat[];
@@ -69,6 +70,8 @@ export default function FloorPlan({
   guests: Contact[];
   /** Groups of guests: tap one, then a table, to sit them together. */
   groups?: { id: string; name: string; members: string[] }[];
+  /** Guest id → their dietary needs, marked on the plan (owner, 19 Oct 2026: "really, really important"). */
+  needs?: Record<string, string[]>;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -248,6 +251,7 @@ export default function FloorPlan({
             const shape = shapes[t.id] ?? "round";
             const { width, aspect } = tableSize(shape, t.capacity);
             const sitting = atTable(t.id).length;
+            const diets = atTable(t.id).filter((g) => needs[g.id]?.length).length;
             const over = sitting > t.capacity;
             const full = sitting >= t.capacity;
             const active = selectedTable === t.id;
@@ -262,7 +266,7 @@ export default function FloorPlan({
                   if (e.detail === 0) tapTable(t.id);
                 }}
                 aria-pressed={active}
-                aria-label={`${t.name}, ${sitting} of ${t.capacity} seated${over ? ", over" : ""}. Arrow keys move it.`}
+                aria-label={`${t.name}, ${sitting} of ${t.capacity} seated${over ? ", over" : ""}${diets ? `, ${diets} with dietary needs` : ""}. Arrow keys move it.`}
                 style={{
                   left: `${spot.x}%`,
                   top: `${spot.y}%`,
@@ -286,6 +290,15 @@ export default function FloorPlan({
                     }`}
                   />
                 ))}
+                {diets > 0 && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-[#9A3F2B] px-1 text-[11px] font-semibold leading-none text-white shadow-[0_0_0_2px_#FFFFFF]"
+                  >
+                    <WheatOff className="h-3 w-3" strokeWidth={2} />
+                    {diets}
+                  </span>
+                )}
                 <span className="pointer-events-none flex h-full flex-col items-center justify-center px-1 leading-tight">
                   <span className="max-w-full truncate text-xs font-medium text-ink">{t.name}</span>
                   <span className={`text-xs ${over ? "font-medium text-champagne-600" : "text-stone"}`}>
@@ -337,13 +350,15 @@ export default function FloorPlan({
                     setSelectedGroup(null);
                     setSelectedGuest((current) => (current === g.id ? null : g.id));
                   }}
-                  className={`h-9 rounded-full border px-3 text-sm transition ${
+                  aria-label={needs[g.id]?.length ? `${fullName(g)}, ${needs[g.id].join(", ")}` : undefined}
+                  className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition ${
                     selectedGuest === g.id || inPickedGroup.has(g.id)
                       ? "border-ink bg-ink text-ivory"
                       : "border-linen bg-white text-ink hover:border-champagne-400"
                   }`}
                 >
                   {fullName(g)}
+                  {needs[g.id]?.length ? <WheatOff aria-hidden className="h-3.5 w-3.5 text-[#C8735F]" strokeWidth={2} /> : null}
                 </button>
               </li>
             ))}
@@ -385,9 +400,12 @@ export default function FloorPlan({
             <ul className="mt-2">
               {atTable(table.id).map((g) => (
                 <li key={g.id} className="flex items-center gap-2 border-b border-linen py-1.5 last:border-b-0">
-                  <span className="min-w-0 flex-1 truncate text-[15px] text-ink">
-                    {fullName(g)}
-                    {g.role_on_the_day && <span className="ml-2 text-xs text-champagne-600">{g.role_on_the_day}</span>}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] text-ink">
+                      {fullName(g)}
+                      {g.role_on_the_day && <span className="ml-2 text-xs text-champagne-600">{g.role_on_the_day}</span>}
+                    </span>
+                    {needs[g.id]?.length ? <DietLine needs={needs[g.id]} /> : null}
                   </span>
                   <button
                     type="button"
@@ -411,5 +429,15 @@ export default function FloorPlan({
         </section>
       )}
     </div>
+  );
+}
+
+/** A guest's dietary needs under their name, in rose with the no-wheat mark. */
+export function DietLine({ needs }: { needs: string[] }) {
+  return (
+    <span className="mt-0.5 flex items-center gap-1 text-[13px] text-[#9A3F2B]">
+      <WheatOff aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+      <span className="min-w-0">{needs.join(" · ")}</span>
+    </span>
   );
 }

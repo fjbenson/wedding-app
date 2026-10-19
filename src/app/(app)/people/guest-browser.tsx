@@ -1,5 +1,6 @@
 "use client";
 
+import type { GuestSeating } from "@/lib/db/day";
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +21,7 @@ import type { TravelInfo } from "./guest-travel";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
-export type GuestView = "az" | "households";
+export type GuestView = "az" | "households" | "diet";
 /** How the list is ordered (the Sort button). */
 type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role" | "rsvp" | "age" | "table" | "staying";
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
@@ -114,6 +115,7 @@ export default function GuestBrowser({
   events,
   rsvps,
   tables = {},
+  seating,
   travel,
   groups: guestGroups = [],
   weddingName = "",
@@ -128,6 +130,8 @@ export default function GuestBrowser({
   events: WeddingEvent[];
   rsvps: Rsvp[];
   tables?: Record<string, string>;
+  /** The tables and who sits where, so the guest card can change a table. */
+  seating?: GuestSeating;
   travel?: TravelInfo;
   /** Groups of guests (0019): any number per guest; one can be shown at a time. */
   groups?: GroupSummary[];
@@ -175,7 +179,9 @@ export default function GuestBrowser({
       tab: null,
     });
   }, [query, showing, filters, guestOf, group, picks]);
-  const [sort, setSort] = useState<SortBy>(initialView === "households" ? "household" : initialFilter === "party" ? "role" : "first");
+  const [sort, setSort] = useState<SortBy>(
+    initialView === "households" ? "household" : initialView === "diet" ? "diet" : initialFilter === "party" ? "role" : "first",
+  );
   /** Picks a view, and switches on (or off) the filter that goes with it. */
   const chooseView = (next: SortBy) => {
     setFilters((on) => {
@@ -227,7 +233,7 @@ export default function GuestBrowser({
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(SORT_KEY) as SortBy | null;
-      if (saved && SORTS.some((o) => o.key === saved) && !VIEW_FILTER[saved] && initialView !== "households" && !initialFilter) setSort(saved);
+      if (saved && SORTS.some((o) => o.key === saved) && !VIEW_FILTER[saved] && initialView === "az" && !initialFilter) setSort(saved);
     } catch {
       // Private browsing or blocked storage: start from the default.
     }
@@ -666,6 +672,7 @@ export default function GuestBrowser({
           events={events}
           rsvps={data.answers.get(open.id) ?? []}
           table={tables[open.id] ?? null}
+          seating={seating}
           travel={travel}
           groups={guestGroups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
@@ -689,6 +696,7 @@ export default function GuestBrowser({
           events={events}
           rsvps={rsvps}
           tables={tables}
+          seating={seating}
           travel={travel}
           groups={guestGroups}
           onClose={closeHousehold}

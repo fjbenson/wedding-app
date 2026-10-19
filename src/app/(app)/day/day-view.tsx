@@ -1,7 +1,7 @@
 import PageTitle from "@/components/page-title";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
-import { X } from "lucide-react";
+import { WheatOff, X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import CornerSwitch from "@/components/corner-switch";
 import ViewMenu from "@/components/view-menu";
@@ -18,7 +18,9 @@ import {
   unseatGuestAction,
   updateTableAction,
 } from "./actions";
-import FloorPlan from "./floor-plan";
+import FloorPlan, { DietLine } from "./floor-plan";
+import CopyText from "@/components/copy-text";
+import { needsOf } from "@/lib/dietary";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
@@ -377,6 +379,12 @@ function Seating({
   const unseated = coming.filter((g) => !tableOf.has(g.id));
   const seats = data.tables.reduce((sum, t) => sum + t.capacity, 0);
   const seated = coming.length - unseated.length;
+  // Each guest's dietary needs (on whichever answer holds them, as the caterer's list does).
+  const needs: Record<string, string[]> = {};
+  for (const r of rsvps) {
+    const list = needsOf(r.dietary_notes);
+    if (list.length && !needs[r.contact_id]) needs[r.contact_id] = list;
+  }
 
   return (
     <>
@@ -409,11 +417,63 @@ function Seating({
       </div>
 
       {view === "plan" ? (
-        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} />
+        <FloorPlan tables={data.tables} seats={data.seats} guests={coming} groups={groups} needs={needs} />
       ) : (
-        <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} />
+        <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} needs={needs} />
       )}
+      <DietaryByTable tables={data.tables} coming={coming} tableOf={tableOf} needs={needs} />
     </>
+  );
+}
+
+/**
+ * Every dietary need, table by table — what the venue's kitchen has to know
+ * (owner, 19 Oct 2026: "really, really important"). Copy it to send on.
+ * Health data: for the catering only.
+ */
+function DietaryByTable({
+  tables,
+  coming,
+  tableOf,
+  needs,
+}: {
+  tables: SeatingTable[];
+  coming: Contact[];
+  tableOf: Map<string, string>;
+  needs: Record<string, string[]>;
+}) {
+  const withNeeds = coming.filter((g) => needs[g.id]?.length);
+  if (withNeeds.length === 0) return null;
+  const blocks = [
+    ...tables.map((t) => ({ name: t.name, guests: withNeeds.filter((g) => tableOf.get(g.id) === t.id) })),
+    { name: "Not seated yet", guests: withNeeds.filter((g) => !tableOf.has(g.id)) },
+  ].filter((b) => b.guests.length > 0);
+  const text = [
+    "Dietary needs by table",
+    ...blocks.map((b) => [b.name, ...b.guests.map((g) => `- ${fullName(g)}: ${needs[g.id].join(", ")}`)].join("\n")),
+  ].join("\n\n");
+
+  return (
+    <section className="glass-card mt-8 rounded-[22px] px-4 pb-1 pt-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="section-label">Dietary needs by table</h2>
+        <span className="text-[13px] text-stone">{withNeeds.length === 1 ? "1 guest" : `${withNeeds.length} guests`}</span>
+      </div>
+      {blocks.map((b) => (
+        <div key={b.name} className="mt-3 border-t border-ink/[0.12] pt-2.5">
+          <p className="font-display text-[17px] text-ink">{b.name}</p>
+          <ul className="mt-1 space-y-1.5 pb-1">
+            {b.guests.map((g) => (
+              <li key={g.id} className="text-[15px] text-ink">
+                {fullName(g)}
+                <DietLine needs={needs[g.id]} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <CopyText text={text} label="Copy for the venue" className="mt-1 border-t border-ink/[0.12]" />
+    </section>
   );
 }
 
@@ -422,11 +482,13 @@ function SeatingList({
   coming,
   unseated,
   tableOf,
+  needs,
 }: {
   data: DayData;
   coming: Contact[];
   unseated: Contact[];
   tableOf: Map<string, string>;
+  needs: Record<string, string[]>;
 }) {
   return (
     <>
@@ -449,13 +511,22 @@ function SeatingList({
                   {over && " · over"}
                 </span>
               </div>
+              {atTable.some((g) => needs[g.id]?.length) && (
+                <p className="mt-1 flex items-center gap-1 text-[13px] text-[#9A3F2B]">
+                  <WheatOff aria-hidden className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  {atTable.filter((g) => needs[g.id]?.length).length} with dietary needs
+                </p>
+              )}
 
               <ul className="mt-2">
                 {atTable.map((g) => (
                   <li key={g.id} className="flex items-center gap-2 border-b border-linen py-1.5 last:border-b-0">
-                    <span className="min-w-0 flex-1 truncate text-[15px] text-ink">
-                      {fullName(g)}
-                      {g.role_on_the_day && <span className="ml-2 text-xs text-champagne-600">{g.role_on_the_day}</span>}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] text-ink">
+                        {fullName(g)}
+                        {g.role_on_the_day && <span className="ml-2 text-xs text-champagne-600">{g.role_on_the_day}</span>}
+                      </span>
+                      {needs[g.id]?.length ? <DietLine needs={needs[g.id]} /> : null}
                     </span>
                     <form action={unseatGuestAction.bind(null, g.id)}>
                       <button type="submit" aria-label={`Take ${g.first_name} off ${table.name}`} className="p-1.5 text-stone hover:text-ink">

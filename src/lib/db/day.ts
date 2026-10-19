@@ -163,19 +163,37 @@ export async function removePassenger(runId: string, contactId: string): Promise
   if (error) throw error;
 }
 
+/** The tables, and which one each guest sits at — for the guest card. */
+export interface GuestSeating {
+  tables: { id: string; name: string }[];
+  /** Guest id → table id. */
+  tableOf: Record<string, string>;
+}
+
 /**
- * Which table each guest sits at, by name (guest id → table name), for the
- * guest card's place card. Empty until 0009_the_day.sql is run.
+ * The wedding's tables and who sits where, for the guest card (its Table
+ * figure and the Table row to change it) and the guest list's View › Table.
+ * Empty until 0009_the_day.sql is run.
  */
-export async function tableNames(weddingId: string): Promise<Record<string, string>> {
+export async function guestSeating(weddingId: string): Promise<GuestSeating> {
   const supabase = await createClient();
   const [tables, seats] = await Promise.all([
-    supabase.from("seating_tables").select("id, name").eq("wedding_id", weddingId),
+    supabase.from("seating_tables").select("id, name").eq("wedding_id", weddingId).order("sort_order").order("created_at"),
     supabase.from("seats").select("contact_id, table_id").eq("wedding_id", weddingId),
   ]);
-  if (tables.error || seats.error) return {};
-  const name = new Map((tables.data ?? []).map((t) => [t.id as string, t.name as string]));
-  return Object.fromEntries(
-    (seats.data ?? []).flatMap((s) => (name.has(s.table_id) ? [[s.contact_id as string, name.get(s.table_id)!]] : [])),
-  );
+  if (tables.error || seats.error) return { tables: [], tableOf: {} };
+  const list = (tables.data ?? []).map((t) => ({ id: t.id as string, name: t.name as string }));
+  const ids = new Set(list.map((t) => t.id));
+  return {
+    tables: list,
+    tableOf: Object.fromEntries(
+      (seats.data ?? []).flatMap((s) => (ids.has(s.table_id) ? [[s.contact_id as string, s.table_id as string]] : [])),
+    ),
+  };
+}
+
+/** Guest id → the name of their table. */
+export function tableNamesOf(seating: GuestSeating): Record<string, string> {
+  const name = new Map(seating.tables.map((t) => [t.id, t.name]));
+  return Object.fromEntries(Object.entries(seating.tableOf).map(([guest, table]) => [guest, name.get(table)!]));
 }

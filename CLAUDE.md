@@ -1793,12 +1793,20 @@ additive — new tables hanging off `weddings`. None require changing the above.
   1. **Going back a stage on an area page** — the five stages (Ideas ·
      Quotes · Booked · Paid · Ready) need an obvious way to step back
      (un-book a supplier, un-tick Ready…).
-  2. **Area pages link to the dietary needs** — e.g. Food & drink's
-     guest facts opening the guest list filtered to dietary needs.
+  2. ~~**Area pages link to the dietary needs**~~ — **built 19 Oct 2026**:
+     Food & drink's "Everything for…" has a **Dietary needs** line (who and
+     what, in rose) with "In the guest list ›" → `/people?f=dietary&view=diet`
+     (the guest list on View › Dietary needs; `?view=diet` is new).
   3. **Add an appointment to the phone's own calendar** (Google, Apple) —
      likely an "Add to calendar" file (.ics) or link; a calendar feed would
      send details to another service, so check against rule one.
-  4. **Tapping the top of a guest profile or household card goes to the
+  4. ~~**Tapping the top …**~~ — **built 19 Oct 2026**: the profile's
+     Answer, Table, Meal and the allergies line scroll to their row with a
+     soft glow (`jumpTo()`, `src/lib/jump-to.ts`); the guest card's Details
+     has a new **Table** drop-down (`TableRow`, `setGuestTableAction` in
+     `day/actions.ts`; `guestSeating()` in `src/lib/db/day.ts` replaced
+     `tableNames()`); the household envelope goes to its name and address,
+     the line under it to Guests. Original note: **Tapping the top of a guest profile or household card goes to the
      field to change it** (also "make profile summaries clickable") — e.g.
      tap Table at the top, it scrolls down to a Table drop-down in Details
      to change it. Same for Answer, Meal, and the household's figures.
@@ -1852,7 +1860,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
       of guests and run sheet moments (a moment tagged with a group or
       people, then "the bridesmaids' morning" is the run sheet narrowed to
       them, printable or sent to them).
-  17. **Dietary needs on the seating plan — "really, really important"**
+  17. **Built 19 Oct 2026 (the plan part):** a rose badge on each table
+      with how many have a need, a mark on unseated names, needs under each
+      name in a picked table and in the List, and a **Dietary needs by
+      table** card under Seating with **Copy for the venue** (`DietLine` in
+      `floor-plan.tsx`, `DietaryByTable` in `day-view.tsx`). The PDF to the
+      venue waits on item 12. Original note:
+      **Dietary needs on the seating plan — "really, really important"**
       (owner). Make it obvious on the floor plan and the list which seats
       have a dietary need (a mark on the guest's initials, a count per
       table, the need itself on tap), and **highlight them on the plan sent

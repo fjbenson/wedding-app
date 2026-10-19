@@ -17,6 +17,9 @@ import { RoundAction, RoundActions } from "@/components/round-actions";
 import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 import { GuestPlanSection } from "./guest-plan";
+import { setGuestTableAction } from "../day/actions";
+import type { GuestSeating } from "@/lib/db/day";
+import { jumpTo } from "@/lib/jump-to";
 
 type Saver = () => Promise<{ error?: string } | void>;
 
@@ -58,6 +61,7 @@ export default function GuestCard({
   events,
   rsvps,
   table = null,
+  seating,
   travel,
   groups,
   onShowGroup,
@@ -74,6 +78,8 @@ export default function GuestCard({
   rsvps: Rsvp[];
   /** The table they sit at, if they've been seated. */
   table?: string | null;
+  /** The wedding's tables and who sits where; given, Details has a Table row to change it. */
+  seating?: GuestSeating;
   /** Places to stay and their journeys (0020_travel.sql). Left out, no Travel part. */
   travel?: TravelInfo;
   /** The wedding's groups of guests; the card shows theirs and adds to others. Left out, no Groups part. */
@@ -109,7 +115,14 @@ export default function GuestCard({
         ))
       }
     >
-      <Profile guest={guest} table={table} own={own} ownEvent={events.find((e) => e.id === own?.event_id)} onSave={save} />
+      <Profile
+        guest={guest}
+        table={table}
+        canSeat={Boolean(seating && seating.tables.length > 0)}
+        own={own}
+        ownEvent={events.find((e) => e.id === own?.event_id)}
+        onSave={save}
+      />
 
       {(phone || guest.email) && (
         <RoundActions>
@@ -137,9 +150,10 @@ export default function GuestCard({
           <HouseholdRow guest={guest} households={households} onSave={save} />
           <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
           <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
+          {seating && seating.tables.length > 0 && <TableRow guest={guest} seating={seating} />}
           {own && (
             <>
-              <TextRow label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
+              <TextRow id="guest-meal" label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
               <DietaryRow rsvp={own} own={ownNeeds} />
             </>
           )}
@@ -165,16 +179,21 @@ export default function GuestCard({
 function Profile({
   guest,
   table,
+  canSeat,
   own,
   ownEvent,
   onSave,
 }: {
   guest: Contact;
   table: string | null;
+  /** There are tables to pick from, so Table goes to the row that changes it. */
+  canSeat: boolean;
   own?: Rsvp;
   ownEvent?: WeddingEvent;
   onSave: (edit: GuestEdit) => Promise<{ error?: string }>;
 }) {
+  // Each figure goes to where it's changed, further down the card (owner, 19 Oct 2026).
+  const figure = "block w-full rounded-lg py-1 hover:bg-cream/70";
   const roles = rolesOf(guest);
   const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
   const answer: Record<Rsvp["status"], string> = {
@@ -205,30 +224,46 @@ function Profile({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 border-y border-linen py-3 text-center">
+      <div className="mt-5 grid grid-cols-3 border-y border-linen py-2 text-center">
         <div>
-          <p className={`font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
-            {own ? answer[own.status] : "Day or evening?"}
-          </p>
-          <p className="mt-0.5 text-xs text-stone">Answer</p>
+          <button type="button" onClick={() => jumpTo(own ? "guest-rsvp" : "guest-of")} className={figure}>
+            <span className={`block font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
+              {own ? answer[own.status] : "Day or evening?"}
+            </span>
+            <span className="mt-0.5 block text-xs text-stone">Answer</span>
+          </button>
         </div>
         <div className="border-x border-linen px-1">
-          <p className="truncate font-display text-lg text-ink">
-            {table ?? (
-              <Link href="/day?tab=seating" className="text-stone hover:text-ink">
-                None yet
-              </Link>
-            )}
-          </p>
-          <p className="mt-0.5 text-xs text-stone">Table</p>
+          {canSeat ? (
+            <button type="button" onClick={() => jumpTo("guest-table")} className={figure}>
+              <span className={`block truncate font-display text-lg ${table ? "text-ink" : "text-stone"}`}>{table ?? "None yet"}</span>
+              <span className="mt-0.5 block text-xs text-stone">Table</span>
+            </button>
+          ) : (
+            <Link href="/day?tab=seating" className={figure}>
+              <span className={`block truncate font-display text-lg ${table ? "text-ink" : "text-stone"}`}>{table ?? "None yet"}</span>
+              <span className="mt-0.5 block text-xs text-stone">Table</span>
+            </Link>
+          )}
         </div>
         <div className="px-1">
-          <p className={`truncate font-display text-lg ${own?.meal_choice ? "text-ink" : "text-stone"}`}>{own?.meal_choice || "—"}</p>
-          <p className="mt-0.5 text-xs text-stone">Meal</p>
+          {own ? (
+            <button type="button" onClick={() => jumpTo("guest-meal")} className={figure}>
+              <span className={`block truncate font-display text-lg ${own.meal_choice ? "text-ink" : "text-stone"}`}>{own.meal_choice || "—"}</span>
+              <span className="mt-0.5 block text-xs text-stone">Meal</span>
+            </button>
+          ) : (
+            <div className="py-1">
+              <p className="font-display text-lg text-stone">—</p>
+              <p className="mt-0.5 text-xs text-stone">Meal</p>
+            </div>
+          )}
         </div>
       </div>
       {needsOf(own?.dietary_notes).length > 0 && (
-        <p className="mt-2.5 text-center text-[13px] text-[#9A3F2B]">{needsOf(own?.dietary_notes).join(" · ")}</p>
+        <button type="button" onClick={() => jumpTo("guest-dietary")} className="mx-auto mt-1.5 block rounded-lg px-2 py-1 text-center text-[13px] text-[#9A3F2B] hover:bg-cream/70">
+          {needsOf(own?.dietary_notes).join(" · ")}
+        </button>
       )}
     </div>
   );
@@ -332,6 +367,7 @@ function NameEditor({
 
 /** A label and its value; tap to change it there and then. */
 export function TextRow({
+  id,
   label,
   value,
   type = "text",
@@ -339,6 +375,8 @@ export function TextRow({
   startEditing = false,
   onSave,
 }: {
+  /** For a tap at the top of the card to scroll here. */
+  id?: string;
   label: string;
   value: string | null;
   type?: string;
@@ -360,7 +398,7 @@ export function TextRow({
   const keys = editorKeys(submit, () => setEditing(false), multiline);
 
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+    <div id={id} className="grid scroll-mt-24 grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
       <dt className="type-meta py-3.5"><DetailLabel label={label} /></dt>
       <dd className="min-w-0">
         {editing ? (
@@ -401,11 +439,48 @@ function DietaryRow({ rsvp, own }: { rsvp: Rsvp; own: string[] }) {
     });
 
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+    <div id="guest-dietary" className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
       <dt className="type-meta py-3.5"><DetailLabel label="Dietary" /></dt>
       <dd className="min-w-0">
         <DietaryPicker value={needs} onChange={change} own={own} />
         {failed && <p role="alert" className="mb-2 text-sm text-ink">{failed}</p>}
+      </dd>
+    </div>
+  );
+}
+
+/** Which table they sit at: pick one, or take them off. Saves on the pick. */
+function TableRow({ guest, seating }: { guest: Contact; seating: GuestSeating }) {
+  const [tableId, setTableId] = useOptimistic(seating.tableOf[guest.id] ?? "");
+  const [pending, startTransition] = useTransition();
+  const [failed, setFailed] = useState<string>();
+
+  return (
+    <div id="guest-table" className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+      <dt className="type-meta py-3.5"><DetailLabel label="Table" /></dt>
+      <dd className="min-w-0 py-2">
+        <select
+          aria-label="Table"
+          value={tableId}
+          disabled={pending}
+          onChange={(event) => {
+            const next = event.target.value;
+            startTransition(async () => {
+              setTableId(next);
+              setFailed((await safely(() => setGuestTableAction(guest.id, next || null))).error);
+            });
+          }}
+          className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-0 pr-6 leading-9 text-[15px] text-ink hover:text-champagne-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/40"
+          style={{ backgroundImage: CHEVRON }}
+        >
+          <option value="">Not seated yet</option>
+          {seating.tables.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+        {failed && <p role="alert" className="mt-2 text-sm text-ink">{failed}</p>}
       </dd>
     </div>
   );
@@ -539,7 +614,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
 
   return (
     <section className="mt-6 space-y-5">
-      <div>
+      <div id="guest-of" className="rounded-xl">
         <h3 className="section-label">Guest of</h3>
         <div role="group" aria-label="Guest of" className={track}>
           {events.map((e) => (
@@ -563,7 +638,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
       </div>
 
       {own && (
-        <div>
+        <div id="guest-rsvp" className="rounded-xl">
           <h3 className="section-label">RSVP</h3>
           <div role="group" aria-label="RSVP" className={track}>
             {ANSWERS.map((a) => (

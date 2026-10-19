@@ -1203,6 +1203,11 @@ access control is RLS. No column-level encryption is planned.
   for the rest, 52px, centred with a gap. Guest card (Text · Call · Email),
   group card (Email · Text · Edit), supplier card (Call · Email · Website) and
   the household card use it; use it for any new card.
+  **A missing one is never hidden** (owner, 19 Oct 2026): `RoundAction
+  missing` draws a faded dashed circle that goes to where it's typed in —
+  on the guest card it scrolls to Phone or Email with the box open
+  (`TextRow editSignal`); on a household, where nobody has one, to its
+  Guests; the supplier card already did this.
 - **Black (ink) is for the main action** (owner, 12 Oct 2026: the primary
   button should be the loudest thing on the page). **The round black + is one
   size everywhere: 40px** (`AddButton`, `src/components/add-button.tsx`;

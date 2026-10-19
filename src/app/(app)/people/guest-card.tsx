@@ -97,6 +97,12 @@ export default function GuestCard({
   // Their answer for their own event — the first they're on (day before evening).
   const own = events.map((e) => rsvps.find((r) => r.event_id === e.id)).find(Boolean);
   const phone = guest.phone?.replace(/\s+/g, "");
+  // A dashed Text, Call or Email goes to the box to type it in (`n` changes on every tap).
+  const [adding, setAdding] = useState<{ field: "phone" | "email"; n: number }>();
+  const add = (field: "phone" | "email") => {
+    setAdding((a) => ({ field, n: (a?.n ?? 0) + 1 }));
+    jumpTo(field === "phone" ? "guest-phone" : "guest-email");
+  };
 
   return (
     <CardSheet
@@ -124,13 +130,19 @@ export default function GuestCard({
         onSave={save}
       />
 
-      {(phone || guest.email) && (
-        <RoundActions>
-          {phone && <RoundAction href={`sms:${phone}`} label="Text" icon={MessageSquare} dark />}
-          {phone && <RoundAction href={`tel:${phone}`} label="Call" icon={Phone} />}
-          {guest.email && <RoundAction href={`mailto:${guest.email}`} label="Email" icon={Mail} dark={!phone} />}
-        </RoundActions>
-      )}
+      {/* Always all three, like the household's; a missing one is dashed and goes to its box. */}
+      <RoundActions>
+        <RoundAction href={phone ? `sms:${phone}` : undefined} missing={!phone} onClick={() => add("phone")} label="Text" icon={MessageSquare} dark />
+        <RoundAction href={phone ? `tel:${phone}` : undefined} missing={!phone} onClick={() => add("phone")} label="Call" icon={Phone} />
+        <RoundAction
+          href={guest.email ? `mailto:${guest.email}` : undefined}
+          missing={!guest.email}
+          onClick={() => add("email")}
+          label="Email"
+          icon={Mail}
+          dark={!phone}
+        />
+      </RoundActions>
 
       {/* The answer first — it's what changes most — then day or evening, then roles. */}
       {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
@@ -148,8 +160,8 @@ export default function GuestCard({
         <h3 className="section-label">Details</h3>
         <dl className="mt-1">
           <HouseholdRow guest={guest} households={households} onSave={save} />
-          <TextRow label="Phone" value={guest.phone} type="tel" onSave={(v) => save({ phone: v })} />
-          <TextRow label="Email" value={guest.email} type="email" onSave={(v) => save({ email: v })} />
+          <TextRow id="guest-phone" label="Phone" value={guest.phone} type="tel" editSignal={adding?.field === "phone" ? adding.n : 0} onSave={(v) => save({ phone: v })} />
+          <TextRow id="guest-email" label="Email" value={guest.email} type="email" editSignal={adding?.field === "email" ? adding.n : 0} onSave={(v) => save({ email: v })} />
           {seating && seating.tables.length > 0 && <TableRow guest={guest} seating={seating} />}
           {own && (
             <>
@@ -373,6 +385,7 @@ export function TextRow({
   type = "text",
   multiline = false,
   startEditing = false,
+  editSignal = 0,
   onSave,
 }: {
   /** For a tap at the top of the card to scroll here. */
@@ -383,11 +396,16 @@ export function TextRow({
   multiline?: boolean;
   /** Open with the box ready to type in (e.g. a list's greyed-out phone button). */
   startEditing?: boolean;
+  /** Opens the box each time it changes (above 0) — e.g. a dashed Call button was tapped. */
+  editSignal?: number;
   onSave: (value: string) => Promise<{ error?: string }>;
 }) {
   const [editing, setEditing] = useState(startEditing);
   const [draft, setDraft] = useState(value ?? "");
   const { pending, error, setError, run } = useSaver();
+  useEffect(() => {
+    if (editSignal > 0) setEditing(true);
+  }, [editSignal]);
 
   const start = () => {
     setDraft(value ?? "");

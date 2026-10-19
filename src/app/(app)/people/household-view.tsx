@@ -191,9 +191,25 @@ function ContactMenu({ kind, people }: { kind: "text" | "phone" | "email"; peopl
     return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
-  if (people.length === 0) return null;
   const Icon = { text: MessageSquare, phone: Phone, email: Mail }[kind];
   const word = { text: "Text", phone: "Call", email: "Email" }[kind];
+  // Nobody here has one: faded and dashed, like the guest and supplier cards'.
+  // A household has no number of its own, so it goes to its people to add one.
+  if (people.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={() => jumpTo("household-guests")}
+        aria-label={kind === "email" ? "No one has an email yet: see who's in it" : "No one has a number yet: see who's in it"}
+        className="flex flex-col items-center gap-1.5 text-[13px] text-stone/60"
+      >
+        <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40">
+          <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+        </span>
+        {word}
+      </button>
+    );
+  }
   const href = (value: string) =>
     kind === "email" ? `mailto:${value}` : `${kind === "text" ? "sms" : "tel"}:${value.replace(/\s+/g, "")}`;
   const circle = `flex h-[52px] w-[52px] items-center justify-center rounded-full ${

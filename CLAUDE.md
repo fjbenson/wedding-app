@@ -921,7 +921,10 @@ Next.js scaffold. Built so far, against the plan's tabs:
   chair (seated from the map, the List or the guest card) fill the free ones
   in name order, and the first chair chosen at a table saves everyone's drawn
   chair first (`pinSeats`, `seatGuestAt` in `src/lib/db/day.ts`,
-  `seatAtAction`) so nobody jumps. The old panel under the plan is gone. Options A (pinch to zoom) and
+  `seatAtAction`) so nobody jumps. **Tables snap to the room's dots**
+  (owner, 19 Oct 2026): a 20 × 15 grid of square cells (`GRID_X`, `GRID_Y`
+  in `floor-plan.tsx`), the dots drawn in % so they scale with the room;
+  arrow keys move one dot; tables placed before stay put until moved. The old panel under the plan is gone. Options A (pinch to zoom) and
   C (tables as cards) weren't picked. `DietLine` moved to
   `src/components/diet-line.tsx`.
   **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view

@@ -10,13 +10,18 @@ import { arrangeSeats } from "@/lib/seating";
 
 type Point = { x: number; y: number };
 
+/** The room's grid, as % of its width and height: 20 columns, 15 rows of square cells. */
+const GRID_X = 5;
+const GRID_Y = 100 / 15;
+
 function fullName(g: Contact) {
   return [g.first_name, g.last_name].filter(Boolean).join(" ");
 }
 
-/** Where a never-moved table stands: a tidy grid, four across. */
+/** Where a never-moved table stands: a tidy grid, four across, on the room's dots. */
 function defaultSpot(index: number): Point {
-  return { x: 12.5 + (index % 4) * 25, y: Math.min(90, 14 + Math.floor(index / 4) * 24) };
+  const row = Math.min(Math.floor(index / 4), 3);
+  return { x: 12.5 + (index % 4) * 25, y: GRID_Y * (2.5 + row * 4) };
 }
 
 /** Table size as a % of the room's width — bigger tables look bigger. */
@@ -201,7 +206,15 @@ export default function FloorPlan({
     return { x: ((clientX - room.left) / room.width) * 100, y: ((clientY - room.top) / room.height) * 100 };
   }
 
-  const keep = (n: number) => Math.max(3, Math.min(97, n));
+  // Tables snap to the room's dots (owner, 19 Oct 2026): a 20 × 15 grid of
+  // square cells (the room is 4:3), each dot in the middle of its cell.
+  const snapTo = (n: number, step: number) => {
+    const cells = Math.round(100 / step);
+    const k = Math.max(0, Math.min(cells - 1, Math.round((n - step / 2) / step)));
+    return Math.round((k * step + step / 2) * 10) / 10;
+  };
+  const keep = (n: number) => snapTo(n, GRID_X);
+  const keepY = (n: number) => snapTo(n, GRID_Y);
 
   function onPointerDown(event: React.PointerEvent, id: string) {
     const p = pointAt(event.clientX, event.clientY);
@@ -217,7 +230,7 @@ export default function FloorPlan({
     if (!d.moved && Math.hypot(event.clientX - d.startX, event.clientY - d.startY) < 6) return;
     d.moved = true;
     const p = pointAt(event.clientX, event.clientY);
-    if (p) setSpots((s) => ({ ...s, [d.id]: { x: keep(p.x - d.dx), y: keep(p.y - d.dy) } }));
+    if (p) setSpots((s) => ({ ...s, [d.id]: { x: keep(p.x - d.dx), y: keepY(p.y - d.dy) } }));
   }
 
   function onPointerUp() {
@@ -231,10 +244,10 @@ export default function FloorPlan({
   }
 
   function onKeyDown(event: React.KeyboardEvent, id: string) {
-    const step = { ArrowLeft: [-2, 0], ArrowRight: [2, 0], ArrowUp: [0, -2], ArrowDown: [0, 2] }[event.key];
+    const step = { ArrowLeft: [-GRID_X, 0], ArrowRight: [GRID_X, 0], ArrowUp: [0, -GRID_Y], ArrowDown: [0, GRID_Y] }[event.key];
     if (!step) return;
     event.preventDefault();
-    const spot = { x: keep(spots[id].x + step[0]), y: keep(spots[id].y + step[1]) };
+    const spot = { x: keep(spots[id].x + step[0]), y: keepY(spots[id].y + step[1]) };
     setSpots((s) => ({ ...s, [id]: spot }));
     save(() => moveTableAction(id, spot.x, spot.y));
   }
@@ -275,7 +288,7 @@ export default function FloorPlan({
             drag.current = null;
             setLifted(null);
           }}
-          className="relative aspect-[4/3] w-full min-w-[560px] rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#E6E0D6_1px,transparent_1px)] [background-size:24px_24px]"
+          className="relative aspect-[4/3] w-full min-w-[560px] rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"
           aria-label="Floor plan"
         >
           {tables.length === 0 && (

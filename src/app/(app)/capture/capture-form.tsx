@@ -5,6 +5,7 @@ import { Link2 } from "lucide-react";
 import { SubmitBar } from "@/components/form-bits";
 import { AreaTiles, BARE, CARD, Folded, Line, Part } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
+import NoteEditor from "@/components/note-editor";
 
 /**
  * Jot a note (screen 35), laid out like the other visual forms (15 Oct
@@ -27,20 +28,14 @@ export default function CaptureForm({
   return (
     <form action={action}>
       <input type="hidden" name="return_to" value={returnTo} />
-      <label className="relative mt-2 block rounded-[4px] bg-[#FFFDF8] px-5 pb-4 pt-7 shadow-[0_1px_2px_rgb(60_45_20/0.08),0_14px_30px_-16px_rgb(60_45_20/0.35)]">
+      {/* Words, bullets and tick-boxes in one note (canvas 3 "Notes · Round 1", A, owner 19 Oct 2026). */}
+      <div className="relative mt-2 block min-h-[180px] rounded-[4px] bg-[#FFFDF8] px-5 pb-4 pt-7 shadow-[0_1px_2px_rgb(60_45_20/0.08),0_14px_30px_-16px_rgb(60_45_20/0.35)]">
         <span
           aria-hidden
           className="absolute -top-2 left-1/2 h-4 w-[64px] -translate-x-1/2 border-x border-dashed border-white/60 bg-[rgb(225_205_165/0.55)]"
         />
-        <span className="sr-only">What&apos;s on your mind?</span>
-        <textarea
-          name="body"
-          rows={6}
-          autoFocus
-          placeholder="What's on your mind? An idea, a name, something someone said…"
-          className="block w-full resize-none bg-transparent font-display !text-[19px] italic leading-snug text-ink placeholder:text-stone/50 focus:outline-none"
-        />
-      </label>
+        <NoteEditor autoFocus placeholder="What's on your mind? An idea, a name, something someone said…" />
+      </div>
 
       <Part label="A link">
         <div className={CARD}>

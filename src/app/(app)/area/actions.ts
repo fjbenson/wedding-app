@@ -10,6 +10,7 @@ import { createNote, deleteNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { updateSupplierParts } from "@/lib/db/suppliers";
 import { describe } from "@/lib/errors";
+import { SOUND_CHECK } from "@/lib/music";
 
 function failed(back: string, message: string, error: unknown): never {
   console.error(message, error);
@@ -256,4 +257,21 @@ export async function unbookSupplierAction(key: string, supplierId: string, hasQ
   refresh(key);
   revalidatePath("/people");
   revalidatePath("/money");
+}
+
+/**
+ * The Music area's ready-made Sound check: a note with tick-boxes, filed
+ * under the area (owner, 19 Oct 2026: is there a backup if the sound fails?).
+ */
+export async function startSoundCheckAction(key: string) {
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+  const area = /^[a-z0-9-]+$/.test(key) ? key : "music";
+  try {
+    await createNote(wedding.id, { body: [SOUND_CHECK.name, ...SOUND_CHECK.lines.map((l) => `[ ] ${l}`)].join("\n"), url: null, area_key: area });
+  } catch (error) {
+    failed(`/area/${area}`, "That didn't save.", error);
+  }
+  refreshNotes(area);
+  redirect(`/area/${area}#notes`);
 }

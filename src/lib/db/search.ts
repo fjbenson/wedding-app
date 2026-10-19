@@ -80,8 +80,6 @@ export async function searchWedding(weddingId: string, query: string): Promise<S
     payments,
     moments,
     decor,
-    lists,
-    listLines,
     notes,
     areas,
     ideas,
@@ -117,8 +115,6 @@ export async function searchWedding(weddingId: string, query: string): Promise<S
     run("payments", "id, description, notes, amount", ["description", "notes"]),
     run("run_sheet_items", "id, title, location, who, notes, music, at_time", ["title", "location", "who", "notes", "music"]),
     run("decor_items", "id, name, place, notes, from_name", ["name", "place", "notes", "from_name"]),
-    run("lists", "id, name", ["name"]),
-    run("list_items", "id, text, list_id", ["text"]),
     run("notes", "id, body, url", ["body", "url"]),
     run("areas", "id, key, label, details", ["label", "details"]),
     run("inspo_items", "id, title, note", ["title", "note"]),
@@ -163,12 +159,9 @@ export async function searchWedding(weddingId: string, query: string): Promise<S
     add({ kind: "moment", id: r.id, title: str(r.title) ?? "A moment", line: around(str(r.music), q) ?? str(r.location) ?? around(str(r.notes), q), href: `/day/run-sheet/${r.id}` });
   }
   for (const r of decor) add({ kind: "decor", id: r.id, title: str(r.name) ?? "A decor item", line: str(r.place) ?? around(str(r.notes), q), href: `/day/decor?thing=${r.id}` });
-  for (const r of lists) add({ kind: "list", id: r.id, title: str(r.name) ?? "A list", line: null, href: `/inbox?list=${r.id}` });
-  for (const r of listLines) {
-    const list = str(r.list_id) ?? "";
-    add({ kind: "list", id: list, title: str(r.text) ?? "A line", line: "On a list", href: `/inbox?list=${list}` });
-  }
-  for (const r of notes) add({ kind: "note", id: r.id, title: around(str(r.body), q) ?? str(r.body)?.slice(0, 60) ?? str(r.url) ?? "A note", line: null, href: `/inbox?note=${r.id}` });
+  // Tick-box and bullet marks don't show in a result.
+  const plain = (t: string | null) => t?.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/gm, "") ?? null;
+  for (const r of notes) add({ kind: "note", id: r.id, title: around(plain(str(r.body)), q) ?? plain(str(r.body))?.slice(0, 60) ?? str(r.url) ?? "A note", line: null, href: `/inbox?note=${r.id}` });
   for (const r of areas) add({ kind: "area", id: r.id, title: str(r.label) ?? "An area", line: around(str(r.details), q), href: `/area/${str(r.key)}` });
   for (const r of ideas) add({ kind: "idea", id: r.id, title: str(r.title) ?? around(str(r.note), q) ?? "An idea", line: str(r.title) ? around(str(r.note), q) : null, href: `/inspo/${r.id}` });
   for (const r of [...courses, ...dishes]) add({ kind: "menu", id: r.id, title: str(r.name) ?? "On the menu", line: "The menu", href: "/menu" });

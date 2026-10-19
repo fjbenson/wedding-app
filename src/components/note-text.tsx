@@ -13,10 +13,10 @@ export function host(url: string) {
 
 /** A captured thought or link, as it reads in the inbox or on an area page. */
 /** `className` styles the words — e.g. larger, in the display face, on the inbox panel. */
-export default function NoteText({ note, className }: { note: Note; className?: string }) {
+export default function NoteText({ note, className, onToggle }: { note: Note; className?: string; onToggle?: (lineIndex: number) => void }) {
   return (
     <>
-      {note.body && <RichText text={note.body} className={className} />}
+      {note.body && <RichText text={note.body} className={className} onToggle={onToggle} />}
       {note.url && (
         <a
           href={note.url}

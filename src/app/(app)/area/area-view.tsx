@@ -12,16 +12,15 @@ import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
 import AreaIcon from "./area-icon";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
-import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
 import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
 import type { DecorPerson } from "../decor/decor-people";
 import { DecorThings } from "../decor/decor-things";
-import type { ListWithItems } from "@/lib/db/lists";
-import { ListCard, ListRows } from "../lists/list-bits";
-import { startSoundCheckAction } from "../lists/actions";
+import NoteEditor from "@/components/note-editor";
+import TickableNote from "@/components/tickable-note";
+import { startSoundCheckAction } from "./actions";
 import { musicTitle, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
 import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
@@ -578,10 +577,7 @@ export default function AreaView({
   couple,
   decor,
   music,
-  lists = [],
 }: {
-  /** Lists filed under this area (0029_lists.sql); they live with Your notes. */
-  lists?: ListWithItems[];
   /** The Music area: its The Day part also holds every moment with a song (0028). */
   music?: boolean;
   /** The Decor area only: its things, in place of the five stages (0027_decor.sql). */
@@ -793,15 +789,9 @@ export default function AreaView({
             </div>
             {editing === "facts" ? (
               <form action={saveAreaDetailsAction.bind(null, area.id, area.key)} className="py-3">
-                <textarea
-                  name="details"
-                  rows={5}
-                  autoFocus
-                  defaultValue={area.details ?? ""}
-                  aria-label={`Key facts about ${area.label}`}
-                  placeholder={"Colours, numbers, who's deciding.\n- Start a line with a dash for a bullet"}
-                  className={NOTE_BOX}
-                />
+                <div className={NOTE_BOX}>
+                  <NoteEditor name="details" initial={area.details ?? ""} autoFocus placeholder="Colours, numbers, who's deciding" textClass="text-[15px] leading-relaxed" />
+                </div>
                 <div className="mt-2 flex items-center justify-end gap-4">
                   <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
                     Cancel
@@ -976,9 +966,7 @@ export default function AreaView({
       ? `${moments[0].title} · ${formatClock(moments[0].at_time)}${moments.length > 1 ? ` · +${moments.length - 1}` : ""}`
       : transportRuns > 0 ? plural(transportRuns, "journey") : "Nothing yet";
   const notesLine =
-    notes.length + lists.length > 0
-      ? [notes.length > 0 && plural(notes.length, "note"), lists.length > 0 && plural(lists.length, "list")].filter(Boolean).join(" · ")
-      : "Nothing yet";
+    notes.length > 0 ? plural(notes.length, "note") : "Nothing yet";
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
@@ -987,8 +975,6 @@ export default function AreaView({
 
       <div className="relative mt-5 flex flex-col gap-3.5">
         <OpenOnHash />
-        {/* Outside the folded notes, so a new list's card opens even with them closed. */}
-        <ListCard lists={lists} areas={areas} />
         {error && (
           <p role="alert" className="rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
             {error}
@@ -1316,10 +1302,8 @@ export default function AreaView({
               open={!!editing && editing !== "facts"}
               add={editing === "note" ? undefined : { href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }}
             >
-          {/* Lists filed under this area (owner, 19 Oct 2026), then its notes. */}
-          {lists.length > 0 && <ListRows lists={lists} />}
-          {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check list, once. */}
-          {music && !lists.some((l) => l.name === SOUND_CHECK.name) && editing !== "note" && (
+          {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check note with tick-boxes, once. */}
+          {music && !notes.some((n) => n.body?.startsWith(SOUND_CHECK.name)) && editing !== "note" && (
             <form action={startSoundCheckAction.bind(null, area.key)} className="border-b border-linen">
               <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
                 <ListChecks className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
@@ -1330,25 +1314,11 @@ export default function AreaView({
               </button>
             </form>
           )}
-          {editing !== "note" && (
-            <Link
-              href={`/lists/new?back=${encodeURIComponent(`/area/${area.key}`)}&area=${encodeURIComponent(area.key)}`}
-              className="flex min-h-12 items-center border-b border-linen text-[15px] text-champagne-600 hover:text-ink"
-            >
-              <span aria-hidden>+&nbsp;</span>
-              Add a list
-            </Link>
-          )}
           {editing === "note" && (
             <form action={addAreaNoteAction.bind(null, area.key)} className="border-b border-linen py-3">
-              <textarea
-                name="body"
-                rows={4}
-                autoFocus
-                aria-label={`A note about ${area.label}`}
-                placeholder={"A thought, a link, a list.\n- Start a line with a dash for a bullet"}
-                className={NOTE_BOX}
-              />
+              <div className={NOTE_BOX}>
+                <NoteEditor autoFocus placeholder="A thought, a link, a checklist…" textClass="text-[15px] leading-relaxed" />
+              </div>
               <div className="mt-2 flex items-center justify-end gap-4">
                 <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
                   Cancel
@@ -1363,14 +1333,9 @@ export default function AreaView({
                 editing === `note:${n.id}` ? (
                   <li key={n.id} className="border-b border-linen py-3 last:border-b-0">
                     <form action={saveAreaNoteAction.bind(null, area.key, n.id, n.body && n.url ? n.url : null)}>
-                      <textarea
-                        name="body"
-                        rows={4}
-                        autoFocus
-                        defaultValue={n.body ?? n.url ?? ""}
-                        aria-label="This note"
-                        className={NOTE_BOX}
-                      />
+                      <div className={NOTE_BOX}>
+                        <NoteEditor initial={n.body ?? n.url ?? ""} autoFocus textClass="text-[15px] leading-relaxed" />
+                      </div>
                       <div className="mt-2 flex items-center justify-end gap-4">
                         <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
                           Cancel
@@ -1387,7 +1352,7 @@ export default function AreaView({
                 ) : (
                   <li key={n.id} className="flex items-start gap-3 border-b border-linen py-3.5 last:border-b-0">
                     <div className="min-w-0 flex-1">
-                      <NoteText note={n} />
+                      <TickableNote note={n} />
                     </div>
                     <Link href={`/area/${area.key}?edit=note:${n.id}#notes`} scroll={false} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
                       Edit

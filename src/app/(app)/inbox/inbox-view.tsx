@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, ListChecks, StickyNote } from "lucide-react";
-import AddMenu from "@/components/add-menu";
-import type { ListWithItems } from "@/lib/db/lists";
-import { ListCard } from "../lists/list-bits";
+import { ChevronLeft } from "lucide-react";
+import AddButton from "@/components/add-button";
 import type { AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Note } from "@/types/db";
@@ -19,7 +17,6 @@ export const metadata = { title: "Your notes — Wedding App" };
  */
 export default function InboxView({
   notes,
-  lists,
   pictures,
   areas,
   today,
@@ -29,8 +26,6 @@ export default function InboxView({
 }: {
   /** null until 0008_notes.sql has been run. */
   notes: Note[] | null;
-  /** Lists live here beside the notes (0029_lists.sql, owner 19 Oct 2026). */
-  lists: ListWithItems[];
   /** Unsorted Inspo — the plan's inbox holds "notes and unsorted images together". */
   pictures: InspoWithPicture[];
   areas: AreaOption[];
@@ -50,22 +45,13 @@ export default function InboxView({
       </Link>
       <div className="mt-3 flex items-center justify-between gap-3">
         <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">Your notes</h1>
-        {/* A note or a list (owner, 19 Oct 2026): pick which, then its own screen. */}
-        <AddMenu
-          label="Add a note or a list"
-          title="Add"
-          choices={[
-            { icon: <StickyNote />, title: "A note", line: "A thought, a link, something to remember", href: "/capture?from=/inbox" },
-            { icon: <ListChecks />, title: "A list", line: "Things to tick off: the toilet baskets, the bridesmaids' room", href: "/lists/new?back=%2Finbox" },
-          ]}
-        />
+        {/* One kind of note: words, bullets and tick-boxes mixed (canvas 3 "Notes · Round 1", A, owner 19 Oct 2026). */}
+        <AddButton href="/capture?from=/inbox" label="Write a note" />
       </div>
       <p className="mt-2 text-sm text-stone">
-        {(notes ?? []).length === 0 && lists.length === 0
-          ? "Jot something down or start a list, and it waits here until you file it under an area."
-          : (notes ?? []).length === 0
-            ? `${lists.length} ${lists.length === 1 ? "list" : "lists"}. Tap one to tick it off or add to it.`
-          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${lists.length ? ` · ${lists.length} ${lists.length === 1 ? "list" : "lists"}` : ""}${unfiled.length ? ` · ${unfiled.length} to sort` : ", all sorted"}. Tap one to file it under an area, or make it a to-do.`}
+        {(notes ?? []).length === 0
+          ? "Jot something down, or make a checklist, and it waits here until you file it under an area."
+          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} to sort` : ", all sorted"}. Tap one to tick it off, file it under an area, or make it a to-do.`}
       </p>
 
       {error && (
@@ -84,8 +70,7 @@ export default function InboxView({
 
       {notes !== null && (
         <div className="mt-8">
-          <NoteWall notes={notes ?? []} lists={lists} areas={areas} today={today} initialOpen={openNote} />
-          <ListCard lists={lists} areas={areas} />
+          <NoteWall notes={notes ?? []} areas={areas} today={today} initialOpen={openNote} />
         </div>
       )}
 

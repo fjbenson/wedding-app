@@ -6,12 +6,13 @@ import { useEffect, useState, useTransition } from "react";
 import { Check, ChevronDown, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import { DateInput } from "@/components/form-bits";
 import { AreaTiles } from "@/components/visual-form";
-import NoteText, { host } from "@/components/note-text";
+import { host } from "@/components/note-text";
+import NoteEditor from "@/components/note-editor";
+import TickableNote from "@/components/tickable-note";
+import { parseNote, tickCount } from "@/lib/note-lines";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
-import type { ListWithItems } from "@/lib/db/lists";
-import { ListPaper } from "../lists/list-bits";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
 /** Soft papers: ivory, champagne, blush, sage. */
@@ -74,14 +75,11 @@ async function safely(work: () => Promise<Result>): Promise<Result> {
  */
 export default function NoteWall({
   notes,
-  lists = [],
   areas,
   today,
   initialOpen,
 }: {
   notes: Note[];
-  /** Lists, on the wall first (owner, 19 Oct 2026: a sticky note or a list). */
-  lists?: ListWithItems[];
   areas: AreaOption[];
   today: string;
   /** A note to open straight away — the home screen's "File it". */
@@ -97,18 +95,13 @@ export default function NoteWall({
     return () => clearTimeout(timer);
   }, [added]);
 
-  const blanks = BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length - lists.length));
-  const papers = papersFor([...lists.map((l) => l.id), ...notes.map((n) => n.id), ...blanks]);
-  const first = lists.length;
+  const blanks = BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length));
+  const papers = papersFor([...notes.map((n) => n.id), ...blanks]);
+  const first = 0;
 
   return (
     <>
       <ul className="columns-2 gap-3.5 pt-2 lg:columns-3">
-        {lists.map((list, index) => (
-          <li key={list.id} className="mb-6 break-inside-avoid pt-2">
-            <ListPaper list={list} areas={areas} background={papers[index]} turn={TURNS[seed(list.id) % TURNS.length]} />
-          </li>
-        ))}
         {notes.map((note, index) => (
           <li key={note.id} className="mb-6 break-inside-avoid pt-2">
             <button
@@ -122,11 +115,7 @@ export default function NoteWall({
                 className="absolute -top-2 left-1/2 h-4 w-[54px] -translate-x-1/2 border-x border-dashed border-white/60 bg-[rgb(225_205_165/0.55)]"
               />
               {/* Plain words here: a link can't sit inside a button. The panel has the real link. */}
-              {note.body && (
-                <span className="line-clamp-[8] block whitespace-pre-wrap font-display text-[17px] italic leading-snug text-ink">
-                  {note.body}
-                </span>
-              )}
+              {note.body && <WallBody body={note.body} />}
               {note.url && (
                 <span className={`${note.body ? "mt-2" : ""} flex items-center gap-1.5 text-[13px] text-champagne-600`}>
                   <Link2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
@@ -134,7 +123,7 @@ export default function NoteWall({
                 </span>
               )}
               <span className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-                <span className="type-meta">{formatAgo(note.created_at, today)}</span>
+                <span className="type-meta">{tickLabel(note.body) ?? formatAgo(note.created_at, today)}</span>
                 {/* Filed: tagged with its area, and on that area's page too — it stays here as well. */}
                 {(note.area_key || note.milestone_id) && (
                   <span className="flex flex-wrap gap-1">
@@ -252,13 +241,9 @@ function NotePanel({
           >
             <label className="block">
               <span className="sr-only">The note</span>
-              <textarea
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-                rows={4}
-                autoFocus
-                className="block w-full resize-none rounded-xl border border-linen bg-white px-4 py-3 font-display text-[19px] leading-snug text-ink focus:border-champagne-400 focus:outline-none"
-              />
+              <div className="rounded-xl border border-linen bg-white px-4 py-3">
+                <NoteEditor name="note" initial={note.body} autoFocus onChange={setText} />
+              </div>
             </label>
             <div className="mt-3 flex justify-end gap-2">
               <button type="button" onClick={() => setEditing(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">
@@ -270,7 +255,7 @@ function NotePanel({
             </div>
           </form>
         ) : (
-          <NoteText note={note} className="font-display text-[21px] italic leading-snug" />
+          <TickableNote note={note} className="font-display text-[21px] italic leading-snug" />
         )}
         <p className="type-meta mt-2">{formatAgo(note.created_at, today)}</p>
 
@@ -398,5 +383,43 @@ function NotePanel({
         </button>
       </div>
     </div>
+  );
+}
+
+/** "1 of 4 ticked" when a note has tick-boxes, else nothing. */
+function tickLabel(body: string | null): string | null {
+  const { ticks, done } = tickCount(body);
+  return ticks ? `${done} of ${ticks} ticked` : null;
+}
+
+/** A note on the wall: its first few lines, with bullets and tick-boxes drawn small. */
+function WallBody({ body }: { body: string }) {
+  const lines = parseNote(body).filter((l) => l.text.trim() || l.kind !== "text");
+  const shown = lines.slice(0, 8);
+  return (
+    <span className="block space-y-1">
+      {shown.map((l, i) =>
+        l.kind === "text" ? (
+          <span key={i} className="block font-display text-[17px] italic leading-snug text-ink">
+            {l.text}
+          </span>
+        ) : (
+          <span key={i} className={`flex items-start gap-2 text-[14px] leading-snug ${l.done ? "text-stone line-through" : "text-ink"}`}>
+            {l.kind === "bullet" ? (
+              <span aria-hidden className="mt-[7px] h-[5px] w-[5px] shrink-0 rounded-full bg-champagne-600" />
+            ) : (
+              <span
+                aria-hidden
+                className={`mt-[3px] flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border ${l.done ? "border-champagne-600 bg-champagne-600 text-white" : "border-champagne-400"}`}
+              >
+                {l.done && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+              </span>
+            )}
+            <span className="min-w-0">{l.text}</span>
+          </span>
+        ),
+      )}
+      {lines.length > shown.length && <span className="block text-[13px] text-stone">and {lines.length - shown.length} more</span>}
+    </span>
   );
 }

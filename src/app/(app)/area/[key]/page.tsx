@@ -19,7 +19,6 @@ import AreaView from "../area-view";
 import { involvedNames } from "@/lib/db/involved";
 import { RowPeopleProvider } from "@/components/row-people";
 import { listDecor } from "@/lib/db/decor";
-import { listLists } from "@/lib/db/lists";
 import { isDecorArea } from "@/lib/decor";
 import { decorPeople } from "../../decor/decor-people";
 import { withInCharge } from "@/lib/music";
@@ -42,7 +41,7 @@ export default async function AreaPage({
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
-  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows, day, people, lists] = await Promise.all([
+  const [milestones, suppliers, payments, appointments, notes, inspo, inspoCounts, areaRows, day, people] = await Promise.all([
     listMilestones(wedding.id),
     listSuppliers(wedding.id),
     listPayments(wedding.id),
@@ -54,7 +53,6 @@ export default async function AreaPage({
     listAreas(wedding.id),
     getDay(wedding.id),
     involvedNames(wedding.id),
-    listLists(wedding.id),
   ]);
   const allPayments = payments ?? [];
 
@@ -109,7 +107,6 @@ export default async function AreaPage({
       guestFacts={guestFacts}
       food={food}
       decor={decor}
-      lists={lists.filter((l) => l.area_key === area.key)}
       music={area.key === "music"}
       // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
       moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}

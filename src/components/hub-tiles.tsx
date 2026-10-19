@@ -24,7 +24,8 @@ export default function HubTiles({
   pictures: (string | null)[];
   ideas: number;
 }) {
-  const words = note ? note.body?.trim() || (note.url ? host(note.url) : "") : "";
+  // Tick-box and bullet marks read as plain words on the tile.
+  const words = note ? note.body?.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/gm, "").trim() || (note.url ? host(note.url) : "") : "";
 
   return (
     <div className="relative mx-5 mt-4 grid grid-cols-2 gap-3 lg:mx-0 lg:mt-0">

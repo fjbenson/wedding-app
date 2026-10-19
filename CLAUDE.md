@@ -1062,7 +1062,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   (so "just the evening guests" works). **Sent to them** on the household card
   (and a guest card with no household; `sent-to-them.tsx`): the three, a gold
   tick with "Posted 3 Mar" or dashed — tap to say how (today), or take it off
-  (answers stay). Entries show on the household's timeline too. Queries
+  (answers stay). Entries show on the household's timeline too, and **on Stationery's own area timeline** (19 Oct 2026, owner kept area timelines): gathered into one line each, "Posted to 12 households" (`groupSendings` in `loadTimeline`; taken off from a household's card). Queries
   `src/lib/db/stationery.ts`, actions `stationery/actions.ts`. Nothing is sent
   by the app; the assistant isn't given it. **Not built:** gifts and
   thank-you notes (needs a small gifts table — owner's OK first), "Did it

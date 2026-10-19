@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isStationeryArea } from "@/lib/stationery";
 import type { Appointment, Milestone, Payment, TimelineEntry, WeddingFile } from "@/types/db";
 
 /**
@@ -25,6 +26,8 @@ export interface TimelineSources {
   files: WeddingFile[];
   /** Contact id → name, for "with Wild & Gather" on an area's timeline. */
   names: Record<string, string>;
+  /** Stationery's page: sendings to many households are gathered into one line each ("Posted to 12 households"). */
+  groupSendings?: boolean;
 }
 
 /** Adds an entry and gives back its id. */
@@ -98,7 +101,11 @@ export async function loadTimeline(weddingId: string, scope: TimelineScope): Pro
   // Timeline entries: theirs, the household's own, or the area's and its suppliers'.
   let entriesQuery = supabase.from("timeline_entries").select("*").eq("wedding_id", weddingId);
   if ("household" in scope) entriesQuery = entriesQuery.or(`household_id.eq.${scope.household},contact_id.in.(${ids.join(",")})`);
-  else if (areaKey !== null) entriesQuery = entriesQuery.or(`area_key.eq.${areaKey},contact_id.in.(${ids.join(",")})`);
+  else if (areaKey !== null)
+    // Stationery's own timeline also holds everything sent to guests: save the dates, invitations, thank-yous.
+    entriesQuery = entriesQuery.or(
+      `area_key.eq.${areaKey},contact_id.in.(${ids.join(",")})${isStationeryArea(areaKey) ? ",kind.in.(save_the_date,invitation,thank_you)" : ""}`,
+    );
   else entriesQuery = entriesQuery.in("contact_id", ids);
 
   const [entriesR, filesR] = await Promise.all([
@@ -149,5 +156,13 @@ export async function loadTimeline(weddingId: string, scope: TimelineScope): Pro
   }
 
   const unique = <T extends { id: string }>(list: T[]) => [...new Map(list.map((x) => [x.id, x])).values()];
-  return { entries, payments: unique(payments), appointments: unique(appointments), todos: unique(todos), files, names };
+  return {
+    entries,
+    payments: unique(payments),
+    appointments: unique(appointments),
+    todos: unique(todos),
+    files,
+    names,
+    groupSendings: areaKey !== null && isStationeryArea(areaKey),
+  };
 }

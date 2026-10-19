@@ -57,7 +57,33 @@ export function buildTimeline(src: TimelineSources, today: string): TimelineItem
     fromCall.set(t.timeline_entry_id, list);
   }
 
-  for (const e of src.entries) {
+  // On Stationery's timeline, what went to many households at once is one line
+  // ("Posted to 12 households"); each is taken off from that household's own card.
+  const sentTogether = new Map<string, { entry: (typeof src.entries)[number]; count: number }>();
+  const entries = src.groupSendings
+    ? src.entries.filter((e) => {
+        if (e.kind !== "save_the_date" && e.kind !== "invitation" && e.kind !== "thank_you") return true;
+        const key = `${e.kind}:${e.how ?? ""}:${e.happened_on}`;
+        const seen = sentTogether.get(key);
+        if (seen) seen.count++;
+        else sentTogether.set(key, { entry: e, count: 1 });
+        return false;
+      })
+    : src.entries;
+  for (const { entry: e, count } of sentTogether.values()) {
+    items.push({
+      key: `sent:${e.kind}:${e.how ?? ""}:${e.happened_on}`,
+      mark: e.how === "email" ? "email" : "post",
+      group: "comms",
+      kind: KIND_LABEL[e.kind],
+      date: e.happened_on,
+      title: `${e.how ? HOW[e.how] : "Sent"} to ${count} ${count === 1 ? "household" : "households"}`,
+      upcoming: e.happened_on > today,
+      done: true,
+    });
+  }
+
+  for (const e of entries) {
     const who = e.contact_id ? src.names[e.contact_id] : undefined;
     const sending = e.kind === "save_the_date" || e.kind === "invitation" || e.kind === "thank_you";
     const mark: TimelineItem["mark"] =

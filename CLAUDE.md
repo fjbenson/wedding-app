@@ -1868,6 +1868,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
       perhaps a second currency for suppliers abroad, and things like
       passports or legal paperwork as to-dos. Flight details are guests'
       personal details: rule one.
+      **Owner's idea:** ask in Setup (and Settings) **where the wedding
+      is**. Two different things: **where the couple are from** and **where
+      the wedding is** — a UK couple marrying in France (a destination
+      wedding: flights, two currencies, guests travelling) is not a French
+      couple marrying at home (just a different country: euros, French time,
+      French customs). The app adjusts to the pair: same country = as today
+      (UK first, other countries later); different = destination extras
+      switch on (flights, airport lifts, time zone, second currency,
+      paperwork). Would be a new column or two on `weddings`.
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

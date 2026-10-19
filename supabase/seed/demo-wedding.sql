@@ -511,3 +511,46 @@ insert into milestones (wedding_id, title, category, due_date, status, timeline_
 select t.wedding_id, 'Send Ellie the colour swatches', 'flowers', '2026-10-23', 'todo', t.id
 from timeline_entries t
 where t.wedding_id = (select id from weddings where name = 'Olivia & Theo') and t.kind = 'call' and t.summary like 'Ellie says peonies%';
+
+-- Groups with their own schedules, and food and drink served at the day's
+-- moments (0033, 0034): the bridesmaids' and groomsmen's mornings, and the
+-- courses and drinks linked to the moments they're served at.
+do $$
+declare
+  w constant uuid := (select id from weddings where name = 'Olivia & Theo');
+  bm uuid; gm uuid;
+  m_canape uuid; m_pizza uuid; m_speech uuid; m_evening uuid;
+begin
+  insert into guest_groups (wedding_id, name) values (w, 'Bridesmaids') returning id into bm;
+  insert into guest_groups (wedding_id, name) values (w, 'Groomsmen') returning id into gm;
+  insert into guest_group_members (group_id, contact_id, wedding_id)
+    select bm, id, w from contacts where wedding_id = w and role_on_the_day in ('Maid of honour', 'Bridesmaid');
+  insert into guest_group_members (group_id, contact_id, wedding_id)
+    select gm, id, w from contacts where wedding_id = w and role_on_the_day in ('Best man', 'Groomsman');
+
+  insert into run_sheet_items (wedding_id, at_time, title, location, area_key) values
+    (w, '08:00', 'Breakfast at Mum''s, everyone in their robes', 'The Bennetts'' kitchen', 'hair-makeup'),
+    (w, '10:15', 'Make-up: Priya, Hannah and Sophie', 'The Bennetts'' kitchen', 'hair-makeup'),
+    (w, '11:00', 'Dresses on', 'Olivia''s room', 'attire'),
+    (w, '09:30', 'Breakfast at the pub', 'The Coach and Horses', 'food'),
+    (w, '11:00', 'Suits on, buttonholes pinned', 'The Coach and Horses', 'attire');
+  insert into run_sheet_groups (moment_id, group_id, wedding_id)
+    select id, bm, w from run_sheet_items
+    where wedding_id = w and title in ('Hair and make-up begins', 'Photographer arrives for prep shots', 'Group photos',
+      'Breakfast at Mum''s, everyone in their robes', 'Make-up: Priya, Hannah and Sophie', 'Dresses on');
+  insert into run_sheet_groups (moment_id, group_id, wedding_id)
+    select id, gm, w from run_sheet_items
+    where wedding_id = w and title in ('Breakfast at the pub', 'Suits on, buttonholes pinned', 'Guests arrive, welcome drinks', 'Group photos');
+
+  select id into m_canape from run_sheet_items where wedding_id = w and title = 'Drinks, canapés and lawn games';
+  select id into m_pizza from run_sheet_items where wedding_id = w and title = 'Pizza from the wood-fired oven';
+  select id into m_speech from run_sheet_items where wedding_id = w and title = 'Speeches';
+  select id into m_evening from run_sheet_items where wedding_id = w and title = 'Evening guests arrive';
+  update menu_courses set moment_id = m_canape where wedding_id = w and name = 'Canapés';
+  update menu_courses set moment_id = m_pizza where wedding_id = w and name = 'Evening';
+  update menu_courses set moment_id = (select id from run_sheet_items where wedding_id = w and title = 'Wedding breakfast') where wedding_id = w and name = 'Wedding breakfast';
+  update drinks set moment_id = m_canape where wedding_id = w and name in ('Arrival fizz', 'Pimm''s jugs');
+  update drinks set moment_id = (select id from run_sheet_items where wedding_id = w and title = 'Wedding breakfast') where wedding_id = w and name in ('Red wine', 'White wine');
+  update drinks set moment_id = m_speech where wedding_id = w and name = 'Champagne for the toast';
+  update drinks set moment_id = m_evening where wedding_id = w and name in ('Local cask ale', 'Gin, spirits, soft drinks');
+end $$;

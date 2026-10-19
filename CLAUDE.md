@@ -1876,7 +1876,20 @@ additive — new tables hanging off `weddings`. None require changing the above.
   11. **Food & drink as a bigger section** — so much happens through the
       day (canapés, breakfast, evening food, drinks, cake…). The menu and
       Drinks (18 Oct) are a start.
-  12. **Venue table numbers** — venues have their own table numbers; the
+  12. **Send to the venue — built 19 Oct 2026** (`send-to-venue.tsx`, a
+      "Send to the venue" link on Seating's View row): a card with **Share
+      the plan** (phones: the phone's share sheet with a PDF attached and the
+      table in the message — `navigator.share` with files), **Open in my
+      email** (the table written in; mailto can't attach), **Download the
+      PDF**, Copy the table, and a preview. The PDF (`jspdf`, loaded only
+      when needed): page 1 the room as the floor plan has it, then each
+      table, its guests chair by chair, dietary needs in rose. The app sends
+      nothing itself. **Venue numbers parked by the owner (19 Oct 2026):**
+      the plan agreed was an optional "venue's table number" per table (a
+      small column), a nudge until all are matched, and the venue's own
+      floor plan uploaded beside (or under) the room; the sent plan would
+      then lead with the venue's numbers. Original note:
+      **Venue table numbers** — venues have their own table numbers; the
       couple's table names mean nothing to them (it went wrong at one
       wedding). Add a venue number beside each table's name, a nudge
       ("check the numbers with your venue"), and **Send the table plan to

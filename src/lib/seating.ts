@@ -1,3 +1,13 @@
+/** The room's grid, as % of its width and height: 20 columns, 15 rows of square cells (the room is 4:3). */
+export const GRID_X = 5;
+export const GRID_Y = 100 / 15;
+
+/** Where a never-moved table stands: a tidy grid, four across, on the room's dots. */
+export function defaultSpot(index: number): { x: number; y: number } {
+  const row = Math.min(Math.floor(index / 4), 3);
+  return { x: 12.5 + (index % 4) * 25, y: GRID_Y * (2.5 + row * 4) };
+}
+
 /**
  * Which chair each guest at a table sits in (0025_seat_number.sql). A guest
  * with a chair number keeps it; anyone without one (seated before chairs

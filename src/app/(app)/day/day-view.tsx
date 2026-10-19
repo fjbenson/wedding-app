@@ -19,6 +19,8 @@ import {
   updateTableAction,
 } from "./actions";
 import FloorPlan from "./floor-plan";
+import SendToVenue from "./send-to-venue";
+import { arrangeSeats, defaultSpot } from "@/lib/seating";
 import DietLine from "@/components/diet-line";
 import CopyText from "@/components/copy-text";
 import { needsOf } from "@/lib/dietary";
@@ -122,7 +124,16 @@ export default function DayView({
       )}
 
       {tab === "seating" ? (
-        <Seating data={data} guests={guests} rsvps={rsvps} groups={groups} households={households} view={seatingView} />
+        <Seating
+          data={data}
+          guests={guests}
+          rsvps={rsvps}
+          groups={groups}
+          households={households}
+          view={seatingView}
+          couple={setCoupleName(coupleName)}
+          date={weddingDate ? formatLongDate(weddingDate) : null}
+        />
       ) : tab === "travel" ? (
         <Travel
           stays={stays}
@@ -372,12 +383,17 @@ function Seating({
   groups,
   households,
   view,
+  couple,
+  date,
 }: {
   data: DayData;
   guests: Contact[];
   rsvps: Rsvp[];
   groups: { id: string; name: string; members: string[] }[];
   households: { id: string; name: string }[];
+  /** For the plan sent to the venue. */
+  couple: string;
+  date: string | null;
   view: "plan" | "list";
 }) {
   const coming = comingGuests(guests, rsvps);
@@ -391,6 +407,24 @@ function Seating({
     const list = needsOf(r.dietary_notes);
     if (list.length && !needs[r.contact_id]) needs[r.contact_id] = list;
   }
+  // The plan for the venue: each table where it stands, its guests chair by chair.
+  const person = (g: Contact) => ({ name: fullName(g), needs: needs[g.id] ?? [] });
+  const chairOf = new Map(data.seats.map((s) => [s.contact_id, s.seat_no ?? null]));
+  const venueTables = data.tables.map((t, i) => {
+    const here = coming
+      .filter((g) => tableOf.get(g.id) === t.id)
+      .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
+    const byId = new Map(here.map((g) => [g.id, g]));
+    const spot = t.pos_x != null && t.pos_y != null ? { x: t.pos_x, y: t.pos_y } : defaultSpot(i);
+    return {
+      name: t.name,
+      shape: t.shape ?? "round",
+      capacity: t.capacity,
+      x: spot.x,
+      y: spot.y,
+      guests: arrangeSeats(here.map((g) => g.id), chairOf, t.capacity).flatMap((id) => (id ? [person(byId.get(id)!)] : [])),
+    };
+  });
 
   return (
     <>
@@ -420,6 +454,7 @@ function Seating({
             { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
           ]}
         />
+        {data.tables.length > 0 && <SendToVenue couple={couple} date={date} tables={venueTables} unseated={unseated.map(person)} />}
       </div>
 
       {view === "plan" ? (

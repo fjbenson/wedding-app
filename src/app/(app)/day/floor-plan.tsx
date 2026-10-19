@@ -6,22 +6,12 @@ import { House, UsersRound, WheatOff } from "lucide-react";
 import TableView from "./table-view";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
 import { moveTableAction, seatAtAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
-import { arrangeSeats } from "@/lib/seating";
+import { arrangeSeats, defaultSpot, GRID_X, GRID_Y } from "@/lib/seating";
 
 type Point = { x: number; y: number };
 
-/** The room's grid, as % of its width and height: 20 columns, 15 rows of square cells. */
-const GRID_X = 5;
-const GRID_Y = 100 / 15;
-
 function fullName(g: Contact) {
   return [g.first_name, g.last_name].filter(Boolean).join(" ");
-}
-
-/** Where a never-moved table stands: a tidy grid, four across, on the room's dots. */
-function defaultSpot(index: number): Point {
-  const row = Math.min(Math.floor(index / 4), 3);
-  return { x: 12.5 + (index % 4) * 25, y: GRID_Y * (2.5 + row * 4) };
 }
 
 /** Table size as a % of the room's width — bigger tables look bigger. */

@@ -10,6 +10,8 @@ import NoteText, { host } from "@/components/note-text";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
+import type { ListWithItems } from "@/lib/db/lists";
+import { ListPaper } from "../lists/list-bits";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
 /** Soft papers: ivory, champagne, blush, sage. */
@@ -72,11 +74,14 @@ async function safely(work: () => Promise<Result>): Promise<Result> {
  */
 export default function NoteWall({
   notes,
+  lists = [],
   areas,
   today,
   initialOpen,
 }: {
   notes: Note[];
+  /** Lists, on the wall first (owner, 19 Oct 2026: a sticky note or a list). */
+  lists?: ListWithItems[];
   areas: AreaOption[];
   today: string;
   /** A note to open straight away — the home screen's "File it". */
@@ -92,19 +97,25 @@ export default function NoteWall({
     return () => clearTimeout(timer);
   }, [added]);
 
-  const blanks = BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length));
-  const papers = papersFor([...notes.map((n) => n.id), ...blanks]);
+  const blanks = BLANKS.slice(0, Math.max(0, WALL_MIN - notes.length - lists.length));
+  const papers = papersFor([...lists.map((l) => l.id), ...notes.map((n) => n.id), ...blanks]);
+  const first = lists.length;
 
   return (
     <>
       <ul className="columns-2 gap-3.5 pt-2 lg:columns-3">
+        {lists.map((list, index) => (
+          <li key={list.id} className="mb-6 break-inside-avoid pt-2">
+            <ListPaper list={list} areas={areas} background={papers[index]} turn={TURNS[seed(list.id) % TURNS.length]} />
+          </li>
+        ))}
         {notes.map((note, index) => (
           <li key={note.id} className="mb-6 break-inside-avoid pt-2">
             <button
               type="button"
               onClick={() => setOpenId(note.id)}
               className="relative block w-full rounded-[4px] px-4 pb-3.5 pt-[22px] text-left shadow-[0_1px_2px_rgb(60_45_20/0.08),0_10px_22px_-14px_rgb(60_45_20/0.35)] transition active:scale-[0.98] motion-reduce:transform-none"
-              style={{ background: papers[index], transform: `rotate(${TURNS[seed(note.id) % TURNS.length]}deg)` }}
+              style={{ background: papers[first + index], transform: `rotate(${TURNS[seed(note.id) % TURNS.length]}deg)` }}
             >
               <span
                 aria-hidden
@@ -146,7 +157,7 @@ export default function NoteWall({
           </li>
         ))}
         {blanks.map((prompt, i) => {
-          const index = notes.length + i;
+          const index = first + notes.length + i;
           return (
             <li key={prompt} className="mb-6 break-inside-avoid pt-2">
               <Link

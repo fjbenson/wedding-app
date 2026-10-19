@@ -1130,14 +1130,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0028_moment_music.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0029_lists.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0028 are now in** (0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0029 are now in** (0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1929,18 +1929,28 @@ additive — new tables hanging off `weddings`. None require changing the above.
      every moment with a song in time order, "Play ›", and **Copy for the
      band or DJ** (`MusicSection` in `area-view.tsx`). Links get https://
      added; nothing is sent anywhere. Not yet: music on the add-a-moment
-     form, songs in the demo wedding.
+     form. The demo wedding has songs on six moments (also in
+     `demo-wedding.sql`).
   7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
      rule was no made-up human name — the owner now wants one; ties to the
      Rondé brand).
-  8. **Lists** — somewhere to make a plain list with no date (not Plan,
-     which is to-dos and appointments by date). **Owner, 19 Oct 2026: Lists
-     are NOT Decor** — Decor is detailed per item (quantity, from, collect /
-     give back, who sets it up); a list is just a name and lines to tick
-     ("Toilet baskets: hairspray, plasters, mints", "Bridesmaids' room").
-     Proposed home: **a piece of The Day** beside Seating, Travel and Decor,
-     with an optional area tag so a list shows on that area page too. Needs
-     a small new table (a list and its lines) — owner's OK first.
+  8. ~~**Lists**~~ — **built 19 Oct 2026** (owner's OK; `0029_lists.sql`,
+     run the same day: `lists` and `list_items`, tied to `(id, wedding_id)`,
+     RLS like groups, in `rls_isolation.sql`). **Lists are NOT Decor** (Decor
+     is detailed per item; a list is a name and lines to tick). **They live
+     with Your notes** (owner picked this over a piece of The Day: "the
+     ability to create lists anywhere"): the notes page's + asks **A note ·
+     A list**; a list sits on the wall first as a paper with its first lines
+     and boxes ("2 of 6 ticked"); a tap opens its card (`?list=`, `ListCard`
+     in `lists/list-bits.tsx`): tick lines (at once), ✕ to take one off, "Add
+     a line" in place (Enter adds and keeps the box), rename, **Filed under**
+     an area (optional), Remove. Filed lists show on that area page under its
+     notes (`ListRows`), with "+ Add a list" there too. New list:
+     `/lists/new` (name large with ideas — Toilet baskets, Bridesmaids'
+     room, Emergency kit…, first lines one per line, area optional; `?back=`
+     Your notes or the area page, then its card opens). Queries
+     `src/lib/db/lists.ts`, actions `lists/actions.ts` (return messages). No
+     people's details; the assistant isn't given them.
   9. ~~**Money's important numbers**~~ — **built 19 Oct 2026**
      (`money-figures.tsx`, the top card and an area's money sheet): with
      nothing agreed or paid it leads with the **budget** ("No budget yet"

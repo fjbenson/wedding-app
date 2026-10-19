@@ -386,6 +386,18 @@ begin
   select (select id from transport_runs where wedding_id = w and at_time = '12:45'), ct.id, w
   from contacts ct where ct.wedding_id = w and ct.first_name = 'Richard' and ct.last_name = 'Bennett';
 
+  -- Music on the run sheet (0028_moment_music.sql).
+  update run_sheet_items r set music = v.music, music_url = v.url
+  from (values
+    ('Guests arrive, welcome drinks', 'Welcome drinks playlist', 'https://open.spotify.com/search/wedding%20welcome%20drinks'),
+    ('Ceremony', 'Walking down the aisle: A Thousand Years, Christina Perri', 'https://open.spotify.com/search/A%20Thousand%20Years%20Christina%20Perri'),
+    ('Wedding breakfast', 'The entrance: Mr Brightside, The Killers', 'https://open.spotify.com/search/Mr%20Brightside%20The%20Killers'),
+    ('First dance', 'Harvest Moon, Neil Young', 'https://open.spotify.com/search/Harvest%20Moon%20Neil%20Young'),
+    ('Cake cutting', 'Sugar, Sugar, The Archies', 'https://open.spotify.com/search/Sugar%20Sugar%20The%20Archies'),
+    ('Carriages', 'Last song: Don''t Stop Me Now, Queen', 'https://open.spotify.com/search/Don%27t%20Stop%20Me%20Now%20Queen')
+  ) as v(title, music, url)
+  where r.wedding_id = w and r.title = v.title;
+
   -- Decor (0027_decor.sql): its own area, and the things for the day.
   insert into areas (wedding_id, key, label, enabled, show_on_hub, sort_order, budget, details, icon) values (w, 'decor', 'Decor', true, true, 10, 800, '- Wild, warm, lots of candlelight
 - Borrow before buying', 'Palette');

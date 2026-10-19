@@ -363,6 +363,27 @@ export interface MenuDish {
 export type DrinkKind = "fizz" | "wine" | "beer" | "spirits" | "soft" | "hot" | "other";
 export type DrinkStatus = "undecided" | "to_order" | "ordered" | "delivered";
 
+/** A plain tick-list — the toilet baskets, the bridesmaids' room (0029_lists.sql). */
+export interface WeddingList {
+  id: string;
+  wedding_id: string;
+  name: string;
+  /** Shows on that area's page too; null for none. */
+  area_key: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ListItem {
+  id: string;
+  list_id: string;
+  wedding_id: string;
+  text: string;
+  done: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 export type DecorStatus = "to_get" | "got" | "packed" | "returned";
 export type DecorSource = "own" | "borrowed" | "hired" | "bought" | "made";
 

@@ -5,6 +5,7 @@ import { listNotes } from "@/lib/db/notes";
 import { listInspo } from "@/lib/db/inspo";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { todayISO } from "@/lib/dates";
+import { listLists } from "@/lib/db/lists";
 import InboxView from "./inbox-view";
 
 export const metadata = { title: "Your notes — Wedding App" };
@@ -18,15 +19,17 @@ export default async function InboxPage({
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
   const { error, detail, note } = await searchParams;
-  const [notes, areaRows, pictures] = await Promise.all([
+  const [notes, areaRows, pictures, lists] = await Promise.all([
     listNotes(wedding.id),
     listAreas(wedding.id),
     listInspo(wedding.id, { folder: null }),
+    listLists(wedding.id),
   ]);
 
   return (
     <InboxView
       notes={notes}
+      lists={lists}
       pictures={pictures ?? []}
       areas={areaOptions(areaRows)}
       today={todayISO()}

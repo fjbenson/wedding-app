@@ -103,6 +103,14 @@ begin
       select 'bbbbbbbb-6666-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
     perform set_config('test.bob_decor', (select id::text from contacts where first_name = 'Bob' limit 1), false);
   end if;
+  if to_regclass('public.lists') is not null then
+    insert into lists (id, wedding_id, name) values
+      ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Toilet baskets'),
+      ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Secret list');
+    insert into list_items (list_id, wedding_id, text) values
+      ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Plasters'),
+      ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Secret line');
+  end if;
   if to_regclass('public.stays') is not null then
     insert into stays (id, wedding_id, name) values
       ('aaaaaaaa-3333-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'The Swan'),
@@ -648,6 +656,44 @@ begin
     -- And they can use their own.
     execute $q$insert into decor_items (wedding_id, name, place, status, source)
              values ('aaaaaaaa-0000-0000-0000-000000000001', 'Candles', 'The tables', 'got', 'bought')$q$;
+  end if;
+
+  if to_regclass('public.lists') is not null then
+    execute 'select count(*) from lists' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % lists, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from list_items' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % list lines, expected 1', visible_contacts;
+    end if;
+    -- A line in wedding A can't go on wedding B's list, even knowing its id.
+    begin
+      execute $q$insert into list_items (list_id, wedding_id, text)
+               values ('bbbbbbbb-7777-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added a line to wedding B''s list';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    begin
+      execute $q$insert into lists (wedding_id, name) values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added a list to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    execute $q$update list_items set done = true where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A ticked wedding B''s lines';
+    end if;
+    execute $q$delete from lists where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s lists';
+    end if;
+    -- And they can use their own.
+    execute $q$insert into list_items (list_id, wedding_id, text)
+             values ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Mints')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

@@ -8,6 +8,7 @@
  * Jobs never redirect or throw: they return `{ ok: true, … }` or
  * `{ ok: false, error }`, and the caller decides what to show.
  */
+import { mealFields, type MealKind } from "@/lib/meals";
 import { revalidatePath } from "next/cache";
 import { createContact, createHousehold, listGuests, listHouseholds, updateContact } from "@/lib/db/contacts";
 import { addToGroup, listGroups } from "@/lib/db/groups";
@@ -57,6 +58,9 @@ export interface NewGuest {
   phone?: string | null;
   notes?: string | null;
   isChild?: boolean;
+  /** Adult, child's or no meal; a child or baby starts on soft drinks only (src/lib/meals.ts). */
+  mealKind?: MealKind;
+  noAlcohol?: boolean;
   /** The event they're a guest of (day or evening); they go on it and every later one. */
   eventId?: string | null;
   meal?: string | null;
@@ -82,6 +86,8 @@ export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string;
     if (newHousehold) householdId = (await createHousehold({ weddingId: wedding.id, name: newHousehold })).id;
 
     const role = joinRoles(input.roles ?? []);
+    const kind: MealKind = input.mealKind ?? (input.isChild ? "child" : "adult");
+    const meal = { ...mealFields(kind), ...(input.noAlcohol !== undefined ? { no_alcohol: input.noAlcohol } : {}) };
     const fields = {
       household_id: householdId,
       // Anyone with a job on the day counts as the bridal party (the plan's filter).
@@ -92,7 +98,7 @@ export async function addGuest(input: NewGuest): Promise<JobResult<{ id: string;
       email: tidy(input.email),
       phone: tidy(input.phone),
       notes: tidy(input.notes),
-      is_child: Boolean(input.isChild),
+      ...meal,
     };
 
     let created: Contact;

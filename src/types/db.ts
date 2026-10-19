@@ -91,6 +91,9 @@ export interface Contact {
   stay_id?: string | null;
   /** Making their own way, so they don't count as having no lift. */
   own_way?: boolean;
+  /** Adult, child's or no meal; and soft drinks only (0033_children_meals.sql). Both change what the caterer charges. */
+  meal_kind?: "adult" | "child" | "none";
+  no_alcohol?: boolean;
   created_at: string;
 }
 
@@ -169,6 +172,10 @@ export interface AreaRow {
   diy?: boolean;
   /** The couple has marked the area ready, its last stage (0012_area_stages.sql). */
   ready?: boolean;
+  /** The caterer's price a head, for Food & drink (0033_children_meals.sql). */
+  price_adult?: number | null;
+  price_child?: number | null;
+  price_drinks?: number | null;
   created_at: string;
 }
 

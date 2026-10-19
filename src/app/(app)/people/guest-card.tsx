@@ -18,6 +18,8 @@ import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 import { GuestPlanSection } from "./guest-plan";
 import Timeline from "@/components/timeline";
+import MealPicker from "@/components/meal-picker";
+import { mealKindOf, noAlcoholOf } from "@/lib/meals";
 import SentToThem from "@/components/sent-to-them";
 import { setGuestTableAction } from "../day/actions";
 import type { GuestSeating } from "@/lib/db/day";
@@ -151,6 +153,8 @@ export default function GuestCard({
 
       <Roles guest={guest} />
 
+      <MealRow guest={guest} onSave={save} />
+
       {travel && <GuestTravelSection guest={guest} travel={travel} />}
 
       {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
@@ -180,7 +184,6 @@ export default function GuestCard({
             </>
           )}
           <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
-          <ChildRow guest={guest} onSave={save} />
         </dl>
       </section>
 
@@ -582,36 +585,36 @@ function HouseholdRow({
   );
 }
 
-/** Child or adult — a switch, saved as it's flipped. */
-function ChildRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
-  const [child, setChild] = useOptimistic(guest.is_child);
+/** Meal and drinks as tiles, saved as they're tapped (canvas 3 "Children · Round 1", C). A child or baby starts on soft drinks only; change it after if they're not. */
+function MealRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) => Promise<{ error?: string }> }) {
+  const [kind, setKind] = useOptimistic(mealKindOf(guest));
+  const [soft, setSoft] = useOptimistic(noAlcoholOf(guest));
   const [, startTransition] = useTransition();
   const [failed, setFailed] = useState<string>();
 
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-      <dt className="type-meta py-3.5"><DetailLabel label="Child" /></dt>
-      <dd className="flex items-center py-2">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={child}
-          aria-label="This guest is a child"
-          onClick={() =>
-            startTransition(async () => {
-              setChild(!child);
-              const { error } = await safely(() => onSave({ is_child: !child }));
-              if (error) setFailed(error);
-            })
-          }
-          className={`relative h-7 w-12 rounded-full transition ${child ? "bg-ink" : "bg-linen"}`}
-        >
-          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${child ? "left-6" : "left-1"}`} />
-        </button>
-        <span className="ml-3 text-sm text-stone">{child ? "Yes" : "No"}</span>
-        {failed && <span role="alert" className="ml-3 text-xs text-ink">{failed}</span>}
-      </dd>
-    </div>
+    <section id="guest-mealkind" className="mt-6 rounded-xl">
+      <MealPicker
+        kind={kind}
+        noAlcohol={soft}
+        onKind={(next) =>
+          startTransition(async () => {
+            setKind(next);
+            setSoft(next !== "adult");
+            const { error } = await safely(() => onSave({ meal_kind: next }));
+            setFailed(error);
+          })
+        }
+        onNoAlcohol={(no) =>
+          startTransition(async () => {
+            setSoft(no);
+            const { error } = await safely(() => onSave({ no_alcohol: no }));
+            setFailed(error);
+          })
+        }
+      />
+      {failed && <p role="alert" className="mt-2 text-xs text-ink">{failed}</p>}
+    </section>
   );
 }
 

@@ -68,7 +68,7 @@ export function missingIcon(error: { code?: string; message?: string }) {
 /** Changes an area's key facts, name, or whether it's planned / on the hub. */
 export async function updateArea(
   areaId: string,
-  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub" | "diy" | "ready" | "icon" | "budget">>,
+  fields: Partial<Pick<AreaRow, "label" | "details" | "enabled" | "show_on_hub" | "diy" | "ready" | "icon" | "budget" | "price_adult" | "price_child" | "price_drinks">>,
 ): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("areas").update(fields).eq("id", areaId);

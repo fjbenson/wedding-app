@@ -1,5 +1,6 @@
 "use server";
 
+import { isMealKind, mealFields, type MealKind } from "@/lib/meals";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createHousehold, deleteContact, updateContact } from "@/lib/db/contacts";
@@ -36,7 +37,8 @@ export async function saveGuestAction(formData: FormData) {
     email: text(formData, "email"),
     phone: text(formData, "phone"),
     notes: text(formData, "notes"),
-    isChild: Boolean(formData.get("is_child")),
+    mealKind: isMealKind(text(formData, "meal_kind")) ? (text(formData, "meal_kind") as MealKind) : undefined,
+    noAlcohol: text(formData, "no_alcohol") === "yes" ? true : text(formData, "no_alcohol") === "no" ? false : undefined,
     eventId: text(formData, "event_id"),
     meal: text(formData, "meal_choice"),
     diet: text(formData, "dietary_notes"),
@@ -97,6 +99,9 @@ export interface GuestEdit {
   phone?: string | null;
   notes?: string | null;
   is_child?: boolean;
+  /** Adult, child's or no meal (a child or baby starts on soft drinks only); and soft drinks only. */
+  meal_kind?: MealKind;
+  no_alcohol?: boolean;
   /** An existing household's id, null for none, or "new" with `new_household`. */
   household_id?: string | null;
   new_household?: string;
@@ -123,6 +128,11 @@ export async function updateGuestAction(guestId: string, edit: GuestEdit): Promi
   if (edit.phone !== undefined) fields.phone = tidy(edit.phone);
   if (edit.notes !== undefined) fields.notes = tidy(edit.notes);
   if (edit.is_child !== undefined) fields.is_child = edit.is_child;
+  if (edit.meal_kind !== undefined) {
+    if (!isMealKind(edit.meal_kind)) return { error: "Pick adult, child's or no meal." };
+    Object.assign(fields, mealFields(edit.meal_kind));
+  }
+  if (edit.no_alcohol !== undefined) fields.no_alcohol = Boolean(edit.no_alcohol);
 
   try {
     if (edit.household_id === "new") {

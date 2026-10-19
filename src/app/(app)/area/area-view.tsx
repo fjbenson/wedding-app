@@ -18,6 +18,8 @@ import { areaStage, STAGES } from "@/lib/area-stage";
 import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
 import type { DecorPerson } from "../decor/decor-people";
+import FoodCosts from "./food-costs";
+import { pricesOf } from "@/lib/meals";
 import { DecorThings } from "../decor/decor-things";
 import { howsLine, stationeryNextUp, type sendingCounts } from "@/lib/stationery";
 import NoteEditor from "@/components/note-editor";
@@ -392,7 +394,7 @@ function FactRow({ href, title, line, dashed = false }: { href: string; title: s
  * stays "the tabs, filtered to this area". Every figure opens the list it
  * counts.
  */
-function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; supplier?: string; couple: string }) {
+function GuestsSection({ facts, supplier, couple, area }: { facts: AreaGuestFacts; supplier?: string; couple: string; area: AreaRow }) {
   const people = "/people";
   if (facts.kind === "food") {
     const most = Math.max(1, ...facts.meals.map((m) => m.count), facts.notPicked);
@@ -404,9 +406,32 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
           {facts.eveningEventId && <Figure value={facts.evening} word="evening" href={`${people}?show=attending&of=${facts.eveningEventId}`} />}
           <Figure value={facts.children} word={facts.children === 1 ? "child" : "children"} href={`${people}?show=attending&f=children`} />
         </div>
+        {/* Children, properly (canvas 3 "Children · Round 1", C): the meal and the drinks decide the cost. */}
+        <div className="border-t border-linen py-3.5">
+          <div className="grid grid-cols-3 gap-2">
+            <Figure value={facts.counts.adult} word="adult meals" />
+            <Figure value={facts.counts.child} word="children's" href={`${people}?show=attending&f=children`} />
+            <Figure value={facts.counts.none} word="no meal" />
+          </div>
+          <ul className="mt-3.5 grid gap-2 text-[14px]">
+            {[
+              { label: "Drinking", n: facts.counts.drinking, of: facts.counts.drinking + facts.counts.soft, tone: "bg-champagne-600" },
+              { label: "Soft drinks only", n: facts.counts.soft, of: facts.counts.drinking + facts.counts.soft, tone: "bg-champagne-400" },
+            ].map((d) => (
+              <li key={d.label} className="flex items-center gap-3">
+                <span className="w-[7.5rem] shrink-0 truncate">{d.label}</span>
+                <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-linen">
+                  <span className={`block h-1.5 rounded-full ${d.tone}`} style={{ width: `${d.of ? (d.n / d.of) * 100 : 0}%` }} />
+                </span>
+                <span className="type-figure w-7 shrink-0 text-right text-base">{d.n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <FoodCosts areaId={area.id} areaKey={area.key} counts={facts.counts} prices={pricesOf(area)} />
         {facts.meals.length + facts.notPicked > 0 && (
           <div className="border-t border-linen py-3.5">
-            <h3 className="section-label">Meals</h3>
+            <h3 className="section-label">Dishes chosen</h3>
             <ul className="mt-2.5 grid gap-2 text-[14px]">
               {facts.meals.map((m) => (
                 <li key={m.name} className="flex items-center gap-3">
@@ -1106,7 +1131,7 @@ export default function AreaView({
 
             {guestFacts && guestFacts.kind !== "transport" && (
               <Everything id="guests" icon={Users} title="Guests" line={guestsLine} see={{ href: "/people", label: "The guest list" }}>
-                <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} />
+                <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} area={area} />
               </Everything>
             )}
 

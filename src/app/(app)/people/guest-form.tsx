@@ -1,5 +1,7 @@
 "use client";
 
+import MealPicker from "@/components/meal-picker";
+import type { MealKind } from "@/lib/meals";
 import { useState } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { SubmitBar } from "@/components/form-bits";
@@ -43,7 +45,8 @@ export default function GuestForm({
   // Not in a household unless they're being added to one (owner's call, 9 Oct 2026).
   const [household, setHousehold] = useState(defaultHousehold ?? "none");
   const [moreRoles, setMoreRoles] = useState(false);
-  const [child, setChild] = useState(false);
+  const [meal, setMeal] = useState<MealKind>("adult");
+  const [soft, setSoft] = useState(false);
   const [needs, setNeeds] = useState<string[]>([]);
 
   const word = (name: string) => name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
@@ -113,6 +116,21 @@ export default function GuestForm({
         />
       </fieldset>
 
+      {/* Meal and drinks decide what the caterer charges (canvas 3 "Children · Round 1", C). A child or baby starts on soft drinks only. */}
+      <section className="mt-6">
+        <input type="hidden" name="meal_kind" value={meal} />
+        <input type="hidden" name="no_alcohol" value={soft ? "yes" : "no"} />
+        <MealPicker
+          kind={meal}
+          noAlcohol={soft}
+          onKind={(next) => {
+            setMeal(next);
+            setSoft(next !== "adult");
+          }}
+          onNoAlcohol={setSoft}
+        />
+      </section>
+
       <section className="mt-6 -mx-[var(--gutter)] border-t border-linen px-[var(--gutter)] pt-6">
         <h2 className="section-label">Details</h2>
         <div className="mt-1">
@@ -160,16 +178,6 @@ export default function GuestForm({
           )}
           <Row label="Notes">
             <textarea name="notes" rows={2} aria-label="Notes" placeholder="Add notes, e.g. Sam's university friend" className="w-full resize-none bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
-          </Row>
-          <Row label="Child">
-            <label className="flex cursor-pointer items-center py-1">
-              <input type="checkbox" name="is_child" checked={child} onChange={(e) => setChild(e.target.checked)} className="peer sr-only" />
-              <span aria-hidden className={`relative h-7 w-12 rounded-full transition peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400 ${child ? "bg-ink" : "bg-linen"}`}>
-                <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${child ? "left-6" : "left-1"}`} />
-              </span>
-              <span className="ml-3 text-sm text-stone">{child ? "Yes" : "No"}</span>
-              <span className="sr-only">This guest is a child</span>
-            </label>
           </Row>
         </div>
       </section>

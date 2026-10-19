@@ -278,3 +278,28 @@ export async function startSoundCheckAction(key: string) {
   refreshNotes(area);
   redirect(`/area/${area}#notes`);
 }
+
+/**
+ * The caterer's prices a head, typed once on Food & drink: an adult meal, a
+ * child's meal and the drinks package (0033_children_meals.sql). Returns a
+ * message instead of redirecting; the page works out the cost from them.
+ */
+export async function setAreaPricesAction(
+  areaId: string,
+  key: string,
+  prices: { adult: string; child: string; drinks: string },
+): Promise<{ error?: string }> {
+  try {
+    const wedding = await getCurrentWedding();
+    if (!wedding) return { error: "Your wedding couldn't be found." };
+    const area = await getArea(wedding.id, key);
+    if (!area || area.id !== areaId) return { error: "That area isn't there any more." };
+    const price = (v: string) => parseMoney(v);
+    await updateArea(areaId, { price_adult: price(prices.adult), price_child: price(prices.child), price_drinks: price(prices.drinks) });
+  } catch (error) {
+    console.error("saving prices failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  refresh(key);
+  return {};
+}

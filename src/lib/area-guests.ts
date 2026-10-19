@@ -1,3 +1,4 @@
+import { mealCounts, type MealCounts } from "@/lib/meals";
 import type { Contact, Household, Rsvp, TransportPassenger, TransportRun, WeddingEvent } from "@/types/db";
 
 /**
@@ -13,6 +14,8 @@ export type AreaGuestFacts =
       day: number;
       evening: number;
       children: number;
+      /** Meals and drinks among those coming (0033): adult · child's · none, drinking · soft. */
+      counts: MealCounts;
       dayEventId: string | null;
       eveningEventId: string | null;
       /** Meal choices among those coming, most picked first. */
@@ -103,6 +106,7 @@ export function areaGuestFacts(
       day: coming.filter((g) => own(g)?.event.id === dayEvent?.id).length,
       evening: eveningEvent ? coming.filter((g) => own(g)?.event.id === eveningEvent.id).length : 0,
       children: coming.filter((g) => g.is_child).length,
+      counts: mealCounts(coming),
       dayEventId: dayEvent?.id ?? null,
       eveningEventId: eveningEvent?.id ?? null,
       meals: [...tally.values()].sort((a, b) => b.count - a.count),
@@ -155,6 +159,10 @@ export function catererText(facts: Extract<AreaGuestFacts, { kind: "food" }>, co
   const lines = [`${couple}: numbers for the caterer`, "", `Day guests coming: ${facts.day}`];
   if (facts.eveningEventId) lines.push(`Evening guests coming: ${facts.evening}`);
   if (facts.children) lines.push(`Children (included above): ${facts.children}`);
+  const c = facts.counts;
+  lines.push("", `Adult meals: ${c.adult}`, `Children's meals: ${c.child}`);
+  if (c.none) lines.push(`No meal (babies): ${c.none}`);
+  lines.push(`Drinking alcohol: ${c.drinking}`, `Soft drinks only: ${c.soft}`);
   if (facts.meals.length) {
     lines.push("", "Meals:");
     for (const m of facts.meals) lines.push(`- ${m.name}: ${m.count}`);

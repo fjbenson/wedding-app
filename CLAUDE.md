@@ -1908,6 +1908,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
       (UK first, other countries later); different = destination extras
       switch on (flights, airport lifts, time zone, second currency,
       paperwork). Would be a new column or two on `weddings`.
+  19. **Resources: paper templates** — a place for printable things for the
+      day: a table crossword, "draw your own face" sheets, table games,
+      signs, menus, place cards, invitations perhaps. Couples pick one, fill
+      in their names and date, and print it. Where it lives is open (not a
+      new tab without the owner's OK — maybe Inspo, the Stationery area, or
+      The Day's pieces beside Decor). **Could be sold** (premium templates;
+      ties to the business model — costs money, so the owner's call).
+      Note: the app can make a PDF on the phone; the menu card already
+      prints.
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

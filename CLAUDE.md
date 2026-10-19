@@ -2441,6 +2441,21 @@ additive — new tables hanging off `weddings`. None require changing the above.
   guests' addresses go to it, so add it to the privacy list) and a vehicle
   type column on `transport_runs`. B works without the map, so it can come
   first.
+- **Travel as a map you can play** (owner's idea, 19 Oct 2026, parked, not
+  designed): a **map plus a timeline with a Play button** on Travel, so you
+  press play and watch exactly who's moving where through the day — coaches
+  and cars along their routes, guests' dots moving from where they're staying
+  to the venue and home again, with a scrubber to stop at any time ("5pm: who
+  is still at the pub?"). Builds on the Journeys idea below (a tiny map per
+  journey, a List | Map switch) and on Travel's data (`transport_runs` with
+  times and from → to, passengers, `stays`). Needs: a map service (account and
+  key; costs money past a free allowance), places turned into points on the
+  map, and each journey's start and end time (it has a start time only).
+  **Rule one before it's built:** a map service would be sent guests' places
+  to stay and addresses, so that's the owner's call (and a privacy list entry)
+  — a version that shows only journeys and named places (the pub, the
+  church), never a guest's home address, avoids it. Dots for people should be
+  initials, never children's names. Mock on canvas 3 first.
 - **"Start this month" on the Plan calendar** (parked 11 Oct 2026): a box
   above the grid listing that month's "start around" nudges, to help
   couples along. The owner likes the idea but not yet the look; it was

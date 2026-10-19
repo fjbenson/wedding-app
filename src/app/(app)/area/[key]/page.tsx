@@ -109,9 +109,9 @@ export default async function AreaPage({
       food={food}
       decor={decor}
       lists={lists.filter((l) => l.area_key === area.key)}
-      // The Music area lists every moment with a song (0028_moment_music.sql).
-      music={area.key === "music" ? (day?.runSheet ?? []).filter((m) => m.music || m.music_url) : null}
-      moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key)}
+      music={area.key === "music"}
+      // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
+      moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}
       couple={coupleName(wedding.name)}
       error={error}
       detail={detail}

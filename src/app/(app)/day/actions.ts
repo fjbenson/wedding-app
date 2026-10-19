@@ -46,6 +46,9 @@ const refresh = () => revalidatePath("/day");
 
 // Run sheet ------------------------------------------------------------------
 
+/** "open.spotify.com/…" gets https:// in front, so it opens (and passes 0028's check). */
+const musicUrl = (url: string | null) => (url && !/^https?:\/\//i.test(url) ? `https://${url}` : url);
+
 export async function saveRunSheetItemAction(id: string | null, formData: FormData) {
   const back = id ? `/day/run-sheet/${id}` : "/day/run-sheet/new";
   const wid = await weddingId();
@@ -61,6 +64,8 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       who: text(formData, "who"),
       notes: text(formData, "notes"),
       area_key: text(formData, "area_key"),
+      music: text(formData, "music"),
+      music_url: musicUrl(text(formData, "music_url")),
     });
   } catch (error) {
     failed(back, "That didn't save.", error);

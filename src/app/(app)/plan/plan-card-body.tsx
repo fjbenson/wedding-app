@@ -8,6 +8,7 @@ import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
 import { todayISO, formatDayMonth, formatLongDate } from "@/lib/dates";
 import { googleCalendarUrl, outlookCalendarUrl } from "@/lib/ics";
+import { musicSource } from "@/lib/music";
 import { replaceQuery } from "@/lib/url-state";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
@@ -462,14 +463,8 @@ export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: 
         <h3 className="section-label">Music</h3>
         <dl className="mt-1">
           <TextRow label="Song" value={m.music ?? null} onSave={(v) => save({ music: v })} />
-          <TextRow label="Link" value={m.music_url ?? null} type="url" onSave={(v) => save({ music_url: v })} />
+          <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
         </dl>
-        {m.music_url && (
-          <a href={m.music_url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[14px] text-champagne-600 hover:text-ink">
-            <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-            Play it
-          </a>
-        )}
       </section>
     </>
   );
@@ -658,6 +653,35 @@ function AddToCalendar({ appointment: a, withWhom }: { appointment: Appointment;
           </a>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * The song's link on a moment's card: "Play on Spotify" you can tap, rather
+ * than the long address (owner, 19 Oct 2026), with Change to paste another.
+ */
+function MusicLinkRow({ url, onSave }: { url: string | null; onSave: (v: string) => Promise<{ error?: string }> }) {
+  const [editing, setEditing] = useState(!url);
+  if (editing || !url) {
+    return <TextRow label="Link" value={url} type="url" startEditing={!!url} onSave={async (v) => {
+      const result = await onSave(v);
+      if (!result.error && v.trim()) setEditing(false);
+      return result;
+    }} />;
+  }
+  return (
+    <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+      <dt className="type-meta py-3.5"><DetailLabel label="Link" /></dt>
+      <dd className="flex min-w-0 items-center justify-between gap-3 py-2">
+        <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[15px] text-champagne-600 hover:text-ink">
+          <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+          Play on {musicSource(url)}
+        </a>
+        <button type="button" onClick={() => setEditing(true)} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+          Change
+        </button>
+      </dd>
     </div>
   );
 }

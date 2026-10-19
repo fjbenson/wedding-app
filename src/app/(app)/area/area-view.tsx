@@ -476,43 +476,17 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
  * opening the run sheet narrowed to this area. Transport's cars and coaches,
  * and day guests still without a lift, sit here too.
  */
-/**
- * The Music area's list (owner, 19 Oct 2026): every moment with a song or
- * playlist, in time order, each with its link, and a copy for the band or DJ.
- */
-function MusicSection({ moments, couple }: { moments: RunSheetItem[]; couple: string }) {
-  if (moments.length === 0) {
-    return <p className="py-3 text-sm text-stone">Open a moment on the run sheet (the walk in, the first dance…) and add its song under Music.</p>;
-  }
-  const text = [`Music for ${couple}`, "", ...moments.map((m) => `${formatClock(m.at_time)}  ${m.title}: ${m.music ?? ""}${m.music_url ? `  ${m.music_url}` : ""}`)].join("\n");
-  return (
-    <>
-      <ul>
-        {moments.map((m) => (
-          <li key={m.id} className="flex items-center gap-3 border-b border-linen py-3">
-            <CardLink href={`/day/run-sheet/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-              <span className="type-figure w-12 shrink-0 text-lg text-champagne-600">{formatClock(m.at_time)}</span>
-              <span className="min-w-0 flex-1">
-                <span className="type-item block truncate">{m.title}</span>
-                <span className="type-meta mt-0.5 block truncate">{m.music ?? "A link"}</span>
-              </span>
-            </CardLink>
-            {m.music_url && (
-              <a href={m.music_url} target="_blank" rel="noopener noreferrer" className="shrink-0 text-[13px] text-champagne-600 hover:text-ink">
-                Play ›
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
-      <div className="py-3">
-        <CopyText text={text} label="Copy for the band or DJ" />
-      </div>
-    </>
-  );
-}
-
-function DaySection({ moments, facts }: { moments: RunSheetItem[]; facts: AreaGuestFacts | null }) {
+function DaySection({
+  moments,
+  facts,
+  musicFor,
+}: {
+  moments: RunSheetItem[];
+  facts: AreaGuestFacts | null;
+  /** The Music area: the couple's names, for "Copy for the band or DJ" (owner, 19 Oct 2026: music belongs in The Day). */
+  musicFor?: string | null;
+}) {
+  const withMusic = moments.filter((m) => m.music || m.music_url);
   const transport = facts?.kind === "transport" ? facts : null;
   return (
     <>
@@ -527,12 +501,26 @@ function DaySection({ moments, facts }: { moments: RunSheetItem[]; facts: AreaGu
                   {(m.location || m.who) && (
                     <span className="type-meta mt-0.5 block truncate">{[m.location, m.who].filter(Boolean).join(" · ")}</span>
                   )}
+                  {m.music && (
+                    <span className="mt-0.5 flex items-center gap-1.5 truncate text-[13px] text-champagne-600">
+                      <Music className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} aria-label="Music" />
+                      {m.music}
+                    </span>
+                  )}
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               </CardLink>
             </li>
           ))}
         </ul>
+      )}
+      {musicFor && withMusic.length > 0 && (
+        <div className="py-3">
+          <CopyText
+            text={[`Music for ${musicFor}`, "", ...withMusic.map((m) => `${formatClock(m.at_time)}  ${m.title}: ${m.music ?? ""}${m.music_url ? `  ${m.music_url}` : ""}`)].join("\n")}
+            label="Copy for the band or DJ"
+          />
+        </div>
       )}
       {transport && transport.runs.length > 0 && (
         <ul>
@@ -600,8 +588,8 @@ export default function AreaView({
 }: {
   /** Lists filed under this area (0029_lists.sql); they live with Your notes. */
   lists?: ListWithItems[];
-  /** The Music area only: every run sheet moment with a song, in time order (0028). */
-  music?: RunSheetItem[] | null;
+  /** The Music area: its The Day part also holds every moment with a song (0028). */
+  music?: boolean;
   /** The Decor area only: its things, in place of the five stages (0027_decor.sql). */
   decor?: { items: DecorWithHelpers[]; people: DecorPerson[]; weddingDate: string | null } | null;
   /** This area's run sheet moments, in time order (0017_run_sheet_area.sql). */
@@ -1314,17 +1302,6 @@ export default function AreaView({
           ) : null}
             </Everything>
 
-            {music && (
-              <Everything
-                id="music"
-                icon={Music}
-                title="The music"
-                line={music.length ? `${music.length} ${music.length === 1 ? "moment" : "moments"} · ${music.map((m) => m.title).slice(0, 2).join(", ")}` : "A song for each moment"}
-                add={{ href: "/day", label: "Add music to a moment" }}
-              >
-                <MusicSection moments={music} couple={couple} />
-              </Everything>
-            )}
 
             <Everything
               id="day"
@@ -1334,7 +1311,7 @@ export default function AreaView({
               see={{ href: `/day?area=${encodeURIComponent(area.key)}`, label: "In The Day" }}
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
-              <DaySection moments={moments} facts={guestFacts} />
+              <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} />
             </Everything>
 
             <Everything

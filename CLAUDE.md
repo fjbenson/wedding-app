@@ -1930,13 +1930,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
      of the groom, beside "Parent of the couple" (`GUEST_ROLES`).
   6. ~~**Music**~~ — **built 19 Oct 2026** (owner's OK;
      `0028_moment_music.sql`, run the same day: `run_sheet_items.music`,
-     `music_url`): a moment's card has a **Music** part (Song, Link, "Play
-     it"); the run sheet shows the song under a moment with a music note;
-     the **Music** area page's "Everything for Music" has **The music** —
-     every moment with a song in time order, "Play ›", and **Copy for the
-     band or DJ** (`MusicSection` in `area-view.tsx`). Links get https://
-     added; nothing is sent anywhere. Not yet: music on the add-a-moment
-     form. The demo wedding has songs on six moments (also in
+     `music_url`): a moment's card has a **Music** part — Song, and the link
+     shown as a tappable **"Play on Spotify"** (YouTube, Apple Music… by
+     `musicSource()` in `src/lib/music.ts`; "Change" to paste another;
+     owner: the raw address was ugly and couldn't be tapped); the new/edit
+     moment form has "Add a song" (open when added from the Music area);
+     the run sheet shows the song under a moment with a music note. **Music
+     lives in The Day** (owner, 19 Oct 2026: two sections, "The music" and
+     The Day, was one too many): on the Music area page, its **The Day**
+     part holds the area's moments plus every moment with a song, each with
+     its song, and **Copy for the band or DJ** (`DaySection` with
+     `musicFor`). Links get https:// added; nothing is sent anywhere. The demo wedding has songs on six moments (also in
      `demo-wedding.sql`).
   7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
      rule was no made-up human name — the owner now wants one; ties to the

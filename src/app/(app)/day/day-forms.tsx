@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SubmitBar } from "@/components/form-bits";
-import { Bus, BusFront, Car, CarFront, CarTaxiFront, Clock, Flag, Footprints, MapPin, NotebookPen, UserRound } from "lucide-react";
+import { Bus, BusFront, Car, CarFront, CarTaxiFront, Clock, Flag, Footprints, Link2, MapPin, Music, NotebookPen, UserRound } from "lucide-react";
 import PeoplePicker from "../people/people-picker";
 import { ReturnTo } from "@/components/back-link";
 import { AreaTiles, BARE, CARD, Folded, Line, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
@@ -74,6 +74,21 @@ export function RunSheetForm({
           </Line>
         </div>
       </section>
+
+      {/* A song for the moment (owner, 19 Oct 2026): open from the Music area, folded elsewhere. */}
+      <Folded label="Add a song" open={!!item?.music || !!item?.music_url || defaultArea === "music"}>
+        <section className="mt-7">
+          <h2 className="section-label font-body">Music</h2>
+          <div className={CARD}>
+            <Line icon={Music} label="Song or playlist">
+              <input name="music" defaultValue={item?.music ?? ""} placeholder="e.g. Harvest Moon, Neil Young" className={BARE} />
+            </Line>
+            <Line icon={Link2} label="Link">
+              <input name="music_url" type="url" inputMode="url" defaultValue={item?.music_url ?? ""} placeholder="Spotify, YouTube or Apple Music link" className={BARE} />
+            </Line>
+          </div>
+        </section>
+      </Folded>
 
       <section className="mt-7">
         <h2 className="section-label font-body">Notes</h2>

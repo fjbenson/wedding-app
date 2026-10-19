@@ -1846,6 +1846,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
       what was borrowed or hired (decor and the like) goes back; a stage
       after Booked, or Decor's "dates to give back", organised for after
       the day.
+  16. **Schedules for groups** — beside the whole day's run sheet, a
+      schedule for one group: the bridesmaids' morning (hair and make-up
+      slots, who's when), the groomsmen's, and so on. Could build on groups
+      of guests and run sheet moments (a moment tagged with a group or
+      people, then "the bridesmaids' morning" is the run sheet narrowed to
+      them, printable or sent to them).
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

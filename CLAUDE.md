@@ -1905,9 +1905,16 @@ additive — new tables hanging off `weddings`. None require changing the above.
      card opens `/plan/appointments/[id]/calendar` (`route.ts`, an .ics
      file from `appointmentIcs()` in `src/lib/ics.ts`: UK time, an hour
      long, all day with no time, "With …" and notes in the description).
-     Nothing is sent anywhere; the phone adds it if the couple say so. A
-     Google Calendar link or a live calendar feed was not built (those send
-     details to Google — the owner's call).
+     Nothing is sent anywhere; the phone adds it if the couple say so.
+     **Which calendar** (owner, 19 Oct 2026: the iPhone file went to a
+     default calendar she couldn't find): the button now opens a choice —
+     iPhone or Mac calendar (the .ics, into the default calendar: Settings ›
+     Calendar › Default Calendar), **Google Calendar**, **Outlook**
+     (Outlook.com) and **Outlook for work or school**
+     (`googleCalendarUrl()`, `outlookCalendarUrl()` in `src/lib/ics.ts`).
+     The web ones open the couple's own account with the event filled in —
+     the title, place, "With …" and notes go to Google or Microsoft only when
+     they tap it (the owner asked for it). No live calendar feed.
   4. ~~**Tapping the top …**~~ — **built 19 Oct 2026**: the profile's
      Answer, Table, Meal and the allergies line scroll to their row with a
      soft glow (`jumpTo()`, `src/lib/jump-to.ts`); the guest card's Details

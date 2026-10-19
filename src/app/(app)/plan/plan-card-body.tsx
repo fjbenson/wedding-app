@@ -7,6 +7,7 @@ import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
 import { todayISO, formatDayMonth, formatLongDate } from "@/lib/dates";
+import { googleCalendarUrl, outlookCalendarUrl } from "@/lib/ics";
 import { replaceQuery } from "@/lib/url-state";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
@@ -212,14 +213,8 @@ export function AppointmentBody({
         </dl>
       </section>
 
-      {/* Into the phone's own calendar as a file (feedback item 3, 19 Oct 2026): nothing is sent anywhere. */}
-      <a
-        href={`/plan/appointments/${a.id}/calendar`}
-        className="mt-6 flex h-11 items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
-      >
-        <CalendarPlus className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-        Add to my calendar
-      </a>
+      {/* Into their own calendar (feedback item 3; owner, 19 Oct 2026: "an option for which calendar"). */}
+      <AddToCalendar appointment={a} withWhom={suppliers.find((s) => s.id === a.contact_id)?.name ?? null} />
     </>
   );
 }
@@ -619,5 +614,50 @@ export function TitleEditor({ value, onSave }: { value: string; onSave: (v: stri
       {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
       <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
     </form>
+  );
+}
+
+/**
+ * "Add to my calendar" opens a choice (owner, 19 Oct 2026: the iPhone file
+ * went to a default calendar she couldn't find): the phone's own calendar
+ * (an .ics file, into its default calendar), Google Calendar or
+ * Outlook. The web ones open the couple's own account with the event filled
+ * in; nothing is saved anywhere until they press Save there.
+ */
+function AddToCalendar({ appointment: a, withWhom }: { appointment: Appointment; withWhom: string | null }) {
+  const [open, setOpen] = useState(false);
+  const row = "flex min-h-12 items-center justify-between gap-3 border-b border-linen px-1 text-[15px] text-ink last:border-b-0 hover:text-champagne-600";
+  return (
+    <div className="mt-6">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
+      >
+        <CalendarPlus className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+        Add to my calendar
+      </button>
+      {open && (
+        <div className="mt-2 rounded-2xl border border-linen bg-white px-3">
+          <a href={`/plan/appointments/${a.id}/calendar`} className={row}>
+            <span>iPhone or Mac calendar<span className="block text-[12px] text-stone">Goes into your default calendar</span></span>
+            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+          </a>
+          <a href={googleCalendarUrl(a, withWhom)} target="_blank" rel="noopener noreferrer" className={row}>
+            Google Calendar
+            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+          </a>
+          <a href={outlookCalendarUrl(a, withWhom, false)} target="_blank" rel="noopener noreferrer" className={row}>
+            Outlook (Hotmail, Outlook.com)
+            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+          </a>
+          <a href={outlookCalendarUrl(a, withWhom, true)} target="_blank" rel="noopener noreferrer" className={row}>
+            Outlook for work or school
+            <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
+          </a>
+        </div>
+      )}
+    </div>
   );
 }

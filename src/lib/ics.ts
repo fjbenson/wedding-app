@@ -69,3 +69,38 @@ export function appointmentIcs(a: Appointment, withWhom?: string | null): string
   ].filter((l): l is string => l !== null);
   return lines.join("\r\n") + "\r\n";
 }
+
+/** The same event as a link that opens the couple's own calendar on the web, ready to save. */
+function eventParts(a: Appointment, withWhom?: string | null) {
+  const notes = [withWhom ? `With ${withWhom}` : null, a.notes].filter(Boolean).join("\n\n");
+  if (!a.at_time) return { allDay: true, start: a.on_date, end: nextDay(a.on_date), notes };
+  const [h, m] = a.at_time.split(":").map(Number);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const endH = Math.min(h + 1, 23);
+  const endM = h + 1 > 23 ? 59 : m;
+  return { allDay: false, start: `${a.on_date}T${pad(h)}:${pad(m)}:00`, end: `${a.on_date}T${pad(endH)}:${pad(endM)}:00`, notes };
+}
+
+/**
+ * Google Calendar's "add an event" page (owner, 19 Oct 2026: "an option for
+ * which calendar"). The title, place and notes go to Google only when the
+ * couple tap it, into their own account; nothing is saved until they do.
+ */
+export function googleCalendarUrl(a: Appointment, withWhom?: string | null): string {
+  const p = eventParts(a, withWhom);
+  const dates = p.allDay ? `${compact(p.start)}/${compact(p.end)}` : `${p.start.replace(/[-:]/g, "")}/${p.end.replace(/[-:]/g, "")}`;
+  const q = new URLSearchParams({ action: "TEMPLATE", text: a.title, dates, ctz: "Europe/London" });
+  if (a.location) q.set("location", a.location);
+  if (p.notes) q.set("details", p.notes);
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
+
+/** Outlook on the web: a personal account (outlook.com) or a work or school one (Microsoft 365). */
+export function outlookCalendarUrl(a: Appointment, withWhom: string | null | undefined, work: boolean): string {
+  const p = eventParts(a, withWhom);
+  const q = new URLSearchParams({ path: "/calendar/action/compose", rru: "addevent", subject: a.title, startdt: p.start, enddt: p.end });
+  if (p.allDay) q.set("allday", "true");
+  if (a.location) q.set("location", a.location);
+  if (p.notes) q.set("body", p.notes);
+  return `https://${work ? "outlook.office.com" : "outlook.live.com"}/calendar/0/deeplink/compose?${q.toString()}`;
+}

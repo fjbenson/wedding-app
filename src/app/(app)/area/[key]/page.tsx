@@ -21,6 +21,7 @@ import { RowPeopleProvider } from "@/components/row-people";
 import { listDecor } from "@/lib/db/decor";
 import { isDecorArea } from "@/lib/decor";
 import { decorPeople } from "../../decor/decor-people";
+import { foodByMoment, type FoodMoment } from "@/lib/area-food";
 import { withInCharge } from "@/lib/music";
 import { listSendings } from "@/lib/db/stationery";
 import { isStationeryArea, sendingCounts, sendUnits } from "@/lib/stationery";
@@ -79,8 +80,19 @@ export default async function AreaPage({
   }
   // Food & drink also has the menu and the drinks (0024_menu_and_drinks.sql).
   let food = null;
+  let foodMoments: Record<string, FoodMoment> = {};
+  let foodMomentIds = new Set<string>();
   if (kind === "food") {
     const [courses, drinks] = await Promise.all([listMenu(wedding.id), listDrinks(wedding.id)]);
+    foodMomentIds = new Set([...courses, ...drinks].map((x) => x.moment_id).filter((id): id is string => !!id));
+    if (guestFacts?.kind === "food") {
+      foodMoments = foodByMoment(
+        (day?.runSheet ?? []).filter((i) => foodMomentIds.has(i.id)),
+        courses,
+        drinks,
+        { all: guestFacts.counts, day: guestFacts.countsDay },
+      );
+    }
     food = {
       courses: courses.map((c) => ({ id: c.id, name: c.name, time: c.serve_time, dishes: c.dishes.length })),
       drinks: drinks.map((d) => ({ id: d.id, name: d.name, quantity: d.quantity, unit: d.unit, status: d.status })),
@@ -118,7 +130,8 @@ export default async function AreaPage({
       stationery={stationery}
       music={area.key === "music"}
       // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
-      moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}
+      moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || foodMomentIds.has(i.id) || (area.key === "music" && (i.music || i.music_url)))}
+      foodMoments={foodMoments}
       couple={coupleName(wedding.name)}
       error={error}
       detail={detail}

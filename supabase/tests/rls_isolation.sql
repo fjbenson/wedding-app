@@ -57,9 +57,9 @@ begin
       ('inspo', 'bbbbbbbb-0000-0000-0000-000000000002/dress.jpg');
   end if;
   if to_regclass('public.run_sheet_items') is not null then
-    insert into run_sheet_items (wedding_id, at_time, title) values
-      ('aaaaaaaa-0000-0000-0000-000000000001', '14:00', 'Ceremony'),
-      ('bbbbbbbb-0000-0000-0000-000000000002', '15:00', 'Ceremony');
+    insert into run_sheet_items (id, wedding_id, at_time, title) values
+      ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', '14:00', 'Ceremony'),
+      ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', '15:00', 'Ceremony');
     insert into seating_tables (id, wedding_id, name) values
       ('aaaaaaaa-1111-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Top table'),
       ('bbbbbbbb-1111-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Top table');
@@ -80,6 +80,12 @@ begin
       select 'aaaaaaaa-2222-0000-0000-000000000001', id, wedding_id from contacts where first_name = 'Alice';
     insert into guest_group_members (group_id, contact_id, wedding_id)
       select 'bbbbbbbb-2222-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
+  end if;
+  -- A moment's groups (0034): the bridesmaids' schedule.
+  if to_regclass('public.run_sheet_groups') is not null then
+    insert into run_sheet_groups (moment_id, group_id, wedding_id) values
+      ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-2222-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001'),
+      ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-2222-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002');
   end if;
   if to_regclass('public.menu_courses') is not null then
     insert into menu_courses (id, wedding_id, name) values
@@ -402,6 +408,36 @@ begin
     -- And they can use their own folder.
     execute $q$insert into storage.objects (bucket_id, name)
              values ('inspo', 'aaaaaaaa-0000-0000-0000-000000000001/veil.jpg')$q$;
+  end if;
+
+  if to_regclass('public.run_sheet_groups') is not null then
+    execute 'select count(*) from run_sheet_groups' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % moment groups, expected 1', visible_contacts;
+    end if;
+    -- A moment in wedding A can't be tagged with wedding B's group, even knowing the ids.
+    begin
+      execute $q$insert into run_sheet_groups (moment_id, group_id, wedding_id)
+               values ('aaaaaaaa-7777-0000-0000-000000000001', 'bbbbbbbb-2222-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001')$q$;
+      raise exception 'LEAK: couple A tagged a moment with wedding B''s group';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    execute $q$delete from run_sheet_groups where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A cleared wedding B''s schedules';
+    end if;
+  end if;
+  -- A course can only be served at its own wedding's moment (0034).
+  if to_regclass('public.menu_courses') is not null and exists (select 1 from information_schema.columns where table_name = 'menu_courses' and column_name = 'moment_id') then
+    begin
+      execute $q$update menu_courses set moment_id = 'bbbbbbbb-7777-0000-0000-000000000002'
+               where id = 'aaaaaaaa-5555-0000-0000-000000000001'$q$;
+      raise exception 'LEAK: couple A served a course at wedding B''s moment';
+    exception
+      when foreign_key_violation then null;  -- expected
+    end;
   end if;
 
   if to_regclass('public.guest_groups') is not null then

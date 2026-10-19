@@ -119,3 +119,25 @@ export async function deleteDrink(id: string): Promise<void> {
   const { error } = await supabase.from("drinks").delete().eq("id", id);
   if (error) throw error;
 }
+
+/**
+ * Says which courses and drinks are served at a run sheet moment
+ * (0034_food_moments_and_schedules.sql): those listed are linked to it, any
+ * that were linked to it and aren't listed are let go. Each only moves if it's
+ * this wedding's, and the (id, wedding_id) link stops it pointing at another's.
+ */
+export async function linkFoodToMoment(weddingId: string, momentId: string, courseIds: string[], drinkIds: string[]): Promise<void> {
+  const supabase = await createClient();
+  for (const [table, ids] of [
+    ["menu_courses", courseIds],
+    ["drinks", drinkIds],
+  ] as const) {
+    const freed = supabase.from(table).update({ moment_id: null }).eq("wedding_id", weddingId).eq("moment_id", momentId);
+    const { error: e1 } = ids.length ? await freed.not("id", "in", `(${ids.join(",")})`) : await freed;
+    if (e1) throw e1;
+    if (ids.length) {
+      const { error: e2 } = await supabase.from(table).update({ moment_id: momentId }).eq("wedding_id", weddingId).in("id", ids);
+      if (e2) throw e2;
+    }
+  }
+}

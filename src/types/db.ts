@@ -359,6 +359,8 @@ export interface MenuCourse {
   /** Evening guests are fed this one too. */
   evening: boolean;
   sort_order: number;
+  /** The run sheet moment it's served at (0034_food_moments_and_schedules.sql). */
+  moment_id?: string | null;
   created_at: string;
 }
 
@@ -371,6 +373,8 @@ export interface MenuDish {
   tags: string[];
   /** "Vegetarians: mushroom wellington". */
   instead: string | null;
+  /** On the children's menu (0034). */
+  for_children?: boolean;
   sort_order: number;
   created_at: string;
 }
@@ -436,6 +440,8 @@ export interface Drink {
   unit: string | null;
   supplied_by: string | null;
   status: DrinkStatus;
+  /** The run sheet moment it's served at (0034_food_moments_and_schedules.sql). */
+  moment_id?: string | null;
   sort_order: number;
   created_at: string;
 }

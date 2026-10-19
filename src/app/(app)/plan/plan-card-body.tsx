@@ -4,7 +4,7 @@ import Timeline from "@/components/timeline";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { CalendarPlus, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Music as MusicIcon, NotebookPen, Sparkles, UserRound, X, type LucideIcon } from "lucide-react";
+import { CalendarPlus, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ExternalLink, GlassWater, MapPin, Music as MusicIcon, NotebookPen, Sparkles, UserRound, Users, Utensils, X, type LucideIcon } from "lucide-react";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
@@ -18,7 +18,8 @@ import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
 import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
-import { updatePlanFieldsAction, type Involved } from "./card-actions";
+import { setMomentGroupsAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
+import { addCourseForMomentAction, setMomentFoodAction } from "../menu/actions";
 import { InvolvedPart } from "./involved";
 
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
@@ -457,13 +458,57 @@ export function MomentBody({
   people,
   inChargeEmail,
   weddingDate,
+  groups,
+  groupIds,
+  food,
 }: {
   moment: RunSheetItem;
   areas: AreaOption[];
   people: DecorPerson[];
   inChargeEmail: string | null;
   weddingDate: string | null;
+  /** Groups of guests, and the ones this moment is for (their own schedule, 0034). */
+  groups: { id: string; name: string }[];
+  groupIds: string[];
+  /** The menu's courses and the drinks, and which are served at it (0034). */
+  food: MomentFood;
 }) {
+  const router = useRouter();
+  const [forIds, setForIds] = useState(groupIds);
+  const toggleGroup = async (id: string) => {
+    const next = forIds.includes(id) ? forIds.filter((g) => g !== id) : [...forIds, id];
+    setForIds(next);
+    const result = await safely(() => setMomentGroupsAction(m.id, next));
+    if (result.error) {
+      setForIds(forIds);
+      setError(result.error);
+    } else {
+      setError(undefined);
+      router.refresh();
+    }
+  };
+  const forLabel = groups.filter((g) => forIds.includes(g.id)).map((g) => g.name).join(", ");
+  // Food and drink moments get Menu and Drinks lines (0034): the courses and drinks served here.
+  const [courseIds, setCourseIds] = useState(food.courses.filter((c) => c.here).map((c) => c.id));
+  const [drinkIds, setDrinkIds] = useState(food.drinks.filter((d) => d.here).map((d) => d.id));
+  const toggled = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  const setServed = async (courses: string[], drinks: string[]) => {
+    const before = [courseIds, drinkIds];
+    setCourseIds(courses);
+    setDrinkIds(drinks);
+    const result = await safely(() => setMomentFoodAction(m.id, courses, drinks));
+    if (result.error) {
+      setCourseIds(before[0]);
+      setDrinkIds(before[1]);
+      setError(result.error);
+    } else {
+      setError(undefined);
+      router.refresh();
+    }
+  };
+  const servedCourses = food.courses.filter((c) => courseIds.includes(c.id));
+  const servedDrinks = food.drinks.filter((d) => drinkIds.includes(d.id));
+  const isFoodMoment = m.area_key === "food" || m.area_key === "catering" || courseIds.length + drinkIds.length > 0;
   const save = useSave("moment", m.id);
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
@@ -536,6 +581,90 @@ export function MomentBody({
             </dl>
           )}
         </Fold>
+        {/* Their own schedule: the bridesmaids' morning, the groomsmen's (canvas 3 "Food & drink · Round 2", C). No group means it's everyone's. */}
+        {groups.length > 0 && (
+          <Fold icon={Users} title="For" value={forLabel || "Everyone"}>
+            <p className="text-[13px] text-stone">Pick a group to put this on their own schedule. Leave it empty and it&apos;s everyone&apos;s.</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {groups.map((g) => {
+                const on = forIds.includes(g.id);
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleGroup(g.id)}
+                    className={`h-9 rounded-full border px-3.5 text-[13px] ${on ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+                  >
+                    {g.name}
+                  </button>
+                );
+              })}
+            </div>
+          </Fold>
+        )}
+        {/* Food and drink through the day (canvas 3 "Food & drink · Round 2", A): the courses and drinks served at this moment. */}
+        {isFoodMoment && (
+          <>
+            <Fold icon={Utensils} title="Menu" value={servedCourses.map((c) => c.name).join(" · ")} add="Add the course served here">
+              {servedCourses.map((c) => (
+                <p key={c.id} className="mb-1.5 text-[13px] text-stone">
+                  <span className="text-[14px] text-ink">{c.name}</span> · {c.dishes.length ? c.dishes.join(" · ") : "no dishes yet"}
+                </p>
+              ))}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {food.courses.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={courseIds.includes(c.id)}
+                    onClick={() => setServed(toggled(courseIds, c.id), drinkIds)}
+                    className={`h-9 rounded-full border px-3.5 text-[13px] ${courseIds.includes(c.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+                  >
+                    {c.name}
+                    {c.elsewhere && !courseIds.includes(c.id) && <span className="text-stone"> · moves here</span>}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const r = await safely(() => addCourseForMomentAction(m.id, m.title, m.at_time, false));
+                    if (r.error) setError(r.error);
+                    else router.refresh();
+                  }}
+                  className="h-9 rounded-full border border-dashed border-champagne-400 px-3.5 text-[13px] text-champagne-600"
+                >
+                  + A course for {m.title}
+                </button>
+              </div>
+              <a href="/menu" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The menu ›</a>
+            </Fold>
+            <Fold icon={GlassWater} title="Drinks" value={servedDrinks.map((d) => d.name).join(" · ")} add="Add the drinks served here">
+              {servedDrinks.map((d) => (
+                <p key={d.id} className="mb-1 text-[14px] text-ink">
+                  {d.name}
+                  {d.line && <span className="text-stone"> · {d.line}</span>}
+                </p>
+              ))}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {food.drinks.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    aria-pressed={drinkIds.includes(d.id)}
+                    onClick={() => setServed(courseIds, toggled(drinkIds, d.id))}
+                    className={`h-9 rounded-full border px-3.5 text-[13px] ${drinkIds.includes(d.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+                  >
+                    {d.name}
+                    {d.elsewhere && !drinkIds.includes(d.id) && <span className="text-stone"> · moves here</span>}
+                  </button>
+                ))}
+                {food.drinks.length === 0 && <span className="text-[13px] text-stone">No drinks yet.</span>}
+              </div>
+              <a href="/drinks" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The drinks ›</a>
+            </Fold>
+          </>
+        )}
         <Fold icon={MusicIcon} title="Music" value={music} add="Add a song or playlist">
           <div className="flex rounded-full bg-cream p-[3px]">
             {(["song", "playlist"] as const).map((k) => {

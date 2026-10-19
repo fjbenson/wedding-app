@@ -15,6 +15,9 @@ import type { AreaOption } from "@/lib/areas";
 import { getContact, listGuests } from "@/lib/db/contacts";
 import { decorPeople, type DecorPerson } from "../decor/decor-people";
 import { addInvolved, getInvolved, listForGuest, removeInvolved, type InvolvedKind } from "@/lib/db/involved";
+import { listGroups } from "@/lib/db/groups";
+import { listMenu, listDrinks } from "@/lib/db/menu";
+import { listMomentGroups, setMomentGroups } from "@/lib/db/moment-groups";
 import type { Appointment, Milestone, Payment, RunSheetItem, TransportRun } from "@/types/db";
 
 /**
@@ -47,6 +50,11 @@ export type PlanCardData =
       people: DecorPerson[];
       /** The in-charge person's email, to send them the moment. */
       inChargeEmail: string | null;
+      /** Groups of guests, and the ones this moment is for (0034): their own schedule. */
+      groups: { id: string; name: string }[];
+      groupIds: string[];
+      /** Courses and drinks served at it (0034): food and drink through the day. */
+      food: MomentFood;
       areas: AreaOption[];
       suppliers: { id: string; name: string; area?: string | null }[];
       weddingDate: string | null;
@@ -69,6 +77,12 @@ export type PlanCardData =
       suppliers: { id: string; name: string; area?: string | null }[];
       weddingDate: string | null;
     };
+
+/** The menu's courses and the drinks, and which are served at this moment (0034). */
+export interface MomentFood {
+  courses: { id: string; name: string; dishes: string[]; here: boolean; elsewhere: boolean }[];
+  drinks: { id: string; name: string; line: string | null; here: boolean; elsewhere: boolean }[];
+}
 
 /** Who's tagged on a to-do or appointment, and everyone who could be. */
 export interface Involved {
@@ -113,8 +127,33 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
   if (kind === "appointment") return { kind, appointment: item as Appointment, involved: await loadInvolved(wedding.id, kind, id), ...common };
   if (kind === "moment") {
     const moment = item as RunSheetItem;
-    const [people, inCharge] = await Promise.all([decorPeople(wedding.id), moment.contact_id ? getContact(moment.contact_id) : Promise.resolve(null)]);
-    return { kind, moment, people, inChargeEmail: inCharge?.email ?? null, ...common };
+    const [people, inCharge, groups, forGroups, menu, drinks] = await Promise.all([
+      decorPeople(wedding.id),
+      moment.contact_id ? getContact(moment.contact_id) : Promise.resolve(null),
+      listGroups(wedding.id),
+      listMomentGroups(wedding.id),
+      listMenu(wedding.id),
+      listDrinks(wedding.id),
+    ]);
+    return {
+      kind,
+      moment,
+      people,
+      inChargeEmail: inCharge?.email ?? null,
+      groups: groups.map((g) => ({ id: g.id, name: g.name })),
+      groupIds: forGroups[id] ?? [],
+      food: {
+        courses: menu.map((c) => ({ id: c.id, name: c.name, dishes: c.dishes.map((d) => d.name), here: c.moment_id === id, elsewhere: !!c.moment_id && c.moment_id !== id })),
+        drinks: drinks.map((d) => ({
+          id: d.id,
+          name: d.name,
+          line: d.quantity ? `${d.quantity}${d.unit ? ` ${d.unit}` : ""}` : null,
+          here: d.moment_id === id,
+          elsewhere: !!d.moment_id && d.moment_id !== id,
+        })),
+      },
+      ...common,
+    };
   }
   if (kind === "idea") {
     const idea = item as InspoWithPicture;
@@ -237,4 +276,20 @@ export async function setInvolvedAction(kind: InvolvedKind, id: string, contactI
 export async function guestPlanAction(contactId: string): Promise<Awaited<ReturnType<typeof listForGuest>>> {
   if (!/^[0-9a-f-]{36}$/i.test(contactId)) return { todos: [], appointments: [] };
   return listForGuest(contactId);
+}
+
+/** Which groups of guests a moment is for: their own schedule (0034). Returns a message instead of throwing. */
+export async function setMomentGroupsAction(momentId: string, groupIds: string[]): Promise<{ error?: string }> {
+  if (!/^[0-9a-f-]{36}$/i.test(momentId) || !groupIds.every((g) => /^[0-9a-f-]{36}$/i.test(g))) return { error: "That isn't there any more." };
+  try {
+    const wedding = await getCurrentWedding();
+    if (!wedding) return { error: "Your wedding couldn't be found." };
+    await setMomentGroups(wedding.id, momentId, groupIds);
+  } catch (error) {
+    console.error("saving a moment's groups failed", error);
+    return { error: `That didn't save. ${describe(error)}` };
+  }
+  revalidatePath("/day");
+  revalidatePath("/area/[key]", "page");
+  return {};
 }

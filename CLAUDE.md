@@ -1068,6 +1068,53 @@ Next.js scaffold. Built so far, against the plan's tabs:
   thank-you notes (needs a small gifts table — owner's OK first), "Did it
   go?" after a group email, extra sendings of the couple's own ("+").
 
+- **Children, properly** (19 Oct 2026; canvas 3 "Children · Round 1", **C**,
+  owner's pick; `0033_children_meals.sql`, run the same day with the owner's
+  OK). Every guest has a **meal** — Adult · Child's · No meal (a baby) — and
+  **Drinks** — Alcohol · Soft drinks only (`contacts.meal_kind`,
+  `no_alcohol`), because both decide what the caterer charges. Picture tiles
+  (`MealPicker`, `src/components/meal-picker.tsx`) on the guest card
+  (`MealRow`, saves on each tap) and on Add a guest. A child's or baby's meal
+  starts them on soft drinks; change it after. **`is_child` follows the meal**
+  (true for anything but an adult meal) so every old filter, count and
+  assistant lookup still works; `src/lib/meals.ts` holds the helpers
+  (`mealKindOf`, `mealCounts`, `mealCost`). Food & drink's page shows adult /
+  child's / no meal, drinking vs soft bars, and **What it comes to**
+  (`food-costs.tsx`): the caterer's price a head typed once (`areas.price_adult`
+  / `price_child` / `price_drinks`) × who's coming, moving by itself when a
+  guest changes. The caterer copy lists the meal and drinks counts. Only counts
+  and prices are used; no guest details. **Not built:** the cost in Money's
+  area card, a Filter › Meal/Drinks on the guest list, the assistant knowing
+  the new fields (it still sets "is_child", which maps to a child's meal).
+
+- **Food & drink through the day, and a schedule for each group** (19 Oct
+  2026; canvas 3 "Food & drink · Round 2", **A + C**, owner's pick;
+  `0034_food_moments_and_schedules.sql`, run the same day with the owner's OK).
+  **A:** a course of the menu or a drink can be **served at a run sheet
+  moment** (`menu_courses.moment_id`, `drinks.moment_id`). On a moment's card
+  (any moment in the Food & drink area, or one with food linked) there are
+  **Menu** and **Drinks** lines: tap a course or drink to serve it here, or
+  "+ A course for [moment]" (named and timed like it); `setMomentFoodAction`,
+  `linkFoodToMoment`. Food & drink's "Everything for…" line is now **Through
+  the day**: its moments in time order, each with the dishes, drinks and chips
+  for how many ("64 adult · 9 child's", "58 drinking · 17 soft" —
+  `src/lib/area-food.ts`; a course for the evening guests too counts everyone
+  coming, drinks before 18:00 the day guests). The menu page and Drinks list
+  are unchanged; the demo's "Wedding breakfast" course was linked to its
+  moment. `menu_dishes.for_children` is in the database for a children's menu
+  but **not used yet**. **C:** a moment can be **for one or more groups of
+  guests** (`run_sheet_groups`, tied to `(id, wedding_id)` both sides, RLS like
+  groups, in `rls_isolation.sql`, which passes with all 34 migrations; a
+  **For** line on the moment's card, `setMomentGroupsAction`). The run sheet's
+  Filter gets **Whose schedule** (`?group=`): that group's moments in full, the
+  day's others faded (hidden when printed), a header with the group's name,
+  **Print it** and **Email it to [group]** (their own email, Bcc, the schedule
+  written in; `send-schedule.tsx`). **A group's schedule works from groups**
+  (owner: groups, not roles) — make a "Bridesmaids" group. Area and group
+  filters combine, so Food & drink, Music and Photos each have a printable
+  schedule too. **Not built:** tagging groups on the Add a moment form (only on
+  the card), Music/Photos-specific chips.
+
 - **Search across the whole wedding** (19 Oct 2026; owner: "search the
   word easels and it finds it all across the app"; owner picked **inside
   Your assistant** over a Hub button or a menu-bar button). Typing two or

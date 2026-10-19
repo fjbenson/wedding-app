@@ -16,6 +16,8 @@ export type AreaGuestFacts =
       children: number;
       /** Meals and drinks among those coming (0033): adult · child's · none, drinking · soft. */
       counts: MealCounts;
+      /** The same for day guests only (the evening do's food is for everyone, the wedding breakfast for the day). */
+      countsDay: MealCounts;
       dayEventId: string | null;
       eveningEventId: string | null;
       /** Meal choices among those coming, most picked first. */
@@ -107,6 +109,7 @@ export function areaGuestFacts(
       evening: eveningEvent ? coming.filter((g) => own(g)?.event.id === eveningEvent.id).length : 0,
       children: coming.filter((g) => g.is_child).length,
       counts: mealCounts(coming),
+      countsDay: mealCounts(coming.filter((g) => own(g)?.event.id === dayEvent?.id)),
       dayEventId: dayEvent?.id ?? null,
       eveningEventId: eveningEvent?.id ?? null,
       meals: [...tally.values()].sort((a, b) => b.count - a.count),

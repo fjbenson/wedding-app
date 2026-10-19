@@ -8,6 +8,7 @@ import {
   deleteCourse,
   deleteDish,
   deleteDrink,
+  linkFoodToMoment,
   listDrinks,
   listMenu,
   updateCourse,
@@ -217,5 +218,48 @@ export async function removeDrinkAction(id: string): Promise<Result> {
     return {};
   } catch (error) {
     return failed("removing a drink", error);
+  }
+}
+
+// ---- food through the day (0034) -------------------------------------------
+
+/** Which courses and drinks are served at a run sheet moment. Returns a message instead of throwing. */
+export async function setMomentFoodAction(momentId: string, courseIds: string[], drinkIds: string[]): Promise<Result> {
+  if (![momentId, ...courseIds, ...drinkIds].every((v) => UUID.test(v))) return { error: "That isn't there any more." };
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "No wedding found." };
+  try {
+    await linkFoodToMoment(wedding.id, momentId, courseIds, drinkIds);
+    done();
+    revalidatePath("/day");
+    return {};
+  } catch (error) {
+    return failed("linking food to a moment", error);
+  }
+}
+
+/** A new course for a moment: named and timed like it, and served at it. */
+export async function addCourseForMomentAction(momentId: string, name: string, at: string, evening: boolean): Promise<Result> {
+  if (!UUID.test(momentId) || !name.trim()) return { error: "Give the course a name." };
+  const wedding = await getCurrentWedding();
+  if (!wedding) return { error: "No wedding found." };
+  try {
+    const count = (await listMenu(wedding.id)).length;
+    const course = await createCourse(wedding.id, {
+      name: name.trim(),
+      serve_time: time(at.slice(0, 5)),
+      note: null,
+      evening,
+      sort_order: count,
+    });
+    const menu = await listMenu(wedding.id);
+    const here = menu.filter((c) => c.moment_id === momentId).map((c) => c.id);
+    const drinks = (await listDrinks(wedding.id)).filter((d) => d.moment_id === momentId).map((d) => d.id);
+    await linkFoodToMoment(wedding.id, momentId, [...here, course.id], drinks);
+    done();
+    revalidatePath("/day");
+    return { id: course.id };
+  } catch (error) {
+    return failed("adding a course for a moment", error);
   }
 }

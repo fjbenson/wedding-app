@@ -18,6 +18,7 @@ import { areaStage, STAGES } from "@/lib/area-stage";
 import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
 import type { DecorPerson } from "../decor/decor-people";
+import type { FoodMoment } from "@/lib/area-food";
 import FoodCosts from "./food-costs";
 import { pricesOf } from "@/lib/meals";
 import { DecorThings } from "../decor/decor-things";
@@ -508,8 +509,11 @@ function DaySection({
   moments,
   facts,
   musicFor,
+  food,
 }: {
   moments: RunSheetItem[];
+  /** Food & drink: what's served at each moment (src/lib/area-food.ts). */
+  food?: Record<string, FoodMoment>;
   facts: AreaGuestFacts | null;
   /** The Music area: the couple's names, for "Copy for the band or DJ" (owner, 19 Oct 2026: music belongs in The Day). */
   musicFor?: string | null;
@@ -528,6 +532,21 @@ function DaySection({
                   {/* On the Music page a row is just the moment and its song (owner, 19 Oct 2026: "very busy"). */}
                   {!musicFor && (m.location || m.who) && (
                     <span className="type-meta mt-0.5 block truncate">{[m.location, m.who].filter(Boolean).join(" · ")}</span>
+                  )}
+                  {food?.[m.id] && (
+                    <>
+                      {food[m.id].courses.map((c) => (
+                        <span key={c.name} className="mt-0.5 block truncate text-[13px] text-stone">
+                          {c.name}{c.dishes.length > 0 && ` · ${c.dishes.join(", ")}`}
+                        </span>
+                      ))}
+                      {food[m.id].drinks.length > 0 && <span className="mt-0.5 block truncate text-[13px] text-stone">{food[m.id].drinks.map((d) => d.name).join(", ")}</span>}
+                      <span className="mt-1 flex flex-wrap gap-1.5">
+                        {food[m.id].chips.map((c) => (
+                          <span key={c} className="rounded-full bg-white px-2 py-0.5 text-[12px] text-ink shadow-[0_0_0_1px_#E6E0D6]">{c}</span>
+                        ))}
+                      </span>
+                    </>
                   )}
                   {m.music && (
                     <span className="mt-0.5 flex items-center gap-1.5 truncate text-[13px] text-champagne-600">
@@ -605,7 +624,10 @@ export default function AreaView({
   decor,
   stationery,
   music,
+  foodMoments,
 }: {
+  /** Food & drink only: what's served at each of its moments, and for how many (0034). */
+  foodMoments?: Record<string, FoodMoment>;
   /** The Stationery area only: the three sendings, in place of the five stages. */
   stationery?: { counts: ReturnType<typeof sendingCounts>; weddingDate: string | null } | null;
   /** The Music area: its The Day part also holds every moment with a song (0028). */
@@ -1332,12 +1354,12 @@ export default function AreaView({
             <Everything
               id="day"
               icon={Clock}
-              title="The Day"
+              title={guestFacts?.kind === "food" ? "Through the day" : "The Day"}
               line={dayLine}
               see={{ href: `/day?area=${encodeURIComponent(area.key)}`, label: "In The Day" }}
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
-              <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} />
+              <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} food={foodMoments} />
             </Everything>
 
             {/* Everything with this area's suppliers and the area itself, past and to

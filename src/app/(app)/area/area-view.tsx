@@ -15,6 +15,10 @@ import { InlineSubmit, RemoveButton } from "@/components/form-bits";
 import NoteText from "@/components/note-text";
 import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
+import { decorNextUp } from "@/lib/decor";
+import type { DecorWithHelpers } from "@/lib/db/decor";
+import type { DecorPerson } from "../decor/decor-people";
+import { DecorThings } from "../decor/decor-things";
 import { unscheduledBalances, type Money } from "@/lib/budget";
 import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
@@ -552,7 +556,10 @@ export default function AreaView({
   food,
   moments,
   couple,
+  decor,
 }: {
+  /** The Decor area only: its things, in place of the five stages (0027_decor.sql). */
+  decor?: { items: DecorWithHelpers[]; people: DecorPerson[]; weddingDate: string | null } | null;
   /** This area's run sheet moments, in time order (0017_run_sheet_area.sql). */
   moments: RunSheetItem[];
   /** Facts from the guest list, for the areas that show them (src/lib/area-guests.ts). */
@@ -711,6 +718,8 @@ export default function AreaView({
   } else {
     next = { title: "All sorted. Ready to dance.", line: undefined };
   }
+  // The Decor area's Next up comes from its things, not the stages.
+  const shownNext: { title: string; line?: string; action?: React.ReactNode } = decor ? decorNextUp(decor.items, decor.people) : next;
   const soon = planNow[0];
   const then = soon
     ? soon.kind === "todo"
@@ -967,10 +976,10 @@ export default function AreaView({
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
         <section aria-label="Next up" className="card-white rounded-[22px] p-4">
-          <p className="type-meta !text-champagne-600">{stage.current >= STAGES.length ? "All done" : "Next up"}</p>
-          <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{next.title}</p>
-          {next.line && <p className="mt-1 text-sm text-stone">{next.line}</p>}
-          {next.action && <div className="mt-2.5">{next.action}</div>}
+          <p className="type-meta !text-champagne-600">{!decor && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
+          <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
+          {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
+          {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
           {then && (
             <p className="mt-3 border-t border-linen pt-2.5 text-[13px] text-stone">
               Then: {then}
@@ -978,7 +987,13 @@ export default function AreaView({
           )}
         </section>
 
-        {/* The five stages down a gold line; tap any to open it (the others close). */}
+        {/* Decor is its own special area: its things in place of the stages (canvas 3 "Decor · Round 2", owner 19 Oct 2026). */}
+        {decor ? (
+          <div className="mt-3">
+            <DecorThings items={decor.items} people={decor.people} areaKey={area.key} weddingDate={decor.weddingDate} />
+          </div>
+        ) : (
+        /* The five stages down a gold line; tap any to open it (the others close). */
         <ol aria-label="Stages" className="mt-3">
           {stages.map((st, i) => {
             const done = stage.done[i];
@@ -1018,6 +1033,7 @@ export default function AreaView({
             );
           })}
         </ol>
+        )}
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}
         <section aria-label={`Everything for ${area.label}`} className="mt-3">

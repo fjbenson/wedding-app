@@ -18,6 +18,9 @@ import { coupleName } from "@/lib/couple-name";
 import AreaView from "../area-view";
 import { involvedNames } from "@/lib/db/involved";
 import { RowPeopleProvider } from "@/components/row-people";
+import { listDecor } from "@/lib/db/decor";
+import { isDecorArea } from "@/lib/decor";
+import { decorPeople } from "../../decor/decor-people";
 
 export const metadata = { title: "Area — Wedding App" };
 
@@ -74,6 +77,10 @@ export default async function AreaPage({
       drinks: drinks.map((d) => ({ id: d.id, name: d.name, quantity: d.quantity, unit: d.unit, status: d.status })),
     };
   }
+  // The Decor area shows its things in place of the stages (0027_decor.sql).
+  const decor = isDecorArea(area.key)
+    ? await Promise.all([listDecor(wedding.id), decorPeople(wedding.id)]).then(([items, people]) => ({ items, people, weddingDate: wedding.wedding_date }))
+    : null;
   const areaSuppliers = suppliers.filter((s) => s.supplier_details?.category === area.key);
   const supplierIds = new Set(areaSuppliers.map((s) => s.id));
 
@@ -98,6 +105,7 @@ export default async function AreaPage({
       }
       guestFacts={guestFacts}
       food={food}
+      decor={decor}
       moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key)}
       couple={coupleName(wedding.name)}
       error={error}

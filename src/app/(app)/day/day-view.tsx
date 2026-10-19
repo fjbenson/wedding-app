@@ -70,7 +70,10 @@ export default function DayView({
   query,
   error,
   detail,
+  decor,
 }: {
+  /** Decor's figures for its tile: how many things, how many still to get (0027_decor.sql). */
+  decor: { all: number; toGet: number };
   /** The run sheet's search (`?q=`). */
   query: string;
   tab: DayTab;
@@ -151,7 +154,7 @@ export default function DayView({
           areas={areas}
           area={area}
           query={query}
-          pieces={pieces(data, guests, rsvps)}
+          pieces={{ ...pieces(data, guests, rsvps), decor }}
         />
       )}
     </main>
@@ -183,7 +186,7 @@ function RunSheet({
   pieces,
 }: {
   /** For the laptop's Seating and Travel tiles beside the numbers. */
-  pieces: { coming: number; seated: number; noLift: number };
+  pieces: { coming: number; seated: number; noLift: number; decor: { all: number; toGet: number } };
   query: string;
   items: RunSheetItem[];
   coupleName: string;
@@ -221,7 +224,7 @@ function RunSheet({
       <div className="print:hidden">
       {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
           numbers beside the day's pieces, then the order of the day long and
-          thin like paper ("it should stay long and thin"). Decor waits. */}
+          thin like paper ("it should stay long and thin"). */}
       <div className="lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4">
       <NumbersCard
         big={{
@@ -235,9 +238,16 @@ function RunSheet({
           { value: partCount("24:00", "18:00"), label: "Evening" },
         ]}
       />
-      <div className="hidden lg:mt-6 lg:grid lg:grid-cols-2 lg:gap-3">
+      {/* The day's pieces as three tiles under the numbers (canvas 3 "The Day · Round 2", option 1, owner's pick). */}
+      <div className="mt-3 grid grid-cols-3 gap-2 lg:mt-6 lg:gap-3">
         <PieceTile href="/day?tab=seating" title="Seating" figure={pieces.seated} line={`of ${pieces.coming} seated`} />
-        <PieceTile href="/day?tab=travel" title="Travel" figure={pieces.noLift} line={pieces.noLift === 1 ? "guest without a lift" : "without a lift"} />
+        <PieceTile href="/day?tab=travel" title="Travel" figure={pieces.noLift} line="without a lift" />
+        <PieceTile
+          href="/day/decor"
+          title="Decor"
+          figure={pieces.decor.all ? pieces.decor.toGet : 0}
+          line={pieces.decor.all ? "still to get" : "nothing yet"}
+        />
       </div>
       </div>
       <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
@@ -360,9 +370,9 @@ function pieces(data: DayData, guests: Contact[], rsvps: Rsvp[]) {
 /** One of the day's pieces as a small glass tile: its name, one figure, open it. */
 function PieceTile({ href, title, figure, line }: { href: string; title: string; figure: number; line: string }) {
   return (
-    <Link href={href} className="glass-card row-press flex flex-col rounded-[22px] px-[18px] py-4 [--row-bleed:0px]">
+    <Link href={href} className="glass-card row-press flex min-w-0 flex-col rounded-[22px] px-3 py-3.5 [--row-bleed:0px] lg:px-[18px] lg:py-4">
       <span className="section-label">{title}</span>
-      <span className="type-figure mt-2 text-[34px] leading-none !text-champagne-600">{figure}</span>
+      <span className="type-figure mt-2 text-[28px] leading-none !text-champagne-600 lg:text-[34px]">{figure}</span>
       <span className="mt-1 text-[13px] text-stone">{line}</span>
       <span className="mt-auto pt-2.5 text-[13px] text-champagne-600">Open ›</span>
     </Link>

@@ -11,7 +11,7 @@ import { formatMoney } from "@/lib/money";
 import { addAreaAction, quickAddAreaAction } from "../actions";
 
 /** Ideas to tap on the first step, after any areas the couple took off the ring. */
-const IDEAS = ["Accommodation", "Honeymoon", "Favours", "Lighting", "Children", "Entertainment"];
+const IDEAS = ["Decor", "Accommodation", "Honeymoon", "Favours", "Lighting", "Children", "Entertainment"];
 
 /**
  * Adding an area, one question per screen (owner, 12 Oct 2026; canvas 2

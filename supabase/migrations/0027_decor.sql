@@ -1,7 +1,8 @@
--- Decor (19 Oct 2026, canvas 3 "Decor · Round 1", owner's choices): the
--- little bits and bobs for the day — jam jars, candles, the easel for the
--- table plan, the guest book pen. Each item belongs to an area (or none, for
--- Other) and shows on that area page; The Day gathers them into one pack list.
+-- Decor (19 Oct 2026, canvas 3 "Decor · Round 2 · Its own area", owner's
+-- pick): the little bits and bobs for the day — jam jars, candles, the easel
+-- for the table plan, the guest book pen. Decor is its own special area: its
+-- page lists these things grouped by where they go (Ceremony, Entrance, the
+-- tables…), and The Day shows them again as one pack list.
 --
 -- Owner's calls, 19 Oct 2026: who lends it and who sets it up are picked from
 -- the wedding's own guests and suppliers (a typed name works too, for someone
@@ -13,7 +14,7 @@
 create table decor_items (
   id              uuid primary key default gen_random_uuid(),
   wedding_id      uuid not null references weddings (id) on delete cascade,
-  area_key        text,                                           -- an area's key; null = Other
+  place           text,                                           -- where it goes: "Ceremony", "The tables"…
   name            text not null check (length(trim(name)) > 0),  -- "Jam jars"
   quantity        integer check (quantity is null or quantity > 0),
   status          text not null default 'to_get'

@@ -31,6 +31,7 @@ const SCREENS: RegExp[] = [
   /^\/area\/(?!new$)[^/]+$/,
   /^\/inspo\/(?!new$)[^/]+$/,
   /^\/people\/household\/[^/]+$/,
+  /^\/day\/decor$/,
 ];
 
 export function showsMenuBar(pathname: string): boolean {

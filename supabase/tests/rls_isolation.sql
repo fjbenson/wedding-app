@@ -646,8 +646,8 @@ begin
       raise exception 'LEAK: couple A removed wedding B''s decor helpers';
     end if;
     -- And they can use their own.
-    execute $q$insert into decor_items (wedding_id, name, area_key, status, source)
-             values ('aaaaaaaa-0000-0000-0000-000000000001', 'Candles', 'flowers', 'got', 'bought')$q$;
+    execute $q$insert into decor_items (wedding_id, name, place, status, source)
+             values ('aaaaaaaa-0000-0000-0000-000000000001', 'Candles', 'The tables', 'got', 'bought')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

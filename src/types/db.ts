@@ -360,6 +360,31 @@ export interface MenuDish {
 export type DrinkKind = "fizz" | "wine" | "beer" | "spirits" | "soft" | "hot" | "other";
 export type DrinkStatus = "undecided" | "to_order" | "ordered" | "delivered";
 
+export type DecorStatus = "to_get" | "got" | "packed" | "returned";
+export type DecorSource = "own" | "borrowed" | "hired" | "bought" | "made";
+
+/** One decor thing — jam jars, the easel, the guest book pen (0027_decor.sql). */
+export interface DecorItem {
+  id: string;
+  wedding_id: string;
+  /** Where it goes on the day: "Ceremony", "The tables"… */
+  place: string | null;
+  name: string;
+  quantity: number | null;
+  status: DecorStatus;
+  source: DecorSource | null;
+  /** Who it's from: a guest or supplier on the list, or just a name. */
+  from_contact_id: string | null;
+  from_name: string | null;
+  collect_on: string | null;
+  return_on: string | null;
+  /** Helpers not on the list; those who are sit in decor_helpers. */
+  setup_names: string | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
 /** A drink through the day, with how much and who's supplying it (0024). */
 export interface Drink {
   id: string;

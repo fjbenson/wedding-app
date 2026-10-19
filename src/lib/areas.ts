@@ -7,6 +7,7 @@ import {
   Mail,
   MapPin,
   Music,
+  Palette,
   Sparkles,
   UtensilsCrossed,
   type LucideIcon,
@@ -74,6 +75,8 @@ export const STARTER_AREAS: { key: string; label: string; icon: LucideIcon }[] =
   { key: "hair-makeup", label: "Hair & makeup", icon: Brush },
   { key: "stationery", label: "Stationery", icon: Mail },
   { key: "transport", label: "Transport", icon: Car },
+  // Its own special area: a page built around its things (canvas 3 "Decor · Round 2", owner 19 Oct 2026).
+  { key: "decor", label: "Decor", icon: Palette },
 ];
 
 /** An area's icon: the one it was given, else its starter icon, else a sparkle. */

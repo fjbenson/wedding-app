@@ -989,6 +989,39 @@ Next.js scaffold. Built so far, against the plan's tabs:
   the run sheet, showing the printed card on the area page itself (offered:
   the owner hadn't seen it as it's one tap inside the line).
 
+- **Decor, its own special area** (19 Oct 2026; canvas 3 "Decor · Round 2 ·
+  Its own area", owner's pick — it replaced the 18 Oct plan of a Decor list
+  inside every area; `0027_decor.sql`, run 19 Oct 2026 with the owner's OK).
+  Decor is an area like any other (a dot on the ring; "Decor" is a starter
+  area and the first idea in the ring's +), but its page (`isDecorArea()` in
+  `src/lib/decor.ts`: key `decor`, `decorations` or `styling`) shows **its
+  things** in place of the five stages: a numbers card (Things · Still to
+  get · Got it · Packed), then the things **grouped by where they go**
+  (Ceremony, Arrival and entrance, The tables… or the couple's own place;
+  `PLACES`), each row how many, the name, where it's from and who from, and
+  a circle that a tap moves on (still to get → got it → packed → given back
+  for borrowed or hired). Next up comes from the things (`decorNextUp()`).
+  A tap opens **the thing's card** (`?thing=`, `ThingCard` in
+  `decor/decor-things.tsx`, edited in place): where it's at, Own · Borrowed ·
+  Hired · Bought · Made, where it goes, how many, **from** (a guest or
+  supplier picked from the list, or a typed name), collect and give-back
+  dates, **who sets it up** (guests and suppliers, `decor_helpers`, plus
+  typed names), notes. Adding is a full screen (`/decor/new`,
+  `decor-form.tsx`, `?back=` the Decor page or the pack list). **The Day ›
+  Decor** (`/day/decor`, `PackList`): the same things as the day's pack list
+  — Before the day (to get or collect, by date), Set up at the venue (each
+  place, its things, the helpers' initials), After the day (what goes back,
+  to whom; the circle marks it given back). The run sheet now has **three
+  piece tiles under its numbers on phones too** (Seating · Travel · Decor;
+  canvas 3 "The Day · Round 2", option 1). Owner's calls: people picked from
+  the list, no price (money stays in Money), no photos yet. Nobody is told,
+  and the assistant isn't given any of it. Tables `decor_items`,
+  `decor_helpers` (tied to `(id, wedding_id)`; RLS like groups; in
+  `rls_isolation.sql`, which passes with all 27 migrations); queries
+  `src/lib/db/decor.ts`, actions `decor/actions.ts` (the card's return
+  messages). Not yet: a guest's card showing "Lending: the easel", Decor in
+  the demo wedding.
+
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an
 area's `key` as text rather than the plan's `area_id`. Older to-dos may carry
@@ -1085,14 +1118,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0026_top_table.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0027_decor.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0026 are now in** (0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0027 are now in** (0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

@@ -1147,14 +1147,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0029_lists.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0030_moment_music_how.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0029 are now in** (0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0030 are now in** (0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1957,7 +1957,21 @@ additive — new tables hanging off `weddings`. None require changing the above.
      The Day, was one too many): on the Music area page, its **The Day**
      part holds the area's moments plus every moment with a song, each with
      its song, and **Copy for the band or DJ** (`DaySection` with
-     `musicFor`). Links get https:// added; nothing is sent anywhere. The demo wedding has songs on six moments (also in
+     `musicFor`). Links get https:// added; nothing is sent anywhere.
+     **How it's played** (owner, 19 Oct 2026: "the main thing with music is
+     the technology"; `0030_moment_music_how.sql`, run the same day with her
+     OK: `music_kind` song | playlist, `music_played` band | dj | venue |
+     device, `music_who`): on a moment's card and form — A song | A
+     playlist, **Played by** Band · DJ · Venue speakers · Our phone or
+     laptop, **Presses play**. The Music page's rows show how it's played and
+     the moment's own area when it isn't Music ("Cake" — moments keep their
+     area; the Music page gathers every moment with music); the copy for the
+     band or DJ includes them. **Sound check**: "Start a sound check list"
+     on the Music page makes a ready-made list filed under Music (offline
+     playlists, a charged backup phone, aux cable or speaker, test at the
+     venue, a mic for the speeches, the venue's sound contact —
+     `SOUND_CHECK` in `src/lib/music.ts`, `startSoundCheckAction`), then it
+     shows there as a list. Labels in `PLAYED_BY`, `musicTitle()`. The demo wedding has songs on six moments (also in
      `demo-wedding.sql`).
   7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
      rule was no made-up human name — the owner now wants one; ties to the

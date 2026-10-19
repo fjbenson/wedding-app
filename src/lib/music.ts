@@ -17,3 +17,30 @@ export function musicSource(url: string): string {
   if (host.endsWith("deezer.com")) return "Deezer";
   return host || "the link";
 }
+
+/** Who or what plays a moment's music (owner, 19 Oct 2026: "the main thing with music is the technology"). */
+export const PLAYED_BY: { value: "band" | "dj" | "venue" | "device"; label: string }[] = [
+  { value: "band", label: "Band" },
+  { value: "dj", label: "DJ" },
+  { value: "venue", label: "Venue speakers" },
+  { value: "device", label: "Our phone or laptop" },
+];
+
+export const playedByLabel = (v: string | null | undefined) => PLAYED_BY.find((p) => p.value === v)?.label ?? null;
+
+/** "Playlist: Welcome drinks" or just the song. */
+export const musicTitle = (m: { music?: string | null; music_kind?: string | null }) =>
+  m.music ? (m.music_kind === "playlist" ? `Playlist: ${m.music}` : m.music) : null;
+
+/** The ready-made list for the Music area (owner, 19 Oct 2026: is there a backup if the sound fails?). */
+export const SOUND_CHECK = {
+  name: "Sound check",
+  lines: [
+    "Playlists downloaded to play offline",
+    "A backup phone, charged",
+    "Aux cable or Bluetooth speaker as backup",
+    "Test it at the venue",
+    "A mic for the speeches",
+    "The venue's sound contact's number",
+  ],
+};

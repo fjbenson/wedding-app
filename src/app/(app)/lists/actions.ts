@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { addListItem, createList, deleteList, deleteListItem, updateList, updateListItem } from "@/lib/db/lists";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { SOUND_CHECK } from "@/lib/music";
 
 /**
  * Lists (0029_lists.sql), which live with Your notes (owner, 19 Oct 2026:
@@ -120,4 +121,19 @@ export async function removeLineAction(id: string): Promise<Result> {
   }
   done();
   return {};
+}
+
+/** The Music area's ready-made Sound check list, filed under it, then its card opens. */
+export async function startSoundCheckAction(areaKey: string) {
+  const wedding = await getCurrentWedding();
+  if (!wedding) redirect("/");
+  const key = /^[a-z0-9-]+$/.test(areaKey) ? areaKey : "music";
+  let id: string;
+  try {
+    id = await createList(wedding.id, SOUND_CHECK.name, key, SOUND_CHECK.lines);
+  } catch (error) {
+    redirect(`/area/${key}?error=${encodeURIComponent(failed("Starting the sound check", error).error ?? "That didn't save.")}`);
+  }
+  done();
+  redirect(`/area/${key}?list=${id}`);
 }

@@ -258,6 +258,10 @@ export interface RunSheetItem {
   /** A song or playlist for the moment, and its link (0028_moment_music.sql). */
   music?: string | null;
   music_url?: string | null;
+  /** How it's played (0030_moment_music_how.sql). */
+  music_kind?: "song" | "playlist" | null;
+  music_played?: "band" | "dj" | "venue" | "device" | null;
+  music_who?: string | null;
   created_at: string;
 }
 

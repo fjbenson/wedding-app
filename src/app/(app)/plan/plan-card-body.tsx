@@ -8,7 +8,7 @@ import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
 import { todayISO, formatDayMonth, formatLongDate } from "@/lib/dates";
 import { googleCalendarUrl, outlookCalendarUrl } from "@/lib/ics";
-import { musicSource } from "@/lib/music";
+import { musicSource, PLAYED_BY } from "@/lib/music";
 import { replaceQuery } from "@/lib/url-state";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
@@ -462,9 +462,32 @@ export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: 
       <section className="mt-7">
         <h3 className="section-label">Music</h3>
         <dl className="mt-1">
-          <TextRow label="Song" value={m.music ?? null} onSave={(v) => save({ music: v })} />
+          <TextRow label={m.music_kind === "playlist" ? "Playlist" : "Song"} value={m.music ?? null} onSave={(v) => save({ music: v })} />
           <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
+          <TextRow label="Presses play" value={m.music_who ?? null} onSave={(v) => save({ music_who: v })} />
         </dl>
+        {/* Song or playlist, then who or what plays it: taps save at once (owner, 19 Oct 2026). */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(["song", "playlist"] as const).map((k) => {
+            const on = (m.music_kind ?? "song") === k;
+            return (
+              <button key={k} type="button" aria-pressed={on} onClick={() => change({ music_kind: k })} className={musicPill(on)}>
+                {k === "song" ? "A song" : "A playlist"}
+              </button>
+            );
+          })}
+        </div>
+        <p className="type-meta mt-4">Played by</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {PLAYED_BY.map((p) => {
+            const on = m.music_played === p.value;
+            return (
+              <button key={p.value} type="button" aria-pressed={on} onClick={() => change({ music_played: on ? null : p.value })} className={musicPill(on)}>
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
       </section>
     </>
   );
@@ -685,3 +708,6 @@ function MusicLinkRow({ url, onSave }: { url: string | null; onSave: (v: string)
     </div>
   );
 }
+
+const musicPill = (on: boolean) =>
+  `h-9 rounded-full border px-3.5 text-[13px] transition ${on ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"}`;

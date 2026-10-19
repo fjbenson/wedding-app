@@ -66,6 +66,9 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       area_key: text(formData, "area_key"),
       music: text(formData, "music"),
       music_url: musicUrl(text(formData, "music_url")),
+      music_kind: text(formData, "music_kind") === "playlist" ? "playlist" : text(formData, "music") ? "song" : null,
+      music_played: (["band", "dj", "venue", "device"] as const).find((v) => v === text(formData, "music_played")) ?? null,
+      music_who: text(formData, "music_who"),
     });
   } catch (error) {
     failed(back, "That didn't save.", error);

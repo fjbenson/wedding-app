@@ -397,6 +397,17 @@ begin
     ('Carriages', 'Last song: Don''t Stop Me Now, Queen', 'https://open.spotify.com/search/Don%27t%20Stop%20Me%20Now%20Queen')
   ) as v(title, music, url)
   where r.wedding_id = w and r.title = v.title;
+  update run_sheet_items r set music_kind = v.kind, music_played = v.played, music_who = v.who
+  from (values
+    ('Guests arrive, welcome drinks', 'playlist', 'venue', 'Sam Okafor'),
+    ('Ceremony', 'song', 'device', 'Jack Turner'),
+    ('Wedding breakfast', 'song', 'venue', 'Sam Okafor'),
+    ('First dance', 'song', 'band', null),
+    ('Cake cutting', 'song', 'band', null),
+    ('Carriages', 'song', 'dj', null)
+  ) as v(title, kind, played, who)
+  where r.wedding_id = w and r.title = v.title;
+  update run_sheet_items set music = 'Welcome drinks' where wedding_id = w and title = 'Guests arrive, welcome drinks';
 
   -- Decor (0027_decor.sql): its own area, and the things for the day.
   insert into areas (wedding_id, key, label, enabled, show_on_hub, sort_order, budget, details, icon) values (w, 'decor', 'Decor', true, true, 10, 800, '- Wild, warm, lots of candlelight

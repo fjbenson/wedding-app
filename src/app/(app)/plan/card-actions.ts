@@ -140,7 +140,7 @@ export async function updatePlanFieldsAction(
     todo: ["title", "due_date", "category", "description"],
     appointment: ["title", "on_date", "at_time", "location", "contact_id", "area_key", "notes"],
     payment: ["description", "amount", "due_date", "paid_on", "contact_id", "area_key", "notes"],
-    moment: ["title", "at_time", "location", "who", "notes", "area_key", "music", "music_url"],
+    moment: ["title", "at_time", "location", "who", "notes", "area_key", "music", "music_url", "music_kind", "music_played", "music_who"],
     journey: ["vehicle", "at_time", "from_place", "to_place", "notes"],
     idea: ["area_key", "note"],
   }[kind];

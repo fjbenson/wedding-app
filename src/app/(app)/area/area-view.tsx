@@ -3,7 +3,7 @@ import CardLink from "@/components/card-link";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -21,6 +21,8 @@ import type { DecorPerson } from "../decor/decor-people";
 import { DecorThings } from "../decor/decor-things";
 import type { ListWithItems } from "@/lib/db/lists";
 import { ListCard, ListRows } from "../lists/list-bits";
+import { startSoundCheckAction } from "../lists/actions";
+import { musicTitle, playedByLabel, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
 import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
@@ -480,11 +482,19 @@ function DaySection({
   moments,
   facts,
   musicFor,
+  areaKey,
+  areaLabels = {},
+  soundCheck,
 }: {
   moments: RunSheetItem[];
   facts: AreaGuestFacts | null;
   /** The Music area: the couple's names, for "Copy for the band or DJ" (owner, 19 Oct 2026: music belongs in The Day). */
   musicFor?: string | null;
+  /** This page's area, so a moment from another one says which (Cake, Venue…). */
+  areaKey?: string;
+  areaLabels?: Record<string, string>;
+  /** The Music area: its Sound check list, or null to offer one (undefined elsewhere). */
+  soundCheck?: ListWithItems | null;
 }) {
   const withMusic = moments.filter((m) => m.music || m.music_url);
   const transport = facts?.kind === "transport" ? facts : null;
@@ -504,7 +514,15 @@ function DaySection({
                   {m.music && (
                     <span className="mt-0.5 flex items-center gap-1.5 truncate text-[13px] text-champagne-600">
                       <Music className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} aria-label="Music" />
-                      {m.music}
+                      {musicTitle(m)}
+                    </span>
+                  )}
+                  {/* How it's played, and the moment's own area when it isn't this one (owner, 19 Oct 2026). */}
+                  {musicFor && (m.music_played || m.music_who || (m.area_key && m.area_key !== areaKey)) && (
+                    <span className="type-meta mt-0.5 block truncate">
+                      {[playedByLabel(m.music_played), m.music_who && `${m.music_who} presses play`, m.area_key && m.area_key !== areaKey ? areaLabels[m.area_key] ?? null : null]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   )}
                 </span>
@@ -517,11 +535,35 @@ function DaySection({
       {musicFor && withMusic.length > 0 && (
         <div className="py-3">
           <CopyText
-            text={[`Music for ${musicFor}`, "", ...withMusic.map((m) => `${formatClock(m.at_time)}  ${m.title}: ${m.music ?? ""}${m.music_url ? `  ${m.music_url}` : ""}`)].join("\n")}
+            text={[
+              `Music for ${musicFor}`,
+              "",
+              ...withMusic.map((m) =>
+                [
+                  `${formatClock(m.at_time)}  ${m.title}: ${musicTitle(m) ?? ""}`,
+                  [playedByLabel(m.music_played) && `Played by: ${playedByLabel(m.music_played)}`, m.music_who && `Presses play: ${m.music_who}`, m.music_url].filter(Boolean).join("  "),
+                ]
+                  .filter(Boolean)
+                  .join("\n      "),
+              ),
+            ].join("\n")}
             label="Copy for the band or DJ"
           />
         </div>
       )}
+      {/* The backup plan (owner, 19 Oct 2026: is there a backup if the sound fails?). */}
+      {soundCheck !== undefined &&
+        (soundCheck ? (
+          <ListRows lists={[soundCheck]} />
+        ) : (
+          <form action={startSoundCheckAction.bind(null, areaKey ?? "music")} className="border-t border-linen">
+            <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
+              <ListChecks className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+              Start a sound check list
+              <span className="text-[13px] text-stone">· backups, offline playlists, a mic</span>
+            </button>
+          </form>
+        ))}
       {transport && transport.runs.length > 0 && (
         <ul>
           {transport.runs.map((r) => (
@@ -1311,7 +1353,14 @@ export default function AreaView({
               see={{ href: `/day?area=${encodeURIComponent(area.key)}`, label: "In The Day" }}
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
-              <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} />
+              <DaySection
+                moments={moments}
+                facts={guestFacts}
+                musicFor={music ? couple : null}
+                areaKey={area.key}
+                areaLabels={Object.fromEntries(areas.map((a) => [a.key, a.label]))}
+                soundCheck={music ? lists.find((l) => l.name === SOUND_CHECK.name) ?? null : undefined}
+              />
             </Everything>
 
             <Everything

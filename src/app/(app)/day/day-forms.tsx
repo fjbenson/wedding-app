@@ -7,6 +7,7 @@ import PeoplePicker from "../people/people-picker";
 import { ReturnTo } from "@/components/back-link";
 import { AreaTiles, BARE, CARD, Folded, Line, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
+import { PLAYED_BY } from "@/lib/music";
 import type { RunSheetItem, TransportRun } from "@/types/db";
 
 type Action = (formData: FormData) => void | Promise<void>;
@@ -86,6 +87,30 @@ export function RunSheetForm({
             <Line icon={Link2} label="Link">
               <input name="music_url" type="url" inputMode="url" defaultValue={item?.music_url ?? ""} placeholder="Spotify, YouTube or Apple Music link" className={BARE} />
             </Line>
+            <Line icon={UserRound} label="Who presses play">
+              <input name="music_who" defaultValue={item?.music_who ?? ""} placeholder="Who presses play — e.g. Sam" className={BARE} />
+            </Line>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(["song", "playlist"] as const).map((k) => (
+              <label key={k} className="cursor-pointer">
+                <input type="radio" name="music_kind" value={k} defaultChecked={(item?.music_kind ?? "song") === k} className="peer sr-only" />
+                <span className="flex h-9 items-center rounded-full border border-linen bg-white/80 px-3.5 text-[13px] text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
+                  {k === "song" ? "A song" : "A playlist"}
+                </span>
+              </label>
+            ))}
+          </div>
+          <p className="type-meta mt-4">Played by</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {PLAYED_BY.map((p) => (
+              <label key={p.value} className="cursor-pointer">
+                <input type="radio" name="music_played" value={p.value} defaultChecked={item?.music_played === p.value} className="peer sr-only" />
+                <span className="flex h-9 items-center rounded-full border border-linen bg-white/80 px-3.5 text-[13px] text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
+                  {p.label}
+                </span>
+              </label>
+            ))}
           </div>
         </section>
       </Folded>

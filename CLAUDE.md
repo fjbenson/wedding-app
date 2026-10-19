@@ -1544,7 +1544,17 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 19 Oct 2026 chat):** built this chat —
+   `calendar.tsx`). **Next up (end of the 19 Oct 2026 late chat):** built this
+   chat — notes with bullets and tick-boxes (lists folded in), and **the
+   timeline** on every supplier, guest and household card, area page and
+   payment card (0032 run). The owner checks on the phone: the demo's Wild &
+   Gather card, the Flowers area's Timeline line, and Add to history with a
+   to-do. Then, agreed: **Stationery as its own area** (Save the date ·
+   Invitation · Thank-you), the guest list's View › Invitation, and "Did it
+   go?" after every email (canvas 3 "Sent · Round 1", "History · Round 2");
+   thank-yous need a gifts table (owner's OK first). Still open: whether to
+   keep the word "Timeline" or "History".
+   **Earlier next-up (end of the 19 Oct 2026 chat):** built this chat —
    the owner's feedback list (19 items, Backlog "Feedback list"), "Invited"
    now reads "Yet to respond", dietary needs on Seating and in the venue
    plan, tap-the-top on guest and household cards (+ a Table drop-down),

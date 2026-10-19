@@ -1306,14 +1306,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0032_timeline.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0034_food_moments_and_schedules.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0032 are now in** (0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0034 are now in** (0034 food served at moments and a schedule per group, and 0033 a meal and drinks for every guest, run 19 Oct 2026 with the owner's OK; 0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1619,7 +1619,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 19 Oct 2026 late chat):** built this
+   `calendar.tsx`). **Next up (end of the 19 Oct 2026 last chat):** built this
+   chat — **Stationery as its own area** (What you send, View › Sent on the
+   guest list, Send then "Did it go?", Sent to them on household cards, its
+   timeline), **children properly** (meal + drinks tiles, caterer's prices and
+   cost; 0033), **food and drink through the day** and **a schedule for each
+   group** (courses and drinks served at moments, Whose schedule filter with
+   print and email; 0034), demo groups, moments and sendings. The owner checks
+   on the phone: the Stationery page, View › Invitation, a household card's
+   Sent to them, a guest card's meal and drinks, the Food & drink page's
+   "What it comes to" and "Through the day", and The Day › Filter › Whose
+   schedule on the demo. **Suggested next:** gifts and thank-yous (needs a small
+   gifts table: owner's OK first), then the assistant's name, then the small
+   follow-ups (groups on the Add a moment form, the food cost on Money's card,
+   a guest-list filter by meal or drinks, the assistant knowing the new meal
+   fields, "Did it go?" after a group email). Not started from the feedback
+   list: 7 the assistant's name, 18 weddings abroad, 19 paper templates. Backlog
+   added: Travel as a map with a Play timeline; invitations as a supplier, an
+   address export and a possible print-and-post partner. **Earlier next-up (end
+   of the 19 Oct 2026 late chat):** built this
    chat — notes with bullets and tick-boxes (lists folded in), and **the
    timeline** on every supplier, guest and household card, area page and
    payment card (0032 run). The owner checks on the phone: the demo's Wild &

@@ -1859,6 +1859,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
       to the venue** (item 12): each table with its guests' needs written
       next to them. Allergies are health data (checklist item 5): fine for
       the venue's catering, nothing more.
+  18. **Weddings abroad** (owner's question). Today the app assumes the UK:
+      money in £ only, the run sheet's "Now" on UK time (`nowInLondon()`),
+      "Share it out for us" uses a UK split, Travel has places to stay and
+      journeys but no flights. A wedding abroad would want: **flights** (who's
+      on which flight, landing times, who needs a lift from the airport —
+      fits Travel's "getting there and back"), the wedding's own time zone,
+      perhaps a second currency for suppliers abroad, and things like
+      passports or legal paperwork as to-dos. Flight details are guests'
+      personal details: rule one.
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

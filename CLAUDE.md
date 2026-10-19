@@ -285,8 +285,8 @@ Next.js scaffold. Built so far, against the plan's tabs:
   person gets a profile; it replaced the 13 Oct place card): initials large
   on the left (a photo could go there later — optional, never children,
   privacy list), the name in italics on the right (tap to rename), role and
-  "day guest", then three figures across — Answer · Table (`tableNames()`
-  in `src/lib/db/day.ts`; "None yet" links to Seating) · Meal — and
+  "day guest", then three figures across — Answer · Table (`guestSeating()`
+  in `src/lib/db/day.ts`; each figure scrolls to its row since 19 Oct 2026) · Meal — and
   allergies in rose; then flat Text · Call · Email buttons, then **Guest of** (Day / Evening) and one **RSVP** (To invite · Invited · Coming ·
   Can't come) as sliders, then **Role on
   the day** — their roles ticked, four common ones (Maid of honour,
@@ -922,7 +922,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   chair first (`pinSeats`, `seatGuestAt` in `src/lib/db/day.ts`,
   `seatAtAction`) so nobody jumps. **Tables snap to the room's dots**
   (owner, 19 Oct 2026): a 20 × 15 grid of square cells (`GRID_X`, `GRID_Y`
-  in `floor-plan.tsx`), the dots drawn in % so they scale with the room;
+  and `defaultSpot()` in `src/lib/seating.ts`), the dots drawn in % so they scale with the room;
   arrow keys move one dot; tables placed before stay put until moved.
   **Three shapes: Round · Long · Top table** (owner's OK, 19 Oct 2026;
   `0026_top_table.sql`, run the same day, adds `'top'` to
@@ -1398,7 +1398,21 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 18 Oct 2026 chat) — decor, The Day, desktop:**
+   `calendar.tsx`). **Next up (end of the 19 Oct 2026 chat):** built this chat —
+   the owner's feedback list (19 items, Backlog "Feedback list"), "Invited"
+   now reads "Yet to respond", dietary needs on Seating and in the venue
+   plan, tap-the-top on guest and household cards (+ a Table drop-down),
+   dashed Text/Call/Email when missing, Food & drink's Dietary needs line,
+   **Seating on the phone rebuilt** (canvas 3 "Seating · Round 1", B: the
+   table close-up, saved chairs 0025, snap to the grid, top tables 0026,
+   seat a whole group or household), and **Send to the venue** (PDF +
+   email). The owner tries on the phone: the close-up (fill a chair, swap
+   two), a top table's tall close-up, and Share the plan in Mail on the
+   iPhone. Suggested next: "Add to calendar" on appointments (feedback 3, no
+   database change), going back a stage on area pages (1), then children
+   properly (10, needs options and a database change) or venue numbers (12,
+   parked). Earlier, Decor and The Day's tiles (below) are still agreed.
+   **Next up (end of the 18 Oct 2026 chat) — decor, The Day, desktop:**
    built this chat: the menu and Drinks (above). Agreed but **not built**:
    **"Decor"** — the owner's little bits and bobs (chairs, candles, the easel
    for the seating plan, the guest book pen…). Canvas 3 "Decor · Round 1".
@@ -1917,7 +1931,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
       with how many have a need, a mark on unseated names, needs under each
       name in a picked table and in the List, and a **Dietary needs by
       table** card under Seating with **Copy for the venue** (`DietLine` in
-      `floor-plan.tsx`, `DietaryByTable` in `day-view.tsx`). The PDF to the
+      `src/components/diet-line.tsx`, `DietaryByTable` in `day-view.tsx`). The PDF to the
       venue waits on item 12. Original note:
       **Dietary needs on the seating plan — "really, really important"**
       (owner). Make it obvious on the floor plan and the list which seats

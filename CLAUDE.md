@@ -912,8 +912,16 @@ Next.js scaffold. Built so far, against the plan's tabs:
   large, initials in the seats (rose ring and the need written under anyone
   with one), free seats as a dashed + that opens "Who sits here?" (search,
   unseated guests), ‹ › or a swipe to the next table, "Sitting here" with ✕,
-  Round | Long. Seats are slots in name order (the database knows only the
-  table). The old panel under the plan is gone. Options A (pinch to zoom) and
+  Round | Long. **The chair is saved** (owner's OK, 19 Oct 2026;
+  `0025_seat_number.sql`, run the same day: `seats.seat_no`, one guest per
+  chair per table): tap a free chair and pick who sits in it ("Who sits in
+  chair 3?", then on to the next free one); tap someone, then another chair,
+  to move them or swap the two. `arrangeSeats()` (`src/lib/seating.ts`)
+  draws chairs for both the map's dots and the close-up; guests with no
+  chair (seated from the map, the List or the guest card) fill the free ones
+  in name order, and the first chair chosen at a table saves everyone's drawn
+  chair first (`pinSeats`, `seatGuestAt` in `src/lib/db/day.ts`,
+  `seatAtAction`) so nobody jumps. The old panel under the plan is gone. Options A (pinch to zoom) and
   C (tables as cards) weren't picked. `DietLine` moved to
   `src/components/diet-line.tsx`.
   **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view
@@ -1062,14 +1070,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0024_menu_and_drinks.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0025_seat_number.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0024 are now in** (0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0025 are now in** (0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

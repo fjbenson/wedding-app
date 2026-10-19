@@ -45,20 +45,21 @@ function seatSpots(shape: TableShape, capacity: number) {
  * One table, close up (canvas 3 "Seating · Round 1 · The phone", B, owner's
  * pick 19 Oct 2026): the table large, everyone's initials in their seat and
  * any dietary need written under them, free seats as a dashed +. ‹ › or a
- * swipe goes to the next table. Tap a free seat to pick who sits there; tap
- * someone to find them in the list underneath.
+ * swipe goes to the next table. Tap a free chair to pick who sits in it;
+ * tap someone, then another chair, to move them (or swap the two).
  *
- * Seats are slots, not numbered places: the database only knows who's at
- * which table, so people fill the seats in name order.
+ * The chair is saved (0025_seat_number.sql; owner, 19 Oct 2026: "you're
+ * choosing a specific chair"). Chairs are counted clockwise from the top.
  */
 export default function TableView({
   table,
   shape,
   position,
   guests,
+  chairs,
   unseated,
   needs,
-  onSeat,
+  onSeatAt,
   onUnseat,
   onShape,
   onStep,
@@ -70,23 +71,32 @@ export default function TableView({
   position: { index: number; total: number };
   /** Who sits here. */
   guests: Contact[];
+  /** Chair by chair (index 0 = chair 1): a guest's id, or null when free. */
+  chairs: (string | null)[];
   /** Everyone coming who has no table yet — offered for a free seat. */
   unseated: Contact[];
   needs: Record<string, string[]>;
-  onSeat: (contactId: string) => void;
+  /** Sits someone in chair `chair` (from 1), swapping with anyone there. */
+  onSeatAt: (contactId: string, chair: number) => void;
   onUnseat: (contactId: string) => void;
   onShape: (shape: TableShape) => void;
   /** -1 the table before, +1 the next. */
   onStep: (by: -1 | 1) => void;
   onClose: () => void;
 }) {
-  const [picking, setPicking] = useState(false);
+  /** The free chair being filled (from 1), with "Who sits here?" open. */
+  const [picking, setPicking] = useState<number | null>(null);
+  /** Someone tapped, waiting for the chair to move them to. */
+  const [moving, setMoving] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const swipe = useRef<{ x: number; y: number } | null>(null);
 
   const sitting = [...guests].sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
-  const seats = Math.max(table.capacity, sitting.length);
+  const byId = new Map(guests.map((g) => [g.id, g]));
+  const seats = chairs.length;
   const spots = seatSpots(shape, seats);
+  const firstFree = chairs.indexOf(null) + 1;
+  const mover = moving ? byId.get(moving) : undefined;
   const diets = sitting.filter((g) => needs[g.id]?.length).length;
   const free = table.capacity - sitting.length;
   // Bigger tables, smaller seats, so they still fit round the edge.
@@ -97,10 +107,29 @@ export default function TableView({
     .filter((g) => words.every((w) => fullName(g).toLowerCase().includes(w)))
     .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
 
-  const pick = () => {
+  const pick = (chair: number) => {
     setQuery("");
-    setPicking(true);
+    setMoving(null);
+    setPicking(chair);
     window.setTimeout(() => jumpTo("table-pick"), 0);
+  };
+  /** A chair tapped: fill it, move someone into it, or pick someone up. */
+  const tapChair = (chair: number) => {
+    const there = chairs[chair - 1];
+    if (moving) {
+      if (there !== moving) onSeatAt(moving, chair);
+      setMoving(null);
+    } else if (there) {
+      setPicking(null);
+      setMoving(there);
+    } else {
+      pick(chair);
+    }
+  };
+  const step = (by: -1 | 1) => {
+    setMoving(null);
+    setPicking(null);
+    onStep(by);
   };
 
   return (
@@ -122,7 +151,7 @@ export default function TableView({
           <div className="flex shrink-0 gap-2">
             <button
               type="button"
-              onClick={() => onStep(-1)}
+              onClick={() => step(-1)}
               aria-label="The table before"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400"
             >
@@ -130,7 +159,7 @@ export default function TableView({
             </button>
             <button
               type="button"
-              onClick={() => onStep(1)}
+              onClick={() => step(1)}
               aria-label="The next table"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400"
             >
@@ -148,7 +177,7 @@ export default function TableView({
           swipe.current = null;
           if (!s || position.total < 2) return;
           const dx = e.clientX - s.x;
-          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.5) onStep(dx < 0 ? 1 : -1);
+          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.5) step(dx < 0 ? 1 : -1);
         }}
         className="relative mx-auto mt-5 aspect-square w-full max-w-[340px] touch-pan-y select-none"
       >
@@ -163,33 +192,37 @@ export default function TableView({
         </div>
 
         {spots.map((spot, i) => {
-          const g = sitting[i];
+          const g = chairs[i] ? byId.get(chairs[i]!) : undefined;
           const need = g ? needs[g.id] : undefined;
+          const lifted = g && g.id === moving;
           return (
             <div
-              key={g?.id ?? `free-${i}`}
+              key={i}
               style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
               className="absolute flex w-20 -translate-x-1/2 flex-col items-center"
             >
               {g ? (
                 <button
                   type="button"
-                  onClick={() => jumpTo(`seat-${g.id}`)}
-                  aria-label={`${fullName(g)}${need?.length ? `, ${need.join(", ")}` : ""}`}
+                  onClick={() => tapChair(i + 1)}
+                  aria-pressed={lifted}
+                  aria-label={`${moving && !lifted ? `Swap ${mover ? mover.first_name : "them"} with ` : ""}${fullName(g)}${need?.length ? `, ${need.join(", ")}` : ""}`}
                   style={{ width: size, height: size, marginTop: -size / 2, ...(need?.length ? { borderColor: ROSE, color: ROSE } : {}) }}
-                  className={`flex items-center justify-center rounded-full text-[15px] font-semibold ${
+                  className={`flex items-center justify-center rounded-full text-[15px] font-semibold transition ${
                     need?.length ? "border-[2.5px] bg-[#F7E3DD]" : "bg-champagne-100 text-champagne-600 shadow-[0_0_0_3px_#FFFFFF]"
-                  }`}
+                  } ${lifted ? "scale-110 ring-2 ring-ink ring-offset-2" : ""}`}
                 >
                   {initials(g)}
                 </button>
               ) : (
                 <button
                   type="button"
-                  onClick={pick}
-                  aria-label="Free seat: pick who sits here"
+                  onClick={() => tapChair(i + 1)}
+                  aria-label={mover ? `Move ${mover.first_name} to this chair` : "Free chair: pick who sits here"}
                   style={{ width: size, height: size, marginTop: -size / 2 }}
-                  className="flex items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 bg-white text-champagne-600"
+                  className={`flex items-center justify-center rounded-full border-[1.5px] border-dashed bg-white text-champagne-600 ${
+                    picking === i + 1 ? "border-ink ring-2 ring-ink ring-offset-2" : mover ? "border-ink" : "border-champagne-400"
+                  }`}
                 >
                   <Plus className="h-5 w-5" strokeWidth={1.6} aria-hidden />
                 </button>
@@ -212,11 +245,20 @@ export default function TableView({
         </div>
       )}
 
+      {mover && (
+        <p role="status" className="mt-4 rounded-2xl bg-ink px-4 py-3 text-center text-sm text-ivory">
+          Moving {mover.first_name}: tap an empty chair, or someone to swap with.{" "}
+          <button type="button" onClick={() => setMoving(null)} className="underline underline-offset-4">
+            Stop
+          </button>
+        </p>
+      )}
+
       {picking && (
         <section id="table-pick" className="mt-6 rounded-[22px] border border-linen bg-white p-3">
           <div className="flex items-center justify-between px-1">
-            <h3 className="section-label">Who sits here?</h3>
-            <button type="button" onClick={() => setPicking(false)} className="text-sm text-stone underline underline-offset-4 hover:text-ink">
+            <h3 className="section-label">Who sits in chair {picking}?</h3>
+            <button type="button" onClick={() => setPicking(null)} className="text-sm text-stone underline underline-offset-4 hover:text-ink">
               Done
             </button>
           </div>
@@ -240,8 +282,11 @@ export default function TableView({
                     <button
                       type="button"
                       onClick={() => {
-                        onSeat(g.id);
-                        if (free <= 1) setPicking(false);
+                        onSeatAt(g.id, picking);
+                        // On to the next free chair, if there is one.
+                        const next = chairs.findIndex((c, i) => c === null && i + 1 !== picking);
+                        setQuery("");
+                        setPicking(next >= 0 && free > 1 ? next + 1 : null);
                       }}
                       className="flex min-h-12 w-full items-center gap-3 px-1 py-2 text-left hover:text-champagne-600"
                     >
@@ -299,8 +344,8 @@ export default function TableView({
             })}
           </ul>
         )}
-        {free > 0 && !picking && (
-          <button type="button" onClick={pick} className="mt-1 flex min-h-12 items-center gap-3 font-display text-[15px] italic text-stone hover:text-ink">
+        {free > 0 && !picking && firstFree > 0 && (
+          <button type="button" onClick={() => pick(firstFree)} className="mt-1 flex min-h-12 items-center gap-3 font-display text-[15px] italic text-stone hover:text-ink">
             <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600">
               <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
             </span>

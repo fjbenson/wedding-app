@@ -14,6 +14,8 @@ import {
   saveRunSheetItem,
   saveTransportRun,
   seatGuest,
+  seatGuestAt,
+  pinSeats,
   unseatGuest,
   updateTable,
 } from "@/lib/db/day";
@@ -193,6 +195,35 @@ export async function seatOnPlanAction(contactId: string, tableId: string): Prom
   try {
     await seatGuest(wid, contactId, tableId);
   } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
+}
+
+/**
+ * Sits a guest in one chair at a table (swapping with whoever was there).
+ * `pins` first gives chairs to the table's guests who had none, as drawn.
+ */
+export async function seatAtAction(
+  contactId: string,
+  tableId: string,
+  seatNo: number,
+  pins: { contactId: string; seatNo: number }[] = [],
+): Promise<string | null> {
+  if (!Number.isInteger(seatNo) || seatNo < 1) return null;
+  const wid = await weddingId();
+  try {
+    await pinSeats(
+      tableId,
+      pins.filter((p) => Number.isInteger(p.seatNo) && p.seatNo >= 1),
+    );
+    await seatGuestAt(wid, contactId, tableId, seatNo);
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "42703" || code === "PGRST204") {
+      return "Choosing a chair needs one more database step: run supabase/migrations/0025_seat_number.sql in Supabase.";
+    }
     return floorPlanError(error);
   }
   refresh();

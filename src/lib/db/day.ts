@@ -104,13 +104,61 @@ export async function deleteTable(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Seats a guest at a table, moving them if they were sat elsewhere. */
+/** 42703 / PGRST204: seats.seat_no doesn't exist yet (0025_seat_number.sql not run). */
+const noSeatNo = (error: { code?: string } | null) => error?.code === "42703" || error?.code === "PGRST204";
+
+/** Seats a guest at a table, moving them if they were sat elsewhere — in any free chair. */
 export async function seatGuest(weddingId: string, contactId: string, tableId: string): Promise<void> {
   const supabase = await createClient();
+  const row = { contact_id: contactId, wedding_id: weddingId, table_id: tableId };
+  let { error } = await supabase.from("seats").upsert({ ...row, seat_no: null }, { onConflict: "contact_id" });
+  if (noSeatNo(error)) ({ error } = await supabase.from("seats").upsert(row, { onConflict: "contact_id" }));
+  if (error) throw error;
+}
+
+/**
+ * Gives chair numbers to guests at a table whose chair was only drawn, as the
+ * close-up drew them — so nobody jumps about once chairs start being chosen.
+ * Only touches guests at this table; the chairs given are free ones.
+ */
+export async function pinSeats(tableId: string, pins: { contactId: string; seatNo: number }[]): Promise<void> {
+  if (pins.length === 0) return;
+  const supabase = await createClient();
+  const results = await Promise.all(
+    pins.map((p) =>
+      supabase.from("seats").update({ seat_no: p.seatNo }).eq("contact_id", p.contactId).eq("table_id", tableId),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
+}
+
+/**
+ * Sits a guest in one chair. If someone's already in it they swap: they take
+ * the chair the guest left (when it was at this table), or any free one.
+ * Not one transaction — at worst, after a failure, someone sits "anywhere at
+ * this table" rather than in their chair.
+ */
+export async function seatGuestAt(weddingId: string, contactId: string, tableId: string, seatNo: number): Promise<void> {
+  const supabase = await createClient();
+  const [{ data: mine, error: e1 }, { data: theirs, error: e2 }] = await Promise.all([
+    supabase.from("seats").select("table_id, seat_no").eq("contact_id", contactId).maybeSingle(),
+    supabase.from("seats").select("contact_id").eq("table_id", tableId).eq("seat_no", seatNo).maybeSingle(),
+  ]);
+  if (e1 || e2) throw e1 ?? e2;
+  const other = theirs?.contact_id && theirs.contact_id !== contactId ? (theirs.contact_id as string) : null;
+  if (other) {
+    const { error } = await supabase.from("seats").update({ seat_no: null }).eq("contact_id", other);
+    if (error) throw error;
+  }
   const { error } = await supabase
     .from("seats")
-    .upsert({ contact_id: contactId, wedding_id: weddingId, table_id: tableId }, { onConflict: "contact_id" });
+    .upsert({ contact_id: contactId, wedding_id: weddingId, table_id: tableId, seat_no: seatNo }, { onConflict: "contact_id" });
   if (error) throw error;
+  if (other && mine?.table_id === tableId && mine.seat_no) {
+    const { error: e3 } = await supabase.from("seats").update({ seat_no: mine.seat_no }).eq("contact_id", other);
+    if (e3) throw e3;
+  }
 }
 
 export async function unseatGuest(contactId: string): Promise<void> {

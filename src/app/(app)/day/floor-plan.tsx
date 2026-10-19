@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { UsersRound, WheatOff } from "lucide-react";
 import TableView from "./table-view";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
-import { moveTableAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
+import { moveTableAction, seatAtAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
+import { arrangeSeats } from "@/lib/seating";
 
 type Point = { x: number; y: number };
 
@@ -98,6 +99,9 @@ export default function FloorPlan({
     setShapes(Object.fromEntries(tables.map((t) => [t.id, t.shape ?? "round"])));
   }, [tables]);
   useEffect(() => setTableOf(new Map(seats.map((s) => [s.contact_id, s.table_id]))), [seats]);
+  /** Which chair each guest sits in (0025); null: any free one. */
+  const [chairOf, setChairOf] = useState<Map<string, number | null>>(new Map());
+  useEffect(() => setChairOf(new Map(seats.map((s) => [s.contact_id, s.seat_no ?? null]))), [seats]);
 
   function save(action: () => Promise<string | null>) {
     startTransition(async () => {
@@ -117,12 +121,37 @@ export default function FloorPlan({
     const members = new Set(groups.find((g) => g.id === groupId)?.members ?? []);
     return unseated.filter((g) => members.has(g.id));
   };
+  /** Chair by chair: the guest's id, or null for a free chair. */
+  const chairsAt = (t: SeatingTable) => arrangeSeats(atTable(t.id).map((g) => g.id), chairOf, t.capacity);
+
+  /**
+   * Sits someone in one chair. Anyone there swaps into the chair the mover
+   * left (if it was at this table). Everyone's drawn chair is saved first,
+   * so nobody else moves about.
+   */
+  function seatAt(contactId: string, t: SeatingTable, chair: number) {
+    const chairs = chairsAt(t);
+    const pins = chairs.flatMap((id, i) => (id && chairOf.get(id) !== i + 1 ? [{ contactId: id, seatNo: i + 1 }] : []));
+    const other = chairs[chair - 1];
+    const left = chairs.indexOf(contactId);
+    setChairOf((m) => {
+      const next = new Map(m);
+      pins.forEach((p) => next.set(p.contactId, p.seatNo));
+      next.set(contactId, chair);
+      if (other && other !== contactId) next.set(other, left >= 0 ? left + 1 : null);
+      return next;
+    });
+    setTableOf((m) => new Map(m).set(contactId, t.id));
+    save(() => seatAtAction(contactId, t.id, chair, pins));
+  }
+
   // Groups with someone coming still to seat.
   const openGroups = groups.map((g) => ({ ...g, waiting: groupUnseated(g.id).length })).filter((g) => g.waiting > 0);
   const inPickedGroup = new Set(selectedGroup ? groupUnseated(selectedGroup).map((g) => g.id) : []);
 
   function seat(contactId: string, tableId: string) {
     setTableOf((m) => new Map(m).set(contactId, tableId));
+    setChairOf((m) => new Map(m).set(contactId, null));
     setSelectedGuest(null);
     save(() => seatOnPlanAction(contactId, tableId));
   }
@@ -142,6 +171,11 @@ export default function FloorPlan({
     setTableOf((m) => {
       const next = new Map(m);
       ids.forEach((id) => next.set(id, tableId));
+      return next;
+    });
+    setChairOf((m) => {
+      const next = new Map(m);
+      ids.forEach((id) => next.set(id, null));
       return next;
     });
     setSelectedGroup(null);
@@ -257,6 +291,8 @@ export default function FloorPlan({
             const sitting = atTable(t.id).length;
             const people = atTable(t.id);
             const diets = people.filter((g) => needs[g.id]?.length).length;
+            // The same chairs as the close-up, so a rose dot is where that guest sits.
+            const chairs = chairsAt(t);
             const over = sitting > t.capacity;
             const full = sitting >= t.capacity;
             const active = selectedTable === t.id;
@@ -292,8 +328,8 @@ export default function FloorPlan({
                     style={{ left: `${d.x}%`, top: `${d.y}%` }}
                     // A rose dot: the person in that seat has a dietary need (owner, 19 Oct 2026).
                     className={`absolute h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full border ${
-                      i < sitting
-                        ? needs[people[i].id]?.length
+                      chairs[i]
+                        ? needs[chairs[i]!]?.length
                           ? "border-[#9A3F2B] bg-[#9A3F2B]"
                           : "border-champagne-600 bg-champagne-600"
                         : "border-champagne-400 bg-white"
@@ -376,12 +412,10 @@ export default function FloorPlan({
           shape={shapes[table.id] ?? "round"}
           position={{ index: tableIndex, total: tables.length }}
           guests={atTable(table.id)}
+          chairs={chairsAt(table)}
           unseated={unseated}
           needs={needs}
-          onSeat={(id) => {
-            setTableOf((m) => new Map(m).set(id, table.id));
-            save(() => seatOnPlanAction(id, table.id));
-          }}
+          onSeatAt={(id, chair) => seatAt(id, table, chair)}
           onUnseat={unseat}
           onShape={(shape) => changeShape(table.id, shape)}
           onStep={(by) => setSelectedTable(tables[(tableIndex + by + tables.length) % tables.length].id)}

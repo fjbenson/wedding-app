@@ -278,6 +278,8 @@ export interface Seat {
   contact_id: string;
   wedding_id: string;
   table_id: string;
+  /** Which chair, from 1 (0025_seat_number.sql); null: any free one. Missing until 0025 is run. */
+  seat_no?: number | null;
 }
 
 /** One run of a car or coach on the day. */

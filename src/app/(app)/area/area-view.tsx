@@ -807,7 +807,7 @@ export default function AreaView({
     {
       name: STAGES[0],
       id: "ideas",
-      line: ideaCount > 0 ? `${plural(ideaCount, "idea")}${area.details ? " · key facts" : ""}` : area.details ? "Key facts" : "Nothing yet",
+      line: ideaCount > 0 ? plural(ideaCount, "idea") : area.details ? "Key facts" : "Not yet",
       content: (
         <>
           {photos.length > 0 && (
@@ -870,7 +870,7 @@ export default function AreaView({
     {
       name: STAGES[1],
       id: "quotes",
-      line: area.diy ? "Doing it ourselves" : withQuote.length > 0 ? `${plural(withQuote.length, "quote")} in` : inTouch.length > 0 ? `${inTouch.length} in touch` : "No one yet",
+      line: area.diy ? "Doing it ourselves" : withQuote.length > 0 ? plural(withQuote.length, "quote") : inTouch.length > 0 ? `${inTouch.length} in touch` : "Not yet",
       content: area.diy ? (
         <div className="glass-card rounded-[22px] px-4">
           <Empty>You&apos;re doing this yourselves.</Empty>
@@ -884,14 +884,14 @@ export default function AreaView({
         </div>
       ) : (
         <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
-          {[...quoted, ...inTouch].length > 0 && (
+          {[...booked, ...quoted, ...inTouch].length > 0 && (
             <ul>
-              {[...quoted, ...inTouch].map((s) => (
+              {[...booked, ...quoted, ...inTouch].map((s) => (
                 <SupplierRow key={s.id} s={s} />
               ))}
             </ul>
           )}
-          <Link href={`/people/suppliers/new?category=${key}`} className={`flex min-h-12 items-center text-[15px] text-champagne-600 hover:text-ink ${quoted.length + inTouch.length > 0 ? "border-t border-linen" : ""}`}>
+          <Link href={`/people/suppliers/new?category=${key}`} className={`flex min-h-12 items-center text-[15px] text-champagne-600 hover:text-ink ${booked.length + quoted.length + inTouch.length > 0 ? "border-t border-linen" : ""}`}>
             + Add a supplier
           </Link>
         </div>
@@ -942,7 +942,7 @@ export default function AreaView({
     {
       name: STAGES[3],
       id: "paid",
-      line: money.committed > 0 ? `${formatMoney(money.paid)} of ${formatMoney(money.committed)} paid` : "Nothing agreed yet",
+      line: money.committed <= 0 ? "Not yet" : money.paid >= money.committed ? "All paid" : `${formatMoney(money.committed - money.paid)} to go`,
       content: (
         <>
         {unpaid.length + unscheduled.length > 0 ? (
@@ -983,7 +983,7 @@ export default function AreaView({
     {
       name: STAGES[4],
       id: "ready",
-      line: area.ready ? "Ready" : stage.current === 4 ? "Your tap" : "When it's all sorted",
+      line: area.ready ? "Ready" : "Not yet",
       content: area.ready ? (
         <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", false)} className="px-1">
           <StepBack label="Not ready after all" />

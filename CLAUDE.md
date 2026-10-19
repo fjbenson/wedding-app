@@ -212,7 +212,13 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Plan · Money · The Day · notes), each a one-line summary that opens in
   place with "+ Add …" and "In Plan ›" at its foot (`Everything` in
   `area-view.tsx`). Links to `#payments`, `#notes`… open the right part
-  (`open-on-hash.tsx`). The earlier sections below are kept for reference.
+  (`open-on-hash.tsx`). **One rule for each stage's grey line** (owner,
+  19 Oct 2026: "all the subtext is different"): what it holds in a few
+  words, "Not yet" when empty — Ideas "4 ideas" (or "Key facts"), Quotes "2
+  quotes" (or "1 in touch"), Booked the name, Paid "£1,200 to go" / "All
+  paid", Ready "Ready". **Quotes keeps every quote, the booked one too**
+  (owner: still good to see them once one's booked). The earlier sections
+  below are kept for reference.
   Suppliers file under the wedding's areas too (plus "Other").
 - **People** (`/people`): two tabs, **Guests · Suppliers** — a small
   rounded switch in the top-right corner above the title ("The guest list"

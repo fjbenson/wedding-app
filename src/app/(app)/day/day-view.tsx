@@ -1,9 +1,9 @@
 import PageTitle from "@/components/page-title";
+import { AlsoInTheDay, DayPill, PieceTiles } from "./day-pieces";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
 import { WheatOff, X } from "lucide-react";
 import AddButton from "@/components/add-button";
-import CornerSwitch from "@/components/corner-switch";
 import ViewMenu from "@/components/view-menu";
 import NumbersCard from "@/components/numbers-card";
 import UrlSearch from "@/components/url-search";
@@ -102,16 +102,6 @@ export default function DayView({
 
   return (
     <main className={`page pb-40 lg:pb-16 print:p-0 ${tab === "run-sheet" ? "lg:max-w-[1368px]" : ""}`}>
-      <div className="print:hidden">
-        <CornerSwitch
-          label="The Day"
-          tabs={[
-            { label: "Run sheet", href: "/day", active: tab === "run-sheet" },
-            { label: "Seating", href: "/day?tab=seating", active: tab === "seating" },
-            { label: "Travel", href: "/day?tab=travel", active: tab === "travel" },
-          ]}
-        />
-      </div>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -218,7 +208,7 @@ function RunSheet({
   return (
     <>
       <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
-        The day
+        The Day
       </PageTitle>
       {/* The tab's numbers, search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
       <div className="print:hidden">
@@ -239,16 +229,14 @@ function RunSheet({
         ]}
       />
       {/* The day's pieces as three tiles under the numbers (canvas 3 "The Day · Round 2", option 1, owner's pick). */}
-      <div className="mt-3 grid grid-cols-3 gap-2 lg:mt-6 lg:gap-3">
-        <PieceTile href="/day?tab=seating" title="Seating" figure={pieces.seated} line={`of ${pieces.coming} seated`} />
-        <PieceTile href="/day?tab=travel" title="Travel" figure={pieces.noLift} line="without a lift" />
-        <PieceTile
-          href="/day/decor"
-          title="Decor"
-          figure={pieces.decor.all ? pieces.decor.toGet : 0}
-          line={pieces.decor.all ? "still to get" : "nothing yet"}
-        />
-      </div>
+      <PieceTiles
+        className="mt-6"
+        facts={{
+          seating: `${pieces.seated} of ${pieces.coming} seated`,
+          travel: pieces.noLift === 0 ? "Everyone has a lift" : `${pieces.noLift} without a lift`,
+          decor: pieces.decor.all === 0 ? "Nothing yet" : pieces.decor.toGet === 0 ? "All got" : `${pieces.decor.toGet} still to get`,
+        }}
+      />
       </div>
       <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
@@ -367,18 +355,6 @@ function pieces(data: DayData, guests: Contact[], rsvps: Rsvp[]) {
   };
 }
 
-/** One of the day's pieces as a small glass tile: its name, one figure, open it. */
-function PieceTile({ href, title, figure, line }: { href: string; title: string; figure: number; line: string }) {
-  return (
-    <Link href={href} className="glass-card row-press flex min-w-0 flex-col rounded-[22px] px-3 py-3.5 [--row-bleed:0px] lg:px-[18px] lg:py-4">
-      <span className="section-label">{title}</span>
-      <span className="type-figure mt-2 text-[28px] leading-none !text-champagne-600 lg:text-[34px]">{figure}</span>
-      <span className="mt-1 text-[13px] text-stone">{line}</span>
-      <span className="mt-auto pt-2.5 text-[13px] text-champagne-600">Open ›</span>
-    </Link>
-  );
-}
-
 function comingGuests(guests: Contact[], rsvps: Rsvp[]): Contact[] {
   return guests.filter((g) => {
     const theirs = rsvps.filter((r) => r.contact_id === g.id);
@@ -438,7 +414,8 @@ function Seating({
 
   return (
     <>
-      <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
+      <DayPill />
+      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         Seating
       </PageTitle>
       {/* The tab's numbers, search with the black +, then View (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
@@ -473,6 +450,7 @@ function Seating({
         <SeatingList data={data} coming={coming} unseated={unseated} tableOf={tableOf} needs={needs} />
       )}
       <DietaryByTable tables={data.tables} coming={coming} tableOf={tableOf} needs={needs} />
+      <AlsoInTheDay current="seating" />
     </>
   );
 }

@@ -1011,9 +1011,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Decor** (`/day/decor`, `PackList`): the same things as the day's pack list
   — Before the day (to get or collect, by date), Set up at the venue (each
   place, its things, the helpers' initials), After the day (what goes back,
-  to whom; the circle marks it given back). The run sheet now has **three
-  piece tiles under its numbers on phones too** (Seating · Travel · Decor;
-  canvas 3 "The Day · Round 2", option 1). Owner's calls: people picked from
+  to whom; the circle marks it given back). **The Day is one day with its
+  pieces** (canvas 3 "The Day · Round 2", option 1, owner's pick, built
+  19 Oct 2026; `day/day-pieces.tsx`): the Run sheet · Seating · Travel
+  switch is gone; the run sheet ("The Day") has **"Pieces of the day"** under
+  its numbers — three white tiles, Seating · Travel · Decor, each an icon
+  and one fact (`PieceTiles`); a piece opened has a champagne **"The Day ›"**
+  pill above its title (`DayPill`, no back arrow) and **"Also in the day"**
+  pills at its foot (`AlsoInTheDay`: The whole day and the other two). Owner's calls: people picked from
   the list, no price (money stays in Money), no photos yet. Nobody is told,
   and the assistant isn't given any of it. Tables `decor_items`,
   `decor_helpers` (tied to `(id, wedding_id)`; RLS like groups; in

@@ -8,6 +8,7 @@ import AddMenu from "@/components/add-menu";
 import NumbersCard from "@/components/numbers-card";
 import AddButton from "@/components/add-button";
 import PageTitle from "@/components/page-title";
+import { AlsoInTheDay, DayPill } from "./day-pieces";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { formatClock } from "@/lib/dates";
 import { replaceQuery } from "@/lib/url-state";
@@ -95,7 +96,8 @@ export default function Travel({
 
   return (
     <>
-      <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
+      <DayPill />
+      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         Travel
       </PageTitle>
 
@@ -195,6 +197,7 @@ export default function Travel({
       {run && <RunSheet key={run.id} run={run} guests={guests} passengers={passengers} onClose={() => show(null)} />}
       {open === "unsure" && <UnsureSheet people={unsure} stays={stays} onClose={() => show(null)} />}
       {open === "nolift" && <NoLiftSheet people={noLift} runs={runs} onClose={() => show(null)} />}
+      <AlsoInTheDay current="travel" />
     </>
   );
 }

@@ -1078,6 +1078,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   time, where and in charge, then folded: a song or playlist (open from the
   Music area), notes, an area. Demo moments are put in their suppliers'
   charge (also in `demo-wedding.sql`).
+  **The Music page's rows** (owner, 19 Oct 2026: "very, very busy"): just
+  the moment's name and its song (music note), nothing else; under them
+  **Copy the music list** with a line saying it's every song with its time
+  and link, to paste into a message to the band or DJ. **The Sound check
+  list lives under the Music page's notes only** (it showed twice):
+  "Start a sound check list" sits there until it's made.
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an

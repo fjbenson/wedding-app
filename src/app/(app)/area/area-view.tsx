@@ -482,19 +482,11 @@ function DaySection({
   moments,
   facts,
   musicFor,
-  areaKey,
-  areaLabels = {},
-  soundCheck,
 }: {
   moments: RunSheetItem[];
   facts: AreaGuestFacts | null;
   /** The Music area: the couple's names, for "Copy for the band or DJ" (owner, 19 Oct 2026: music belongs in The Day). */
   musicFor?: string | null;
-  /** This page's area, so a moment from another one says which (Cake, Venue…). */
-  areaKey?: string;
-  areaLabels?: Record<string, string>;
-  /** The Music area: its Sound check list, or null to offer one (undefined elsewhere). */
-  soundCheck?: ListWithItems | null;
 }) {
   const withMusic = moments.filter((m) => m.music || m.music_url);
   const transport = facts?.kind === "transport" ? facts : null;
@@ -508,7 +500,8 @@ function DaySection({
                 <span className="type-figure w-12 shrink-0 text-lg text-champagne-600">{formatClock(m.at_time)}</span>
                 <span className="min-w-0 flex-1">
                   <span className="type-item block truncate">{m.title}</span>
-                  {(m.location || m.who) && (
+                  {/* On the Music page a row is just the moment and its song (owner, 19 Oct 2026: "very busy"). */}
+                  {!musicFor && (m.location || m.who) && (
                     <span className="type-meta mt-0.5 block truncate">{[m.location, m.who].filter(Boolean).join(" · ")}</span>
                   )}
                   {m.music && (
@@ -517,10 +510,6 @@ function DaySection({
                       {musicTitle(m)}
                     </span>
                   )}
-                  {/* The moment's own area when it isn't this one (owner, 19 Oct 2026). */}
-                  {musicFor && m.area_key && m.area_key !== areaKey && areaLabels[m.area_key] && (
-                    <span className="type-meta mt-0.5 block truncate">{areaLabels[m.area_key]}</span>
-                  )}
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               </CardLink>
@@ -528,8 +517,10 @@ function DaySection({
           ))}
         </ul>
       )}
+      {/* The whole music list as text, to paste into a message to the band or DJ. */}
       {musicFor && withMusic.length > 0 && (
         <div className="py-3">
+          <p className="mb-2 text-[13px] text-stone">Every song with its time and link, to paste into a message to your band or DJ.</p>
           <CopyText
             text={[
               `Music for ${musicFor}`,
@@ -543,23 +534,10 @@ function DaySection({
                   .join("\n      "),
               ),
             ].join("\n")}
-            label="Copy for the band or DJ"
+            label="Copy the music list"
           />
         </div>
       )}
-      {/* The backup plan (owner, 19 Oct 2026: is there a backup if the sound fails?). */}
-      {soundCheck !== undefined &&
-        (soundCheck ? (
-          <ListRows lists={[soundCheck]} />
-        ) : (
-          <form action={startSoundCheckAction.bind(null, areaKey ?? "music")} className="border-t border-linen">
-            <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
-              <ListChecks className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Start a sound check list
-              <span className="text-[13px] text-stone">· backups, offline playlists, a mic</span>
-            </button>
-          </form>
-        ))}
       {transport && transport.runs.length > 0 && (
         <ul>
           {transport.runs.map((r) => (
@@ -1349,14 +1327,7 @@ export default function AreaView({
               see={{ href: `/day?area=${encodeURIComponent(area.key)}`, label: "In The Day" }}
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
-              <DaySection
-                moments={moments}
-                facts={guestFacts}
-                musicFor={music ? couple : null}
-                areaKey={area.key}
-                areaLabels={Object.fromEntries(areas.map((a) => [a.key, a.label]))}
-                soundCheck={music ? lists.find((l) => l.name === SOUND_CHECK.name) ?? null : undefined}
-              />
+              <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} />
             </Everything>
 
             <Everything
@@ -1369,6 +1340,18 @@ export default function AreaView({
             >
           {/* Lists filed under this area (owner, 19 Oct 2026), then its notes. */}
           {lists.length > 0 && <ListRows lists={lists} />}
+          {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check list, once. */}
+          {music && !lists.some((l) => l.name === SOUND_CHECK.name) && editing !== "note" && (
+            <form action={startSoundCheckAction.bind(null, area.key)} className="border-b border-linen">
+              <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
+                <ListChecks className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+                <span>
+                  Start a sound check list
+                  <span className="block text-[12.5px] text-stone">Backups, offline playlists, a mic for the speeches</span>
+                </span>
+              </button>
+            </form>
+          )}
           {editing !== "note" && (
             <Link
               href={`/lists/new?back=${encodeURIComponent(`/area/${area.key}`)}&area=${encodeURIComponent(area.key)}`}

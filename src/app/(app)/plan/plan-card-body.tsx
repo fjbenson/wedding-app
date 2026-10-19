@@ -636,7 +636,7 @@ function AddToCalendar({ appointment: a, withWhom }: { appointment: Appointment;
       {open && (
         <div className="mt-2 rounded-2xl border border-linen bg-white px-3">
           <a href={`/plan/appointments/${a.id}/calendar`} className={row}>
-            <span>iPhone or Mac calendar<span className="block text-[12px] text-stone">Goes into your default calendar</span></span>
+            <span>iPhone or Mac calendar<span className="block text-[12px] text-stone">Pick which calendar, then tap the tick</span></span>
             <ExternalLink className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.6} aria-hidden />
           </a>
           <a href={googleCalendarUrl(a, withWhom)} target="_blank" rel="noopener noreferrer" className={row}>

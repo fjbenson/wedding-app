@@ -92,7 +92,10 @@ export function googleCalendarUrl(a: Appointment, withWhom?: string | null): str
   const q = new URLSearchParams({ action: "TEMPLATE", text: a.title, dates, ctz: "Europe/London" });
   if (a.location) q.set("location", a.location);
   if (p.notes) q.set("details", p.notes);
-  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+  // The "edit an event" address keeps the event through Google's sign-in (owner,
+  // 19 Oct 2026: the older "render" address lost it after signing in).
+  q.delete("action");
+  return `https://calendar.google.com/calendar/r/eventedit?${q.toString()}`;
 }
 
 /** Outlook on the web: a personal account (outlook.com) or a work or school one (Microsoft 365). */

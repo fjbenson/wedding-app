@@ -26,6 +26,11 @@ function defaultSpot(index: number): Point {
 
 /** Table size as a % of the room's width — bigger tables look bigger. */
 function tableSize(shape: TableShape, capacity: number) {
+  if (shape === "top") {
+    // Every chair on one side, so it runs longer than a long table of the same size.
+    const width = Math.max(20, Math.min(50, 6 + capacity * 3.2));
+    return { width, aspect: width / 7 };
+  }
   if (shape === "long") {
     const width = Math.max(16, Math.min(36, 6 + capacity * 1.8));
     return { width, aspect: width / 8 };
@@ -34,10 +39,13 @@ function tableSize(shape: TableShape, capacity: number) {
   return { width, aspect: 1 };
 }
 
-/** The little seat dots: round the edge of a round table, down both sides of a long one. */
+/** The little seat dots: round the edge of a round table, both sides of a long one, behind a top table. */
 function seatDots(shape: TableShape, capacity: number) {
   const dots: Point[] = [];
-  if (shape === "long") {
+  if (shape === "top") {
+    // Behind the table, so the people sitting there face down into the room.
+    for (let i = 0; i < capacity; i++) dots.push({ x: ((i + 0.5) / capacity) * 100, y: -24 });
+  } else if (shape === "long") {
     const perSide = Math.ceil(capacity / 2);
     for (let i = 0; i < capacity; i++) {
       const side = i < perSide ? 0 : 1;

@@ -271,7 +271,7 @@ export interface SeatingTable {
   shape?: TableShape;
 }
 
-export type TableShape = "round" | "long";
+export type TableShape = "round" | "long" | "top";
 
 /** Which table a guest sits at. A guest sits at one table at most. */
 export interface Seat {

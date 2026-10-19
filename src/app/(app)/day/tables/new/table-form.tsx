@@ -1,6 +1,6 @@
 "use client";
 
-import { Circle, RectangleHorizontal } from "lucide-react";
+import { Circle, PanelTop, RectangleHorizontal } from "lucide-react";
 import { SubmitBar } from "@/components/form-bits";
 import { CARD, Part, TITLE_INPUT, Tiles } from "@/components/visual-form";
 import { addTableAndBackAction } from "../../actions";
@@ -8,9 +8,10 @@ import { addTableAndBackAction } from "../../actions";
 const SHAPES = [
   { value: "round", label: "Round", icon: Circle },
   { value: "long", label: "Long", icon: RectangleHorizontal },
+  { value: "top", label: "Top table", icon: PanelTop },
 ];
 
-/** A table: its name large, how many it seats, round or long. */
+/** A table: its name large, how many it seats, round, long or a top table. */
 export default function TableForm() {
   return (
     <form action={addTableAndBackAction}>
@@ -33,7 +34,7 @@ export default function TableForm() {
       </Part>
 
       <Part label="Shape">
-        <Tiles name="shape" options={SHAPES} defaultValue="round" columns="grid-cols-2" />
+        <Tiles name="shape" options={SHAPES} defaultValue="round" columns="grid-cols-3" />
       </Part>
 
       <SubmitBar label="Add table" />

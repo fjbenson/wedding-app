@@ -95,7 +95,8 @@ export async function addTableAction(formData: FormData) {
   try {
     const day = await getDay(wid);
     const count = day?.tables.length ?? 0;
-    const shape = text(formData, "shape") === "long" ? "long" : "round";
+    const asked = text(formData, "shape");
+    const shape = asked === "long" || asked === "top" ? asked : "round";
     await addTable(wid, text(formData, "name") ?? `Table ${count + 1}`, capacity, count, shape);
   } catch (error) {
     failed(SEATING, "That didn't add the table.", error);
@@ -180,7 +181,7 @@ export async function moveTableAction(id: string, x: number, y: number): Promise
 }
 
 export async function setTableShapeAction(id: string, shape: string): Promise<string | null> {
-  if (shape !== "round" && shape !== "long") return null;
+  if (shape !== "round" && shape !== "long" && shape !== "top") return null;
   try {
     await placeTable(id, { shape });
   } catch (error) {

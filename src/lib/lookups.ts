@@ -387,7 +387,7 @@ export interface TableLine {
   id: string;
   name: string;
   seats: number;
-  shape: "round" | "long";
+  shape: "round" | "long" | "top";
   guests: { id: string; name: string }[];
 }
 

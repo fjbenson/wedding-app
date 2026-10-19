@@ -10,6 +10,8 @@ import DietLine from "@/components/diet-line";
 
 const ROSE = "#9A3F2B";
 
+const SHAPE_NAME: Record<TableShape, string> = { round: "Round", long: "Long", top: "Top table" };
+
 function fullName(g: Contact) {
   return [g.first_name, g.last_name].filter(Boolean).join(" ");
 }
@@ -21,16 +23,33 @@ function initials(g: Contact) {
     .join("");
 }
 
-/** Where each seat sits, as % of a square box: round the table, or down both sides of a long one. */
+/** One chair's row, in px, on a long or top table drawn upright (with room for the need under it). */
+const ROW = 64;
+
+/** How tall the drawing is, in px: null for a round table (a square box). */
+function boxHeight(shape: TableShape, capacity: number) {
+  if (shape === "round") return null;
+  const rows = shape === "top" ? capacity : Math.ceil(capacity / 2);
+  return rows * ROW + 16;
+}
+
+/**
+ * Where each chair sits, as % of the box: round the table; down both sides
+ * of a long one; down one side of a top table (owner, 19 Oct 2026: its
+ * chairs are all on one side, facing the room).
+ */
 function seatSpots(shape: TableShape, capacity: number) {
   const spots: { x: number; y: number }[] = [];
-  if (shape === "long") {
+  const height = boxHeight(shape, capacity);
+  const rowY = (k: number) => ((8 + (k + 0.5) * ROW) / height!) * 100;
+  if (shape === "top") {
+    for (let i = 0; i < capacity; i++) spots.push({ x: 26, y: rowY(i) });
+  } else if (shape === "long") {
     const perSide = Math.ceil(capacity / 2);
     for (let i = 0; i < capacity; i++) {
       const side = i < perSide ? 0 : 1;
-      const n = side === 0 ? perSide : capacity - perSide;
       const k = side === 0 ? i : i - perSide;
-      spots.push({ x: side === 0 ? 20 : 80, y: 8 + ((k + 0.5) / n) * 84 });
+      spots.push({ x: side === 0 ? 20 : 80, y: rowY(k) });
     }
   } else {
     for (let i = 0; i < capacity; i++) {
@@ -99,8 +118,9 @@ export default function TableView({
   const mover = moving ? byId.get(moving) : undefined;
   const diets = sitting.filter((g) => needs[g.id]?.length).length;
   const free = table.capacity - sitting.length;
-  // Bigger tables, smaller seats, so they still fit round the edge.
-  const size = seats <= 10 ? 48 : seats <= 14 ? 40 : 34;
+  // Bigger round tables, smaller seats, so they still fit round the edge.
+  const size = shape !== "round" || seats <= 10 ? 48 : seats <= 14 ? 40 : 34;
+  const height = boxHeight(shape, seats);
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const choices = unseated
@@ -142,7 +162,7 @@ export default function TableView({
         <div className="min-w-0 flex-1">
           <h2 className="type-display truncate text-[32px] leading-[1.05] tracking-[-0.02em]">{table.name}</h2>
           <p className="mt-1 text-[13px] text-stone">
-            {sitting.length} of {table.capacity} seats · {shape}
+            {sitting.length} of {table.capacity} seats · {SHAPE_NAME[shape].toLowerCase()}
             {diets > 0 && <span style={{ color: ROSE }}>{` · ${diets} dietary ${diets === 1 ? "need" : "needs"}`}</span>}
             {sitting.length > table.capacity && <span className="text-champagne-600"> · over</span>}
           </p>
@@ -179,15 +199,21 @@ export default function TableView({
           const dx = e.clientX - s.x;
           if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.5) step(dx < 0 ? 1 : -1);
         }}
-        className="relative mx-auto mt-5 aspect-square w-full max-w-[340px] touch-pan-y select-none"
+        style={height ? { height } : undefined}
+        className={`relative mx-auto mt-5 w-full max-w-[340px] touch-pan-y select-none ${height ? "" : "aspect-square"}`}
       >
         <div
           aria-hidden
           className={`absolute flex flex-col items-center justify-center border border-champagne-400 bg-[#FFFDF8] text-center shadow-[0_18px_40px_-24px_rgb(60_50_40/0.4)] ${
-            shape === "long" ? "left-[36%] top-[6%] h-[88%] w-[28%] rounded-xl" : "left-[25%] top-[25%] h-1/2 w-1/2 rounded-full"
+            shape === "long"
+              ? "inset-y-2 left-[36%] w-[28%] rounded-xl"
+              : shape === "top"
+                ? "inset-y-2 left-[42%] w-[30%] rounded-xl"
+                : "left-[25%] top-[25%] h-1/2 w-1/2 rounded-full"
           }`}
         >
           <span className="font-display text-[17px] italic text-ink">{table.name}</span>
+          {shape === "top" && <span className="mt-0.5 px-2 text-xs text-stone">Facing the room</span>}
           {position.total > 1 && <span className="mt-0.5 px-2 text-xs text-stone">Swipe for the next</span>}
         </div>
 
@@ -354,16 +380,16 @@ export default function TableView({
         )}
       </section>
 
-      <div className="mt-6 inline-grid grid-cols-2 rounded-xl border border-linen bg-cream/60 p-1" role="group" aria-label="Table shape">
-        {(["round", "long"] as const).map((s) => (
+      <div className="mt-6 inline-grid grid-cols-3 rounded-xl border border-linen bg-cream/60 p-1" role="group" aria-label="Table shape">
+        {(["round", "long", "top"] as const).map((s) => (
           <button
             key={s}
             type="button"
             aria-pressed={shape === s}
             onClick={() => onShape(s)}
-            className={`h-9 rounded-lg px-4 text-sm capitalize ${shape === s ? "bg-white text-ink shadow-[0_1px_2px_rgb(30_27_24/0.08)]" : "text-stone"}`}
+            className={`h-9 rounded-lg px-4 text-sm ${shape === s ? "bg-white text-ink shadow-[0_1px_2px_rgb(30_27_24/0.08)]" : "text-stone"}`}
           >
-            {s}
+            {SHAPE_NAME[s]}
           </button>
         ))}
       </div>

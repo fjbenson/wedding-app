@@ -347,7 +347,7 @@ begin
   insert into run_sheet_items (wedding_id, at_time, title, location, who, area_key) values (w, '20:30', 'Cake cutting', null, null, 'cake');
   insert into run_sheet_items (wedding_id, at_time, title, location, who, area_key) values (w, '21:30', 'Pizza from the wood-fired oven', 'The courtyard', null, 'food');
   insert into run_sheet_items (wedding_id, at_time, title, location, who, area_key) values (w, '23:30', 'Carriages', 'Front drive', 'Swift Coaches', 'transport');
-  insert into seating_tables (wedding_id, name, capacity, sort_order, pos_x, pos_y, shape) values (w, 'Top table', 10, 0, 50, 12, 'long');
+  insert into seating_tables (wedding_id, name, capacity, sort_order, pos_x, pos_y, shape) values (w, 'Top table', 10, 0, 50, 12, 'top');
   insert into seating_tables (wedding_id, name, capacity, sort_order, pos_x, pos_y, shape) values (w, 'The Cotswolds', 8, 1, 20, 38, 'round');
   insert into seating_tables (wedding_id, name, capacity, sort_order, pos_x, pos_y, shape) values (w, 'Bath', 8, 2, 40, 38, 'round');
   insert into seating_tables (wedding_id, name, capacity, sort_order, pos_x, pos_y, shape) values (w, 'Bristol', 8, 3, 60, 38, 'round');

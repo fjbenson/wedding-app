@@ -900,8 +900,7 @@ Next.js scaffold. Built so far, against the plan's tabs:
   room (positions are % of the room, so it scales; never-moved tables sit in
   a grid), round or long, and seat people by tapping a name then a table.
   Adding a table has a **Round | Long** choice, Round to start (12 Oct 2026).
-  A "top table" is just a long table by that name (the demo's); a real top
-  table option (seats on one side, at the head) was offered, not built.
+  A real top table shape (chairs on one side) was built 19 Oct 2026 — below.
   On a phone the room scrolls sideways rather than shrinking. The old cards
   are the **List** view (`?view=list`), where tables are renamed or removed.
   **The phone floor plan, 19 Oct 2026** (canvas 3 "Seating · Round 1 · The
@@ -924,7 +923,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `seatAtAction`) so nobody jumps. **Tables snap to the room's dots**
   (owner, 19 Oct 2026): a 20 × 15 grid of square cells (`GRID_X`, `GRID_Y`
   in `floor-plan.tsx`), the dots drawn in % so they scale with the room;
-  arrow keys move one dot; tables placed before stay put until moved. The old panel under the plan is gone. Options A (pinch to zoom) and
+  arrow keys move one dot; tables placed before stay put until moved.
+  **Three shapes: Round · Long · Top table** (owner's OK, 19 Oct 2026;
+  `0026_top_table.sql`, run the same day, adds `'top'` to
+  `seating_tables.shape`): a top table's chairs are all on one side — dots
+  behind it on the map (so its people face the room), one upright row of
+  chairs in the close-up ("Facing the room"). Long and top close-ups are as
+  tall as their chairs need (`ROW` px each). The demo's Top table is one
+  now. The old panel under the plan is gone. Options A (pinch to zoom) and
   C (tables as cards) weren't picked. `DietLine` moved to
   `src/components/diet-line.tsx`.
   **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view
@@ -1073,14 +1079,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0025_seat_number.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0026_top_table.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0025 are now in** (0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0026 are now in** (0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

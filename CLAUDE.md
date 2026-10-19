@@ -1022,9 +1022,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   messages). **The word is "items"** (owner, 19 Oct 2026, over pieces,
   details or bits and bobs: "Items", "Add an item", "Start your decor
   list"); the code still says things (`ThingCard`, `?thing=`). The demo
-  wedding has a Decor area (the owner's own, leaf icon) with 20 items, 5 lent
-  by guests or suppliers, 11 with helpers (also in `demo-wedding.sql`). Not
-  yet: a guest's card showing "Lending: the easel".
+  wedding has a Decor area (the owner's own, leaf icon) with 20 items, lent
+  from suppliers, family or a typed friend, 11 with helpers (also in
+  `demo-wedding.sql`). **Guests don't tend to lend things** (owner, 19 Oct
+  2026): the From list puts suppliers first, then "Someone else (type a
+  name)", then "Family and friends on the guest list" (`FromSelect`); a
+  guest card's "Lending: …" line was dropped as not worth it.
 
 **Every MVP screen in the plan is now built** (30 Sep 2026). Areas are rows,
 but `milestones.category` and `supplier_details.category` still hold an

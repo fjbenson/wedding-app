@@ -46,7 +46,11 @@ export function PlacePicker({ value, onChange }: { value: string; onChange: (pla
   );
 }
 
-/** Who it's from: a guest or supplier on the list, or someone typed. "" = nobody, "typed" = a name. */
+/**
+ * Who it's from. Suppliers first (hire companies and the venue lend most
+ * things), then someone typed, then guests for family (owner, 19 Oct 2026:
+ * guests don't tend to lend stuff). "" = nobody, "typed" = a name.
+ */
 export function FromSelect({
   people,
   value,
@@ -61,17 +65,17 @@ export function FromSelect({
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Who it's from" className={className}>
       <option value="">No one in particular</option>
-      <optgroup label="Guests">
-        {people.filter((p) => p.kind === "guest").map((p) => (
-          <option key={p.id} value={p.id}>{p.name}</option>
-        ))}
-      </optgroup>
       <optgroup label="Suppliers">
         {people.filter((p) => p.kind === "supplier").map((p) => (
           <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </optgroup>
-      <option value="typed">Someone not on the list…</option>
+      <option value="typed">Someone else (type a name)</option>
+      <optgroup label="Family and friends on the guest list">
+        {people.filter((p) => p.kind === "guest").map((p) => (
+          <option key={p.id} value={p.id}>{p.name}</option>
+        ))}
+      </optgroup>
     </select>
   );
 }

@@ -19,6 +19,7 @@ import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
 import type { DecorPerson } from "../decor/decor-people";
 import { DecorThings } from "../decor/decor-things";
+import { howsLine, stationeryNextUp, type sendingCounts } from "@/lib/stationery";
 import NoteEditor from "@/components/note-editor";
 import TickableNote from "@/components/tickable-note";
 import { startSoundCheckAction } from "./actions";
@@ -577,8 +578,11 @@ export default function AreaView({
   moments,
   couple,
   decor,
+  stationery,
   music,
 }: {
+  /** The Stationery area only: the three sendings, in place of the five stages. */
+  stationery?: { counts: ReturnType<typeof sendingCounts>; weddingDate: string | null } | null;
   /** The Music area: its The Day part also holds every moment with a song (0028). */
   music?: boolean;
   /** The Decor area only: its things, in place of the five stages (0027_decor.sql). */
@@ -742,7 +746,21 @@ export default function AreaView({
     next = { title: "All sorted. Ready to dance.", line: undefined };
   }
   // The Decor area's Next up comes from its things, not the stages.
-  const shownNext: { title: string; line?: string; action?: React.ReactNode } = decor ? decorNextUp(decor.items, decor.people) : next;
+  // The Decor area's Next up comes from its things, Stationery's from what's been sent.
+  const stationeryNext = stationery ? stationeryNextUp(stationery.counts, stationery.weddingDate) : null;
+  const shownNext: { title: string; line?: string; action?: React.ReactNode } = decor
+    ? decorNextUp(decor.items, decor.people)
+    : stationeryNext
+      ? {
+          title: stationeryNext.title,
+          line: stationeryNext.line,
+          action: stationeryNext.href ? (
+            <Link href={stationeryNext.href} className="text-[13px] text-champagne-600 underline underline-offset-4 hover:text-ink">
+              {stationeryNext.href.startsWith("/people/new") ? "Add a guest ›" : "Who's had it ›"}
+            </Link>
+          ) : undefined,
+        }
+      : next;
   const soon = planNow[0];
   const then = soon
     ? soon.kind === "todo"
@@ -994,7 +1012,7 @@ export default function AreaView({
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
         <section aria-label="Next up" className="card-white rounded-[22px] p-4">
-          <p className="type-meta !text-champagne-600">{!decor && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
+          <p className="type-meta !text-champagne-600">{!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
           <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
           {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
           {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
@@ -1010,6 +1028,8 @@ export default function AreaView({
           <div className="mt-3">
             <DecorThings items={decor.items} people={decor.people} areaKey={area.key} weddingDate={decor.weddingDate} />
           </div>
+        ) : stationery ? (
+          <WhatYouSend counts={stationery.counts} weddingDate={stationery.weddingDate} />
         ) : (
         /* The five stages down a gold line; tap any to open it (the others close). */
         <ol aria-label="Stages" className="mt-3">
@@ -1382,5 +1402,48 @@ export default function AreaView({
       </div>
     </main>
     </SupplierCards>
+  );
+}
+
+/**
+ * Stationery's own middle (canvas 3 "Comms · Stationery", agreed 19 Oct
+ * 2026): the save the date, invitation and thank-you, each with how many
+ * households have had it and how it went. A line opens the guest list's
+ * View › that sending, Not sent then Sent, with "Send to the 12".
+ */
+function WhatYouSend({ counts, weddingDate }: { counts: ReturnType<typeof sendingCounts>; weddingDate: string | null }) {
+  return (
+    <section aria-label="What you send" className="mt-3">
+      <h2 className="type-meta px-1">What you send</h2>
+      <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] [--row-bleed:16px]">
+        {counts.map((c) => {
+          const later = c.kind === "thank_you" && c.sent === 0 && weddingDate !== null && todayISO() <= weddingDate;
+          const hows = howsLine(c.hows);
+          return (
+            <li key={c.kind} className="border-b border-linen last:border-0">
+              <Link href={`/people?view=${c.kind}`} className={`row-press block px-4 py-3.5 ${later ? "opacity-60" : ""}`}>
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="font-display text-[19px] text-ink">{c.label}</span>
+                  <span className="truncate text-[12.5px] text-stone">
+                    {later ? `After ${formatDayMonth(weddingDate!)}` : [hows, c.last && c.sent > 0 ? formatDayMonth(c.last) : null].filter(Boolean).join(" · ")}
+                  </span>
+                </span>
+                <span aria-hidden className="mt-2 block h-1.5 overflow-hidden rounded-full bg-linen">
+                  <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${c.total ? (c.sent / c.total) * 100 : 0}%` }} />
+                </span>
+                <span className="mt-2 flex justify-between gap-3 text-[12.5px]">
+                  <span className="text-stone">
+                    {c.sent} of {c.total} {c.total === 1 ? "household" : "households"}
+                  </span>
+                  <span className="text-champagne-600">
+                    {c.total === 0 ? "" : c.toSend === 0 ? "✓ All sent" : later ? "Starts after the day" : `${c.toSend} to send ›`}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

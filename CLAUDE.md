@@ -1040,6 +1040,34 @@ Next.js scaffold. Built so far, against the plan's tabs:
   name)", then "Family and friends on the guest list" (`FromSelect`); a
   guest card's "Lending: …" line was dropped as not worth it.
 
+- **Stationery, its own special area** (19 Oct 2026; canvas 3 "Comms ·
+  Stationery" and "Sent · Round 1", B — agreed with the owner; **no database
+  change**: a sending is a `timeline_entries` row of kind `save_the_date` /
+  `invitation` / `thank_you` with `how` and the household, or the guest when
+  they're in no household). Like Decor, its area page (`isStationeryArea()`
+  in `src/lib/stationery.ts`: key `stationery` or `invitations`) swaps the
+  five stages for **What you send** (`WhatYouSend` in `area-view.tsx`): Save
+  the date · Invitation · Thank-you, each "31 of 43 households", a bar, how it
+  went ("Posted and emailed") and "12 to send ›"; the thank-you is faded
+  until after the day. Next up comes from them (`stationeryNextUp()`). A line
+  opens the **guest list's View › Sent** (`/people?view=invitation`; also in
+  the View menu under "Sent"): a card with the count, the bar and **Send to
+  the 12**, then guests under "Not sent yet · 12 households" and "Sent". Send
+  opens **`SendSheet`** (`src/components/send-sheet.tsx`): How (Email · Post ·
+  By hand · Text, with how many can be reached each way), who (ticked, untick
+  any), anyone with no email/address (tap to open their card); Email/Text open
+  the couple's own app (Bcc) then **"Did it go?" → "Yes, mark 8 as sent"**;
+  Post/By hand ask the day and mark. **Marking an invitation moves those
+  guests from To invite to Yet to respond.** Follows the guest list's filters
+  (so "just the evening guests" works). **Sent to them** on the household card
+  (and a guest card with no household; `sent-to-them.tsx`): the three, a gold
+  tick with "Posted 3 Mar" or dashed — tap to say how (today), or take it off
+  (answers stay). Entries show on the household's timeline too. Queries
+  `src/lib/db/stationery.ts`, actions `stationery/actions.ts`. Nothing is sent
+  by the app; the assistant isn't given it. **Not built:** gifts and
+  thank-you notes (needs a small gifts table — owner's OK first), "Did it
+  go?" after a group email, extra sendings of the couple's own ("+").
+
 - **Search across the whole wedding** (19 Oct 2026; owner: "search the
   word easels and it finds it all across the app"; owner picked **inside
   Your assistant** over a Hub button or a menu-bar button). Typing two or

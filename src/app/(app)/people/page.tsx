@@ -9,6 +9,8 @@ import { listGroups } from "@/lib/db/groups";
 import { travelForGuests } from "@/lib/db/stays";
 import { areaOptions } from "@/lib/areas";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { listSendings } from "@/lib/db/stationery";
+import { isSendingKind } from "@/lib/stationery";
 import PeopleTabs from "./people-tabs";
 import PeopleView from "./people-view";
 import SupplierList from "./supplier-list";
@@ -21,7 +23,8 @@ export const metadata = { title: "People — Wedding App" };
  * 12 and 13) via ?tab=suppliers — ?supplier= opens one's card.
  *
  * Links can open the guest list a particular way: ?guest= opens someone's
- * card, ?view=households groups it, and ?tab=party (the old Bridal party
+ * card, ?view=households groups it (?view=invitation and the other sendings
+ * group it by who's been sent that), and ?tab=party (the old Bridal party
  * tab) starts on that filter.
  */
 export default async function PeoplePage({
@@ -48,6 +51,8 @@ export default async function PeoplePage({
   const seating = current === "guests" ? await guestSeating(wedding.id) : { tables: [], tableOf: {} };
   const tables = tableNamesOf(seating);
   const groups = current === "guests" ? await listGroups(wedding.id) : [];
+  // Save the dates, invitations and thank-yous sent: View › Sent on the guest list.
+  const sendings = current === "guests" ? await listSendings(wedding.id) : [];
   // The guest card's Travel part: where they're staying, their journeys.
   const travel = current === "guests" ? await travelForGuests(wedding.id) : undefined;
   const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
@@ -71,7 +76,8 @@ export default async function PeoplePage({
           guestId={guest}
           householdId={household}
           filter={tab === "party" ? "party" : undefined}
-          view={view === "households" || view === "diet" ? view : undefined}
+          view={view === "households" || view === "diet" || (view && isSendingKind(view)) ? (view as "households" | "diet" | "save_the_date" | "invitation" | "thank_you") : undefined}
+          sendings={sendings}
           error={error}
           detail={detail}
         />

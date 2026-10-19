@@ -1,6 +1,7 @@
 "use client";
 
 import Timeline from "@/components/timeline";
+import SentToThem from "@/components/sent-to-them";
 import { ownNeeds } from "@/lib/dietary";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
@@ -137,6 +138,9 @@ export default function HouseholdSheet({
         others={guests.filter((g) => g.household_id !== household.id)}
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
+
+      {/* The save the date, invitation and thank-you (canvas 3 "Sent · On the household card"). */}
+      <SentToThem unit={`h:${household.id}`} />
 
       {/* What's been sent to them and said, past and to come (canvas 3 "History · Round 2", 4). */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">

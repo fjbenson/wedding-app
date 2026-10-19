@@ -18,12 +18,14 @@ import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
 import { CopyButton, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
+import SendSheet from "@/components/send-sheet";
+import { howsLine, isSendingKind, SENDINGS, sendUnits, sentMap, unitKeyOf, type SendHow, type SendingKind, type SentRecord } from "@/lib/stationery";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
 export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
-export type GuestView = "az" | "households" | "diet";
+export type GuestView = "az" | "households" | "diet" | SendingKind;
 /** How the list is ordered (the Sort button). */
-type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role" | "rsvp" | "age" | "table" | "staying";
+type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role" | "rsvp" | "age" | "table" | "staying" | SendingKind;
 /** Which answer the numbers card is showing (each guest's answer for their own event). */
 type Showing = "all" | Rsvp["status"];
 
@@ -44,6 +46,8 @@ interface Group {
   /** An allergy: what the kitchen must avoid. */
   rose?: boolean;
   guests: Contact[];
+  /** In place of "12 guests": "12 households" for what's been sent. */
+  count?: string;
 }
 
 const guestCount = (n: number) => `${n} ${n === 1 ? "guest" : "guests"}`;
@@ -79,6 +83,8 @@ const SORTS: { key: SortBy; label: string; short: string; section: string }[] = 
   { key: "meal", label: "Meal choice", short: "by meal", section: "Group by" },
   { key: "role", label: "Bridal party", short: "by bridal party", section: "Show only" },
   { key: "diet", label: "Dietary needs", short: "by dietary needs", section: "Show only" },
+  // Who's been sent what (canvas 3 "Sent · Round 1", B): households not sent it yet, then sent.
+  ...SENDINGS.map((s) => ({ key: s.kind, label: s.label, short: `by ${s.label.toLowerCase()}`, section: "Sent" })),
 ];
 
 /** The filter a view switches on with it. */
@@ -124,6 +130,7 @@ export default function GuestBrowser({
   householdRows = [],
   initialFilter,
   initialView = "az",
+  sendings = [],
 }: {
   guests: Contact[];
   households: HouseholdSummary[];
@@ -143,6 +150,8 @@ export default function GuestBrowser({
   householdRows?: Household[];
   initialFilter?: GuestFilter;
   initialView?: GuestView;
+  /** Save the dates, invitations and thank-yous sent (timeline entries). */
+  sendings?: SentRecord[];
 }) {
   // Search, filters and the numbers card are the task in hand, so they live
   // in the address (?q=, ?f=, ?show=, ?of=; src/lib/url-state.ts): going
@@ -180,7 +189,7 @@ export default function GuestBrowser({
     });
   }, [query, showing, filters, guestOf, group, picks]);
   const [sort, setSort] = useState<SortBy>(
-    initialView === "households" ? "household" : initialView === "diet" ? "diet" : initialFilter === "party" ? "role" : "first",
+    initialView === "households" ? "household" : initialView === "diet" ? "diet" : isSendingKind(initialView) ? initialView : initialFilter === "party" ? "role" : "first",
   );
   /** Picks a view, and switches on (or off) the filter that goes with it. */
   const chooseView = (next: SortBy) => {
@@ -261,6 +270,11 @@ export default function GuestBrowser({
     }
     return { answers, household, members };
   }, [guests, households, rsvps]);
+
+  // Who things are sent to: households, and anyone not in one (src/lib/stationery.ts).
+  const units = useMemo(() => sendUnits(guests, householdRows), [guests, householdRows]);
+  const sent = useMemo(() => sentMap(units, sendings), [units, sendings]);
+  const [sendOpen, setSendOpen] = useState(false);
 
   const statusFor = (g: Contact, e: WeddingEvent | undefined) =>
     e ? data.answers.get(g.id)?.find((r) => r.event_id === e.id)?.status : undefined;
@@ -374,6 +388,19 @@ export default function GuestBrowser({
     const none = kind === "diet" ? "No dietary needs" : kind === "role" ? "No role" : null;
     const loose = none ? shown.filter((g) => partOf(kind, g, look).length === 0) : [];
     if (loose.length > 0) groups.push({ key: "none", title: none!, guests: loose });
+  } else if (isSendingKind(sort)) {
+    // Not sent yet, then sent, counted in households (canvas 3 "Sent · Round 1", B).
+    const had = sent[sort];
+    const homes = (list: Contact[]) => {
+      const n = new Set(list.map(unitKeyOf)).size;
+      return `${n} ${n === 1 ? "household" : "households"}`;
+    };
+    const notYet = shown.filter((g) => !had.has(unitKeyOf(g)));
+    const gone = shown.filter((g) => had.has(unitKeyOf(g)));
+    groups = [
+      { key: "notsent", title: "Not sent yet", guests: notYet, count: homes(notYet) },
+      { key: "sent", title: "Sent", guests: gone, count: homes(gone) },
+    ].filter((group) => group.guests.length > 0);
   } else if (sort === "rsvp") {
     const words: [Rsvp["status"] | undefined, string][] = [
       ["attending", "Coming"],
@@ -455,7 +482,7 @@ export default function GuestBrowser({
 
   // People who can't come sit at the foot in a folded "Can't come" group (owner, 17 Oct 2026):
   // the list then agrees with the Guests number, and a search or View › RSVP still finds them.
-  if (sort !== "rsvp" && showing === "all" && words.length === 0) {
+  if (sort !== "rsvp" && !isSendingKind(sort) && showing === "all" && words.length === 0) {
     const gone = shown.filter((g) => answerOf(g) === "declined");
     if (gone.length > 0) {
       groups = groups
@@ -613,6 +640,15 @@ export default function GuestBrowser({
         </div>
       </div>
 
+      {isSendingKind(sort) && (
+        <SentCard
+          kind={sort}
+          units={units.filter((u) => u.members.some((m) => filtered.includes(m)))}
+          sent={sent[sort]}
+          onSend={() => setSendOpen(true)}
+        />
+      )}
+
       {shown.length === 0 ? (
         <p className="mt-6 px-1 text-sm text-stone">No one matches that.</p>
       ) : (
@@ -652,6 +688,20 @@ export default function GuestBrowser({
 
       {/* The events themselves, at the foot of the list: one "Edit events" card (owner, 16 Oct 2026). */}
       <EditEvents events={events} />
+
+      {sendOpen && isSendingKind(sort) && (
+        <SendSheet
+          kind={sort}
+          units={units.filter((u) => u.members.some((m) => filtered.includes(m)) && !sent[sort].has(u.key))}
+          weddingName={weddingName}
+          onClose={() => setSendOpen(false)}
+          onOpenUnit={(u) => {
+            setSendOpen(false);
+            if (u.householdId) setHouseholdId(u.householdId);
+            else if (u.contactId) setOpenId(u.contactId);
+          }}
+        />
+      )}
 
       {openGroupCard && (
         <GroupSheet
@@ -765,7 +815,7 @@ function GroupTitle({ group, folded, onFold }: { group: Group; folded: boolean; 
     <>
       <span className={`label ${group.rose ? "!text-[#9A3F2B]" : ""}`}>{group.title}</span>
       <span className="text-xs text-stone">
-        {guestCount(group.guests.length)}
+        {group.count ?? guestCount(group.guests.length)}
         {group.onOpen && " ›"}
       </span>
     </>
@@ -1385,7 +1435,7 @@ function GuestTable({
                   ) : (
                     <span className={`font-display text-lg ${group.rose ? "text-[#9A3F2B]" : "text-ink"}`}>{group.title}</span>
                   )}
-                  <span className="type-meta ml-3">{guestCount(group.guests.length)}</span>
+                  <span className="type-meta ml-3">{group.count ?? guestCount(group.guests.length)}</span>
                   <button
                     type="button"
                     onClick={() => onFold(group.key)}
@@ -1512,4 +1562,50 @@ function splitOf(kind: SplitKind, coming: Contact[], look: Lookups): Split {
     case "when":
       return { kind, word: "Day or evening", sections: [{ lines: labels.map(line) }] };
   }
+}
+
+/**
+ * Above the list in View › Save the date / Invitation / Thank-you: how many
+ * households have had it, a bar, and "Send to the 12" (canvas 3 "Sent ·
+ * Round 1", B). Counts whoever the filters leave, so it can be just the
+ * evening guests.
+ */
+function SentCard({
+  kind,
+  units,
+  sent,
+  onSend,
+}: {
+  kind: SendingKind;
+  units: { key: string }[];
+  sent: Map<string, SentRecord>;
+  onSend: () => void;
+}) {
+  const label = SENDINGS.find((x) => x.kind === kind)!;
+  const had = units.filter((u) => sent.has(u.key));
+  const toSend = units.length - had.length;
+  const hows = howsLine([...new Set(had.map((u) => sent.get(u.key)!.how).filter(Boolean))] as SendHow[]);
+  return (
+    <section aria-label={label.label} className="glass-card mt-4 rounded-[22px] px-4 py-3.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-display text-[19px] text-ink">{label.label}</span>
+        {hows && <span className="truncate text-[12.5px] text-stone">{hows}</span>}
+      </div>
+      <div aria-hidden className="mt-2 h-1.5 overflow-hidden rounded-full bg-linen">
+        <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${units.length ? (had.length / units.length) * 100 : 0}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3 text-[13px]">
+        <span className="text-stone">
+          {had.length} of {units.length} {units.length === 1 ? "household" : "households"}
+        </span>
+        {toSend === 0 ? (
+          <span className="text-champagne-600">✓ All sent</span>
+        ) : (
+          <button type="button" onClick={onSend} className="h-9 rounded-full bg-ink px-4 text-[13px] text-ivory">
+            Send to the {toSend}
+          </button>
+        )}
+      </div>
+    </section>
+  );
 }

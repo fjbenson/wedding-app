@@ -22,6 +22,8 @@ import { listDecor } from "@/lib/db/decor";
 import { isDecorArea } from "@/lib/decor";
 import { decorPeople } from "../../decor/decor-people";
 import { withInCharge } from "@/lib/music";
+import { listSendings } from "@/lib/db/stationery";
+import { isStationeryArea, sendingCounts, sendUnits } from "@/lib/stationery";
 
 export const metadata = { title: "Area — Wedding App" };
 
@@ -69,6 +71,12 @@ export default async function AreaPage({
     ]);
     guestFacts = areaGuestFacts(kind, { guests, households, events, rsvps, runs: day?.runs, passengers: day?.passengers });
   }
+  // Stationery shows what's been sent in place of the stages (timeline entries, 0032).
+  let stationery = null;
+  if (isStationeryArea(area.key)) {
+    const [guests, households, sendings] = await Promise.all([listGuests(wedding.id), listHouseholds(wedding.id), listSendings(wedding.id)]);
+    stationery = { counts: sendingCounts(sendUnits(guests, households), sendings), weddingDate: wedding.wedding_date };
+  }
   // Food & drink also has the menu and the drinks (0024_menu_and_drinks.sql).
   let food = null;
   if (kind === "food") {
@@ -107,6 +115,7 @@ export default async function AreaPage({
       guestFacts={guestFacts}
       food={food}
       decor={decor}
+      stationery={stationery}
       music={area.key === "music"}
       // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
       moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || (area.key === "music" && (i.music || i.music_url)))}

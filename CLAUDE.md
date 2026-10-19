@@ -1788,6 +1788,27 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 ### Backlog (ideas parked by the owner)
 
+- **Feedback list, 19 Oct 2026** (owner; parked, not designed yet):
+  1. **Going back a stage on an area page** — the five stages (Ideas ·
+     Quotes · Booked · Paid · Ready) need an obvious way to step back
+     (un-book a supplier, un-tick Ready…).
+  2. **Area pages link to the dietary needs** — e.g. Food & drink's
+     guest facts opening the guest list filtered to dietary needs.
+  3. **Add an appointment to the phone's own calendar** (Google, Apple) —
+     likely an "Add to calendar" file (.ics) or link; a calendar feed would
+     send details to another service, so check against rule one.
+  4. **Tapping the top of a guest profile or household card goes to the
+     field to change it** (also "make profile summaries clickable") — e.g.
+     tap Table at the top, it scrolls down to a Table drop-down in Details
+     to change it. Same for Answer, Meal, and the household's figures.
+  5. **"Father of the groom" missing as a role** — today there's only
+     "Parent of the couple" (`GUEST_ROLES`, `src/lib/guest-roles.ts`).
+     Mind the "for everyone" rule: probably offer Mother / Father of the
+     couple, or of each partner by name, rather than bride/groom words.
+  6. **Music** — link Spotify or YouTube playlists (first dance, ceremony,
+     evening; for the band or DJ). Likely a Music area's links, or links on
+     run sheet moments.
+
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature
   circle) and *une ronde* is a **circle dance** (the dancing couple); said

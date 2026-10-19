@@ -488,7 +488,6 @@ function DaySection({
   /** The Music area: the couple's names, for "Copy for the band or DJ" (owner, 19 Oct 2026: music belongs in The Day). */
   musicFor?: string | null;
 }) {
-  const withMusic = moments.filter((m) => m.music || m.music_url);
   const transport = facts?.kind === "transport" ? facts : null;
   return (
     <>
@@ -516,27 +515,6 @@ function DaySection({
             </li>
           ))}
         </ul>
-      )}
-      {/* The whole music list as text, to paste into a message to the band or DJ. */}
-      {musicFor && withMusic.length > 0 && (
-        <div className="py-3">
-          <p className="mb-2 text-[13px] text-stone">Every song with its time and link, to paste into a message to your band or DJ.</p>
-          <CopyText
-            text={[
-              `Music for ${musicFor}`,
-              "",
-              ...withMusic.map((m) =>
-                [
-                  `${formatClock(m.at_time)}  ${m.title}: ${musicTitle(m) ?? ""}`,
-                  [m.who && `In charge: ${m.who}`, m.music_url].filter(Boolean).join("  "),
-                ]
-                  .filter(Boolean)
-                  .join("\n      "),
-              ),
-            ].join("\n")}
-            label="Copy the music list"
-          />
-        </div>
       )}
       {transport && transport.runs.length > 0 && (
         <ul>

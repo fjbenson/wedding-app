@@ -12,7 +12,7 @@ import { deleteRunSheetItem, deleteTransportRun, getRunSheetItem, saveRunSheetIt
 import { parseMoney } from "@/lib/money";
 import { deleteInspo, getInspo, listInspoIds, updateInspo, type InspoWithPicture } from "@/lib/db/inspo";
 import type { AreaOption } from "@/lib/areas";
-import { listGuests } from "@/lib/db/contacts";
+import { getContact, listGuests } from "@/lib/db/contacts";
 import { decorPeople, type DecorPerson } from "../decor/decor-people";
 import { addInvolved, getInvolved, listForGuest, removeInvolved, type InvolvedKind } from "@/lib/db/involved";
 import type { Appointment, Milestone, Payment, RunSheetItem, TransportRun } from "@/types/db";
@@ -45,6 +45,8 @@ export type PlanCardData =
       moment: RunSheetItem;
       /** Suppliers and guests, to put one in charge (0031). */
       people: DecorPerson[];
+      /** The in-charge person's email, to send them the moment. */
+      inChargeEmail: string | null;
       areas: AreaOption[];
       suppliers: { id: string; name: string; area?: string | null }[];
       weddingDate: string | null;
@@ -109,7 +111,11 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
   const common = { areas: options.areas, suppliers: options.suppliers, weddingDate: wedding.wedding_date };
   if (kind === "todo") return { kind, milestone: item as Milestone, involved: await loadInvolved(wedding.id, kind, id), ...common };
   if (kind === "appointment") return { kind, appointment: item as Appointment, involved: await loadInvolved(wedding.id, kind, id), ...common };
-  if (kind === "moment") return { kind, moment: item as RunSheetItem, people: await decorPeople(wedding.id), ...common };
+  if (kind === "moment") {
+    const moment = item as RunSheetItem;
+    const [people, inCharge] = await Promise.all([decorPeople(wedding.id), moment.contact_id ? getContact(moment.contact_id) : Promise.resolve(null)]);
+    return { kind, moment, people, inChargeEmail: inCharge?.email ?? null, ...common };
+  }
   if (kind === "idea") {
     const idea = item as InspoWithPicture;
     return { kind, idea, folderIds: await listInspoIds(wedding.id, idea.area_key), ...common };

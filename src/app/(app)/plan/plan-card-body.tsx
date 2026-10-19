@@ -441,7 +441,19 @@ function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) =>
  * and change it in place. One person **in charge**, picked from the
  * suppliers and guests (0031), or a typed name for anyone else.
  */
-export function MomentBody({ moment: m, areas, people }: { moment: RunSheetItem; areas: AreaOption[]; people: DecorPerson[] }) {
+export function MomentBody({
+  moment: m,
+  areas,
+  people,
+  inChargeEmail,
+  weddingDate,
+}: {
+  moment: RunSheetItem;
+  areas: AreaOption[];
+  people: DecorPerson[];
+  inChargeEmail: string | null;
+  weddingDate: string | null;
+}) {
   const save = useSave("moment", m.id);
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
@@ -543,7 +555,60 @@ export function MomentBody({ moment: m, areas, people }: { moment: RunSheetItem;
           <AreaTiles name="area" areas={options} otherValue="other" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded optional />
         </Fold>
       </div>
+
+      <SendMoment moment={m} inCharge={inCharge} email={inChargeEmail} weddingDate={weddingDate} />
     </>
+  );
+}
+
+/**
+ * Send one moment to whoever's doing it — the song to the DJ, the timings to
+ * the venue (owner, 19 Oct 2026: one copy of every song didn't fit; the
+ * church, the venue and the DJ each need their own). Opens the couple's own
+ * email with it written in; the app sends and keeps nothing.
+ */
+function SendMoment({ moment: m, inCharge, email, weddingDate }: { moment: RunSheetItem; inCharge: string | null; email: string | null; weddingDate: string | null }) {
+  const [copied, setCopied] = useState(false);
+  const when = `${formatClock(m.at_time)}${weddingDate ? `, ${formatLongDate(weddingDate)}` : ""}`;
+  const body = [
+    m.title,
+    when,
+    m.location && `Where: ${m.location}`,
+    m.music && `${m.music_kind === "playlist" ? "Playlist" : "Song"}: ${m.music}`,
+    m.music_url && `Link: ${m.music_url}`,
+    m.notes && `Notes: ${m.notes}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const subject = `${m.title} · ${formatClock(m.at_time)}`;
+  const href = `mailto:${email ? encodeURIComponent(email) : ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return (
+    <section className="mt-6">
+      <h3 className="section-label">Send it</h3>
+      <div className="mt-2.5 flex gap-2.5">
+        <a href={href} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-ink px-4 text-[15px] text-ivory hover:bg-ink/90">
+          {email && inCharge ? `Email ${inCharge}` : "Email it"}
+        </a>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(body);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2500);
+            } catch {
+              setCopied(false);
+            }
+          }}
+          className="h-11 rounded-full border border-linen bg-white px-4 text-[15px] text-ink hover:border-champagne-400"
+        >
+          {copied ? "Copied" : "Copy it"}
+        </button>
+      </div>
+      <p className="mt-2 px-1 text-[12.5px] text-stone">
+        {email ? "Opens your email with the time, place, song and notes written in." : inCharge ? `No email for ${inCharge} yet, so you'll pick who it goes to.` : "Opens your email with the time, place, song and notes written in."}
+      </p>
+    </section>
   );
 }
 

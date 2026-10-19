@@ -1079,9 +1079,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Music area), notes, an area. Demo moments are put in their suppliers'
   charge (also in `demo-wedding.sql`).
   **The Music page's rows** (owner, 19 Oct 2026: "very, very busy"): just
-  the moment's name and its song (music note), nothing else; under them
-  **Copy the music list** with a line saying it's every song with its time
-  and link, to paste into a message to the band or DJ. **The Sound check
+  the moment's name and its song (music note), nothing else. **"Copy the
+  music list" was taken out** (owner: the church, the venue and the DJ each
+  need their own); instead **a moment's card has "Send it"** (`SendMoment`
+  in `plan-card-body.tsx`): "Email The Velvet Notes" opens the couple's own
+  email to the in-charge person's address (loaded with the card,
+  `inChargeEmail`) with the time, date, place, song, link and notes
+  written in, or "Email it" when there's no address; "Copy it" beside. The
+  app sends and keeps nothing (so it can't know it was sent). **The Sound check
   list lives under the Music page's notes only** (it showed twice):
   "Start a sound check list" sits there until it's made.
 

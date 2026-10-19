@@ -8,6 +8,7 @@ import { addArea, getArea, listAreas, missingIcon, updateArea } from "@/lib/db/a
 import { parseMoney } from "@/lib/money";
 import { createNote, deleteNote, updateNote } from "@/lib/db/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
+import { updateSupplierParts } from "@/lib/db/suppliers";
 import { describe } from "@/lib/errors";
 
 function failed(back: string, message: string, error: unknown): never {
@@ -239,4 +240,20 @@ function noteFields(formData: FormData): { body: string | null; url: string | nu
 function refreshNotes(key: string) {
   revalidatePath(`/area/${key}`);
   revalidatePath("/inbox");
+}
+
+/**
+ * Going back a stage (feedback item 1, 19 Oct 2026): a booked supplier who
+ * isn't booked after all goes back to Quote in (or In touch with no quote),
+ * so Booked steps back on the area page. Their payments are left alone.
+ */
+export async function unbookSupplierAction(key: string, supplierId: string, hasQuote: boolean) {
+  try {
+    await updateSupplierParts(supplierId, {}, { status: hasQuote ? "quoted" : "enquired" });
+  } catch (error) {
+    failed(`/area/${key}`, "That didn't change.", error);
+  }
+  refresh(key);
+  revalidatePath("/people");
+  revalidatePath("/money");
 }

@@ -1844,16 +1844,25 @@ additive — new tables hanging off `weddings`. None require changing the above.
 ### Backlog (ideas parked by the owner)
 
 - **Feedback list, 19 Oct 2026** (owner; parked, not designed yet):
-  1. **Going back a stage on an area page** — the five stages (Ideas ·
-     Quotes · Booked · Paid · Ready) need an obvious way to step back
-     (un-book a supplier, un-tick Ready…).
+  1. ~~**Going back a stage on an area page**~~ — **built 19 Oct 2026**:
+     a quiet ↶ line in each done stage (`StepBack` in `area-view.tsx`):
+     Booked has "Not booked after all" per booked supplier
+     (`unbookSupplierAction`: back to Quote in, or In touch with no quote;
+     payments untouched), and "We need a supplier after all" when doing it
+     ourselves; Paid lists what's paid ("Paid · tap a tick to undo", the
+     `PaymentRow` gold tick); Ready keeps "Not ready after all".
   2. ~~**Area pages link to the dietary needs**~~ — **built 19 Oct 2026**:
      Food & drink's "Everything for…" has a **Dietary needs** line (who and
      what, in rose) with "In the guest list ›" → `/people?f=dietary&view=diet`
      (the guest list on View › Dietary needs; `?view=diet` is new).
-  3. **Add an appointment to the phone's own calendar** (Google, Apple) —
-     likely an "Add to calendar" file (.ics) or link; a calendar feed would
-     send details to another service, so check against rule one.
+  3. ~~**Add an appointment to the phone's own calendar**~~ — **built
+     19 Oct 2026**: "Add to my calendar" at the foot of an appointment's
+     card opens `/plan/appointments/[id]/calendar` (`route.ts`, an .ics
+     file from `appointmentIcs()` in `src/lib/ics.ts`: UK time, an hour
+     long, all day with no time, "With …" and notes in the description).
+     Nothing is sent anywhere; the phone adds it if the couple say so. A
+     Google Calendar link or a live calendar feed was not built (those send
+     details to Google — the owner's call).
   4. ~~**Tapping the top …**~~ — **built 19 Oct 2026**: the profile's
      Answer, Table, Meal and the allergies line scroll to their row with a
      soft glow (`jumpTo()`, `src/lib/jump-to.ts`); the guest card's Details
@@ -1877,7 +1886,12 @@ additive — new tables hanging off `weddings`. None require changing the above.
   8. **Lists** — somewhere to make a plain list with no date (not Plan,
      which is to-dos and appointments by date); maybe on area pages. Close
      to the agreed Decor list — one "lists" piece could serve both.
-  9. **Money's important numbers** (from talking to couples): once
+  9. ~~**Money's important numbers**~~ — **built 19 Oct 2026**
+     (`money-figures.tsx`, the top card and an area's money sheet): with
+     nothing agreed or paid it leads with the **budget** ("No budget yet"
+     when none) and "Nothing agreed yet"; after that, **agreed** large,
+     then Paid · **To go** (was "To pay") · Still free / Over budget.
+     Original note (from talking to couples): once
      suppliers are booked it's **agreed · paid · to go** (paid + to go =
      agreed); before that, the **budget** matters most. Money's top card
      should lead with whichever fits where the couple is.

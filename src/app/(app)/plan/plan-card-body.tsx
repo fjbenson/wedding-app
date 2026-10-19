@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react";
+import { CalendarPlus, Check, ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react";
 import { AreaTiles, BARE, CARD, DateCard, Line, Part } from "@/components/visual-form";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Appointment, Milestone, Payment, RunSheetItem } from "@/types/db";
@@ -211,6 +211,15 @@ export function AppointmentBody({
           <TextRow label="Notes" value={a.notes} multiline onSave={(v) => save({ notes: v })} />
         </dl>
       </section>
+
+      {/* Into the phone's own calendar as a file (feedback item 3, 19 Oct 2026): nothing is sent anywhere. */}
+      <a
+        href={`/plan/appointments/${a.id}/calendar`}
+        className="mt-6 flex h-11 items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
+      >
+        <CalendarPlus className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+        Add to my calendar
+      </a>
     </>
   );
 }

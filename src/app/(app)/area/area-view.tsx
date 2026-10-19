@@ -3,7 +3,7 @@ import CardLink from "@/components/card-link";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, NotebookPen, Plus, PoundSterling, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -35,7 +35,18 @@ import {
   saveAreaNoteAction,
   setAreaAction,
   setAreaStageFlagAction,
+  unbookSupplierAction,
 } from "./actions";
+
+/** A quiet "go back a stage" button: a small back arrow and the words (feedback item 1, 19 Oct 2026). */
+function StepBack({ label }: { label: string }) {
+  return (
+    <button type="submit" className="mt-2 flex items-center gap-1.5 py-1 text-[13px] text-stone hover:text-ink">
+      <Undo2 className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+      <span className="underline underline-offset-4">{label}</span>
+    </button>
+  );
+}
 
 const isOpen = (m: Milestone) => m.status === "todo" || m.status === "in_progress";
 
@@ -628,6 +639,7 @@ export default function AreaView({
   const inTouch = live.filter((s) => statusOf(s) === "enquired" || statusOf(s) === "researching");
   const room = money.budget !== null ? money.budget - money.committed : null;
   const unpaid = schedule.filter((p) => !p.paid_on);
+  const paidList = schedule.filter((p) => p.paid_on);
   const vsBudget = (amount: number) =>
     room === null ? formatMoney(amount) : amount > room ? `${formatMoney(amount)}, ${formatMoney(amount - room)} over budget` : `${formatMoney(amount)}, ${formatMoney(room - amount)} under budget`;
   const quietLink = "text-[15px] text-champagne-600 hover:text-ink";
@@ -808,13 +820,26 @@ export default function AreaView({
       line: booked.length > 0 ? booked.map(supplierName).join(", ") : area.diy ? "Doing it ourselves" : "Not yet",
       content:
         booked.length > 0 ? (
-          <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
-            <ul>
-              {booked.map((s) => (
-                <SupplierRow key={s.id} s={s} />
-              ))}
-            </ul>
-          </div>
+          <>
+            <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+              <ul>
+                {booked.map((s) => (
+                  <SupplierRow key={s.id} s={s} />
+                ))}
+              </ul>
+            </div>
+            {/* Going back a stage (feedback item 1, 19 Oct 2026). */}
+            {booked.map((s) => (
+              <form key={s.id} action={unbookSupplierAction.bind(null, area.key, s.id, (s.supplier_details?.quoted_cost ?? 0) > 0)} className="px-1">
+                <StepBack label={booked.length > 1 ? `${supplierName(s)} isn't booked after all` : "Not booked after all"} />
+              </form>
+            ))}
+          </>
+        ) : area.diy ? (
+          <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "diy", false)} className="px-1">
+            <p className="text-sm text-stone">You&apos;re doing this yourselves.</p>
+            <StepBack label="We need a supplier after all" />
+          </form>
         ) : quotes.length >= 2 ? (
           <QuoteCompare
             quotes={quotes}
@@ -835,8 +860,9 @@ export default function AreaView({
       name: STAGES[3],
       id: "paid",
       line: money.committed > 0 ? `${formatMoney(money.paid)} of ${formatMoney(money.committed)} paid` : "Nothing agreed yet",
-      content:
-        unpaid.length + unscheduled.length > 0 ? (
+      content: (
+        <>
+        {unpaid.length + unscheduled.length > 0 ? (
           <ul className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             {unpaid.slice(0, 3).map((p) => (
               <PaymentRow key={p.id} payment={p} today={today} />
@@ -856,7 +882,20 @@ export default function AreaView({
           </ul>
         ) : (
           <p className="px-1 text-sm text-stone">{money.committed > 0 && money.paid >= money.committed ? "All paid." : "Nothing to pay yet."}</p>
-        ),
+        )}
+        {/* What's paid, so a payment marked by mistake can be taken back: tap its gold tick (feedback item 1). */}
+        {paidList.length > 0 && (
+          <>
+            <p className="type-meta mt-4 px-1">Paid · tap a tick to undo</p>
+            <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+              {paidList.map((p) => (
+                <PaymentRow key={p.id} payment={p} today={today} />
+              ))}
+            </ul>
+          </>
+        )}
+        </>
+      ),
     },
     {
       name: STAGES[4],
@@ -864,9 +903,7 @@ export default function AreaView({
       line: area.ready ? "Ready" : stage.current === 4 ? "Your tap" : "When it's all sorted",
       content: area.ready ? (
         <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", false)} className="px-1">
-          <button type="submit" className="py-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-            Not ready after all
-          </button>
+          <StepBack label="Not ready after all" />
         </form>
       ) : (
         <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", true)} className="glass-card flex items-center gap-3 rounded-[22px] px-4 py-3.5">

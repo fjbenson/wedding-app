@@ -1130,14 +1130,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0027_decor.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0028_moment_music.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0027 are now in** (0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0028 are now in** (0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the
@@ -1921,9 +1921,15 @@ additive — new tables hanging off `weddings`. None require changing the above.
   5. ~~**"Father of the groom" missing as a role**~~ — **built 19 Oct
      2026** (owner: all four): Mother / Father of the bride, Mother / Father
      of the groom, beside "Parent of the couple" (`GUEST_ROLES`).
-  6. **Music** — link Spotify or YouTube playlists (first dance, ceremony,
-     evening; for the band or DJ). Likely a Music area's links, or links on
-     run sheet moments.
+  6. ~~**Music**~~ — **built 19 Oct 2026** (owner's OK;
+     `0028_moment_music.sql`, run the same day: `run_sheet_items.music`,
+     `music_url`): a moment's card has a **Music** part (Song, Link, "Play
+     it"); the run sheet shows the song under a moment with a music note;
+     the **Music** area page's "Everything for Music" has **The music** —
+     every moment with a song in time order, "Play ›", and **Copy for the
+     band or DJ** (`MusicSection` in `area-view.tsx`). Links get https://
+     added; nothing is sent anywhere. Not yet: music on the add-a-moment
+     form, songs in the demo wedding.
   7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
      rule was no made-up human name — the owner now wants one; ties to the
      Rondé brand).

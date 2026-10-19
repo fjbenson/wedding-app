@@ -140,7 +140,7 @@ export async function updatePlanFieldsAction(
     todo: ["title", "due_date", "category", "description"],
     appointment: ["title", "on_date", "at_time", "location", "contact_id", "area_key", "notes"],
     payment: ["description", "amount", "due_date", "paid_on", "contact_id", "area_key", "notes"],
-    moment: ["title", "at_time", "location", "who", "notes", "area_key"],
+    moment: ["title", "at_time", "location", "who", "notes", "area_key", "music", "music_url"],
     journey: ["vehicle", "at_time", "from_place", "to_place", "notes"],
     idea: ["area_key", "note"],
   }[kind];
@@ -149,6 +149,8 @@ export async function updatePlanFieldsAction(
     if (!allowed.includes(key)) continue;
     tidy[key] = typeof value === "string" ? value.trim() || null : null;
   }
+  // "open.spotify.com/…" gets https:// in front, so it opens (and passes 0028's check).
+  if (tidy.music_url && !/^https?:\/\//i.test(tidy.music_url)) tidy.music_url = `https://${tidy.music_url}`;
   if (("title" in tidy && !tidy.title) || ("description" in tidy && kind === "payment" && !tidy.description)) {
     return { error: "It needs a name." };
   }

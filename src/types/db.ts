@@ -255,6 +255,9 @@ export interface RunSheetItem {
   notes: string | null;
   /** The area it belongs to, by key; empty is Other (0017_run_sheet_area.sql). */
   area_key?: string | null;
+  /** A song or playlist for the moment, and its link (0028_moment_music.sql). */
+  music?: string | null;
+  music_url?: string | null;
   created_at: string;
 }
 

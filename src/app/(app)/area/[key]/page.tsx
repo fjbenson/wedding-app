@@ -106,6 +106,8 @@ export default async function AreaPage({
       guestFacts={guestFacts}
       food={food}
       decor={decor}
+      // The Music area lists every moment with a song (0028_moment_music.sql).
+      music={area.key === "music" ? (day?.runSheet ?? []).filter((m) => m.music || m.music_url) : null}
       moments={(day?.runSheet ?? []).filter((i) => i.area_key === area.key)}
       couple={coupleName(wedding.name)}
       error={error}

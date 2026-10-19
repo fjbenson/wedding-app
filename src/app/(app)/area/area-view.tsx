@@ -3,7 +3,7 @@ import CardLink from "@/components/card-link";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -474,6 +474,42 @@ function GuestsSection({ facts, supplier, couple }: { facts: AreaGuestFacts; sup
  * opening the run sheet narrowed to this area. Transport's cars and coaches,
  * and day guests still without a lift, sit here too.
  */
+/**
+ * The Music area's list (owner, 19 Oct 2026): every moment with a song or
+ * playlist, in time order, each with its link, and a copy for the band or DJ.
+ */
+function MusicSection({ moments, couple }: { moments: RunSheetItem[]; couple: string }) {
+  if (moments.length === 0) {
+    return <p className="py-3 text-sm text-stone">Open a moment on the run sheet (the walk in, the first dance…) and add its song under Music.</p>;
+  }
+  const text = [`Music for ${couple}`, "", ...moments.map((m) => `${formatClock(m.at_time)}  ${m.title}: ${m.music ?? ""}${m.music_url ? `  ${m.music_url}` : ""}`)].join("\n");
+  return (
+    <>
+      <ul>
+        {moments.map((m) => (
+          <li key={m.id} className="flex items-center gap-3 border-b border-linen py-3">
+            <CardLink href={`/day/run-sheet/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+              <span className="type-figure w-12 shrink-0 text-lg text-champagne-600">{formatClock(m.at_time)}</span>
+              <span className="min-w-0 flex-1">
+                <span className="type-item block truncate">{m.title}</span>
+                <span className="type-meta mt-0.5 block truncate">{m.music ?? "A link"}</span>
+              </span>
+            </CardLink>
+            {m.music_url && (
+              <a href={m.music_url} target="_blank" rel="noopener noreferrer" className="shrink-0 text-[13px] text-champagne-600 hover:text-ink">
+                Play ›
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div className="py-3">
+        <CopyText text={text} label="Copy for the band or DJ" />
+      </div>
+    </>
+  );
+}
+
 function DaySection({ moments, facts }: { moments: RunSheetItem[]; facts: AreaGuestFacts | null }) {
   const transport = facts?.kind === "transport" ? facts : null;
   return (
@@ -557,7 +593,10 @@ export default function AreaView({
   moments,
   couple,
   decor,
+  music,
 }: {
+  /** The Music area only: every run sheet moment with a song, in time order (0028). */
+  music?: RunSheetItem[] | null;
   /** The Decor area only: its things, in place of the five stages (0027_decor.sql). */
   decor?: { items: DecorWithHelpers[]; people: DecorPerson[]; weddingDate: string | null } | null;
   /** This area's run sheet moments, in time order (0017_run_sheet_area.sql). */
@@ -1264,6 +1303,18 @@ export default function AreaView({
             </ul>
           ) : null}
             </Everything>
+
+            {music && (
+              <Everything
+                id="music"
+                icon={Music}
+                title="The music"
+                line={music.length ? `${music.length} ${music.length === 1 ? "moment" : "moments"} · ${music.map((m) => m.title).slice(0, 2).join(", ")}` : "A song for each moment"}
+                add={{ href: "/day", label: "Add music to a moment" }}
+              >
+                <MusicSection moments={music} couple={couple} />
+              </Everything>
+            )}
 
             <Everything
               id="day"

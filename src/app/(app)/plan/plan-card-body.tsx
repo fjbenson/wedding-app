@@ -461,6 +461,21 @@ export function MomentBody({ moment: m, areas }: { moment: RunSheetItem; areas: 
           <TextRow label="Notes" value={m.notes} multiline onSave={(v) => save({ notes: v })} />
         </dl>
       </section>
+
+      {/* A song or playlist for the moment (owner, 19 Oct 2026): the walk in, the first dance… */}
+      <section className="mt-7">
+        <h3 className="section-label">Music</h3>
+        <dl className="mt-1">
+          <TextRow label="Song" value={m.music ?? null} onSave={(v) => save({ music: v })} />
+          <TextRow label="Link" value={m.music_url ?? null} type="url" onSave={(v) => save({ music_url: v })} />
+        </dl>
+        {m.music_url && (
+          <a href={m.music_url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[14px] text-champagne-600 hover:text-ink">
+            <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+            Play it
+          </a>
+        )}
+      </section>
     </>
   );
 }

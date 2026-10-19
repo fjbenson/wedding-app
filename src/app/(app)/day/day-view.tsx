@@ -2,7 +2,7 @@ import PageTitle from "@/components/page-title";
 import { AlsoInTheDay, DayPill, PieceTiles } from "./day-pieces";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
-import { WheatOff, X } from "lucide-react";
+import { Music, WheatOff, X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import ViewMenu from "@/components/view-menu";
 import NumbersCard from "@/components/numbers-card";
@@ -191,7 +191,7 @@ function RunSheet({
   // The search (`?q=`): what happens, where, who, or the notes.
   const needle = query.toLowerCase();
   const items = needle
-    ? inArea.filter((i) => [i.title, i.location, i.who, i.notes].some((t) => t?.toLowerCase().includes(needle)))
+    ? inArea.filter((i) => [i.title, i.location, i.who, i.notes, i.music].some((t) => t?.toLowerCase().includes(needle)))
     : inArea;
   const partCount = (until: string, after: string) => inArea.filter((i) => i.at_time.slice(0, 5) >= after && i.at_time.slice(0, 5) < until).length;
   const forWhom = area === "none" ? "Other" : area ? areaName(area, areas) : null;
@@ -297,6 +297,12 @@ function RunSheet({
                             {(item.location || item.who) && (
                               <span className="mt-0.5 block font-display text-[15px] italic text-stone">
                                 {[item.location, item.who].filter(Boolean).join(" · ")}
+                              </span>
+                            )}
+                            {item.music && (
+                              <span className="mt-0.5 flex items-center gap-1.5 text-[13px] text-champagne-600">
+                                <Music className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} aria-label="Music" />
+                                {item.music}
                               </span>
                             )}
                             {item.notes && <span className="mt-1 block whitespace-pre-wrap text-sm text-stone">{item.notes}</span>}

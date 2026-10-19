@@ -904,6 +904,18 @@ Next.js scaffold. Built so far, against the plan's tabs:
   table option (seats on one side, at the head) was offered, not built.
   On a phone the room scrolls sideways rather than shrinking. The old cards
   are the **List** view (`?view=list`), where tables are renamed or removed.
+  **The phone floor plan, 19 Oct 2026** (canvas 3 "Seating · Round 1 · The
+  phone", **B**, owner's pick): the room stays a map with seat dots round
+  each table — **a rose dot is a seat whose guest has a dietary need** (the
+  number badge was taken off; owner asked to keep the dots). **Tapping a
+  table opens it close up** (`table-view.tsx`, a `CardSheet`): the table
+  large, initials in the seats (rose ring and the need written under anyone
+  with one), free seats as a dashed + that opens "Who sits here?" (search,
+  unseated guests), ‹ › or a swipe to the next table, "Sitting here" with ✕,
+  Round | Long. Seats are slots in name order (the database knows only the
+  table). The old panel under the plan is gone. Options A (pinch to zoom) and
+  C (tables as cards) weren't picked. `DietLine` moved to
+  `src/components/diet-line.tsx`.
   **17 Oct 2026, canvas 3 "The Day · Round 1", A (owner's pick): every view
   has the other tabs' bones** — a numbers card (`NumbersCard`,
   `src/components/numbers-card.tsx`: a big white tile and three figures),
@@ -2095,7 +2107,7 @@ additive — new tables hanging off `weddings`. None require changing the above.
 
 All private to the owner; open with the Artifact tool's `read` action.
 
-- **Design canvas 3** — from 14 Oct 2026 (Household rounds 1–3, the
+- **Design canvas 3** — from 14 Oct 2026 (Seating · Round 1 · The phone, 19 Oct 2026 — B built; Household rounds 1–3, the
   envelope; Guest card round 2, the profile; Groups round 1 — built; **Tab tops · Round 1**, 16 Oct 2026: A one row (title + switch), B a gold line above the title, C no title, switch centred — **A picked and built**): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** — from 11 Oct 2026; **full** (its 40th page,
   "Name · Rondé", was added 14 Oct 2026); new rounds go on canvas 3: https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB

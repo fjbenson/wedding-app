@@ -18,7 +18,8 @@ import {
   unseatGuestAction,
   updateTableAction,
 } from "./actions";
-import FloorPlan, { DietLine } from "./floor-plan";
+import FloorPlan from "./floor-plan";
+import DietLine from "@/components/diet-line";
 import CopyText from "@/components/copy-text";
 import { needsOf } from "@/lib/dietary";
 import FilterMenu from "@/components/filter-menu";

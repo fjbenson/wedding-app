@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UsersRound, WheatOff, X } from "lucide-react";
+import { UsersRound, WheatOff } from "lucide-react";
+import TableView from "./table-view";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
 import { moveTableAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
 
@@ -108,7 +108,11 @@ export default function FloorPlan({
   }
 
   const unseated = guests.filter((g) => !tableOf.has(g.id));
-  const atTable = (id: string) => guests.filter((g) => tableOf.get(g.id) === id);
+  // In name order, so the dots and the close-up's seats agree.
+  const atTable = (id: string) =>
+    guests
+      .filter((g) => tableOf.get(g.id) === id)
+      .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
   const groupUnseated = (groupId: string) => {
     const members = new Set(groups.find((g) => g.id === groupId)?.members ?? []);
     return unseated.filter((g) => members.has(g.id));
@@ -120,7 +124,6 @@ export default function FloorPlan({
   function seat(contactId: string, tableId: string) {
     setTableOf((m) => new Map(m).set(contactId, tableId));
     setSelectedGuest(null);
-    setSelectedTable(tableId);
     save(() => seatOnPlanAction(contactId, tableId));
   }
 
@@ -142,7 +145,6 @@ export default function FloorPlan({
       return next;
     });
     setSelectedGroup(null);
-    setSelectedTable(tableId);
     save(async () => {
       for (const id of ids) {
         const message = await seatOnPlanAction(id, tableId);
@@ -155,7 +157,8 @@ export default function FloorPlan({
   function tapTable(id: string) {
     if (selectedGroup) seatGroup(selectedGroup, id);
     else if (selectedGuest) seat(selectedGuest, id);
-    else setSelectedTable((current) => (current === id ? null : id));
+    // Nobody picked: the table opens close up (canvas 3 "Seating · Round 1", B).
+    else setSelectedTable(id);
   }
 
   function pointAt(clientX: number, clientY: number): Point | null {
@@ -210,6 +213,7 @@ export default function FloorPlan({
   const picked = guests.find((g) => g.id === selectedGuest);
   const pickedGroup = openGroups.find((g) => g.id === selectedGroup);
   const table = tables.find((t) => t.id === selectedTable);
+  const tableIndex = tables.findIndex((t) => t.id === selectedTable);
 
   return (
     <div className="mt-6">
@@ -224,7 +228,7 @@ export default function FloorPlan({
           ? <>Now tap a table to sit <span className="text-ink">{pickedGroup.name}</span> together ({pickedGroup.waiting}).</>
           : picked
           ? <>Now tap a table to sit <span className="text-ink">{fullName(picked)}</span>.</>
-          : "Drag tables to set out the room. Tap one to see who's sitting there."}
+          : "Drag tables to set out the room. Tap one to open it."}
       </p>
 
       {/* Below ~560px the room scrolls sideways instead of shrinking past readable. */}
@@ -251,7 +255,8 @@ export default function FloorPlan({
             const shape = shapes[t.id] ?? "round";
             const { width, aspect } = tableSize(shape, t.capacity);
             const sitting = atTable(t.id).length;
-            const diets = atTable(t.id).filter((g) => needs[g.id]?.length).length;
+            const people = atTable(t.id);
+            const diets = people.filter((g) => needs[g.id]?.length).length;
             const over = sitting > t.capacity;
             const full = sitting >= t.capacity;
             const active = selectedTable === t.id;
@@ -285,20 +290,16 @@ export default function FloorPlan({
                     key={i}
                     aria-hidden
                     style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                    // A rose dot: the person in that seat has a dietary need (owner, 19 Oct 2026).
                     className={`absolute h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full border ${
-                      i < sitting ? "border-champagne-600 bg-champagne-600" : "border-champagne-400 bg-white"
+                      i < sitting
+                        ? needs[people[i].id]?.length
+                          ? "border-[#9A3F2B] bg-[#9A3F2B]"
+                          : "border-champagne-600 bg-champagne-600"
+                        : "border-champagne-400 bg-white"
                     }`}
                   />
                 ))}
-                {diets > 0 && (
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-[#9A3F2B] px-1 text-[11px] font-semibold leading-none text-white shadow-[0_0_0_2px_#FFFFFF]"
-                  >
-                    <WheatOff className="h-3 w-3" strokeWidth={2} />
-                    {diets}
-                  </span>
-                )}
                 <span className="pointer-events-none flex h-full flex-col items-center justify-center px-1 leading-tight">
                   <span className="max-w-full truncate text-xs font-medium text-ink">{t.name}</span>
                   <span className={`text-xs ${over ? "font-medium text-champagne-600" : "text-stone"}`}>
@@ -370,74 +371,24 @@ export default function FloorPlan({
       )}
 
       {table && (
-        <section className="mt-6 rounded-2xl border border-linen bg-white p-4">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-xl text-ink">{table.name}</h2>
-            <span className="text-xs uppercase tracking-[0.14em] text-stone">
-              {atTable(table.id).length} / {table.capacity}
-            </span>
-          </div>
-
-          <div className="mt-3 inline-grid grid-cols-2 rounded-xl border border-linen bg-cream/60 p-1" role="group" aria-label="Table shape">
-            {(["round", "long"] as const).map((shape) => (
-              <button
-                key={shape}
-                type="button"
-                aria-pressed={(shapes[table.id] ?? "round") === shape}
-                onClick={() => changeShape(table.id, shape)}
-                className={`h-9 rounded-lg px-4 text-sm capitalize ${
-                  (shapes[table.id] ?? "round") === shape ? "bg-white text-ink shadow-[0_1px_2px_rgb(30_27_24/0.08)]" : "text-stone"
-                }`}
-              >
-                {shape}
-              </button>
-            ))}
-          </div>
-
-          {atTable(table.id).length === 0 ? (
-            <p className="mt-3 text-sm text-stone">Nobody yet — tap a name above, then this table.</p>
-          ) : (
-            <ul className="mt-2">
-              {atTable(table.id).map((g) => (
-                <li key={g.id} className="flex items-center gap-2 border-b border-linen py-1.5 last:border-b-0">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] text-ink">
-                      {fullName(g)}
-                      {g.role_on_the_day && <span className="ml-2 text-xs text-champagne-600">{g.role_on_the_day}</span>}
-                    </span>
-                    {needs[g.id]?.length ? <DietLine needs={needs[g.id]} /> : null}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => unseat(g.id)}
-                    aria-label={`Take ${g.first_name} off ${table.name}`}
-                    className="p-1.5 text-stone hover:text-ink"
-                  >
-                    <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <Link
-            href="/day?tab=seating&view=list"
-            className="mt-3 inline-block text-sm text-stone underline underline-offset-4 hover:text-ink"
-          >
-            Rename, change seats or remove — in the list
-          </Link>
-        </section>
+        <TableView
+          table={table}
+          shape={shapes[table.id] ?? "round"}
+          position={{ index: tableIndex, total: tables.length }}
+          guests={atTable(table.id)}
+          unseated={unseated}
+          needs={needs}
+          onSeat={(id) => {
+            setTableOf((m) => new Map(m).set(id, table.id));
+            save(() => seatOnPlanAction(id, table.id));
+          }}
+          onUnseat={unseat}
+          onShape={(shape) => changeShape(table.id, shape)}
+          onStep={(by) => setSelectedTable(tables[(tableIndex + by + tables.length) % tables.length].id)}
+          onClose={() => setSelectedTable(null)}
+        />
       )}
     </div>
   );
 }
 
-/** A guest's dietary needs under their name, in rose with the no-wheat mark. */
-export function DietLine({ needs }: { needs: string[] }) {
-  return (
-    <span className="mt-0.5 flex items-center gap-1 text-[13px] text-[#9A3F2B]">
-      <WheatOff aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-      <span className="min-w-0">{needs.join(" · ")}</span>
-    </span>
-  );
-}

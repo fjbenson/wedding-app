@@ -1918,10 +1918,9 @@ additive — new tables hanging off `weddings`. None require changing the above.
      field to change it** (also "make profile summaries clickable") — e.g.
      tap Table at the top, it scrolls down to a Table drop-down in Details
      to change it. Same for Answer, Meal, and the household's figures.
-  5. **"Father of the groom" missing as a role** — today there's only
-     "Parent of the couple" (`GUEST_ROLES`, `src/lib/guest-roles.ts`).
-     Mind the "for everyone" rule: probably offer Mother / Father of the
-     couple, or of each partner by name, rather than bride/groom words.
+  5. ~~**"Father of the groom" missing as a role**~~ — **built 19 Oct
+     2026** (owner: all four): Mother / Father of the bride, Mother / Father
+     of the groom, beside "Parent of the couple" (`GUEST_ROLES`).
   6. **Music** — link Spotify or YouTube playlists (first dance, ceremony,
      evening; for the band or DJ). Likely a Music area's links, or links on
      run sheet moments.
@@ -1981,7 +1980,13 @@ additive — new tables hanging off `weddings`. None require changing the above.
   14. **What's been sent to whom** — a tracker (save the date, invitation,
       thank-you…), and **after the wedding** as a whole: thank-you notes
       must be really easy (who gave what, who's been thanked).
-  15. **Suppliers' last stage: giving things back** — after the wedding,
+  15. ~~**Suppliers' last stage: giving things back**~~ — **settled 19 Oct
+      2026** (owner took Claude's suggestion): Decor stays the one place
+      (Given back, return dates, the pack list's After the day); a
+      supplier's card shows **"Decor from them"** — what they lend or hire
+      out and when it goes back (`SupplierDecor`, `listDecorFrom()`), each
+      opening its card on The Day › Decor. No supplier stage after Booked.
+      Original note: after the wedding,
       what was borrowed or hired (decor and the like) goes back; a stage
       after Booked, or Decor's "dates to give back", organised for after
       the day.

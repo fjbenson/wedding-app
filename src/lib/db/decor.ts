@@ -67,3 +67,14 @@ export async function setDecorHelpers(weddingId: string, decorId: string, contac
     .insert(contactIds.map((contact_id) => ({ decor_id: decorId, contact_id, wedding_id: weddingId })));
   if (error) throw error;
 }
+
+/** What one guest or supplier is lending — for their card. */
+export async function listDecorFrom(contactId: string): Promise<DecorItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("decor_items").select("*").eq("from_contact_id", contactId).order("return_on", { nullsFirst: false });
+  if (error) {
+    if (missing(error)) return [];
+    throw error;
+  }
+  return data ?? [];
+}

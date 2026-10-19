@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createDecor, deleteDecor, setDecorHelpers, updateDecor, type DecorFields } from "@/lib/db/decor";
+import { createDecor, deleteDecor, listDecorFrom, setDecorHelpers, updateDecor, type DecorFields } from "@/lib/db/decor";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { SOURCES, STATUSES } from "@/lib/decor";
-import type { DecorSource, DecorStatus } from "@/types/db";
+import type { DecorItem, DecorSource, DecorStatus } from "@/types/db";
 
 /**
  * Decor's things (0027_decor.sql). The card's saves return a message rather
@@ -129,4 +129,14 @@ export async function removeDecorAction(id: string): Promise<Result> {
   }
   done();
   return {};
+}
+
+/** What a supplier is lending or hiring out, for their card (row-level security keeps it to this wedding). */
+export async function decorFromAction(contactId: string): Promise<{ items: DecorItem[]; error?: string }> {
+  if (!UUID.test(contactId)) return { items: [] };
+  try {
+    return { items: await listDecorFrom(contactId) };
+  } catch (error) {
+    return { items: [], ...failed("Loading decor", error) };
+  }
 }

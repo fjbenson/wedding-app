@@ -13,6 +13,11 @@ export const GUEST_ROLES = [
   "Ring bearer",
   "Reader",
   "Officiant",
+  // The four parents by name (owner, 19 Oct 2026: "Father of the groom" was missing).
+  "Mother of the bride",
+  "Father of the bride",
+  "Mother of the groom",
+  "Father of the groom",
   "Parent of the couple",
 ];
 

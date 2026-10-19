@@ -17,6 +17,7 @@ import { SUPPLIER_STAGES } from "@/lib/supplier-status";
 import { withCommas } from "@/lib/money";
 import { deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
 import SupplierFiles from "@/components/supplier-files";
+import SupplierDecor from "@/components/supplier-decor";
 
 export function supplierName(s: Supplier) {
   return s.supplier_details?.company_name ?? [s.first_name, s.last_name].filter(Boolean).join(" ");
@@ -134,6 +135,9 @@ export default function SupplierCard({
 
           {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
           <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
+
+          {/* What they lend or hire out, from Decor (owner, 19 Oct 2026). */}
+          <SupplierDecor supplierId={supplier.id} />
 
           <section className="mt-7">
             <h2 className="section-label font-body">Contact</h2>

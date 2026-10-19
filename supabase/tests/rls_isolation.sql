@@ -92,6 +92,17 @@ begin
       ('aaaaaaaa-0000-0000-0000-000000000001', 'Prosecco'),
       ('bbbbbbbb-0000-0000-0000-000000000002', 'Secret fizz');
   end if;
+  if to_regclass('public.decor_items') is not null then
+    insert into decor_items (id, wedding_id, name, from_contact_id)
+      select 'aaaaaaaa-6666-0000-0000-000000000001', wedding_id, 'Jam jars', id from contacts where first_name = 'Alice';
+    insert into decor_items (id, wedding_id, name, from_contact_id)
+      select 'bbbbbbbb-6666-0000-0000-000000000002', wedding_id, 'Secret candles', id from contacts where first_name = 'Bob';
+    insert into decor_helpers (decor_id, contact_id, wedding_id)
+      select 'aaaaaaaa-6666-0000-0000-000000000001', id, wedding_id from contacts where first_name = 'Alice';
+    insert into decor_helpers (decor_id, contact_id, wedding_id)
+      select 'bbbbbbbb-6666-0000-0000-000000000002', id, wedding_id from contacts where first_name = 'Bob';
+    perform set_config('test.bob_decor', (select id::text from contacts where first_name = 'Bob' limit 1), false);
+  end if;
   if to_regclass('public.stays') is not null then
     insert into stays (id, wedding_id, name) values
       ('aaaaaaaa-3333-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'The Swan'),
@@ -590,6 +601,53 @@ begin
     end if;
     -- And they can use their own.
     execute $q$insert into drinks (wedding_id, name) values ('aaaaaaaa-0000-0000-0000-000000000001', 'Pimm''s')$q$;
+  end if;
+
+  if to_regclass('public.decor_items') is not null then
+    execute 'select count(*) from decor_items' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % decor items, expected 1', visible_contacts;
+    end if;
+    execute 'select count(*) from decor_helpers' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % decor helpers, expected 1', visible_contacts;
+    end if;
+    -- Couple A can't add to wedding B, or borrow from wedding B's guest, or
+    -- put wedding B's guest on their own item, even knowing the ids.
+    begin
+      execute $q$insert into decor_items (wedding_id, name) values ('bbbbbbbb-0000-0000-0000-000000000002', 'Sneaky')$q$;
+      raise exception 'LEAK: couple A added decor to wedding B';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+    begin
+      execute format($q$insert into decor_items (wedding_id, name, from_contact_id)
+                      values ('aaaaaaaa-0000-0000-0000-000000000001', 'Borrowed', %L)$q$, current_setting('test.bob_decor'));
+      raise exception 'LEAK: couple A borrowed from wedding B''s guest';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    begin
+      execute format($q$insert into decor_helpers (decor_id, contact_id, wedding_id)
+                      values ('aaaaaaaa-6666-0000-0000-000000000001', %L, 'aaaaaaaa-0000-0000-0000-000000000001')$q$,
+                     current_setting('test.bob_decor'));
+      raise exception 'LEAK: couple A made wedding B''s guest a helper';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    execute $q$update decor_items set name = 'Hacked' where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A renamed wedding B''s decor';
+    end if;
+    execute $q$delete from decor_helpers where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s decor helpers';
+    end if;
+    -- And they can use their own.
+    execute $q$insert into decor_items (wedding_id, name, area_key, status, source)
+             values ('aaaaaaaa-0000-0000-0000-000000000001', 'Candles', 'flowers', 'got', 'bought')$q$;
   end if;
 
   raise notice 'RLS isolation: all checks passed';

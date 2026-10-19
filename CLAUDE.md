@@ -1808,6 +1808,43 @@ additive — new tables hanging off `weddings`. None require changing the above.
   6. **Music** — link Spotify or YouTube playlists (first dance, ceremony,
      evening; for the band or DJ). Likely a Music area's links, or links on
      run sheet moments.
+  7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
+     rule was no made-up human name — the owner now wants one; ties to the
+     Rondé brand).
+  8. **Lists** — somewhere to make a plain list with no date (not Plan,
+     which is to-dos and appointments by date); maybe on area pages. Close
+     to the agreed Decor list — one "lists" piece could serve both.
+  9. **Money's important numbers** (from talking to couples): once
+     suppliers are booked it's **agreed · paid · to go** (paid + to go =
+     agreed); before that, the **budget** matters most. Money's top card
+     should lead with whichever fits where the couple is.
+  10. **Children, properly** — the yes/no child tick isn't enough. In
+      practice it's two things: **adult or child meal**, and **alcohol or
+      not** (a teenager can have the child meal and drink, or the other way
+      round). Maybe an age or age group, or those two settings per guest.
+      Ties to "Children are a yes/no flag" under Design decisions still
+      open. Needs thinking, and a database change.
+  11. **Food & drink as a bigger section** — so much happens through the
+      day (canapés, breakfast, evening food, drinks, cake…). The menu and
+      Drinks (18 Oct) are a start.
+  12. **Venue table numbers** — venues have their own table numbers; the
+      couple's table names mean nothing to them (it went wrong at one
+      wedding). Add a venue number beside each table's name, a nudge
+      ("check the numbers with your venue"), and **Send the table plan to
+      the venue** (a PDF by email — opening the couple's own email first,
+      like groups; guests' names go to the venue, so rule one).
+  13. **Invitations** — maybe design them in the app. A **Send** button
+      beside Text · Call · Email on the guest / household card, posting
+      the invitation to them (a print-and-post service — costs money and
+      sends addresses out: the owner's call). Ties to "From talking to
+      couples" 1 below.
+  14. **What's been sent to whom** — a tracker (save the date, invitation,
+      thank-you…), and **after the wedding** as a whole: thank-you notes
+      must be really easy (who gave what, who's been thanked).
+  15. **Suppliers' last stage: giving things back** — after the wedding,
+      what was borrowed or hired (decor and the like) goes back; a stage
+      after Booked, or Decor's "dates to give back", organised for after
+      the day.
 
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature

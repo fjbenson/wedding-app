@@ -19,7 +19,7 @@ import {
   unseatGuest,
   updateTable,
 } from "@/lib/db/day";
-import { setMomentGroups } from "@/lib/db/moment-groups";
+import { copyMoments, createRunSheet, deleteRunSheet, listRunSheets, updateRunSheet } from "@/lib/db/run-sheets";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { returnTo, stayAfterSave } from "@/lib/return-to";
@@ -57,8 +57,10 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
   const title = text(formData, "title");
   if (!at || !title) redirect(`${back}?error=${encodeURIComponent("Please give it a time and say what happens.")}`);
 
+  // A new moment goes on the run sheet it was added from (0035); editing leaves it where it is.
+  const sheet = text(formData, "sheet_id");
   try {
-    const savedId = await saveRunSheetItem(wid, id, {
+    await saveRunSheetItem(wid, id, {
       at_time: at,
       title,
       location: text(formData, "location"),
@@ -70,10 +72,8 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       music: text(formData, "music"),
       music_url: musicUrl(text(formData, "music_url")),
       music_kind: text(formData, "music_kind") === "playlist" ? "playlist" : text(formData, "music") ? "song" : null,
+      ...(!id && sheet && /^[0-9a-f-]{36}$/i.test(sheet) ? { sheet_id: sheet } : {}),
     });
-    // A new moment can be put on groups' own schedules as it's added (Whose schedule); editing does it on the card.
-    const groupIds = formData.getAll("group_id").map(String).filter((g) => /^[0-9a-f-]{36}$/i.test(g));
-    if (!id && groupIds.length > 0) await setMomentGroups(wid, savedId, groupIds);
   } catch (error) {
     failed(back, "That didn't save.", error);
   }
@@ -85,6 +85,55 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
     redirect(`/area/${fromArea}#day`);
   }
   redirect(id ? stayAfterSave(`/day/run-sheet/${id}`) : returnTo(formData, "/day"));
+}
+
+// More than one run sheet (0035) ----------------------------------------------
+
+const uuid = (v: string | null) => (v && /^[0-9a-f-]{36}$/i.test(v) ? v : null);
+
+/** A new run sheet, optionally tied to a group and starting with copies of some of the main sheet's moments. */
+export async function createRunSheetAction(formData: FormData) {
+  const back = "/day/sheets/new";
+  const wid = await weddingId();
+  const name = text(formData, "name");
+  if (!name) redirect(`${back}?error=${encodeURIComponent("Give the run sheet a name.")}`);
+  let id: string;
+  try {
+    const order = (await listRunSheets(wid)).length;
+    id = await createRunSheet(wid, name, uuid(text(formData, "group_id")), order);
+    if (text(formData, "start") === "copy") {
+      await copyMoments(wid, formData.getAll("copy_id").map(String).filter((m) => uuid(m)), id);
+    }
+  } catch (error) {
+    failed(back, "That didn't save.", error);
+  }
+  refresh();
+  redirect(`/day?sheet=${id}`);
+}
+
+export async function updateRunSheetAction(id: string, formData: FormData) {
+  const back = `/day/sheets/${id}`;
+  const name = text(formData, "name");
+  if (!name) redirect(`${back}?error=${encodeURIComponent("Give the run sheet a name.")}`);
+  try {
+    await updateRunSheet(id, { name, group_id: uuid(text(formData, "group_id")) });
+  } catch (error) {
+    failed(back, "That didn't save.", error);
+  }
+  refresh();
+  redirect(`/day?sheet=${id}`);
+}
+
+/** Removes the run sheet and its moments (the screen asks first). */
+export async function deleteRunSheetAction(id: string) {
+  try {
+    await deleteRunSheet(id);
+  } catch (error) {
+    failed(`/day/sheets/${id}`, "That didn't remove it.", error);
+  }
+  refresh();
+  revalidatePath("/area/[key]", "page");
+  redirect("/day");
 }
 
 export async function deleteRunSheetItemAction(id: string) {

@@ -15,9 +15,8 @@ import type { AreaOption } from "@/lib/areas";
 import { getContact, listGuests } from "@/lib/db/contacts";
 import { decorPeople, type DecorPerson } from "../decor/decor-people";
 import { addInvolved, getInvolved, listForGuest, removeInvolved, type InvolvedKind } from "@/lib/db/involved";
-import { listGroups } from "@/lib/db/groups";
 import { listMenu, listDrinks } from "@/lib/db/menu";
-import { listMomentGroups, setMomentGroups } from "@/lib/db/moment-groups";
+import { copyMoments, listRunSheets, moveMoment } from "@/lib/db/run-sheets";
 import type { Appointment, Milestone, Payment, RunSheetItem, TransportRun } from "@/types/db";
 
 /**
@@ -50,9 +49,8 @@ export type PlanCardData =
       people: DecorPerson[];
       /** The in-charge person's email, to send them the moment. */
       inChargeEmail: string | null;
-      /** Groups of guests, and the ones this moment is for (0034): their own schedule. */
-      groups: { id: string; name: string }[];
-      groupIds: string[];
+      /** The run sheets besides the main one (0035): the moment is on one, and can be moved or copied to another. */
+      sheets: { id: string; name: string }[];
       /** Courses and drinks served at it (0034): food and drink through the day. */
       food: MomentFood;
       areas: AreaOption[];
@@ -127,11 +125,10 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
   if (kind === "appointment") return { kind, appointment: item as Appointment, involved: await loadInvolved(wedding.id, kind, id), ...common };
   if (kind === "moment") {
     const moment = item as RunSheetItem;
-    const [people, inCharge, groups, forGroups, menu, drinks] = await Promise.all([
+    const [people, inCharge, sheets, menu, drinks] = await Promise.all([
       decorPeople(wedding.id),
       moment.contact_id ? getContact(moment.contact_id) : Promise.resolve(null),
-      listGroups(wedding.id),
-      listMomentGroups(wedding.id),
+      listRunSheets(wedding.id),
       listMenu(wedding.id),
       listDrinks(wedding.id),
     ]);
@@ -140,8 +137,7 @@ export async function loadPlanCardAction(kind: CardKind, id: string): Promise<Pl
       moment,
       people,
       inChargeEmail: inCharge?.email ?? null,
-      groups: groups.map((g) => ({ id: g.id, name: g.name })),
-      groupIds: forGroups[id] ?? [],
+      sheets: sheets.map((x) => ({ id: x.id, name: x.name })),
       food: {
         courses: menu.map((c) => ({ id: c.id, name: c.name, dishes: c.dishes.map((d) => d.name), here: c.moment_id === id, elsewhere: !!c.moment_id && c.moment_id !== id })),
         drinks: drinks.map((d) => ({
@@ -278,15 +274,21 @@ export async function guestPlanAction(contactId: string): Promise<Awaited<Return
   return listForGuest(contactId);
 }
 
-/** Which groups of guests a moment is for: their own schedule (0034). Returns a message instead of throwing. */
-export async function setMomentGroupsAction(momentId: string, groupIds: string[]): Promise<{ error?: string }> {
-  if (!/^[0-9a-f-]{36}$/i.test(momentId) || !groupIds.every((g) => /^[0-9a-f-]{36}$/i.test(g))) return { error: "That isn't there any more." };
+/**
+ * Moves a moment to another run sheet, or copies it there (0035): `sheetId`
+ * null is the main one, "The day". A copy is its own moment. Returns a
+ * message instead of throwing.
+ */
+export async function moveMomentAction(momentId: string, sheetId: string | null, copy: boolean): Promise<{ error?: string }> {
+  const ok = (v: string) => /^[0-9a-f-]{36}$/i.test(v);
+  if (!ok(momentId) || (sheetId !== null && !ok(sheetId))) return { error: "That isn't there any more." };
   try {
     const wedding = await getCurrentWedding();
     if (!wedding) return { error: "Your wedding couldn't be found." };
-    await setMomentGroups(wedding.id, momentId, groupIds);
+    if (copy) await copyMoments(wedding.id, [momentId], sheetId);
+    else await moveMoment(momentId, sheetId);
   } catch (error) {
-    console.error("saving a moment's groups failed", error);
+    console.error("moving a moment failed", error);
     return { error: `That didn't save. ${describe(error)}` };
   }
   revalidatePath("/day");

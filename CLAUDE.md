@@ -87,7 +87,7 @@ and Supabase sit in the same region; if one moves, move the other.
 
 ## Data and the database
 
-- Schema in `supabase/migrations/0001_init.sql` … `0034_food_moments_and_schedules.sql`,
+- Schema in `supabase/migrations/0001_init.sql` … `0035_run_sheets.sql`,
   **all run** on the live project (**wedding-app**, `hfyuvtrglkdpqvtkzohb`).
 - The Supabase connector is set up, so Claude can run migrations — but
   **always says in plain words what a change does and waits for the owner's
@@ -106,7 +106,7 @@ and Supabase sit in the same region; if one moves, move the other.
 - Several values are stored as text joined with " · " (a guest's roles,
   dietary needs) — no migration needed to add one.
 - **`supabase/tests/rls_isolation.sql`** proves one couple can't read or write
-  another's data; it passes with all 34 migrations. **Re-run it whenever RLS
+  another's data; it passes with all 35 migrations. **Re-run it whenever RLS
   policies change and add every new table to it.** Postgres 16 is in the cloud
   container (`initdb` as the `postgres` user in a folder it owns; stub
   `auth.users` with `raw_user_meta_data jsonb`, `auth.uid()`, and `pgcrypto`).
@@ -270,8 +270,12 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   piece tiles — **Seating** (floor plan on a dot grid, round / long / top
   tables, a table close-up with saved chairs, dietary marks, seat a group or
   household, Send to the venue as a PDF), **Travel** (where everyone sleeps,
-  journeys there and back) and **Decor** (pack list). Filter by area and
-  **Schedule for** a group (print it, email it). A moment's card: a cue card,
+  journeys there and back) and **Decor** (pack list). **More than one run
+  sheet** (20 Oct 2026, `run_sheets`, 0035): "The day" is the main one, others
+  (Bridesmaids, Groomsmen, the photographer's list) are picked at the top
+  (`sheet-picker.tsx`), made and edited on full screens (`/day/sheets/…`), and
+  one tied to a group can be emailed to it. Each moment is on one sheet; Move
+  to / Copy to on its card. Filter by area; Print. A moment's card: a cue card,
   then When · Where · In charge · Music · Notes · Area, food served there, and
   Send it.
 - **The timeline** on every supplier, guest and household card (folded to one

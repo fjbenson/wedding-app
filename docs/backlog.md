@@ -15,7 +15,8 @@ From the last few chats, not yet confirmed:
 - Stationery: the area page, View › Sent on the guest list, a household's
   Sent to them.
 - A guest card's meal and drinks; Food & drink's "What it comes to" and
-  "Through the day"; The Day › Filter › Schedule for, on the demo.
+  "Through the day"; The Day's run sheet picker (Bridesmaids, Groomsmen) on
+  the demo.
 - Seating close-up: fill a chair, swap two, a top table; Share the plan in
   Mail on the iPhone.
 - Juno: say "Juno" into the phone's dictation (Junia came out "junior").
@@ -52,9 +53,6 @@ From the last few chats, not yet confirmed:
 - **Venue table numbers** — a venue's own number beside each table, a nudge
   until matched, the venue's floor plan uploaded; the sent plan leads with
   their numbers. Small column; parked by the owner.
-- **Per-person schedules** (hair and make-up for each bridesmaid): an "Only on
-  their schedule" switch per moment so they stay off the main run sheet. One
-  yes/no column, owner's OK first.
 - **Invitations** — the designer or printer is a Stationery supplier like any
   other (decided). Not built: an address export (spreadsheet or label sheet).
   Owner's call later: a print-and-post partner, or design and post in the
@@ -118,6 +116,11 @@ Each would be an added column, not a rebuild:
   "involved" instead).
 
 ## Tech loose ends
+
+- Run sheets: the area page's "In The Day ›" opens the main sheet only, so a
+  moment on another sheet isn't in it; the demo seed (`demo-wedding.sql`)
+  doesn't make the extra sheets yet. The old group tags on moments
+  (`run_sheet_groups`, 0034) are left unused.
 
 - Replace the hand-written types in `src/types/db.ts` with `npm run db:types`.
 - Vercel no longer reports deploys back to GitHub (since Pro): the owner has

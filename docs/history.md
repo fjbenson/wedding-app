@@ -1192,14 +1192,37 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
   the meal fields (a guest's meal would go to Anthropic: rule one), and the
   Food & drink full-screen add / drink quantity guide (not done yet).
+- **More than one run sheet** (20 Oct 2026; canvas 3 "Run sheets · Round 1",
+  the owner's idea after "Schedule for": a bridesmaids' morning is too detailed
+  for the main sheet; **`0035_run_sheets.sql`, run 20 Oct 2026 with the owner's
+  OK**: the demo's Bridesmaids and Groomsmen became sheets (6 and 4 moments, the
+  shared one copied), The day kept 10; the owner's real wedding was untouched). "The day" is the main sheet (a moment with no `sheet_id`);
+  **`run_sheets`** (name, optional `group_id` so it can be emailed, `sort_order`;
+  tied to `(id, wedding_id)`, RLS like groups, in `rls_isolation.sql`, which
+  passes with all 35 migrations) holds the others — Bridesmaids, Groomsmen, the
+  photographer's list. Each moment is on **one** sheet; **Move to / Copy to** on
+  a moment's card (**Run sheet** line, `moveMomentAction`; a copy is its own
+  moment, `copyMoments`). On The Day a **picker** where the page says what it
+  shows (`sheet-picker.tsx`, a sheet from the bottom with each sheet's count and
+  "+ New run sheet"; `?sheet=<id>`); search, the black + (adds to the sheet
+  showing), Area filter, Print all work on the showing sheet; a sheet tied to a
+  group gets **Email it to [group]** (Bcc, from the couple's own email);
+  **New run sheet** and **Edit run sheet** are full screens (`/day/sheets/new`,
+  `/day/sheets/[id]`, `sheet-form.tsx`: name with ideas, optional group, and on a
+  new one a blank start or copies of some of The day's moments; Remove asks and
+  takes its moments with it). Queries `src/lib/db/run-sheets.ts` (empty until
+  0035 is run). **The groups' schedules of 0034 are replaced:** the "Schedule
+  for" filter and the "For" line / group picker on moments are gone; the
+  migration turns each group that has tagged moments into a sheet of its name
+  tied to it and **moves** those moments onto it (a moment for two groups moves
+  to the first and is copied to the other), leaving the old tags unused. The
+  area page's "In The Day ›" opens the main sheet only, so a moment that is only
+  on another sheet isn't in it (not fixed). The demo seed isn't updated.
 - **Money's and Plan's Filter are the same** (20 Oct 2026, owner: "do the same
   for Money and Plan"): rows that open in place, a sheet on phones with "Show
   N areas / payments / items" (`expandable` on `FilterMenu`). **Schedule for
-  now filters** (owner: it only faded the rest): a group's schedule shows just
-  their moments. **Raised, not built:** detailed per-person schedules (hair and
-  make-up for each bridesmaid) would clutter the main run sheet; proposed an
-  "Only on their schedule" switch per moment (one new yes/no column, owner's OK
-  first) that keeps it off the main sheet.
+  now filters** (owner: it only faded the rest), then became run sheets (next
+  entry up).
 - **The Day's Filter is like the guest list's** (20 Oct 2026, owner): rows —
   **Area** and **Schedule for** (a group: the bridesmaids, the groomsmen) —
   each opening its own values in place; on a phone a sheet from the bottom
@@ -1359,14 +1382,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0034_food_moments_and_schedules.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0035_run_sheets.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0034 are now in** (0034 food served at moments and a schedule per group, and 0033 a meal and drinks for every guest, run 19 Oct 2026 with the owner's OK; 0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0035 are now in** (0035 run sheets, run 20 Oct 2026 with the owner's OK; 0034 food served at moments and a schedule per group, and 0033 a meal and drinks for every guest, run 19 Oct 2026 with the owner's OK; 0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

@@ -26,7 +26,7 @@ export default async function RunSheetItemPage({
 
   return (
     <FormPage backHref="/day" backLabel="The Day" title="Moment" error={error} detail={detail}>
-      <RunSheetForm action={saveRunSheetItemAction.bind(null, item.id)} item={item} areas={areaOptions(await listAreas(item.wedding_id))} people={await decorPeople(item.wedding_id)} />
+      <RunSheetForm action={saveRunSheetItemAction.bind(null, item.id)} item={item} areas={areaOptions(await listAreas(item.wedding_id))} people={await decorPeople(item.wedding_id)} sheetId={item.sheet_id ?? undefined} />
       <div className="mt-6 border-t border-linen pt-4">
         <RemoveButton action={deleteRunSheetItemAction.bind(null, item.id)} label="Remove from the run sheet" question={`Remove "${item.title}"?`} />
       </div>

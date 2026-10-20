@@ -18,7 +18,7 @@ import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
 import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
-import { setMomentGroupsAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
+import { moveMomentAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
 import { addCourseForMomentAction, setMomentFoodAction } from "../menu/actions";
 import { InvolvedPart } from "./involved";
 
@@ -458,8 +458,7 @@ export function MomentBody({
   people,
   inChargeEmail,
   weddingDate,
-  groups,
-  groupIds,
+  sheets,
   food,
 }: {
   moment: RunSheetItem;
@@ -467,27 +466,25 @@ export function MomentBody({
   people: DecorPerson[];
   inChargeEmail: string | null;
   weddingDate: string | null;
-  /** Groups of guests, and the ones this moment is for (their own schedule, 0034). */
-  groups: { id: string; name: string }[];
-  groupIds: string[];
+  /** The run sheets besides the main one (0035); the moment is on one and can be moved or copied. */
+  sheets: { id: string; name: string }[];
   /** The menu's courses and the drinks, and which are served at it (0034). */
   food: MomentFood;
 }) {
   const router = useRouter();
-  const [forIds, setForIds] = useState(groupIds);
-  const toggleGroup = async (id: string) => {
-    const next = forIds.includes(id) ? forIds.filter((g) => g !== id) : [...forIds, id];
-    setForIds(next);
-    const result = await safely(() => setMomentGroupsAction(m.id, next));
-    if (result.error) {
-      setForIds(forIds);
-      setError(result.error);
-    } else {
-      setError(undefined);
-      router.refresh();
-    }
+  // Which run sheet it is on (0035): the main one, "The day", or another with its own moments.
+  const [sheetId, setSheetId] = useState<string | null>(m.sheet_id ?? null);
+  const sheetLabel = sheetId ? (sheets.find((x) => x.id === sheetId)?.name ?? "Another run sheet") : "The day";
+  const [copied, setCopied] = useState<string | null>(null);
+  const toSheet = async (target: string | null, copy: boolean) => {
+    const result = await safely(() => moveMomentAction(m.id, target, copy));
+    if (result.error) return setError(result.error);
+    setError(undefined);
+    if (copy) setCopied(target ?? "");
+    else setSheetId(target);
+    router.refresh();
   };
-  const forLabel = groups.filter((g) => forIds.includes(g.id)).map((g) => g.name).join(", ");
+  const choices = [{ id: null as string | null, name: "The day" }, ...sheets.map((x) => ({ id: x.id as string | null, name: x.name }))];
   // Food and drink moments get Menu and Drinks lines (0034): the courses and drinks served here.
   const [courseIds, setCourseIds] = useState(food.courses.filter((c) => c.here).map((c) => c.id));
   const [drinkIds, setDrinkIds] = useState(food.drinks.filter((d) => d.here).map((d) => d.id));
@@ -581,25 +578,41 @@ export function MomentBody({
             </dl>
           )}
         </Fold>
-        {/* Their own schedule: the bridesmaids' morning, the groomsmen's (canvas 3 "Food & drink · Round 2", C). No group means it's everyone's. */}
-        {groups.length > 0 && (
-          <Fold icon={Users} title="For" value={forLabel || "Everyone"}>
-            <p className="text-[13px] text-stone">Pick a group to put this on their own schedule. Leave it empty and it&apos;s everyone&apos;s.</p>
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {groups.map((g) => {
-                const on = forIds.includes(g.id);
+        {/* Which run sheet it is on (canvas 3 "Run sheets · Round 1"): move it, or copy it so it shows on two. */}
+        {sheets.length > 0 && (
+          <Fold icon={Users} title="Run sheet" value={sheetLabel}>
+            <p className="text-[13px] text-stone">Move it to another run sheet, or copy it so it is on two (a copy is its own moment).</p>
+            <p className="type-meta mt-3">Move to</p>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {choices.map((c) => {
+                const on = c.id === sheetId;
                 return (
                   <button
-                    key={g.id}
+                    key={c.id ?? "main"}
                     type="button"
                     aria-pressed={on}
-                    onClick={() => toggleGroup(g.id)}
+                    onClick={() => !on && toSheet(c.id, false)}
                     className={`h-9 rounded-full border px-3.5 text-[13px] ${on ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
                   >
-                    {g.name}
+                    {c.name}
                   </button>
                 );
               })}
+            </div>
+            <p className="type-meta mt-3">Copy to</p>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {choices
+                .filter((c) => c.id !== sheetId)
+                .map((c) => (
+                  <button
+                    key={c.id ?? "main"}
+                    type="button"
+                    onClick={() => toSheet(c.id, true)}
+                    className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink"
+                  >
+                    {copied === (c.id ?? "") ? `✓ Copied to ${c.name}` : c.name}
+                  </button>
+                ))}
             </div>
           </Fold>
         )}

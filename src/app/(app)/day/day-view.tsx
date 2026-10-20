@@ -12,7 +12,7 @@ import SeatingSearch from "./seating-search";
 import { InlineSubmit } from "@/components/form-bits";
 import { coupleName as setCoupleName } from "@/lib/couple-name";
 import { formatClock, formatLongDate, nowInLondon } from "@/lib/dates";
-import type { Contact, Rsvp, RunSheetItem, Seat, SeatingTable, Stay, TransportPassenger, TransportRun } from "@/types/db";
+import type { Contact, Rsvp, RunSheet, RunSheetItem, Seat, SeatingTable, Stay, TransportPassenger, TransportRun } from "@/types/db";
 import {
   deleteTableAction,
   seatGuestAction,
@@ -28,6 +28,7 @@ import { needsOf } from "@/lib/dietary";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
+import SheetPicker from "./sheet-picker";
 import SendSchedule from "./send-schedule";
 import Travel from "./travel";
 
@@ -69,17 +70,17 @@ export default function DayView({
   rsvps,
   areas,
   area,
-  group,
-  momentGroups,
+  sheets,
+  sheet,
   query,
   error,
   detail,
   decor,
 }: {
-  /** The run sheet as one group's own schedule (`?group=<id>`; 0034). */
-  group: string | null;
-  /** Moment id → the groups it's for. */
-  momentGroups: Record<string, string[]>;
+  /** The run sheets besides the main one, "The day" (0035). */
+  sheets: RunSheet[];
+  /** The one showing (`?sheet=<id>`); none is the main one. */
+  sheet: string | null;
   /** Decor's figures for its tile: how many things, how many still to get (0027_decor.sql). */
   decor: { all: number; toGet: number };
   /** The run sheet's search (`?q=`). */
@@ -151,9 +152,9 @@ export default function DayView({
           weddingDate={weddingDate}
           areas={areas}
           area={area}
-          group={group}
+          sheets={sheets}
+          sheet={sheet}
           groups={groups}
-          momentGroups={momentGroups}
           guests={guests}
           query={query}
           pieces={{ ...pieces(data, guests, rsvps), decor }}
@@ -184,16 +185,16 @@ function RunSheet({
   weddingDate,
   areas,
   area,
-  group,
+  sheets,
+  sheet,
   groups,
-  momentGroups,
   guests,
   query,
   pieces,
 }: {
-  group: string | null;
+  sheets: RunSheet[];
+  sheet: string | null;
   groups: { id: string; name: string; members: string[] }[];
-  momentGroups: Record<string, string[]>;
   guests: Contact[];
   /** For the laptop's Seating and Travel tiles beside the numbers. */
   pieces: { coming: number; seated: number; noLift: number; decor: { all: number; toGet: number } };
@@ -204,33 +205,35 @@ function RunSheet({
   areas: AreaOption[];
   area: string | null;
 }) {
+  // The run sheet showing (0035): the main one, "The day", or another with its own moments.
+  const current = sheet ? sheets.find((x) => x.id === sheet) : undefined;
+  const onSheet = all.filter((i) => (i.sheet_id ?? null) === (current?.id ?? null));
+  const sheetName = current?.name ?? "The day";
   // Narrowed to one area (12 Oct 2026): what an area page's "In The Day ›"
   // opens, and a copy to print for that supplier.
   const inArea =
-    area === null ? all : all.filter((i) => (area === "none" ? !i.area_key || i.area_key === "other" : i.area_key === area));
-  // A group's own schedule (canvas 3 "Food & drink · Round 2", C): only their moments (owner, 20 Oct 2026:
-  // it filters, it doesn't just fade the rest).
-  const theGroup = group ? groups.find((g) => g.id === group) : undefined;
-  const isTheirs = (id: string) => !theGroup || (momentGroups[id] ?? []).includes(theGroup.id);
+    area === null ? onSheet : onSheet.filter((i) => (area === "none" ? !i.area_key || i.area_key === "other" : i.area_key === area));
   // The search (`?q=`): what happens, where, who, or the notes.
   const needle = query.toLowerCase();
-  const searched = needle
+  const items = needle
     ? inArea.filter((i) => [i.title, i.location, i.who, i.notes, i.music].some((t) => t?.toLowerCase().includes(needle)))
     : inArea;
-  const items = searched.filter((i) => isTheirs(i.id));
-  const theirCount = items.length;
-  const forWhom = [area === "none" ? "Other" : area ? areaName(area, areas) : null, theGroup?.name ?? null].filter(Boolean).join(" · ") || null;
+  const areaLabel = area === "none" ? "Other" : area ? areaName(area, areas) : null;
+  const forWhom = [current?.name ?? null, areaLabel].filter(Boolean).join(" · ") || null;
+  // A sheet tied to a group can be emailed to them.
+  const theGroup = current?.group_id ? groups.find((g) => g.id === current.group_id) : undefined;
   const groupText = theGroup
     ? [
-        `${theGroup.name}: the order of the day`,
+        `${sheetName}: the order of the day`,
         `${setCoupleName(coupleName)}${weddingDate ? ` · ${formatLongDate(weddingDate)}` : ""}`,
         "",
-        ...items.filter((i) => isTheirs(i.id)).map((i) => `${formatClock(i.at_time)}  ${i.title}${i.location ? ` · ${i.location}` : ""}${i.notes ? `\n        ${i.notes.replace(/\n/g, " ")}` : ""}`),
+        ...items.map((i) => `${formatClock(i.at_time)}  ${i.title}${i.location ? ` · ${i.location}` : ""}${i.notes ? `\n        ${i.notes.replace(/\n/g, " ")}` : ""}`),
       ].join("\n")
     : "";
   const groupEmails = theGroup
     ? [...new Set(guests.filter((g) => theGroup.members.includes(g.id)).map((g) => g.email?.trim()).filter((e): e is string => !!e))]
     : [];
+  const sheetParam = current ? `sheet=${current.id}` : "";
   const now = nowInLondon();
   const isTheDay = weddingDate === now.date;
   const nowId = isTheDay ? items.filter((i) => i.at_time.slice(0, 5) <= now.time).at(-1)?.id : undefined;
@@ -263,31 +266,27 @@ function RunSheet({
         placeholder="Find a moment"
         end={
           <AddButton
-            href={area && area !== "none" ? `/day/run-sheet/new?area=${encodeURIComponent(area)}` : "/day/run-sheet/new"}
+            href={`/day/run-sheet/new${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).length ? `?${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).join("&")}` : ""}`}
             label="Add a moment"
           />
         }
       />
-      {all.length > 0 && (
-        <div className="lg:flex-1">
+      <div className="lg:flex-1">
         <FilterMenu
-          base={query ? `/day?q=${encodeURIComponent(query)}` : "/day"}
-          groups={[
-            { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
-            ...(groups.length > 0 ? [{ param: "group", title: "Schedule for", current: group, rows: groups.map((g) => ({ key: g.id, label: g.name })) }] : []),
-          ]}
-          expandable={{ results: theirCount, noun: "moment" }}
+          base={`/day${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).length ? `?${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).join("&")}` : ""}`}
+          start={<SheetPicker sheets={sheets} current={current?.id ?? null} counts={Object.fromEntries([["", all.filter((i) => !i.sheet_id).length], ...sheets.map((x) => [x.id, all.filter((i) => i.sheet_id === x.id).length])])} groupNames={Object.fromEntries(groups.map((g) => [g.id, g.name]))} />}
+          groups={[{ param: "area", title: "Area", current: area, rows: areaFilterRows(areas) }]}
+          expandable={{ results: items.length, noun: "moment" }}
           end={items.length > 0 ? <PrintButton /> : undefined}
         />
-        </div>
-      )}
+      </div>
       </div>
       </div>
       {needle && items.length === 0 && <p className="mt-6 px-1 text-sm text-stone">No moment matches that.</p>}
-      {theGroup && items.length === 0 && !needle && (
-        <p className="mt-6 font-display text-xl italic text-ink">Nothing is on {theGroup.name}&apos;s schedule yet. Open a moment and tap For.</p>
+      {current && items.length === 0 && !needle && !area && (
+        <p className="mt-6 font-display text-xl italic text-ink">Nothing on {current.name} yet. Add a moment with the +, or copy one from The day.</p>
       )}
-      {forWhom && !theGroup && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
+      {forWhom && area && items.length === 0 && !needle && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (
         <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-auto lg:max-w-xl print:shadow-none">
@@ -307,7 +306,7 @@ function RunSheet({
                   {part.items.map((item) => {
                     const isNow = item.id === nowId;
                     return (
-                      <li key={item.id} className={isTheirs(item.id) ? undefined : "opacity-45 print:hidden"}>
+                      <li key={item.id}>
                         <CardLink
                           href={`/day/run-sheet/${item.id}`}
                           aria-current={isNow ? "time" : undefined}
@@ -361,10 +360,17 @@ function RunSheet({
           </div>
         </article>
       )}
-      {theGroup && theirCount > 0 && (
+      {theGroup && items.length > 0 && (
         <div className="mx-auto mt-4 max-w-xl print:hidden">
-          <SendSchedule group={theGroup.name} subject={`${theGroup.name}: the order of the day`} text={groupText} emails={groupEmails} />
+          <SendSchedule group={theGroup.name} subject={`${sheetName}: the order of the day`} text={groupText} emails={groupEmails} />
         </div>
+      )}
+      {current && (
+        <p className="mt-4 text-center print:hidden">
+          <Link href={`/day/sheets/${current.id}`} className="text-[14px] text-champagne-600 underline underline-offset-4 hover:text-ink">
+            Edit this run sheet ›
+          </Link>
+        </p>
       )}
     </>
   );

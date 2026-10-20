@@ -273,6 +273,19 @@ export interface RunSheetItem {
   music_who?: string | null;
   /** Who's in charge: a supplier or guest from the list (0031_moment_in_charge.sql); `who` is a typed name. */
   contact_id?: string | null;
+  /** Which run sheet it is on; none is the main one, "The day" (0035_run_sheets.sql). */
+  sheet_id?: string | null;
+  created_at: string;
+}
+
+/** A run sheet besides the main one: the bridesmaids', the groomsmen's (0035_run_sheets.sql). */
+export interface RunSheet {
+  id: string;
+  wedding_id: string;
+  name: string;
+  /** The group of guests it is for, so it can be emailed to them. */
+  group_id: string | null;
+  sort_order: number;
   created_at: string;
 }
 

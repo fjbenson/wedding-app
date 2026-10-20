@@ -272,9 +272,10 @@ function RunSheet({
         <FilterMenu
           base={query ? `/day?q=${encodeURIComponent(query)}` : "/day"}
           groups={[
-            { param: "area", current: area, rows: areaFilterRows(areas) },
-            ...(groups.length > 0 ? [{ param: "group", title: "Whose schedule", current: group, rows: groups.map((g) => ({ key: g.id, label: g.name })) }] : []),
+            { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
+            ...(groups.length > 0 ? [{ param: "group", title: "Schedule for", current: group, rows: groups.map((g) => ({ key: g.id, label: g.name })) }] : []),
           ]}
+          expandable={{ results: theirCount, noun: "moment" }}
           end={items.length > 0 ? <PrintButton /> : undefined}
         />
         </div>

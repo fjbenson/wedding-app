@@ -1183,6 +1183,12 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
   the meal fields (a guest's meal would go to Anthropic: rule one), and the
   Food & drink full-screen add / drink quantity guide (not done yet).
+- **The Day's Filter is like the guest list's** (20 Oct 2026, owner): rows —
+  **Area** and **Schedule for** (a group: the bridesmaids, the groomsmen) —
+  each opening its own values in place; on a phone a sheet from the bottom
+  with "Show N moments", a menu on laptops; a pick keeps it open so the two
+  combine (`expandable` on `FilterMenu`, `router.replace`; Money and Plan's
+  List keep the plain menu). "Whose schedule" is now "Schedule for".
 - **The Day's run sheet has no numbers card** (20 Oct 2026, owner: it doesn't
   need KPIs like the guest list). The top is now the three piece tiles
   (Seating · Travel · Decor), the search and Filter, then the order of the

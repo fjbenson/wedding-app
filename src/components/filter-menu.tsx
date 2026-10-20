@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronRight, SlidersHorizontal, X } from "lucide-react";
+import { usePullToClose } from "@/components/use-pull-to-close";
 
 export type FilterGroup = {
   /** The address's own word for it: `area`, `when`. */
@@ -26,6 +27,7 @@ export default function FilterMenu({
   groups,
   start,
   end,
+  expandable,
 }: {
   base: string;
   groups: FilterGroup[];
@@ -33,6 +35,12 @@ export default function FilterMenu({
   start?: React.ReactNode;
   /** Buttons for the right of the Filter's row (The Day's Print and +). */
   end?: React.ReactNode;
+  /**
+   * Like the guest list's Filter (owner, 20 Oct 2026): one row per group, each
+   * opening its own values; on a phone a sheet from the bottom with a "Show N
+   * …" button. A pick keeps it open so rows can be combined.
+   */
+  expandable?: { results: number; noun: string };
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -51,15 +59,88 @@ export default function FilterMenu({
     };
   }, [open]);
 
+  const [openRow, setOpenRow] = useState<string | null>(null);
+  const drag = usePullToClose(() => setOpen(false));
+  // On a phone the sheet holds the page still while it's open.
+  useEffect(() => {
+    if (!expandable || !open || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [expandable, open]);
+
   const on = groups.filter((g) => g.current);
   const go = (param: string | null, value: string | null) => {
-    setOpen(false);
+    if (!expandable) setOpen(false);
     const parts = groups
       .map((g) => [g.param, param === null ? null : g.param === param ? value : g.current] as const)
       .filter(([, v]) => v)
       .map(([k, v]) => `${k}=${encodeURIComponent(v!)}`);
-    router.push(parts.length ? `${base}${base.includes("?") ? "&" : "?"}${parts.join("&")}` : base);
+    const href = parts.length ? `${base}${base.includes("?") ? "&" : "?"}${parts.join("&")}` : base;
+    if (expandable) router.replace(href, { scroll: false });
+    else router.push(href);
   };
+  /** The rows with their values: one list of things to filter by, each opening in place. */
+  const rowsContent = (
+    <>
+      <div className="flex items-baseline justify-between py-1">
+        <span className="section-label">Filter by</span>
+        {on.length > 0 && (
+          <button type="button" onClick={() => go(null, null)} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+            Clear
+          </button>
+        )}
+      </div>
+      {groups.map((g) => {
+        const isOpen = openRow === g.param;
+        const picked = g.current ? (g.rows.find((r) => r.key === g.current)?.label ?? g.current) : null;
+        return (
+          <div key={g.param} className="border-t border-linen first:border-t-0">
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              onClick={() => setOpenRow(isOpen ? null : g.param)}
+              className="flex min-h-12 w-full items-center gap-3 text-left text-[15px] text-ink"
+            >
+              <span className="flex-1">{g.title ?? g.param}</span>
+              {picked && <span className="max-w-[45%] truncate text-[13px] font-medium text-champagne-600">{picked}</span>}
+              <ChevronRight className={`h-4 w-4 shrink-0 text-stone transition ${isOpen ? "rotate-90" : ""}`} strokeWidth={1.8} aria-hidden />
+            </button>
+            {isOpen && (
+              <ul className="pb-1 pl-2">
+                {g.rows.map((r) => {
+                  const ticked = r.key === g.current;
+                  return (
+                    <li key={r.key} className="border-t border-linen first:border-t-0">
+                      <button
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={ticked}
+                        onClick={() => go(g.param, ticked ? null : r.key)}
+                        className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
+                      >
+                        <span
+                          aria-hidden
+                          className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                            ticked ? "bg-ink text-ivory" : "border-[1.5px] border-[#D8D0C4]"
+                          }`}
+                        >
+                          {ticked && <Check className="h-3 w-3" strokeWidth={2.6} />}
+                        </span>
+                        <span className="flex-1">{r.label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
   const labelOf = (g: FilterGroup) => g.rows.find((r) => r.key === g.current)?.label ?? g.current;
 
   return (
@@ -83,7 +164,42 @@ export default function FilterMenu({
             {on.length > 0 ? `Filter · ${on.length}` : "Filter"}
           </button>
 
-          {open && (
+          {open && expandable && (
+            <>
+              {/* Laptops: a small menu under the button. */}
+              <div className={`absolute ${start ? "right-0" : "left-0"} top-[calc(100%+8px)] z-30 hidden max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)] lg:block`}>
+                {rowsContent}
+              </div>
+              {/* Phones: a sheet from the bottom, as on the guest list. */}
+              <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Filter">
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setOpen(false)}
+                  style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+                  className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+                />
+                <div
+                  style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
+                  className={`absolute inset-x-0 bottom-0 flex h-[80dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] ${
+                    drag.dragging ? "" : "transition-transform duration-200 ease-out"
+                  }`}
+                >
+                  <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center">
+                    <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[22px] pb-3">{rowsContent}</div>
+                  <div className="shrink-0 border-t border-linen px-[22px] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+                    <button type="button" onClick={() => setOpen(false)} className="h-12 w-full rounded-full bg-ink text-[15px] text-ivory">
+                      Show {expandable.results} {expandable.results === 1 ? expandable.noun : `${expandable.noun}s`}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {open && !expandable && (
             <div className={`absolute ${start ? "right-0" : "left-0"} top-[calc(100%+8px)] z-30 max-h-[70dvh] w-[17rem] overflow-y-auto rounded-[20px] border border-linen bg-white px-4 pb-2 pt-2.5 shadow-[0_24px_50px_-20px_rgb(30_27_24/0.45)]`}>
               <div className="flex items-baseline justify-between py-1">
                 <span className="section-label">Show only</span>

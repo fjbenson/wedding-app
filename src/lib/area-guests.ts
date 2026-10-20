@@ -166,11 +166,6 @@ export function catererText(facts: Extract<AreaGuestFacts, { kind: "food" }>, co
   lines.push("", `Adult meals: ${c.adult}`, `Children's meals: ${c.child}`);
   if (c.none) lines.push(`No meal (babies): ${c.none}`);
   lines.push(`Drinking alcohol: ${c.drinking}`, `Soft drinks only: ${c.soft}`);
-  if (facts.meals.length) {
-    lines.push("", "Meals:");
-    for (const m of facts.meals) lines.push(`- ${m.name}: ${m.count}`);
-    if (facts.notPicked) lines.push(`- Not chosen yet: ${facts.notPicked}`);
-  }
   if (facts.dietary.length) {
     lines.push("", "Dietary needs:");
     for (const d of facts.dietary) lines.push(`- ${d.name}: ${d.note}`);

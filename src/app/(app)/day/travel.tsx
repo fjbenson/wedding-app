@@ -10,7 +10,7 @@ import AddButton from "@/components/add-button";
 import PageTitle from "@/components/page-title";
 import { AlsoInTheDay, DayPill } from "./day-pieces";
 import { usePullToClose } from "@/components/use-pull-to-close";
-import { formatClock } from "@/lib/dates";
+import { formatTime } from "@/lib/dates";
 import { replaceQuery } from "@/lib/url-state";
 import type { Contact, Stay, TransportPassenger, TransportRun } from "@/types/db";
 import { fullName, initials } from "../people/guest-table";
@@ -171,7 +171,7 @@ export default function Travel({
             return (
               <li key={r.id} className="row-press border-b border-linen last:border-b-0">
                 <button type="button" onClick={() => show(`run:${r.id}`)} className="flex min-h-[60px] w-full items-center gap-3 py-2 text-left">
-                  <span className="w-12 shrink-0 text-sm tabular-nums text-stone">{formatClock(r.at_time)}</span>
+                  <span className="w-[4.25rem] shrink-0 text-sm tabular-nums text-stone">{formatTime(r.at_time)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-medium text-ink">{r.vehicle}</span>
                     {(r.from_place || r.to_place) && (
@@ -226,7 +226,7 @@ function TravelSearch({
     g.staying === "yes" ? (stays.find((x) => x.id === g.stay_id)?.name ?? "Staying, not sure where") : g.staying === "no" ? "Going home" : null;
   const lift = (g: Contact) => {
     const run = runs.find((r) => passengers.some((p) => p.run_id === r.id && p.contact_id === g.id));
-    return run ? `${run.vehicle} · ${formatClock(run.at_time)}` : g.own_way ? "Own way" : "No lift yet";
+    return run ? `${run.vehicle} · ${formatTime(run.at_time)}` : g.own_way ? "Own way" : "No lift yet";
   };
   return (
     <>
@@ -706,7 +706,7 @@ function NoLiftSheet({ people, runs, onClose }: { people: Contact[]; runs: Trans
             <div className="mt-2 flex flex-wrap gap-2 pl-[42px]">
               {runs.map((r) => (
                 <button key={r.id} type="button" disabled={pending} onClick={() => run(() => boardAction(r.id, g.id))} className={CHIP}>
-                  {r.vehicle} · {formatClock(r.at_time)}
+                  {r.vehicle} · {formatTime(r.at_time)}
                 </button>
               ))}
               <button type="button" disabled={pending} onClick={() => run(() => setOwnWayAction(g.id, true))} className={`${CHIP} text-stone`}>

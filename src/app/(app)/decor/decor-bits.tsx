@@ -27,7 +27,7 @@ export function PlacePicker({ value, onChange }: { value: string; onChange: (pla
             type="button"
             onClick={() => onChange(value === p ? "" : p)}
             className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-              value === p ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+              value === p ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
             }`}
           >
             {p}

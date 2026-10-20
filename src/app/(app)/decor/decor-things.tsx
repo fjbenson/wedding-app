@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
-import AddButton from "@/components/add-button";
 import CardSheet from "@/components/card-sheet";
 import DateStamp from "@/components/date-stamp";
 import NumbersCard from "@/components/numbers-card";
@@ -122,10 +121,8 @@ export function DecorThings({ items, people, areaKey, weddingDate }: { items: It
   const back = encodeURIComponent(`/area/${areaKey}`);
   return (
     <section aria-label="Items">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="section-label">Items</h2>
-        <AddButton href={`/decor/new?back=${back}`} label="Add an item" />
-      </div>
+      {/* Added from the page's one + (the cover's), not a second one here. */}
+      <h2 className="section-label">Items</h2>
       <NumbersCard
         big={{ label: "Items", value: counts.all, sub: counts.goBack ? `${counts.goBack} go back after` : undefined }}
         rows={[
@@ -186,9 +183,6 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
           { value: counts.goBack, label: "Go back" },
         ]}
       />
-      <div className="mt-4 flex justify-end">
-        <AddButton href="/decor/new?back=%2Fday%2Fdecor" label="Add an item" />
-      </div>
 
       {items.length === 0 && (
         <p className="mt-6 px-1 text-[15px] text-stone">Nothing on the list yet. Add the first item with the +.</p>
@@ -278,7 +272,7 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
 /* ── One thing's card ───────────────────────────────────────────────────── */
 
 const PILL = "h-9 rounded-full border px-3.5 text-[13px] transition";
-const pill = (on: boolean) => `${PILL} ${on ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"}`;
+const pill = (on: boolean) => `${PILL} ${on ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"}`;
 
 /** The card over the page for whichever thing is in `?thing=`. Taps save at once; typing gets a small Save. */
 function ThingCard({ items, people, weddingDate }: { items: Items; people: DecorPerson[]; weddingDate: string | null }) {

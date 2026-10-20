@@ -268,7 +268,7 @@ function WhatIsIt({
               aria-checked={kind === k.value}
               onClick={() => setKind(k.value)}
               className={`h-12 rounded-2xl border text-[14px] transition ${
-                kind === k.value ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+                kind === k.value ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
               }`}
             >
               {k.label}

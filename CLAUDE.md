@@ -171,7 +171,10 @@ Not legal advice. **Only item 7's Vercel half is done.**
 - Jobs the forms and Juno share live in `src/lib/jobs.ts` (plain inputs,
   return `{ ok, … }`, find the wedding themselves).
 - **Dates are worded by the app** (`src/lib/dates.ts`), never
-  `toLocaleDateString`, so phone and server agree.
+  `toLocaleDateString`, so phone and server agree. **Times** (owner, 20 Oct
+  2026): the run sheet and what's printed for suppliers (moments, the menu,
+  drinks) use the 24-hour clock (`formatClock`, "13:30"); everything else —
+  appointments, journeys, lists — reads "2pm" (`formatTime`).
 - **Amounts get commas as you type**: `MoneyInput` / `withCommas()`.
 - New non-form screens go in `showsMenuBar()` (`src/lib/nav.ts`).
 - Match the surrounding code; comments say why, often with the owner's date.
@@ -249,7 +252,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   answer icon; can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure to jump to it), Text · Call · Email, Guest of
   and RSVP sliders, roles, details (meal and drinks tiles, dietary picker,
-  table), groups, travel, in the plan, timeline. **Households** open as an
+  table), groups, travel, in the plan, timeline. A guest's meal is only the
+  Adult / Child's / No meal tile (owner, 20 Oct 2026: the typed dish was
+  dropped — one menu for everyone; old `rsvps.meal_choice` values stay in the
+  database, unshown). Every guest count is **everyone still expected**
+  (can't-comes left out), as the numbers card has it. **Households** open as an
   envelope card; **groups** as a card with Email them / Text (the couple's own
   app, everyone in Bcc). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book

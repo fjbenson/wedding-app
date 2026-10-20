@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AddButton from "@/components/add-button";
 import { redirect } from "next/navigation";
 import { listAreas } from "@/lib/db/areas";
 import { listDecor } from "@/lib/db/decor";
@@ -25,13 +26,17 @@ export default async function DayDecorPage() {
     <main className="page pb-40 lg:max-w-3xl lg:pb-16">
       {/* A piece of The Day: the pill back, no back arrow (canvas 3 "The Day · Round 2"). */}
       <DayPill />
-      <div className="mt-3 flex items-baseline justify-between gap-3">
+      {/* The title row carries the +, so it isn't left on a row of its own (audit, 20 Oct 2026). */}
+      <div className="mt-3 flex items-center justify-between gap-3">
         <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">Decor</h1>
-        {decorArea && (
-          <Link href={`/area/${decorArea.key}`} className="text-[14px] text-champagne-600 hover:text-ink">
-            Decor page ›
-          </Link>
-        )}
+        <span className="flex items-center gap-4">
+          {decorArea && (
+            <Link href={`/area/${decorArea.key}`} className="text-[14px] text-champagne-600 hover:text-ink">
+              Decor page ›
+            </Link>
+          )}
+          <AddButton href="/decor/new?back=%2Fday%2Fdecor" label="Add an item" />
+        </span>
       </div>
       <PackList items={items} people={people} weddingDate={wedding.wedding_date} />
       <AlsoInTheDay current="decor" />

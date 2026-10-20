@@ -16,6 +16,8 @@ import { formatMoney } from "@/lib/money";
 import type { Payment } from "@/types/db";
 import { markPaidAction } from "./actions";
 import UrlSearch from "@/components/url-search";
+import DateStamp from "@/components/date-stamp";
+import RowLine from "@/components/row-line";
 
 /*
  * Money (screens 22–24), as settled on canvas 2 ("Money · Round 4", owner's
@@ -41,6 +43,7 @@ export default function MoneyView({
   payments,
   suppliers,
   balances,
+  deposits,
   weddingDate,
   ready,
   error,
@@ -73,6 +76,8 @@ export default function MoneyView({
   payments: Payment[];
   suppliers: { id: string; name: string; area?: string | null }[];
   balances: { supplierId: string; name: string; balance: number }[];
+  /** Deposits recorded on suppliers' cards: paid, so they sit in By month's Paid list. */
+  deposits: { supplierId: string; name: string; amount: number }[];
   weddingDate: string | null;
   /** False until 0006_money.sql has been run. */
   ready: boolean;
@@ -150,6 +155,7 @@ export default function MoneyView({
           // Each row names its area unless the list is already one area.
           areaOf={area ? undefined : (p) => areaName(p.area_key ?? suppliers.find((s) => s.id === p.contact_id)?.area ?? null, areas)}
           balances={balances.filter((b) => has(b.name, "balance"))}
+          deposits={deposits.filter((d) => has(d.name, "deposit"))}
           weddingDate={weddingDate}
           picked={month}
           filter={filter}
@@ -287,6 +293,7 @@ function ByMonth({
   suppliers,
   areaOf,
   balances,
+  deposits,
   weddingDate,
   picked,
   base,
@@ -299,6 +306,7 @@ function ByMonth({
   suppliers: { id: string; name: string; area?: string | null }[];
   areaOf?: (p: Payment) => string | null;
   balances: { supplierId: string; name: string; balance: number }[];
+  deposits: { supplierId: string; name: string; amount: number }[];
   weddingDate: string | null;
   picked: string | null;
   /** This view's address without a month, keeping the area filter. */
@@ -433,17 +441,35 @@ function ByMonth({
         <p className="mt-4 text-[15px] text-stone">Nothing to pay right now. Balances, the rings, the licence — anything with a due date shows here.</p>
       )}
 
-      {!chosen && paid.length > 0 && (
+      {!chosen && paid.length + deposits.length > 0 && (
         // Folded like Plan's Done (owner, 17 Oct 2026): the name left, the count right, a chevron.
         <details className="group mt-7 border-t border-ink/[0.12] px-1 pt-3">
           <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 py-1 [&::-webkit-details-marker]:hidden">
             <span className="section-label">Paid</span>
             <span className="type-meta flex items-center gap-1.5">
-              {count(paid.length)} · {formatMoney(sum(paid))}
+              {count(paid.length + deposits.length)} · {formatMoney(sum(paid) + deposits.reduce((t, d) => t + d.amount, 0))}
               <ChevronDown className="h-4 w-4 self-center text-stone/70 transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
             </span>
           </summary>
-          <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">{paid.map(row)}</ul>
+          <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+            {paid.map(row)}
+            {/* Deposits recorded on a supplier: paid, with no date of their own (a tap opens the supplier). */}
+            {deposits.map((d) => (
+              <li key={d.supplierId} className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
+                <Link href={`/people/${d.supplierId}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
+                  <DateStamp date={null} today={today} done />
+                  <span className="min-w-0 flex-1">
+                    <span className="type-item block !text-stone">Deposit</span>
+                    <RowLine status="Paid" details={[d.name]} />
+                  </span>
+                  <span className="type-figure shrink-0 text-[18px] !text-stone">{formatMoney(d.amount)}</span>
+                </Link>
+                <span aria-hidden className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white">
+                  <Check className="h-3.5 w-3.5" strokeWidth={2.4} />
+                </span>
+              </li>
+            ))}
+          </ul>
         </details>
       )}
       </div>

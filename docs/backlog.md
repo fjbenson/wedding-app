@@ -106,7 +106,11 @@ From the last few chats, not yet confirmed:
   and ruled-out names are in `docs/history.md`.
 - **Business model:** paid by couples (one-off, ~£30–50 a wedding), not
   suppliers. A free trial with 3–5 couples → Stripe on the website → App
-  Store later (Capacitor wrap).
+  Store later (Capacitor wrap). **App Store is non-negotiable** (owner, 20 Oct
+  2026): do it after the first test and before charging strangers. Open to
+  check then: Apple's account cost, their payment rules (in-app purchase vs
+  Stripe on the website), and review ("just a website" gets rejected, so it
+  needs some native features such as reminders).
 
 ## Design decisions still open
 

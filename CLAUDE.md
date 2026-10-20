@@ -147,6 +147,10 @@ Not legal advice. **Only item 7's Vercel half is done.**
    Vercel Pro: done 12 Oct 2026.
 8. Two-step login on Supabase, Vercel, GitHub and the Claude Console.
 9. Then test with 3–5 real couples.
+10. **On the App Store** (owner, 20 Oct 2026: non-negotiable — it has to feel
+    legit to strangers): wrap the app with Capacitor, Apple developer
+    account (~£79 a year), Apple's review and payment rules checked first.
+    After the test, before charging people who don't know the owner.
 
 ## Conventions
 

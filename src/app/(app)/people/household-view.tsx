@@ -144,7 +144,7 @@ export default function HouseholdSheet({
 
       {/* What's been sent to them and said, past and to come (canvas 3 "History · Round 2", 4). */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`household:${household.id}`} />
+        <Timeline scope={`household:${household.id}`} folded />
       </section>
 
       <div id="household-details">

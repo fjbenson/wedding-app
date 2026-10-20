@@ -1183,6 +1183,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
   the meal fields (a guest's meal would go to Anthropic: rule one), and the
   Food & drink full-screen add / drink quantity guide (not done yet).
+- **Timeline folded on cards** (20 Oct 2026, owner: it took most of the first
+  screen of a supplier's card). On the supplier, guest and household cards the
+  timeline is **one folded line** — "Timeline · Next: Venue balance · 12 May"
+  (the soonest thing to come, else "Last: Call · 18 Sep") — that opens in
+  place, with "+ Add to history" at its foot (`folded` on `Timeline`). On the
+  supplier card it moved **after Contact**. The area page's line and a
+  payment's "All payments to …" are unchanged. The **Today** marker is a dot
+  on the vertical line with its words beside it (no rules across the page).
 - **The timeline** (19 Oct 2026; canvas 3 "History · Round 2" and
   "Timeline · Round 3", owner: "bloody LOVE IT"; `0032_timeline.sql`, run the
   same day with the owner's OK). It grew out of "comms" (owner: everything

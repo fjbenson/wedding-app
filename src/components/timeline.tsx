@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Check, FileText, Mail, MessageCircle, NotebookPen, Phone, Send, Users } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, FileText, History, Mail, MessageCircle, NotebookPen, Phone, Send, Users } from "lucide-react";
 import CardLink from "@/components/card-link";
 import { removeEntryAction, timelineAction } from "@/app/(app)/timeline/actions";
 import { formatDayMonth } from "@/lib/dates";
@@ -32,12 +32,19 @@ export default function Timeline({
   scope,
   label = "Timeline",
   bare = false,
+  folded = false,
   only,
 }: {
   scope: string;
   label?: string;
   /** Inside another card (the area page's "Everything for…"): no heading. */
   bare?: boolean;
+  /**
+   * Folded away to one line ("Next: Venue balance · 12 May") that opens in place
+   * (owner, 20 Oct 2026: on a card it took most of the first screen). The
+   * heading and "+ Add to history" move inside it, as for `bare`.
+   */
+  folded?: boolean;
   /** Just one kind, no chips or Add (a payment's card: every payment to them). */
   only?: TimelineGroup;
 }) {
@@ -78,9 +85,21 @@ export default function Timeline({
     else setN((x) => x + 1);
   };
 
-  return (
-    <section className={bare ? "" : "mt-7"}>
-      {!bare && (
+  // The one line shown while it's folded: the soonest thing to come, else the latest that happened.
+  const soonest = coming.filter((i) => i.date).sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""))[0];
+  const summary =
+    items === null
+      ? "…"
+      : soonest
+        ? `Next: ${soonest.title} · ${formatDayMonth(soonest.date!)}`
+        : before[0]
+          ? `Last: ${before[0].kind}${before[0].date ? ` · ${formatDayMonth(before[0].date)}` : ""}`
+          : "Nothing yet";
+  const inside = bare || folded;
+
+  const content = (
+    <section className={inside ? "" : "mt-7"}>
+      {!inside && (
         <div className="flex items-baseline justify-between">
           <h2 className="section-label font-body">{label}</h2>
           {!only && (
@@ -146,7 +165,7 @@ export default function Timeline({
               {before.length - SHOWN} earlier ›
             </button>
           )}
-          {bare && (
+          {inside && !only && (
             <Link href={addHref} className="mt-1 inline-block py-2 text-[14px] text-champagne-600">
               + Add to history
             </Link>
@@ -154,6 +173,23 @@ export default function Timeline({
         </>
       )}
     </section>
+  );
+
+  if (!folded) return content;
+  return (
+    <details className="group">
+      <summary className="flex min-h-[60px] cursor-pointer list-none items-center gap-3 py-2.5 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+          <History className="h-[17px] w-[17px]" strokeWidth={1.6} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15.5px] text-ink">{label}</span>
+          <span className="block truncate text-[13px] text-stone">{summary}</span>
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
+      </summary>
+      <div className="pb-3">{content}</div>
+    </details>
   );
 }
 

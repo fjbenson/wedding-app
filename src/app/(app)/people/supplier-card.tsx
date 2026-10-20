@@ -132,9 +132,6 @@ export default function SupplierCard({
 
           <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} onError={setError} />
 
-          {/* Everything with them, past and to come (canvas 3 "Timeline · Round 3"). */}
-          <Timeline scope={`supplier:${supplier.id}`} />
-
           <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
 
           {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
@@ -157,6 +154,11 @@ export default function SupplierCard({
               {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
               <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
             </dl>
+          </section>
+
+          {/* Everything with them, past and to come (canvas 3 "Timeline · Round 3"), folded to one line after Contact (owner, 20 Oct 2026). */}
+          <section className="mt-6 -mx-[22px] border-y border-linen px-[22px]">
+            <Timeline scope={`supplier:${supplier.id}`} folded />
           </section>
 
           <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />

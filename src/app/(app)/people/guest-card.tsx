@@ -166,7 +166,7 @@ export default function GuestCard({
 
       {/* What's been said and sent, past and to come (canvas 3 "Timeline · Round 3"). */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`guest:${guest.id}`} />
+        <Timeline scope={`guest:${guest.id}`} folded />
       </section>
 
       {/* A hairline right across the card between sections. */}

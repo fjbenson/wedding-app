@@ -2300,7 +2300,32 @@ additive — new tables hanging off `weddings`. None require changing the above.
       ties to the business model — costs money, so the owner's call).
       Note: the app can make a PDF on the phone; the menu card already
       prints.
+      **Where it could go (talked through with the owner, 20 Oct 2026, not
+      decided):** one library of templates, reached from two places — a line in
+      **Stationery's** "Everything for…" and a fourth **piece of The Day**
+      beside Seating, Travel and Decor (table games, signs and place cards are
+      for the day; save the dates are Stationery). Not Inspo (that's for
+      saved pictures) and not a new tab. Build the free version first and
+      leave room for paid ones later (money: the owner's call). Next step if
+      picked up: mock the library, one filled-in template and the print
+      preview on canvas 3.
 
+- **Finding suppliers: advertising or a local list?** (talked through with the
+  owner, 20 Oct 2026; **conclusion: not needed now — only if couples ask**).
+  Advertising or paid placement cuts against the couples-pay model (the app
+  stays on the couple's side) and is hard to undo once couples notice, so
+  it's off the table until there are real users. A pulled directory of local
+  or online suppliers is costly and fragile (scraping is a licensing
+  problem; Google Places and the like cost money per search and go stale; a
+  list of every florist isn't what couples need). Only the area and town
+  would leave the app, never anything about guests, but a new service still
+  needs the owner's OK. **If couples ask:** a quiet **"Where to look"** card
+  on an area with no suppliers yet (ready-made searches and directories for
+  that area and the venue's town, nothing stored or sold, opens only on a
+  tap) and the **venue's preferred-suppliers list** (pasted or uploaded
+  once, shown in the matching areas). Later still, couples recommending
+  suppliers to each other needs consent and a privacy policy first. Test
+  with 3–5 real couples before building any of it.
 - **Gifts and thank-yous** (parked by the owner, 20 Oct 2026: "not sure on
   this yet"). Options are on canvas 3 "Gifts · Round 1": **A** a Gifts list
   as a View on the guest list (To thank first, then Thanked; round tick),

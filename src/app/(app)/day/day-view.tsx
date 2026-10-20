@@ -208,16 +208,17 @@ function RunSheet({
   // opens, and a copy to print for that supplier.
   const inArea =
     area === null ? all : all.filter((i) => (area === "none" ? !i.area_key || i.area_key === "other" : i.area_key === area));
-  // The search (`?q=`): what happens, where, who, or the notes.
-  const needle = query.toLowerCase();
-  const items = needle
-    ? inArea.filter((i) => [i.title, i.location, i.who, i.notes, i.music].some((t) => t?.toLowerCase().includes(needle)))
-    : inArea;
-  // A group's own schedule (canvas 3 "Food & drink · Round 2", C, owner's pick 19 Oct 2026):
-  // their moments in full, the day's others faded so they know where they fit.
+  // A group's own schedule (canvas 3 "Food & drink · Round 2", C): only their moments (owner, 20 Oct 2026:
+  // it filters, it doesn't just fade the rest).
   const theGroup = group ? groups.find((g) => g.id === group) : undefined;
   const isTheirs = (id: string) => !theGroup || (momentGroups[id] ?? []).includes(theGroup.id);
-  const theirCount = theGroup ? items.filter((i) => isTheirs(i.id)).length : items.length;
+  // The search (`?q=`): what happens, where, who, or the notes.
+  const needle = query.toLowerCase();
+  const searched = needle
+    ? inArea.filter((i) => [i.title, i.location, i.who, i.notes, i.music].some((t) => t?.toLowerCase().includes(needle)))
+    : inArea;
+  const items = searched.filter((i) => isTheirs(i.id));
+  const theirCount = items.length;
   const forWhom = [area === "none" ? "Other" : area ? areaName(area, areas) : null, theGroup?.name ?? null].filter(Boolean).join(" · ") || null;
   const groupText = theGroup
     ? [
@@ -283,10 +284,10 @@ function RunSheet({
       </div>
       </div>
       {needle && items.length === 0 && <p className="mt-6 px-1 text-sm text-stone">No moment matches that.</p>}
-      {theGroup && theirCount === 0 && items.length > 0 && (
+      {theGroup && items.length === 0 && !needle && (
         <p className="mt-6 font-display text-xl italic text-ink">Nothing is on {theGroup.name}&apos;s schedule yet. Open a moment and tap For.</p>
       )}
-      {forWhom && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
+      {forWhom && !theGroup && items.length === 0 && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
       {items.length > 0 && (
         <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-auto lg:max-w-xl print:shadow-none">

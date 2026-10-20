@@ -95,7 +95,8 @@ export default function MoneyView({
       />
       <FilterMenu
         base={view === "month" ? `/money?view=month${q ? `&${q}` : ""}` : `/money${q ? `?${q}` : ""}`}
-        groups={[{ param: "area", current: area, rows: areaFilterRows(areas) }]}
+        groups={[{ param: "area", title: "Area", current: area, rows: areaFilterRows(areas) }]}
+        expandable={view === "month" ? { results: payments.length, noun: "payment" } : { results: byArea.length, noun: "area" }}
       />
     </div>
   );

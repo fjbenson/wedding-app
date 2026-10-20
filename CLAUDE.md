@@ -1183,6 +1183,14 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
   the meal fields (a guest's meal would go to Anthropic: rule one), and the
   Food & drink full-screen add / drink quantity guide (not done yet).
+- **Money's and Plan's Filter are the same** (20 Oct 2026, owner: "do the same
+  for Money and Plan"): rows that open in place, a sheet on phones with "Show
+  N areas / payments / items" (`expandable` on `FilterMenu`). **Schedule for
+  now filters** (owner: it only faded the rest): a group's schedule shows just
+  their moments. **Raised, not built:** detailed per-person schedules (hair and
+  make-up for each bridesmaid) would clutter the main run sheet; proposed an
+  "Only on their schedule" switch per moment (one new yes/no column, owner's OK
+  first) that keeps it off the main sheet.
 - **The Day's Filter is like the guest list's** (20 Oct 2026, owner): rows —
   **Area** and **Schedule for** (a group: the bridesmaids, the groomsmen) —
   each opening its own values in place; on a phone a sheet from the bottom

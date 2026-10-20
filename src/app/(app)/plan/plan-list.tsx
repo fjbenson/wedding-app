@@ -205,6 +205,7 @@ export default function PlanList({
           { param: "area", title: "Area", current: area, rows: areaFilterRows(areas) },
         ]}
         start={<SortMenu sort={sort} onSort={pickSort} />}
+        expandable={{ results: open.length, noun: "item" }}
       />
 
       <p className="type-meta mt-5 px-1">{count}</p>

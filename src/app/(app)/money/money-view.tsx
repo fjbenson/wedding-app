@@ -343,7 +343,7 @@ function ByMonth({
           chart on a glass card, then a glass card per month listing its payments. */}
       {/* Laptops: the chart and search on the left, the payments beside them. */}
       <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
-      <div className="lg:sticky lg:top-[100px]">
+      <div className="lg:sticky lg:top-6">
       <section className="card-white mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
         <div className="flex items-end justify-between gap-3">
           <div>

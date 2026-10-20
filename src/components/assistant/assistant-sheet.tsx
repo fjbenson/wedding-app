@@ -23,7 +23,7 @@ import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, 
  *
  * `variant` is the door: the Hub's pill under the ring, the round pen
  * above the menu bar on the other tabs, or a round pen in the laptop's
- * top bar.
+ * sidebar.
  */
 
 type Part = { kind: "text"; text: string } | { kind: "block"; block: Block };

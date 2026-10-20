@@ -2,63 +2,61 @@ import Link from "next/link";
 import { Settings } from "lucide-react";
 import Hub, { type HubArea } from "@/components/hub";
 import { coupleName } from "@/lib/couple-name";
-import { formatFullDotDate } from "@/lib/dates";
+import { formatFullDotDate, formatLongDate } from "@/lib/dates";
 
 /**
  * The top of the home screen: the couple's names set like Editorial's
  * byline, and the hub ring sitting straight on the ivory page.
  *
- * On a laptop (canvas 3 "Laptop · Round 2", 3 with the names on the left,
- * owner's pick 18 Oct 2026) the names are set large on the left with the date
- * and `aside` (the assistant's pill) under them, and the ring is the star on
- * the right. Settings is in the top bar there.
+ * On a laptop (canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026) it
+ * is centred in the page beside the sidebar: the date as a small label, the
+ * names on one line, then the ring large under them. Ask Juno and Settings
+ * are in the sidebar there.
  */
 export default function Cover({
   name,
   weddingDate,
   areas,
-  aside,
 }: {
   name: string;
   weddingDate: string | null;
   areas: HubArea[];
-  aside?: React.ReactNode;
 }) {
   const [first, ...rest] = coupleName(name).split(" & ");
   return (
-    <section className="relative px-5 pt-[max(0.5rem,env(safe-area-inset-top))] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(440px,580px)] lg:items-center lg:gap-12 lg:px-0 lg:pt-0">
+    <section className="relative px-5 pt-[max(0.5rem,env(safe-area-inset-top))] lg:flex lg:flex-col lg:items-center lg:px-0 lg:pt-0">
       <div className="flex justify-end text-ink lg:hidden">
         <Link href="/settings" aria-label="Settings" className="flex h-11 w-11 items-center justify-center">
           <Settings className="h-[18px] w-[18px]" strokeWidth={1.6} aria-hidden />
         </Link>
       </div>
 
-      <header className="text-center lg:text-left">
-        <p className="label">The wedding of</p>
-        <h1 className="type-display mt-1.5 text-[40px] md:text-5xl lg:mt-4 lg:text-[clamp(72px,7.2vw,112px)] lg:leading-[0.92] lg:tracking-[-0.035em]">
-          {/* Phones: one line. Laptops: each name on its own line, the & in gold. */}
+      <header className="text-center">
+        <p className="label lg:hidden">The wedding of</p>
+        {weddingDate && <p className="label hidden lg:block">{formatLongDate(weddingDate)}</p>}
+        <h1 className="type-display mt-1.5 text-[40px] md:text-5xl lg:mt-2.5 lg:text-[60px] lg:leading-none lg:tracking-[-0.03em]">
+          {/* One line on both; on a laptop the & in gold. */}
           <span className="lg:hidden">{coupleName(name)}</span>
           <span className="hidden lg:inline">
             {first}
             {rest.length > 0 && (
               <>
-                <br />
+                {" "}
                 <span className="text-champagne-600">&amp;</span> {rest.join(" & ")}
               </>
             )}
           </span>
         </h1>
         {weddingDate && (
-          <p className="mt-2 flex items-center justify-center gap-3 text-xs font-medium tracking-[0.3em] text-stone lg:mt-6 lg:justify-start">
-            <span aria-hidden className="h-px w-8 bg-champagne-400 lg:hidden" />
+          <p className="mt-2 flex items-center justify-center gap-3 text-xs font-medium tracking-[0.3em] text-stone lg:hidden">
+            <span aria-hidden className="h-px w-8 bg-champagne-400" />
             {formatFullDotDate(weddingDate)}
             <span aria-hidden className="h-px w-8 bg-champagne-400" />
           </p>
         )}
-        {aside && <div className="mt-8 hidden lg:block">{aside}</div>}
       </header>
 
-      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:m-0 lg:w-full">
+      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:mb-0 lg:mt-3 lg:w-[560px]">
         <Hub weddingDate={weddingDate} areas={areas} />
       </div>
     </section>

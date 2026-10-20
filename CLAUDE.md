@@ -50,13 +50,13 @@ Rule one still comes first.
   where it goes, how long it's kept); **any database change**; anything that
   costs money; new tabs or big changes to how the app is organised; the Hub's
   look, the brand and the name; choosing between design options (mock them on
-  canvas 3 first).
+  canvas 4 first).
 
 ## How we work (owner, 20 Oct 2026, from reading three chats)
 
 - **Short replies:** about 100 words, plain words; more only when asked.
 - **Mock up first, without being asked,** for anything new or any layout
-  change (canvas 3, options to pick from). Fixes and small tweaks go straight in.
+  change (canvas 4, options to pick from). Fixes and small tweaks go straight in.
 - **Sleep on database changes.** Write the migration and explain it, but run
   it only once the owner has seen the design working, or in a later chat —
   not minutes after picking a mock-up (four bits went unused in two days:
@@ -235,8 +235,9 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   "▲ Over by £…").
 - Phones: 16px side margin (`--gutter`), no text under 12px, inputs 16px+
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
-  tabs along the top (`top-bar.tsx`), pages 1328px wide, cards still open
-  from the right.
+  the menu down the left like a magazine's contents (`side-bar.tsx`, 250px;
+  canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
+  top bar), pages beside it, cards still open from the right.
 
 ## The app today (20 Oct 2026)
 
@@ -247,8 +248,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   wedding's areas, its heart the days to go, opening **Where things stand**
   `/standing`; the + adds an area in three steps), **"Ask Juno"**, **This
   week** (due by Sunday plus overdue, ticked off in place), and tiles for
-  Your notes and Inspo. The laptop Hub is a magazine spread with At a glance
-  cards. The Hub's look is the owner's call.
+  Your notes and Inspo. On a laptop it's one calm screen: the names and ring
+  centred, Your notes and This week in a column on the right (G). The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages down a gold
   line** — Ideas · Quotes · Booked · Paid · Ready (`src/lib/area-stage.ts`;
@@ -337,9 +338,10 @@ owner sees invitations as a big pain point); weddings abroad.
 ## Design work (links)
 
 All private to the owner; open with the Artifact tool's `read` action. New
-rounds go on canvas 3.
+rounds go on canvas 4.
 
-- **Design canvas 3** (from 14 Oct 2026): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+- **Design canvas 4** (from 20 Oct 2026; new rounds go here): https://claude.ai/artifact/FbfEj4TubVHBT2YcVmPVNu
+- **Design canvas 3** (full, 40 pages): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** (full): https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Design canvas 1** (full): https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
 - **Glass Lab**: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq

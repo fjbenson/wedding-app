@@ -53,11 +53,9 @@ Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
 tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;
 almost everything else is still the phone layout in a narrow column.
 
-- **The Hub:** the ring sits off to the right with empty space on the left,
-  and "The wedding of" shows twice (top bar and above the names). Options on
-  canvas 3 "Laptop · Round 5 · The Hub with the ring in the middle" (A panel ·
-  ring · panel, B the four tabs around the ring, C names left, This week
-  right) — owner to pick.
+- ~~**The Hub**~~ — done 20 Oct 2026: the sidebar came back as a magazine
+  contents (canvas 4, G) and the Hub is one calm screen. Not in it yet: G's
+  jot box inside the Your notes card (the notes tile shows instead).
 - **Phone-width pages (about 320px wide) in the middle of the screen:** every
   area page (Venue, Food & drink, Stationery, Decor…), Seating (the floor plan
   is small — the screen that most needs the width), Travel, the Decor pack

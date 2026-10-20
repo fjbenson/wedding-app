@@ -1,6 +1,6 @@
 /**
  * Shown the moment a screen is tapped, while its data is on the way, so the
- * tap feels answered straight away. The frame (menu bar, top bar) stays put
+ * tap feels answered straight away. The frame (menu bar, sidebar) stays put
  * around it. Pale bars in the rough shape of a heading and a list.
  */
 export default function Loading() {

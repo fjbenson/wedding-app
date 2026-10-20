@@ -8,7 +8,7 @@ import { toSort } from "@/lib/notes";
 import { getCurrentWedding } from "@/lib/db/weddings";
 
 /**
- * Wraps every screen in the top bar / menu bar frame. Because it's a layout,
+ * Wraps every screen in the sidebar / menu bar frame. Because it's a layout,
  * it isn't redrawn when moving between screens — only the page inside is.
  * Before there's a wedding (the "start with the day itself" screen) there's
  * nothing to navigate to, so no frame.
@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const wedding = await getCurrentWedding();
   if (!wedding) return children;
 
-  // Unfiled captures, for the count beside Notes in the top bar.
+  // Unfiled captures, for the count beside Your notes in the sidebar.
   const unfiled = await listNotes(wedding.id, { area: null });
 
   return (

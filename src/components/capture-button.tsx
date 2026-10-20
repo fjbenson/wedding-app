@@ -7,7 +7,7 @@ import { NAV } from "@/lib/nav";
 /**
  * "Jot or ask" on phones: a small glass pen sitting above the menu bar, on
  * the same screens the menu bar shows, opening Your assistant. Desktops use
- * the top bar's pen.
+ * the sidebar's Ask Juno.
  */
 export default function CaptureButton() {
   const pathname = usePathname();

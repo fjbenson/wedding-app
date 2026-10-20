@@ -52,6 +52,21 @@ Rule one still comes first.
   look, the brand and the name; choosing between design options (mock them on
   canvas 3 first).
 
+## How we work (owner, 20 Oct 2026, from reading three chats)
+
+- **Short replies:** about 100 words, plain words; more only when asked.
+- **Mock up first, without being asked,** for anything new or any layout
+  change (canvas 3, options to pick from). Fixes and small tweaks go straight in.
+- **Sleep on database changes.** Write the migration and explain it, but run
+  it only once the owner has seen the design working, or in a later chat —
+  not minutes after picking a mock-up (four bits went unused in two days:
+  lists, music_played, run_sheet_groups, the typed dish).
+- **One topic per chat.** A new idea mid-chat goes in `docs/backlog.md`; suggest
+  a fresh chat for it rather than building it there.
+- **`/check` before every push that changes a screen** (the private copy with
+  the demo wedding, `.claude/skills/check/SKILL.md`). **`/status`** gives the
+  owner five lines on where things stand — use it when they ask what's next.
+
 ## Shipping
 
 - **No pull requests** (owner, 29 Sep 2026): push straight to `main` with

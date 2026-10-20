@@ -64,6 +64,24 @@ journey times, wrapped table names, New area's ideas. Still open:
 
 ## Parked ideas
 
+- **The guest portal** (owner, 20 Oct 2026: "one thing we haven't thought
+  about yet"). The first time anyone but the couple sees the app. The database
+  is ready for it (`wedding_members.role` has `guest`; new rows and policies,
+  no rebuild). Smallest first: **1 RSVP online** — a private link per
+  household: yes/no per person, day or evening, dietary needs, landing in the
+  guest list (the owner's biggest pain point, invitations and chasing);
+  **2 information** — timings, venue, travel and stays, dress code, gifts,
+  FAQs; **3 their own bits** — their table, their coach, a group's run sheet;
+  **4 later** — photos after the day, guests messaging each other. **Rule
+  one, the owner's calls:** a guest sees only their own household (never
+  others' details, allergies or the budget); how they get in (a private link
+  is easiest but works for anyone it's forwarded to; an email code is safer
+  but needs the app's own web address, launch checklist item 1); what they
+  may change (their answer, dietary needs, contact details); the privacy
+  policy covers guests. **Suggested start:** RSVP by private link plus an
+  information page, in its own chat, mocked on canvas 3 first (what a guest
+  sees, and what the couple see as replies come in). Goes on the app's map
+  before it's built.
 - **Gifts and thank-yous** (owner: "not sure on this yet"). Canvas 3 "Gifts ·
   Round 1": A a Gifts view on the guest list, B thank-yous one household at a
   time, plus a full-screen New gift. Needs a `gifts` table (owner's OK).

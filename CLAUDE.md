@@ -1185,8 +1185,9 @@ Next.js scaffold. Built so far, against the plan's tabs:
   Food & drink full-screen add / drink quantity guide (not done yet).
 - **More than one run sheet** (20 Oct 2026; canvas 3 "Run sheets · Round 1",
   the owner's idea after "Schedule for": a bridesmaids' morning is too detailed
-  for the main sheet; **`0035_run_sheets.sql` written, NOT YET RUN — waiting on
-  the owner's OK**). "The day" is the main sheet (a moment with no `sheet_id`);
+  for the main sheet; **`0035_run_sheets.sql`, run 20 Oct 2026 with the owner's
+  OK**: the demo's Bridesmaids and Groomsmen became sheets (6 and 4 moments, the
+  shared one copied), The day kept 10; the owner's real wedding was untouched). "The day" is the main sheet (a moment with no `sheet_id`);
   **`run_sheets`** (name, optional `group_id` so it can be emailed, `sort_order`;
   tied to `(id, wedding_id)`, RLS like groups, in `rls_isolation.sql`, which
   passes with all 35 migrations) holds the others — Bridesmaids, Groomsmen, the
@@ -1372,14 +1373,14 @@ a *third* piece. Don't restructure the other two.
 ## Data model
 
 Full explanation in `docs/ERD.md`. Schema in `supabase/migrations/0001_init.sql`,
-plus `0002_create_wedding.sql` to `0034_food_moments_and_schedules.sql`. **New migrations are run
+plus `0002_create_wedding.sql` to `0035_run_sheets.sql`. **New migrations are run
 by hand** in the Supabase SQL editor — the owner has to paste them in.
 **Since 12 Oct 2026 the Supabase connector is set up** (project
 **wedding-app**, id `hfyuvtrglkdpqvtkzohb`, eu-west-1), so Claude can check
 and apply migrations itself — **but always says in plain words what a
 database change does and waits for the owner's OK before running it, and
 never deletes data unless the owner asks for exactly that.** Looking (read-
-only queries) needs no OK. **All migrations 0001–0034 are now in** (0034 food served at moments and a schedule per group, and 0033 a meal and drinks for every guest, run 19 Oct 2026 with the owner's OK; 0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
+only queries) needs no OK. **All migrations 0001–0035 are now in** (0035 run sheets, run 20 Oct 2026 with the owner's OK; 0034 food served at moments and a schedule per group, and 0033 a meal and drinks for every guest, run 19 Oct 2026 with the owner's OK; 0032 the timeline, run 19 Oct 2026 with the owner's OK; 0031 who's in charge of a moment, 0030 how music is played, 0029 lists, 0028 music on moments and 0027 Decor, run 19 Oct 2026 with the owner's OK; 0026 the top table shape and 0025 the chair a guest sits in, run 19 Oct 2026 with the owner's OK; 0022 money towards it and 0023 who's paying a bill, run 17 Oct 2026; 0024 the menu and drinks, run 18 Oct 2026, all with the owner's OK) (12 Oct
 2026: 0011, the floor plan, was missing — Claude ran it with the owner's OK).
 The "until 0xxx is run" fallbacks below are kept for new projects. Until
 0003 is run, `listAreas()` returns `null` and the app falls back to the

@@ -87,6 +87,12 @@ begin
       ('aaaaaaaa-7777-0000-0000-000000000001', 'aaaaaaaa-2222-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001'),
       ('bbbbbbbb-7777-0000-0000-000000000002', 'bbbbbbbb-2222-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002');
   end if;
+  -- Run sheets (0035): each couple has a bridesmaids' sheet tied to their group.
+  if to_regclass('public.run_sheets') is not null then
+    insert into run_sheets (id, wedding_id, name, group_id) values
+      ('aaaaaaaa-8888-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Bridesmaids', 'aaaaaaaa-2222-0000-0000-000000000001'),
+      ('bbbbbbbb-8888-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 'Bridesmaids', 'bbbbbbbb-2222-0000-0000-000000000002');
+  end if;
   if to_regclass('public.menu_courses') is not null then
     insert into menu_courses (id, wedding_id, name) values
       ('aaaaaaaa-5555-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Canapés'),
@@ -427,6 +433,33 @@ begin
     get diagnostics visible_contacts = row_count;
     if visible_contacts <> 0 then
       raise exception 'LEAK: couple A cleared wedding B''s schedules';
+    end if;
+  end if;
+  if to_regclass('public.run_sheets') is not null then
+    execute 'select count(*) from run_sheets' into visible_contacts;
+    if visible_contacts <> 1 then
+      raise exception 'LEAK: couple A sees % run sheets, expected 1', visible_contacts;
+    end if;
+    -- A moment in wedding A can't be put on wedding B's run sheet, even knowing the id.
+    begin
+      execute $q$update run_sheet_items set sheet_id = 'bbbbbbbb-8888-0000-0000-000000000002'
+               where id = 'aaaaaaaa-7777-0000-0000-000000000001'$q$;
+      raise exception 'LEAK: couple A put a moment on wedding B''s run sheet';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    -- A run sheet can't be tied to another wedding's group.
+    begin
+      execute $q$insert into run_sheets (wedding_id, name, group_id)
+               values ('aaaaaaaa-0000-0000-0000-000000000001', 'Sneaky', 'bbbbbbbb-2222-0000-0000-000000000002')$q$;
+      raise exception 'LEAK: couple A tied a run sheet to wedding B''s group';
+    exception
+      when insufficient_privilege or foreign_key_violation then null;  -- expected
+    end;
+    execute $q$delete from run_sheets where wedding_id = 'bbbbbbbb-0000-0000-0000-000000000002'$q$;
+    get diagnostics visible_contacts = row_count;
+    if visible_contacts <> 0 then
+      raise exception 'LEAK: couple A removed wedding B''s run sheets';
     end if;
   end if;
   -- A course can only be served at its own wedding's moment (0034).

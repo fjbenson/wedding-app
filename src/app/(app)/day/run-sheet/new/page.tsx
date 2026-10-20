@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { areaOptions } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
-import { listGroups } from "@/lib/db/groups";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveRunSheetItemAction } from "../../actions";
 import { RunSheetForm } from "../../day-forms";
@@ -13,24 +12,24 @@ export const metadata = { title: "Add to the run sheet — Wedding App" };
 export default async function NewRunSheetItemPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string; area?: string; from?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; area?: string; from?: string; sheet?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { error, detail, area, from } = await searchParams;
+  const { error, detail, area, from, sheet } = await searchParams;
   const areas = areaOptions(await listAreas(wedding.id));
   // `?area=` picks the area; added from its page (`&from=area`), Save goes back there.
   const picked = areas.some((a) => a.key === area) ? area : undefined;
   const fromArea = from === "area" ? picked : undefined;
   return (
     <FormPage
-      backHref={fromArea ? `/area/${fromArea}` : "/day"}
+      backHref={fromArea ? `/area/${fromArea}` : sheet && /^[0-9a-f-]{36}$/i.test(sheet) ? `/day?sheet=${sheet}` : "/day"}
       backLabel={fromArea ? (areas.find((a) => a.key === fromArea)?.label ?? "Back") : "The Day"}
       title="Add a moment"
       error={error}
       detail={detail}
     >
-      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} people={await decorPeople(wedding.id)} defaultArea={picked} fromArea={fromArea} groups={(await listGroups(wedding.id)).map((g) => ({ id: g.id, name: g.name }))} />
+      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} people={await decorPeople(wedding.id)} defaultArea={picked} fromArea={fromArea} sheetId={sheet && /^[0-9a-f-]{36}$/i.test(sheet) ? sheet : undefined} />
     </FormPage>
   );
 }

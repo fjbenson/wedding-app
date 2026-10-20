@@ -34,7 +34,7 @@ export async function getDay(weddingId: string): Promise<{
 
 // Run sheet ------------------------------------------------------------------
 
-type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes" | "area_key" | "music" | "music_url" | "music_kind" | "music_played" | "music_who" | "contact_id">;
+type RunSheetFields = Pick<RunSheetItem, "at_time" | "title" | "location" | "who" | "notes" | "area_key" | "music" | "music_url" | "music_kind" | "music_played" | "music_who" | "contact_id"> & { sheet_id?: string | null };
 
 export async function getRunSheetItem(id: string): Promise<RunSheetItem | null> {
   const supabase = await createClient();
@@ -53,6 +53,12 @@ export async function saveRunSheetItem(weddingId: string, id: string | null, fie
   // Before 0017_run_sheet_area.sql there's no area column: save without it.
   if (error && (error.code === "PGRST204" || error.code === "42703") && /area_key/.test(error.message ?? "")) {
     const { area_key: _dropped, ...rest } = fields;
+    void _dropped;
+    ({ data, error } = await save(rest));
+  }
+  // Before 0035_run_sheets.sql there's no sheet column: it goes on the one run sheet.
+  if (error && (error.code === "PGRST204" || error.code === "42703") && /sheet_id/.test(error.message ?? "")) {
+    const { sheet_id: _dropped, ...rest } = fields;
     void _dropped;
     ({ data, error } = await save(rest));
   }

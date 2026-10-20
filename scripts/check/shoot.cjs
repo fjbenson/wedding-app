@@ -1,6 +1,6 @@
 // Photographs screens of the private copy at iPhone size, and notes anything
 // off: crashes, pages that scroll sideways, text under 12px.
-// Usage: node scripts/check/shoot.cjs /people /plan?view=list "/area/venue"
+// Usage: [CHECK_WIDTH=1440] node scripts/check/shoot.cjs /people /plan?view=list "/area/venue"
 // Pictures land in $CHECK_DIR/shots (default /tmp/wedding-check/shots).
 const { chromium } = require("/opt/node-tools/node_modules/playwright");
 const fs = require("fs");
@@ -11,7 +11,10 @@ fs.mkdirSync(`${work}/shots`, { recursive: true });
 
 (async () => {
   const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
-  const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
+  // CHECK_WIDTH=1440 for a laptop (the default is an iPhone 15).
+  const width = Number(process.env.CHECK_WIDTH) || 393;
+  const laptop = width >= 1024;
+  const ctx = await browser.newContext({ viewport: { width, height: laptop ? 900 : 852 }, isMobile: !laptop, hasTouch: !laptop });
   await ctx.addCookies(JSON.parse(fs.readFileSync(`${work}/cookies.json`, "utf8")));
   for (const url of urls) {
     const page = await ctx.newPage();
@@ -24,7 +27,7 @@ fs.mkdirSync(`${work}/shots`, { recursive: true });
     if (await page.getByText("Something went wrong").count()) problems.push("shows Something went wrong");
     const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     if (sideways > 0) problems.push(`scrolls sideways by ${sideways}px`);
-    const name = url.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "hub";
+    const name = (laptop ? "laptop-" : "") + (url.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "hub");
     await page.screenshot({ path: `${work}/shots/${name}.png`, fullPage: true });
     console.log(`${res.status()} ${url}${where !== url ? ` → ${where}` : ""}  ${problems.join("; ") || "ok"}  (${work}/shots/${name}.png)`);
     await page.close();

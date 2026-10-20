@@ -47,6 +47,32 @@ journey times, wrapped table names, New area's ideas. Still open:
 - **Not covered**: a real iPhone (keyboard, Safari's pickers), the laptop,
   Juno's answers (needs the key).
 
+## Laptop audit, 20 Oct 2026
+
+Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
+tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;
+almost everything else is still the phone layout in a narrow column.
+
+- **The Hub:** the ring sits off to the right with empty space on the left,
+  and "The wedding of" shows twice (top bar and above the names). Options on
+  canvas 3 "Laptop · Round 5 · The Hub with the ring in the middle" (A panel ·
+  ring · panel, B the four tabs around the ring, C names left, This week
+  right) — owner to pick.
+- **Phone-width pages (about 320px wide) in the middle of the screen:** every
+  area page (Venue, Food & drink, Stationery, Decor…), Seating (the floor plan
+  is small — the screen that most needs the width), Travel, the Decor pack
+  list, the menu, Drinks, Your notes, Where things stand, the budget page.
+- **Odd widths:** Inspo sits left of centre; Settings is a narrow column on the
+  left; Plan's List is a medium column. One rule needed: tabs 1328px, a page
+  that reads like paper (the run sheet, the menu) narrow and centred, the rest
+  two columns.
+- **Forms** (Add a guest, New to-do, New payment, Add a moment) are a narrow
+  column with the Save bar under — fine, but could be two columns (the name
+  and main choices left, details right).
+- **The Day:** the controls row spreads Print to the far right, away from
+  Filter; the three piece tiles are small on the left.
+- Not checked: cards opening from the right, Juno's panel, hover states.
+
 ## Juno (the assistant)
 
 - **Still to build:** a general "change a detail" and "add" tool, "take me

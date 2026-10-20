@@ -24,6 +24,43 @@ From the last few chats, not yet confirmed:
 - Juno: say "Juno" into the phone's dictation (Junia came out "junior").
 - The assistant no longer jumping when the keyboard opens (fixed blind).
 
+## Phone audit, 20 Oct 2026
+
+Every phone screen checked on a private copy with the demo wedding (393px).
+Fixed the same day: Add to history opened New to-do (old `/timeline`
+redirect; now `/history/new`), and New household crashed. Still open:
+
+- **Words and numbers that disagree** (owner's call on the wording):
+  two "Meal"s on the guest card (the Adult / Child's / No meal tiles and the
+  dish typed in Details; a page boy reads "Adult" and "Children's menu"), and
+  three meal rows in Filter (Meal choice · Age · Meal and drinks); guests
+  counted as 74 on the card, "Show 79 guests" in Filter and "58 of 79" on
+  Where things stand (can't-come included or not); Money's "Paid so far
+  £6,088" vs By month's Paid fold "£118" (deposits only counted on top);
+  "Age group" (View) vs "Age" (Filter); "See the inbox" vs "Your notes".
+- **Times written three ways**: "11:00 AM" (appointment card), "SAT 2PM"
+  (rows), "13:30" (run sheet, Next up).
+- **Picked tiles are black** on New payment, New table, Add to history and a
+  decor item's chips, but champagne on Add a guest and the cards (black is
+  for the main action) — pick one style.
+- **Older screens not in line yet**: Settings, the budget page, Where things
+  stand ("In People ›" links, its own title style), Your notes (a sentence
+  under the title, the note panel's list), Inspo's empty state (the title
+  replaced by "Nothing saved yet.", a paragraph, no area ghosts); The menu and
+  Drinks titles upright where tabs are italic.
+- **Two black + on the Decor page** (cover and Items); the pack list's + sits
+  alone on its own row.
+- **The floating pen covers the right edge** of lists: tick circles, £ marks,
+  the guest list's letter index, the last table on the floor plan.
+- **Seating on a phone**: the top table runs off the room's right edge; long
+  table names are cut ("The Cotsw…").
+- Food & drink's "Everything for…" has 11 lines (Guests and Dietary needs
+  overlap); By month's headings show "4 payments · £10,300" on some months and
+  just the total on others; New area still offers "Decor" when there is one.
+- **Demo gaps**: no menu, drinks or extra run sheets in `demo-wedding.sql`.
+- **Not covered**: a real iPhone (keyboard, Safari's pickers), the laptop,
+  Juno's answers (needs the key).
+
 ## Juno (the assistant)
 
 - **Still to build:** a general "change a detail" and "add" tool, "take me

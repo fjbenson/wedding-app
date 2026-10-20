@@ -202,7 +202,7 @@ refine later — it is all tokens, so changing it is cheap:
   Documents, Contact.
 - **Pop-ups in the middle** for small extra steps (adding a file), after the
   phone's own picker.
-- Icon clashes are catalogued (icon audit) and parked; see `CLAUDE.md`.
+- Icon clashes are catalogued (icon audit) and parked; see `docs/backlog.md`.
 
 
 ## 14 Oct 2026 — what changed

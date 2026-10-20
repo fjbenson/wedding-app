@@ -15,7 +15,7 @@ import { todoFlow } from "@/components/assistant/todo-steps";
 import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, StreamEvent, TodoStepsBlock } from "@/lib/assistant/blocks";
 
 /**
- * Your assistant (CLAUDE.md, Next steps 8; canvas 2 "Your planner · Round
+ * Your assistant (docs/history.md, Next steps 8; canvas 2 "Your planner · Round
  * 1–2", renamed by the owner 13 Oct 2026 — the couple are the planners, it
  * does the small jobs). One front door, "Jot or ask…": a thought is saved
  * as a note, a question gets a short answer with a block drawn by the app,

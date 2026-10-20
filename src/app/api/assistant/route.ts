@@ -5,7 +5,7 @@ import { runTool, TOOLS } from "@/lib/assistant/tools";
 import type { StreamEvent } from "@/lib/assistant/blocks";
 
 /**
- * Your assistant (CLAUDE.md, Next steps 8): one turn of the conversation.
+ * Your assistant (docs/history.md, Next steps 8): one turn of the conversation.
  *
  * The panel sends the conversation so far; this asks Claude, runs the
  * lookups it calls for (as the signed-in person, so row-level security

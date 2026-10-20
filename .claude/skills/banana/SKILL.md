@@ -16,8 +16,11 @@ development: keep the report short and in plain words.
      `git push origin HEAD:main` (and to this chat's own branch). If either
      check fails, don't push — tell the owner what's broken.
 2. **Bring the notes up to date** with what this chat decided or built:
-   - `CLAUDE.md` — "Current state", "Next steps" and any decision worth
-     keeping (with the date).
+   - `CLAUDE.md` — "The app today", "Next up" and any decision worth
+     keeping (with the date). **Keep it short**: replace a line when a thing
+     changes rather than adding a new paragraph, and don't log design rounds.
+   - `docs/backlog.md` — add what was parked, take off what was built.
+   - `docs/history.md` is an archive: leave it alone.
    - `docs/DESIGN.md` — if the look changed.
    - `.claude/catch-up.md` (the start-of-chat catch-up) — if its one-line
      description of the look is now out of date.

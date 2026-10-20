@@ -2284,6 +2284,20 @@ additive — new tables hanging off `weddings`. None require changing the above.
       Note: the app can make a PDF on the phone; the menu card already
       prints.
 
+- **Gifts and thank-yous** (parked by the owner, 20 Oct 2026: "not sure on
+  this yet"). Options are on canvas 3 "Gifts · Round 1": **A** a Gifts list
+  as a View on the guest list (To thank first, then Thanked; round tick),
+  **B** thank-yous one household at a time (who, what they gave, how you'll
+  thank them, "Thanked. Next one"), plus where it shows (Stationery's
+  Thank-you line "19 of 31 thanked"; a Gift line on the household / guest
+  card with the Sent-to-them marks) and a full-screen "New gift" (kind: gift
+  · money · voucher · experience; who from; arrived; optional amount; already
+  thanked). **Needs one new table, `gifts`** (owner's OK first; RLS like
+  groups, in `rls_isolation.sql`; no assistant access, nothing sent
+  anywhere). Open questions: A, B or both; whether money and vouchers carry
+  an amount (kept apart from Money's budget); gifts only, or also thanking
+  people for helping. Thank-you sendings already exist (Stationery,
+  `timeline_entries` kind `thank_you`). Not started.
 - **The name: working name Rondé** (owner, 14 Oct 2026, after two long
   rounds). *Ronde* is French for **round** (the hub ring, the signature
   circle) and *une ronde* is a **circle dance** (the dancing couple); said

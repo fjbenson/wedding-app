@@ -307,6 +307,11 @@ From the audit of 20 Oct 2026 (agreed with the owner: notes tidied first):
 4. **Mock-up first** for anything bigger than a tweak (about 30 built things
    were taken back out in the first month).
 
+When building resumes, the 20 Oct chat suggested: the area page's "In The Day ›"
+reaching moments on other sheets; the Food & drink full-screen add and drink
+guide; **invitations** — the address export, then guest links for RSVPs (the
+owner sees invitations as a big pain point); weddings abroad.
+
 ## Design work (links)
 
 All private to the owner; open with the Artifact tool's `read` action. New

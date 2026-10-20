@@ -1695,7 +1695,22 @@ additive — new tables hanging off `weddings`. None require changing the above.
    (12 Oct 2026, canvas 2 "Plan · Calendar · The to-do mark"): a to-do is a
    solid white circle (the list's tick circle, filled), an appointment a
    little gold calendar, done things no mark; two per day then "+1" (`Mark` in
-   `calendar.tsx`). **Next up (end of the 19 Oct 2026 last chat):** built this
+   `calendar.tsx`). **Next up (end of the 20 Oct 2026 chat):** built this chat — the small
+   follow-ups (food cost on Money's card, guest-list Filter by meal and drinks,
+   groups on Add a moment, "Did it go?" after a group email), the assistant is
+   now **Juno**, the timeline folds to one line on cards, The Day has no
+   numbers card, **Filter is the guest list's style on The Day, Money and
+   Plan**, and **more than one run sheet** (0035 run). The owner checks on the
+   phone: the run sheet picker, the Bridesmaids sheet and its email button,
+   New run sheet, a moment's Move to / Copy to, the folded timeline, and
+   saying "Juno" to the phone's dictation. **Parked:** gifts and thank-yous
+   (canvas 3 "Gifts · Round 1"), paper templates' placement, finding suppliers
+   (only if couples ask). **Suggested next:** the area page's "In The Day ›"
+   should reach moments on other sheets; the Food & drink full-screen add and
+   drink quantity guide; the assistant knowing the meal fields (owner's call,
+   rule one); invitations — the address export, then guest links for RSVPs
+   (the owner thinks invitations are a big pain point); weddings abroad.
+   **Earlier next-up (end of the 19 Oct 2026 last chat):** built this
    chat — **Stationery as its own area** (What you send, View › Sent on the
    guest list, Send then "Did it go?", Sent to them on household cards, its
    timeline), **children properly** (meal + drinks tiles, caterer's prices and

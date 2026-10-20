@@ -19,6 +19,8 @@ From the last few chats, not yet confirmed:
   the demo.
 - Seating close-up: fill a chair, swap two, a top table; Share the plan in
   Mail on the iPhone.
+- Run sheets: the picker, the Bridesmaids sheet and its email button, New run
+  sheet, a moment's Move to / Copy to; the folded timeline on cards.
 - Juno: say "Juno" into the phone's dictation (Junia came out "junior").
 - The assistant no longer jumping when the keyboard opens (fixed blind).
 

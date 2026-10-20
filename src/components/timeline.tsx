@@ -124,15 +124,17 @@ export default function Timeline({
 
           <ol className="relative mt-2 pl-10 before:absolute before:bottom-3 before:left-[15px] before:top-3 before:w-[1.5px] before:bg-champagne-400/50">
             {coming.length > 0 && (
-              <li className="-ml-10 pb-1 pt-2 text-[11.5px] uppercase tracking-[0.14em] text-stone">Coming up</li>
+              <li className="pb-1 pt-2 text-[11.5px] uppercase tracking-[0.14em] text-stone">Coming up</li>
             )}
             {coming.map((item) => (
               <Row key={item.key} item={item} upcoming onRemove={remove} />
             ))}
-            <li className="-ml-10 flex items-center gap-2 py-2 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-ink" aria-label="Today">
-              <span aria-hidden className="h-[1.5px] w-[22px] bg-ink" />
+            {/* Today sits on the line as a dot, with its words beside it: no rules across the page to cross the line. */}
+            <li className="relative py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-ink" aria-label="Today">
+              <span aria-hidden className="absolute -left-10 top-1/2 flex w-[30px] -translate-y-1/2 justify-center">
+                <span className="h-3 w-3 rounded-full bg-ink ring-[3px] ring-ivory" />
+              </span>
               Today{today ? ` · ${formatDayMonth(today)}` : ""}
-              <span aria-hidden className="h-[1.5px] flex-1 bg-ink" />
             </li>
             {(all ? before : before.slice(0, SHOWN)).map((item) => (
               <Row key={item.key} item={item} onRemove={remove} />

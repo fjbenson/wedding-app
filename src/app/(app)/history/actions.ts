@@ -57,7 +57,7 @@ export async function saveEntryAction(formData: FormData) {
   const back = get("back").startsWith("/") && !get("back").startsWith("//") ? get("back") : "/";
   const fail = (message: string) => {
     const sep = get("self").includes("?") ? "&" : "?";
-    redirect(`${get("self") || "/timeline/new"}${sep}error=${encodeURIComponent(message)}`);
+    redirect(`${get("self") || "/history/new"}${sep}error=${encodeURIComponent(message)}`);
   };
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");

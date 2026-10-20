@@ -280,7 +280,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Send it.
 - **The timeline** on every supplier, guest and household card (folded to one
   line), area page and payment: past and to come around a Today marker; calls,
-  meetings, emails and notes are added on a full screen (`/timeline/new`);
+  meetings, emails and notes are added on a full screen (`/history/new`; not `/timeline/…`, which an old redirect sends to Plan);
   stage changes and sendings are written by the app.
 - **Juno** (the assistant; named 20 Oct 2026, owner): the Hub pill and the
   floating pen open it. Typing searches the whole wedding at once with no AI

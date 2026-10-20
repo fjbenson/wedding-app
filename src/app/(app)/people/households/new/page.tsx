@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
-import { MapPin } from "lucide-react";
 import FormPage from "@/components/form-page";
 import { SubmitBar } from "@/components/form-bits";
-import { BARE, CARD, Line, Part, TITLE_INPUT } from "@/components/visual-form";
+import { Part, TITLE_INPUT } from "@/components/visual-form";
 import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveNewHouseholdAction } from "../../household-actions";
 import PeoplePicker from "../../people-picker";
 import { fullName } from "../../guest-table";
+import AddressCard from "./address-card";
 
 export const metadata = { title: "New household — Wedding App" };
 
@@ -29,16 +29,7 @@ export default async function NewHouseholdPage({ searchParams }: { searchParams:
         <input name="name" required autoFocus autoComplete="off" aria-label="The household's name" placeholder="e.g. The Reids" className={TITLE_INPUT} />
 
         <Part label="Where the post goes">
-          <div className={CARD}>
-            <Line icon={MapPin} label="Address" top>
-              <span className="flex w-full flex-col divide-y divide-linen">
-                <input name="address_line1" autoComplete="off" placeholder="House and street" aria-label="House and street" className={BARE} />
-                <input name="address_line2" autoComplete="off" placeholder="Second line (optional)" aria-label="Second line" className={BARE} />
-                <input name="city" autoComplete="off" placeholder="Town" aria-label="Town" className={BARE} />
-                <input name="postcode" autoComplete="off" placeholder="Postcode" aria-label="Postcode" className={`${BARE} uppercase`} />
-              </span>
-            </Line>
-          </div>
+          <AddressCard />
         </Part>
 
         <Part label="Who lives there">

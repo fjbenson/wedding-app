@@ -46,7 +46,7 @@ export default async function NewEntryPage({
   }
   if (!name) redirect(back);
 
-  const self = `/timeline/new?with=${encodeURIComponent(params.with ?? "")}&back=${encodeURIComponent(back)}`;
+  const self = `/history/new?with=${encodeURIComponent(params.with ?? "")}&back=${encodeURIComponent(back)}`;
   return (
     <FormPage backHref={back} backLabel={name} title="Add to history" error={params.error}>
       <EntryForm with={params.with ?? ""} back={back} self={self} name={name} area={area} weddingDate={wedding.wedding_date} />

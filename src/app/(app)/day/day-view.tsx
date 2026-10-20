@@ -213,7 +213,6 @@ function RunSheet({
   const items = needle
     ? inArea.filter((i) => [i.title, i.location, i.who, i.notes, i.music].some((t) => t?.toLowerCase().includes(needle)))
     : inArea;
-  const partCount = (until: string, after: string) => inArea.filter((i) => i.at_time.slice(0, 5) >= after && i.at_time.slice(0, 5) < until).length;
   // A group's own schedule (canvas 3 "Food & drink · Round 2", C, owner's pick 19 Oct 2026):
   // their moments in full, the day's others faded so they know where they fit.
   const theGroup = group ? groups.find((g) => g.id === group) : undefined;
@@ -246,34 +245,17 @@ function RunSheet({
       <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
         The Day
       </PageTitle>
-      {/* The tab's numbers, search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
+      {/* Search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
       <div className="print:hidden">
-      {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
-          numbers beside the day's pieces, then the order of the day long and
-          thin like paper ("it should stay long and thin"). */}
-      <div className="lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4">
-      <NumbersCard
-        big={{
-          label: "Moments",
-          value: inArea.length,
-          sub: inArea.length > 0 ? `${formatClock(inArea[0].at_time)}–${formatClock(inArea[inArea.length - 1].at_time)}` : "Hour by hour",
-        }}
-        rows={[
-          { value: partCount("12:00", "00:00"), label: "Morning" },
-          { value: partCount("18:00", "12:00"), label: "Afternoon" },
-          { value: partCount("24:00", "18:00"), label: "Evening" },
-        ]}
-      />
-      {/* The day's pieces as three tiles under the numbers (canvas 3 "The Day · Round 2", option 1, owner's pick). */}
+      {/* No numbers card here (owner, 20 Oct 2026: the run sheet doesn't need KPIs). What's left is the doorway to the day's pieces (canvas 3 "The Day · Round 2", option 1). */}
       <PieceTiles
-        className="mt-6"
+        className="mt-6 lg:max-w-xl"
         facts={{
           seating: `${pieces.seated} of ${pieces.coming} seated`,
           travel: pieces.noLift === 0 ? "Everyone has a lift" : `${pieces.noLift} without a lift`,
           decor: pieces.decor.all === 0 ? "Nothing yet" : pieces.decor.toGet === 0 ? "All got" : `${pieces.decor.toGet} still to get`,
         }}
       />
-      </div>
       <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
         initial={query}

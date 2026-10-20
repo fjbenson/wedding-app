@@ -1183,6 +1183,11 @@ Next.js scaffold. Built so far, against the plan's tabs:
   `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
   the meal fields (a guest's meal would go to Anthropic: rule one), and the
   Food & drink full-screen add / drink quantity guide (not done yet).
+- **The Day's run sheet has no numbers card** (20 Oct 2026, owner: it doesn't
+  need KPIs like the guest list). The top is now the three piece tiles
+  (Seating · Travel · Decor), the search and Filter, then the order of the
+  day; the tiles stay because they're the way into those pieces. Seating and
+  Travel keep their own numbers cards.
 - **Timeline folded on cards** (20 Oct 2026, owner: it took most of the first
   screen of a supplier's card). On the supplier, guest and household cards the
   timeline is **one folded line** — "Timeline · Next: Venue balance · 12 May"

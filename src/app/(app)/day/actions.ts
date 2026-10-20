@@ -19,6 +19,7 @@ import {
   unseatGuest,
   updateTable,
 } from "@/lib/db/day";
+import { setMomentGroups } from "@/lib/db/moment-groups";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
 import { returnTo, stayAfterSave } from "@/lib/return-to";
@@ -57,7 +58,7 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
   if (!at || !title) redirect(`${back}?error=${encodeURIComponent("Please give it a time and say what happens.")}`);
 
   try {
-    await saveRunSheetItem(wid, id, {
+    const savedId = await saveRunSheetItem(wid, id, {
       at_time: at,
       title,
       location: text(formData, "location"),
@@ -70,6 +71,9 @@ export async function saveRunSheetItemAction(id: string | null, formData: FormDa
       music_url: musicUrl(text(formData, "music_url")),
       music_kind: text(formData, "music_kind") === "playlist" ? "playlist" : text(formData, "music") ? "song" : null,
     });
+    // A new moment can be put on groups' own schedules as it's added (Whose schedule); editing does it on the card.
+    const groupIds = formData.getAll("group_id").map(String).filter((g) => /^[0-9a-f-]{36}$/i.test(g));
+    if (!id && groupIds.length > 0) await setMomentGroups(wid, savedId, groupIds);
   } catch (error) {
     failed(back, "That didn't save.", error);
   }

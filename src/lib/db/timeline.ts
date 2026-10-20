@@ -38,6 +38,24 @@ export async function createEntry(weddingId: string, fields: Partial<EntryFields
   return data.id;
 }
 
+/** What's been emailed or texted to one group, newest first (empty before 0032). */
+export async function listGroupMessages(weddingId: string, groupId: string): Promise<TimelineEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("timeline_entries")
+    .select("*")
+    .eq("wedding_id", weddingId)
+    .eq("group_id", groupId)
+    .in("kind", ["email", "message"])
+    .order("happened_on", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) {
+    if (missing(error)) return [];
+    throw error;
+  }
+  return (data ?? []) as TimelineEntry[];
+}
+
 export async function updateEntry(id: string, fields: Partial<EntryFields>): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("timeline_entries").update(fields).eq("id", id);

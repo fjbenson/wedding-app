@@ -8,6 +8,7 @@ import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import type { Money } from "@/lib/budget";
 import { formatMoney } from "@/lib/money";
+import type { mealCost } from "@/lib/meals";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment, SupplierStatus } from "@/types/db";
 import PaymentRow from "@/components/payment-row";
@@ -27,6 +28,8 @@ export interface AreaDetail {
   balances: { supplierId: string; name: string; balance: number }[];
   /** Food & drink: the cost per guest expected (owner, 17 Oct 2026); `budgeted` while nothing's agreed yet. */
   perHead?: { amount: number; guests: number; budgeted: boolean } | null;
+  /** Food & drink: the caterer's prices a head times who's coming (Area page's "What it comes to"). */
+  foodCost?: ReturnType<typeof mealCost>;
 }
 
 /** "£68 a head" — whole pounds, it's a rough guide. */
@@ -170,6 +173,32 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
               </span>
               <span className="type-figure text-lg !font-light text-ink">{aHead(area.detail.perHead)}</span>
             </p>
+          )}
+
+          {area.detail.foodCost && (
+            <section className="mt-7">
+              <h3 className="section-label">What it comes to</h3>
+              <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+                {area.detail.foodCost.lines.map((l) => (
+                  <li key={l.key} className="flex items-baseline justify-between gap-3 border-b border-ink/[0.12] py-3 last:border-b-0">
+                    <span className="min-w-0">
+                      <span className="type-item block truncate">{l.label}</span>
+                      <span className="type-meta mt-1 block">
+                        {l.n} × {formatMoney(l.each)}
+                      </span>
+                    </span>
+                    <span className="type-figure shrink-0 text-lg !font-light">{formatMoney(l.total)}</span>
+                  </li>
+                ))}
+                <li className="flex items-baseline justify-between gap-3 py-3">
+                  <span className="type-item">Worked out</span>
+                  <span className="type-figure text-xl !font-light">{formatMoney(area.detail.foodCost.total)}</span>
+                </li>
+              </ul>
+              <Link href={`/area/${encodeURIComponent(area.key)}`} className="mt-2 inline-block py-1 text-sm text-champagne-600 hover:text-ink">
+                Change the prices ›
+              </Link>
+            </section>
           )}
 
           {live.length > 0 && (

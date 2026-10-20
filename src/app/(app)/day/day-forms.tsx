@@ -26,6 +26,7 @@ export function RunSheetForm({
   people,
   defaultArea,
   fromArea,
+  groups = [],
 }: {
   action: Action;
   item?: RunSheetItem;
@@ -34,8 +35,11 @@ export function RunSheetForm({
   people: DecorPerson[];
   defaultArea?: string;
   fromArea?: string;
+  /** Groups of guests, to put a new moment on their own schedule (an existing one does it on its card). */
+  groups?: { id: string; name: string }[];
 }) {
   const [title, setTitle] = useState(item?.title ?? "");
+  const [forIds, setForIds] = useState<string[]>([]);
   const [inCharge, setInCharge] = useState(item?.contact_id ?? (item?.who ? "typed" : ""));
   return (
     <form action={action}>
@@ -117,6 +121,35 @@ export function RunSheetForm({
           </div>
         </section>
       </Folded>
+
+      {/* Their own schedule: the bridesmaids' morning, the groomsmen's. Empty means it's everyone's. */}
+      {!item && groups.length > 0 && (
+        <Folded label="Put it on a group's schedule">
+          <section className="mt-7">
+            <h2 className="section-label font-body">Who it&apos;s for</h2>
+            <p className="mt-1.5 text-sm text-stone">Pick a group and it shows on their own schedule. Leave it empty and it&apos;s everyone&apos;s.</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {groups.map((g) => {
+                const on = forIds.includes(g.id);
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setForIds(on ? forIds.filter((x) => x !== g.id) : [...forIds, g.id])}
+                    className={`h-9 rounded-full border px-3.5 text-[13px] ${on ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+                  >
+                    {g.name}
+                  </button>
+                );
+              })}
+            </div>
+            {forIds.map((id) => (
+              <input key={id} type="hidden" name="group_id" value={id} />
+            ))}
+          </section>
+        </Folded>
+      )}
 
       <Folded label="Add notes" open={!!item?.notes}>
         <section className="mt-7">

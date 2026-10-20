@@ -43,20 +43,21 @@ export async function getRunSheetItem(id: string): Promise<RunSheetItem | null> 
   return data;
 }
 
-export async function saveRunSheetItem(weddingId: string, id: string | null, fields: RunSheetFields): Promise<void> {
+export async function saveRunSheetItem(weddingId: string, id: string | null, fields: RunSheetFields): Promise<string> {
   const supabase = await createClient();
   const save = (f: Partial<RunSheetFields>) =>
     id
-      ? supabase.from("run_sheet_items").update(f).eq("id", id)
-      : supabase.from("run_sheet_items").insert({ wedding_id: weddingId, ...f });
-  let { error } = await save(fields);
+      ? supabase.from("run_sheet_items").update(f).eq("id", id).select("id").single()
+      : supabase.from("run_sheet_items").insert({ wedding_id: weddingId, ...f }).select("id").single();
+  let { data, error } = await save(fields);
   // Before 0017_run_sheet_area.sql there's no area column: save without it.
   if (error && (error.code === "PGRST204" || error.code === "42703") && /area_key/.test(error.message ?? "")) {
     const { area_key: _dropped, ...rest } = fields;
     void _dropped;
-    ({ error } = await save(rest));
+    ({ data, error } = await save(rest));
   }
   if (error) throw error;
+  return data!.id as string;
 }
 
 export async function deleteRunSheetItem(id: string): Promise<void> {

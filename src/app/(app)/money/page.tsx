@@ -9,7 +9,8 @@ import { listGuests } from "@/lib/db/contacts";
 import { listContributions } from "@/lib/db/contributions";
 import { listInvolved } from "@/lib/db/involved";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
-import { expectedGuests, guestFactsKind } from "@/lib/area-guests";
+import { areaGuestFacts, expectedGuests, guestFactsKind } from "@/lib/area-guests";
+import { mealCost, pricesOf } from "@/lib/meals";
 import type { AreaDetail } from "./area-cards";
 import MoneyView from "./money-view";
 
@@ -93,7 +94,11 @@ export default async function MoneyPage({
           // Food & drink: what it comes to a head (agreed, or the budget until something's agreed).
           const spend = a.committed > 0 ? a.committed : (a.budget ?? 0);
           const perHead = guestFactsKind(a.key) === "food" && expected > 0 && spend > 0 ? { amount: spend / expected, guests: expected, budgeted: a.committed === 0 } : null;
-          return { ...a, detail: { ...detailFor(a.key), perHead } };
+          // What the caterer's prices come to for who's coming (only counts and prices; no names).
+          const row = areaRows?.find((r) => r.key === a.key);
+          const facts = guestFactsKind(a.key) === "food" && row ? areaGuestFacts("food", { guests: guests ?? [], households: [], events: events ?? [], rsvps: rsvps ?? [] }) : null;
+          const foodCost = facts && facts.kind === "food" ? mealCost(facts.counts, pricesOf(row!)) : null;
+          return { ...a, detail: { ...detailFor(a.key), perHead, foodCost } };
         })}
       query={q?.trim() || ""}
       towards={{

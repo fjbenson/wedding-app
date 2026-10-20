@@ -4,7 +4,18 @@ import { useEffect, useState, useTransition } from "react";
 import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Users, X } from "lucide-react";
 import { draftGroupMessageAction } from "../assistant/actions";
 import type { Contact, Rsvp } from "@/types/db";
-import { addToGroupAction, createGroupAction, deleteGroupAction, removeFromGroupAction, renameGroupAction } from "./group-actions";
+import {
+  addToGroupAction,
+  createGroupAction,
+  deleteGroupAction,
+  groupMessagesAction,
+  logGroupMessageAction,
+  removeFromGroupAction,
+  removeGroupMessageAction,
+  renameGroupAction,
+  type GroupMessage,
+} from "./group-actions";
+import { formatDayMonth } from "@/lib/dates";
 import CardSheet from "@/components/card-sheet";
 import { RoundAction, RoundActions } from "@/components/round-actions";
 import { AnswerIcon } from "./guest-browser";
@@ -188,6 +199,19 @@ export function GroupSheet({
 }) {
   const [sheet, setSheet] = useState<"email" | "text" | null>(null);
   const [editing, setEditing] = useState(false);
+  // What's been sent to the group, once the couple said "it went" (subject, day, how; never the message).
+  const [sent, setSent] = useState<GroupMessage[]>([]);
+  const loadSent = async () => {
+    try {
+      setSent((await groupMessagesAction(group.id)).messages);
+    } catch {
+      // The list is a nicety; the sheet works without it.
+    }
+  };
+  useEffect(() => {
+    void loadSent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group.id]);
   const coming = people.filter((p) => answerOf(p) === "attending").length;
   const invited = people.filter((p) => answerOf(p) === "pending").length;
   const counts = [`${coming} coming`, invited > 0 && `${invited} yet to respond`].filter(Boolean).join(" · ");
@@ -248,8 +272,43 @@ export function GroupSheet({
         )}
       </section>
 
+      {sent.length > 0 && (
+        <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+          <h2 className="label">Sent to them</h2>
+          <ul className="mt-1">
+            {sent.map((m) => (
+              <li key={m.id} className="flex min-h-[52px] items-center gap-3 border-b border-linen text-[15px] text-ink last:border-b-0">
+                <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+                  {m.kind === "email" ? <Mail className="h-4 w-4" strokeWidth={1.7} /> : <MessageSquare className="h-4 w-4" strokeWidth={1.7} />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{m.summary ?? (m.kind === "email" ? "Email" : "Text")}</span>
+                  <span className="block text-xs text-stone">{formatDayMonth(m.happened_on)}</span>
+                </span>
+                <button
+                  type="button"
+                  aria-label="Take this off the list"
+                  onClick={async () => {
+                    setSent((all) => all.filter((x) => x.id !== m.id));
+                    try {
+                      await removeGroupMessageAction(m.id);
+                    } catch {
+                      void loadSent();
+                    }
+                  }}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
+                >
+                  <X className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {sheet && (
         <MessageSheet
+          onLogged={loadSent}
           kind={sheet}
           group={group}
           people={people}
@@ -332,6 +391,7 @@ function MessageSheet({
   weddingName,
   onClose,
   onOpenGuest,
+  onLogged,
 }: {
   kind: "email" | "text";
   group: GroupSummary;
@@ -339,6 +399,8 @@ function MessageSheet({
   weddingName: string;
   onClose: () => void;
   onOpenGuest: (id: string) => void;
+  /** Called once the couple say it went, so the group's card lists it. */
+  onLogged: () => void;
 }) {
   const email = kind === "email";
   const valueOf = (p: Contact) => (email ? p.email : p.phone?.replace(/\s+/g, ""))?.trim() || null;
@@ -347,6 +409,10 @@ function MessageSheet({
   const [subject, setSubject] = useState(`${weddingName}${/s$/i.test(weddingName) ? "'" : "'s"} wedding · ${group.name}`);
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+  // "Did it go?": after the phone's own app opens, the couple say so and it's noted (the subject, never the message).
+  const [opened, setOpened] = useState(false);
+  const [noted, setNoted] = useState<"yes" | "no" | null>(null);
+  const [noteError, setNoteError] = useState<string | null>(null);
   // Your assistant writing it: what it's about, then a draft in the message box to change.
   const [asking, setAsking] = useState(false);
   const [about, setAbout] = useState("");
@@ -503,10 +569,46 @@ function MessageSheet({
 
         {reachable.length > 0 ? (
           <>
-            <a href={href} className="mt-5 flex h-[52px] items-center justify-center gap-2 rounded-full bg-ink text-base text-ivory">
+            <a href={href} onClick={() => { setOpened(true); if (noted === "no") setNoted(null); }} className="mt-5 flex h-[52px] items-center justify-center gap-2 rounded-full bg-ink text-base text-ivory">
               {email ? <Mail className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden /> : <MessageSquare className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden />}
               {email ? "Open in my email" : "Open in Messages"}
             </a>
+            {opened && noted === null && (
+              <div className="mt-4 rounded-[14px] border border-champagne-400/70 bg-cream/60 p-3">
+                <p className="text-[14px] text-ink">Did it go?</p>
+                {noteError && (
+                  <p role="alert" className="mt-1.5 text-[13px] text-ink">
+                    {noteError}
+                  </p>
+                )}
+                <div className="mt-2.5 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setNoteError(null);
+                      try {
+                        const r = await logGroupMessageAction(group.id, kind, subject, reachable.length);
+                        if (r.error) setNoteError(r.error);
+                        else {
+                          setNoted("yes");
+                          onLogged();
+                        }
+                      } catch {
+                        setNoteError("That didn't work — the app may have just been updated. Pull down to refresh, then try again.");
+                      }
+                    }}
+                    className="h-10 flex-1 rounded-full bg-ink px-3.5 text-[13px] text-ivory"
+                  >
+                    Yes, note it
+                  </button>
+                  <button type="button" onClick={() => setNoted("no")} className="h-10 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink">
+                    Not yet
+                  </button>
+                </div>
+                <p className="mt-2 text-xs leading-snug text-stone">Only the {email ? "subject, " : ""}day and how many people are kept; never the message.</p>
+              </div>
+            )}
+            {noted === "yes" && <p className="mt-4 text-center text-[13px] text-champagne-600">Noted on {group.name}&apos;s card.</p>}
             <p className="mt-2.5 text-center text-xs leading-relaxed text-stone">
               {email
                 ? "Everyone goes in Bcc, so no one sees the others' addresses. It sends from your own email; replies come to you."

@@ -1166,6 +1166,23 @@ Next.js scaffold. Built so far, against the plan's tabs:
   sound check list" makes a note of tick-boxes filed under Music and sits
   there until a note starting "Sound check" exists.
 
+- **Small follow-ups** (20 Oct 2026; Claude, under the delegation, no database
+  change). **Money's Food & drink card** now has **What it comes to** (the
+  caterer's prices × who's coming, `foodCost` in `AreaDetail`, from
+  `areaGuestFacts` + `mealCost`; "Change the prices ›" opens the area page).
+  **Guest list Filter** gets a **Meal and drinks** row — Child's meal · No
+  meal · Soft drinks only (`childmeal`, `nomeal`, `soft` in `GuestFilter`;
+  combine with the others like any filter). **Add a moment** has a folded
+  "Put it on a group's schedule" (new moments only; `group_id` fields, saved
+  through `setMomentGroups`; `saveRunSheetItem` now returns the id). **"Did
+  it go?" after a group email or text**: after "Open in my email / Messages"
+  the sheet asks; "Yes, note it" writes a `timeline_entries` row (kind email /
+  message, `how`, the group, the day, "subject · 8 people" — never the message
+  or who was in it that day), and the group card lists them under **Sent to
+  them** (✕ takes one off; `logGroupMessageAction`, `groupMessagesAction`,
+  `removeGroupMessageAction`). **Left for the owner:** the assistant knowing
+  the meal fields (a guest's meal would go to Anthropic: rule one), and the
+  Food & drink full-screen add / drink quantity guide (not done yet).
 - **The timeline** (19 Oct 2026; canvas 3 "History · Round 2" and
   "Timeline · Round 3", owner: "bloody LOVE IT"; `0032_timeline.sql`, run the
   same day with the owner's OK). It grew out of "comms" (owner: everything

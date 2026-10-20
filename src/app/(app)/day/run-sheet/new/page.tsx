@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { areaOptions } from "@/lib/areas";
 import { listAreas } from "@/lib/db/areas";
+import { listGroups } from "@/lib/db/groups";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveRunSheetItemAction } from "../../actions";
 import { RunSheetForm } from "../../day-forms";
@@ -29,7 +30,7 @@ export default async function NewRunSheetItemPage({
       error={error}
       detail={detail}
     >
-      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} people={await decorPeople(wedding.id)} defaultArea={picked} fromArea={fromArea} />
+      <RunSheetForm action={saveRunSheetItemAction.bind(null, null)} areas={areas} people={await decorPeople(wedding.id)} defaultArea={picked} fromArea={fromArea} groups={(await listGroups(wedding.id)).map((g) => ({ id: g.id, name: g.name }))} />
     </FormPage>
   );
 }

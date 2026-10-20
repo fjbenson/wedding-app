@@ -16,13 +16,14 @@ import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
+import { mealKindOf, noAlcoholOf } from "@/lib/meals";
 import { CopyButton, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
 import SendSheet from "@/components/send-sheet";
 import { howsLine, isSendingKind, SENDINGS, sendUnits, sentMap, unitKeyOf, type SendHow, type SendingKind, type SentRecord } from "@/lib/stationery";
 
 /** The filters in the Filter menu. More than one can be on: they narrow together. */
-export type GuestFilter = "party" | "dietary" | "children" | "noaddress";
+export type GuestFilter = "party" | "dietary" | "children" | "noaddress" | "childmeal" | "nomeal" | "soft";
 export type GuestView = "az" | "households" | "diet" | SendingKind;
 /** How the list is ordered (the Sort button). */
 type SortBy = "first" | "last" | "household" | "group" | "type" | "diet" | "meal" | "role" | "rsvp" | "age" | "table" | "staying" | SendingKind;
@@ -61,6 +62,9 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
   { key: "party", label: "Bridal party" },
   { key: "dietary", label: "Dietary needs" },
   { key: "children", label: "Children" },
+  { key: "childmeal", label: "Child's meal" },
+  { key: "nomeal", label: "No meal" },
+  { key: "soft", label: "Soft drinks only" },
   { key: "noaddress", label: "No address yet" },
 ];
 
@@ -293,6 +297,10 @@ export default function GuestBrowser({
     party: (g) => rolesOf(g).length > 0,
     dietary: (g) => Boolean(dietOf(g)),
     children: (g) => g.is_child,
+    childmeal: (g) => mealKindOf(g) === "child",
+    nomeal: (g) => mealKindOf(g) === "none",
+    // A baby with no meal isn't on a drinks package either way (as the caterer's counts have it).
+    soft: (g) => mealKindOf(g) !== "none" && noAlcoholOf(g),
     noaddress: (g) => !g.household_id || !data.household.get(g.household_id)?.hasAddress,
   };
   const counted = FILTERS.map((f) => ({ ...f, count: guests.filter(tests[f.key]).length }));
@@ -1211,6 +1219,17 @@ function FilterMenu({
       key: "age",
       title: "Age",
       options: [{ id: "children", label: "Children", count: filterCount("children"), ticked: on.includes("children"), flip: () => onToggle("children") }],
+    },
+    {
+      key: "meal-drinks",
+      title: "Meal and drinks",
+      options: (["childmeal", "nomeal", "soft"] as const).map((k) => ({
+        id: k,
+        label: FILTERS.find((f) => f.key === k)!.label,
+        count: filterCount(k),
+        ticked: on.includes(k),
+        flip: () => onToggle(k),
+      })),
     },
     {
       key: "address",

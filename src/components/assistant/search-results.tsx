@@ -87,7 +87,7 @@ export default function SearchResults({ query, onGo }: { query: string; onGo: ()
       {results === null ? (
         <p className="px-1 text-sm text-stone">Looking…</p>
       ) : results.length === 0 ? (
-        <p className="px-1 text-sm text-stone">Nothing in your wedding matches &ldquo;{searched || q}&rdquo;. Press send to ask your assistant.</p>
+        <p className="px-1 text-sm text-stone">Nothing in your wedding matches &ldquo;{searched || q}&rdquo;. Press send to ask Juno.</p>
       ) : (
         <>
           {[...groups.entries()].map(([group, rows]) => (
@@ -113,7 +113,7 @@ export default function SearchResults({ query, onGo }: { query: string; onGo: ()
               </ul>
             </div>
           ))}
-          <p className="mt-4 px-1 text-center text-[13px] text-stone">Not it? Press send to ask your assistant.</p>
+          <p className="mt-4 px-1 text-center text-[13px] text-stone">Not it? Press send to ask Juno.</p>
         </>
       )}
     </section>

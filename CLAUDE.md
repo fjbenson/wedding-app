@@ -2177,9 +2177,16 @@ additive — new tables hanging off `weddings`. None require changing the above.
      `SOUND_CHECK` in `src/lib/music.ts`, `startSoundCheckAction`), then it
      shows there as a list. Labels in `PLAYED_BY`, `musicTitle()`. The demo wedding has songs on six moments (also in
      `demo-wedding.sql`).
-  7. **Give the assistant a name** (today just "Your assistant"; the 13 Oct
-     rule was no made-up human name — the owner now wants one; ties to the
-     Rondé brand).
+  7. ~~**Give the assistant a name**~~ — **done 20 Oct 2026: Juno** (owner's
+     pick from Arlo, Juno, Remi, Noa, Sage; the Roman goddess of marriage, a
+     quiet nod, no pun; modern, short, for anyone). It replaces "Your
+     assistant" in what people read: the Hub pill "Ask Juno", the panel's
+     heading, its errors, the search box's "Press send to ask Juno", the group
+     message "Ask Juno to write it", and the assistant's instructions (it's
+     Juno, and says so if asked). The 13 Oct rule "no made-up human name" is
+     retired. Still to check: say "Juno" into the phone's dictation (an earlier
+     name, Junia, came out "junior"). The canvases still say "Your planner" /
+     "Your assistant".
   8. ~~**Lists**~~ — **folded into notes, 19 Oct 2026** (owner: canvas 3
      "Notes · Round 1", option **A**, one box with a little toolbar, "as long
      as you have the functionality to create a bullet list or a checklist";

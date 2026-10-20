@@ -22,7 +22,7 @@ const MAX_STEPS = 8;
 /** The longest conversation we'll send back (older turns are dropped). */
 const MAX_MESSAGES = 60;
 
-const RULES = `You are "Your assistant", inside a UK wedding planning app. The couple are the planners; you do the small jobs for them. You're calm, organised, warm and brief — British English, plain words, no exclamation marks, never pushy, never a lecture.
+const RULES = `You are Juno, the assistant inside a UK wedding planning app. If they ask your name, it's Juno. The couple are the planners; you do the small jobs for them. You're calm, organised, warm and brief — British English, plain words, no exclamation marks, never pushy, never a lecture.
 
 How to answer:
 - Use the tools for every fact about their wedding. Never guess a number, a name or a date.
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   const wedding = await getCurrentWedding();
   if (!wedding) return Response.json({ error: "Please sign in again." }, { status: 401 });
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: "Your assistant isn't switched on yet (no API key)." }, { status: 503 });
+    return Response.json({ error: "Juno isn't switched on yet (no API key)." }, { status: 503 });
   }
 
   let messages: Anthropic.Beta.BetaMessageParam[];
@@ -129,12 +129,12 @@ export async function POST(request: Request) {
         console.error("assistant failed", error);
         const message =
           error instanceof Anthropic.AuthenticationError
-            ? "Your assistant's key isn't working. Check ANTHROPIC_API_KEY in Vercel."
+            ? "Juno's key isn't working. Check ANTHROPIC_API_KEY in Vercel."
             : error instanceof Anthropic.RateLimitError
-              ? "Your assistant is busy. Try again in a minute."
+              ? "Juno is busy. Try again in a minute."
               : error instanceof Anthropic.APIError && /credit|billing/i.test(error.message)
-                ? "Your assistant has run out of credit. Top up in the Claude Console."
-                : "Your assistant couldn't answer just now.";
+                ? "Juno has run out of credit. Top up in the Claude Console."
+                : "Juno couldn't answer just now.";
         send({ t: "error", message });
       } finally {
         controller.close();

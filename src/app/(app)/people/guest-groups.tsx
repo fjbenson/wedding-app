@@ -540,7 +540,7 @@ function MessageSheet({
               </p>
             )}
             <div className="mt-2.5 flex items-center justify-between gap-2">
-              <span className="text-xs leading-snug text-stone">Only this, the group&apos;s name and your names go to the assistant.</span>
+              <span className="text-xs leading-snug text-stone">Only this, the group&apos;s name and your names go to Juno.</span>
               <span className="flex shrink-0 gap-2">
                 <button type="button" onClick={() => setAsking(false)} className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink">
                   Cancel
@@ -563,7 +563,7 @@ function MessageSheet({
             className="mt-2 inline-flex h-10 items-center gap-1.5 text-[13px] italic text-champagne-600 hover:text-ink"
           >
             <PenLine className="h-4 w-4" strokeWidth={1.4} aria-hidden />
-            Ask your assistant to write it
+            Ask Juno to write it
           </button>
         )}
 

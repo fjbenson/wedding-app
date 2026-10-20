@@ -19,7 +19,7 @@ export async function draftGroupMessage(input: {
 }): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
   const wedding = await getCurrentWedding();
   if (!wedding) return { ok: false, error: "Please sign in again." };
-  if (!process.env.ANTHROPIC_API_KEY) return { ok: false, error: "Your assistant isn't switched on yet." };
+  if (!process.env.ANTHROPIC_API_KEY) return { ok: false, error: "Juno isn't switched on yet." };
   const about = input.about.trim().slice(0, 1000);
   if (!about) return { ok: false, error: "Say in a few words what it's about." };
 
@@ -52,7 +52,7 @@ export async function draftGroupMessage(input: {
     return text ? { ok: true, text } : { ok: false, error: "That didn't come out. Try again." };
   } catch (error) {
     console.error("draft failed", error);
-    if (error instanceof Anthropic.RateLimitError) return { ok: false, error: "Your assistant is busy. Try again in a minute." };
+    if (error instanceof Anthropic.RateLimitError) return { ok: false, error: "Juno is busy. Try again in a minute." };
     return { ok: false, error: "That didn't work just now. Try again." };
   }
 }

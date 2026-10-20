@@ -53,15 +53,15 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
             className="glass-card flex h-12 items-center gap-2.5 rounded-full pl-[9px] pr-[22px] text-ink transition hover:border-champagne-400"
           >
             <Mark />
-            <span className="font-display text-[18px] italic">Ask your assistant</span>
+            <span className="font-display text-[18px] italic">Ask Juno</span>
           </button>
         </div>
       ) : variant === "bar" ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Ask your assistant"
-          title="Ask your assistant"
+          aria-label="Ask Juno"
+          title="Ask Juno"
           className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-champagne-600 transition hover:border-champagne-400"
         >
           <PenLine className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
@@ -70,7 +70,7 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Your assistant"
+          aria-label="Juno"
           className="glass fixed bottom-[calc(max(12px,env(safe-area-inset-bottom))+60px)] right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink print:hidden md:bottom-[84px] lg:hidden"
         >
           <PenLine className="h-5 w-5" strokeWidth={1.8} aria-hidden />
@@ -171,7 +171,7 @@ function Panel({
       });
       if (!response.ok || !response.body) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        fail(body?.error ?? "Your assistant couldn't answer just now.", said);
+        fail(body?.error ?? "Juno couldn't answer just now.", said);
         return;
       }
       const reader = response.body.getReader();
@@ -199,7 +199,7 @@ function Panel({
       // A note saved, or anything the screens behind show, is fresh when closed.
       router.refresh();
     } catch {
-      fail("Your assistant couldn't be reached. Check your signal and try again.", said);
+      fail("Juno couldn't be reached. Check your signal and try again.", said);
     } finally {
       setBusy(false);
     }
@@ -350,7 +350,7 @@ function Panel({
       style={view ? { height: view.height } : undefined}
       role="dialog"
       aria-modal="true"
-      aria-label="Your assistant"
+      aria-label="Juno"
     >
       <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 hidden h-full w-full cursor-default bg-ink/30 lg:block" />
       {/* Full screen on phones (canvas 2 "Your assistant · Round 3", A with B's
@@ -369,7 +369,7 @@ function Panel({
                   <br />
                   for you?
                 </h2>
-                <p className="type-meta mt-3">Your assistant{subtitle ? ` · ${subtitle.split(" · ")[0]}` : ""}</p>
+                <p className="type-meta mt-3">Juno{subtitle ? ` · ${subtitle.split(" · ")[0]}` : ""}</p>
               </div>
               <div className="mt-7">{composer(true)}</div>
               {/* Typing searches the whole wedding at once (owner, 19 Oct 2026); send asks the assistant. */}
@@ -399,7 +399,7 @@ function Panel({
           <>
             <div className="flex shrink-0 items-center gap-3 px-5 pb-2 pt-[max(1rem,env(safe-area-inset-top))] lg:pt-8">
               <Mark />
-              <span className="min-w-0 flex-1 font-display text-[20px] font-light text-ink">Your assistant</span>
+              <span className="min-w-0 flex-1 font-display text-[20px] font-light text-ink">Juno</span>
               <CloseButton onClose={onClose} />
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">

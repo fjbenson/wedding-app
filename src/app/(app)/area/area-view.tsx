@@ -808,7 +808,7 @@ export default function AreaView({
     {
       name: STAGES[0],
       id: "ideas",
-      line: ideaCount > 0 ? plural(ideaCount, "idea") : area.details ? "Key facts" : "Not yet",
+      line: ideaCount > 0 ? plural(ideaCount, "idea") : area.details ? "Key facts" : "None yet",
       content: (
         <>
           {photos.length > 0 && (
@@ -865,7 +865,7 @@ export default function AreaView({
     {
       name: STAGES[1],
       id: "quotes",
-      line: area.diy ? "Doing it ourselves" : withQuote.length > 0 ? plural(withQuote.length, "quote") : inTouch.length > 0 ? `${inTouch.length} in touch` : "Not yet",
+      line: area.diy ? "Doing it ourselves" : withQuote.length > 0 ? plural(withQuote.length, "quote") : inTouch.length > 0 ? `${inTouch.length} in touch` : "None yet",
       content: area.diy ? (
         <div className="glass-card rounded-[22px] px-4">
           <Empty>You&apos;re doing this yourselves.</Empty>
@@ -895,7 +895,7 @@ export default function AreaView({
     {
       name: STAGES[2],
       id: "booked",
-      line: booked.length > 0 ? booked.map(supplierName).join(", ") : area.diy ? "Doing it ourselves" : "Not yet",
+      line: booked.length > 0 ? `${booked.length} booked` : area.diy ? "Doing it ourselves" : "None yet",
       content:
         booked.length > 0 ? (
           <>
@@ -937,7 +937,7 @@ export default function AreaView({
     {
       name: STAGES[3],
       id: "paid",
-      line: money.committed <= 0 ? "Not yet" : money.paid >= money.committed ? "All paid" : `${formatMoney(money.committed - money.paid)} to go`,
+      line: money.committed <= 0 ? "None yet" : money.paid >= money.committed ? "All paid" : `${formatMoney(money.committed - money.paid)} to go`,
       content: (
         <>
         {unpaid.length + unscheduled.length > 0 ? (
@@ -1074,7 +1074,7 @@ export default function AreaView({
                   <span aria-hidden className={`absolute bottom-0 left-[13px] top-7 w-0.5 ${done ? "bg-champagne-600" : "bg-linen"}`} />
                 )}
                 <details name="area-stages" open={i === openStage} id={st.id} className="group scroll-mt-6 pb-5">
-                  <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-7 cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
                     <span
                       aria-hidden
                       className={`absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full text-[13px] ${
@@ -1087,13 +1087,14 @@ export default function AreaView({
                     >
                       {done ? <Check className="h-3.5 w-3.5" strokeWidth={2.4} /> : now ? i + 1 : null}
                     </span>
-                    <span className={`label ${done ? "!text-champagne-600" : now ? "!text-ink" : "!text-stone"}`}>
+                    <span className={`label w-[7.75rem] shrink-0 ${done ? "!text-champagne-600" : now ? "!text-ink" : "!text-stone"}`}>
                       {st.name}
                       {now && <span className="normal-case tracking-normal"> · now</span>}
                       {done && <span className="sr-only"> (done)</span>}
                     </span>
-                    <span className="flex min-w-0 items-center gap-1 text-[13px] text-stone">
-                      <span className="truncate">{st.line}</span>
+                    <span className="flex min-w-0 flex-1 items-center gap-1 text-[13px] text-stone">
+                      {/* Always a count or a state, starting at the same point on every line (owner, 21 Oct 2026). */}
+                      <span className="min-w-0 flex-1 truncate">{st.line}</span>
                       <ChevronRight className="h-3.5 w-3.5 shrink-0 transition group-open:rotate-90" strokeWidth={1.8} aria-hidden />
                     </span>
                   </summary>

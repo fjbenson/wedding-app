@@ -12,6 +12,7 @@ import type { mealCost } from "@/lib/meals";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment, SupplierStatus } from "@/types/db";
 import PaymentRow from "@/components/payment-row";
+import { markPaidAction } from "./actions";
 import { todayISO } from "@/lib/dates";
 import { StageIcon } from "../people/supplier-list";
 import MoneyFigures from "./money-figures";
@@ -116,6 +117,77 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
   );
 }
 
+/**
+ * The one thing to do next in an area (owner, 21 Oct 2026: "always pushing
+ * for the next step"). A link, or — for a payment that's due — a button that
+ * marks it paid. Null once everything's paid.
+ */
+function nextStep(area: AreaCard, today: string): { title: string; line: string; href?: string; payId?: string } | null {
+  const { stage } = standing(area);
+  const key = encodeURIComponent(area.key);
+  if (stage === null) return { title: "Set a budget", line: "Share it out, or type one in", href: "/money/budget" };
+  if (!area.key) return null;
+  const live = area.detail.suppliers.filter((s) => s.status !== "cancelled");
+  if (stage === "Budgeted") {
+    return live.length > 0
+      ? { title: "Add a quote", line: "Who have you asked?", href: `/area/${key}?stage=quotes` }
+      : { title: "Add a quote", line: "Start with who you'd ask", href: `/people/suppliers/new?category=${key}` };
+  }
+  if (stage === "Quoted") {
+    const quoted = live.filter((s) => s.status === "quoted");
+    return quoted.length === 1
+      ? { title: `Book ${quoted[0].name}`, line: "The only quote in", href: `/people/${quoted[0].id}` }
+      : { title: "Choose a quote", line: `${quoted.length} to compare`, href: `/area/${key}?stage=quotes` };
+  }
+  const balance = area.detail.balances[0];
+  const due = area.detail.toPay[0];
+  if (due) {
+    return {
+      title: `Mark ${formatMoney(due.amount)} paid`,
+      line: due.due_date && due.due_date < today ? `${due.description} · overdue` : due.description,
+      payId: due.id,
+    };
+  }
+  if (balance) {
+    return {
+      title: "Add the balance",
+      line: `${balance.name} · ${formatMoney(balance.balance)} to pay`,
+      href: `/money/payments/new?supplier=${balance.supplierId}&amount=${balance.balance}`,
+    };
+  }
+  return null;
+}
+
+function NextStep({ area }: { area: AreaCard }) {
+  const step = nextStep(area, todayISO());
+  if (!step) return null;
+  const body = (
+    <>
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs uppercase tracking-[0.2em] text-champagne-600">Next step</span>
+        <span className="mt-1 block truncate font-display text-[21px] leading-tight text-ink">{step.title}</span>
+        <span className="mt-0.5 block truncate text-[13px] text-stone">{step.line}</span>
+      </span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-ivory">
+        <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+      </span>
+    </>
+  );
+  const cls =
+    "mt-5 flex w-full items-center gap-3 rounded-[22px] bg-gradient-to-br from-champagne-100 to-ivory py-3.5 pl-[18px] pr-3.5 text-left ring-[0.5px] ring-champagne-600/30";
+  return step.payId ? (
+    <form action={markPaidAction.bind(null, step.payId, true)}>
+      <button type="submit" className={cls}>
+        {body}
+      </button>
+    </form>
+  ) : (
+    <Link href={step.href!} className={cls}>
+      {body}
+    </Link>
+  );
+}
+
 function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void }) {
   // Escape closes it, and the page behind doesn't scroll while it's open.
   useEffect(() => {
@@ -182,6 +254,7 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           <div className="mt-3">
             <MoneyFigures money={area} size={36} />
           </div>
+          <NextStep area={area} />
           {area.detail.perHead && (
             <p className="mt-4 flex items-baseline justify-between gap-3 border-t border-linen pt-3 text-sm text-stone">
               <span>

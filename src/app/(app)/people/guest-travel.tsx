@@ -63,7 +63,7 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
         }`}
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-xs text-stone">Staying</span>
+          <span className="block text-xs text-stone">Accommodation</span>
           <span className={`block truncate text-[15px] ${staying ? "text-ink" : "italic"}`}>{staying ?? "Not sure yet · tap to pick"}</span>
         </span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-stone transition ${picking ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
@@ -96,7 +96,7 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
         }`}
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-xs text-stone">Getting there and back</span>
+          <span className="block text-xs text-stone">Transport</span>
           {journeys.length > 0 ? (
             <Link href="/day?tab=travel" className="block text-[15px] text-ink hover:underline">
               {journeys.join(" · ")}

@@ -23,6 +23,11 @@ From the last few chats, not yet confirmed:
   sheet, a moment's Move to / Copy to; the folded timeline on cards.
 - Juno: say "Juno" into the phone's dictation (Junia came out "junior").
 - The assistant no longer jumping when the keyboard opens (fixed blind).
+- 21 Oct 2026, built but not seen rendered: the round Juno button beside the
+  menu bar (also at 320px), the area page's row of five stage circles (names
+  fit at 320px?) and one-icon Next up card, the supplier card's four-step
+  Progress, "In The Day ›" opening the right run sheet, the note panel as a
+  standard card, Settings' Save rising on change.
 
 ## Phone audit, 20 Oct 2026
 
@@ -79,6 +84,11 @@ almost everything else is still the phone layout in a narrow column.
   who's involved.
 
 ## Parked ideas
+
+- **Pick-up and return** as a step for hired or borrowed things (decor, cars,
+  attire): collect before, give back after. Not on every supplier (owner,
+  21 Oct 2026: think about it). Two Juno entries now on the Hub (the pill and
+  the round button); hide the button there if it's too much.
 
 - **The guest portal** (owner, 20 Oct 2026: "one thing we haven't thought
   about yet"). The first time anyone but the couple sees the app. The database

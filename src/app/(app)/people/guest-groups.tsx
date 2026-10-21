@@ -240,7 +240,7 @@ export function GroupSheet({
 
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
         <div className="flex items-baseline justify-between">
-          <h2 className="label">Who’s in it</h2>
+          <h2 className="label">Guests</h2>
           <span className="label">RSVP</span>
         </div>
         {people.length === 0 ? (

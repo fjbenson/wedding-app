@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { House, UsersRound, WheatOff } from "lucide-react";
+import { House, Minus, Plus, UsersRound, WheatOff } from "lucide-react";
 import TableView from "./table-view";
+import FloorPlanPanel, { type DragPayload } from "./floor-plan-panel";
 import type { Contact, Seat, SeatingTable, TableShape } from "@/types/db";
-import { moveTableAction, seatAtAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
+import { addTableAtAction, moveTableAction, seatAtAction, seatOnPlanAction, setTableShapeAction, unseatOnPlanAction } from "./actions";
 import { arrangeSeats, defaultSpot, GRID_X, GRID_Y } from "@/lib/seating";
 
 type Point = { x: number; y: number };
@@ -94,6 +95,53 @@ export default function FloorPlan({
   /** The table under a finger right now — drawn on top of the others. */
   const [lifted, setLifted] = useState<string | null>(null);
   const drag = useRef<{ id: string; dx: number; dy: number; startX: number; startY: number; moved: boolean } | null>(null);
+
+  // Laptop only: the room sits on a canvas you can zoom and pan (owner, 21 Oct
+  // 2026: "like Figma"). Tables stay inside the room — positions are saved as
+  // 0–100% and the database refuses anything outside that.
+  const [wide, setWide] = useState(false);
+  const [view, setView] = useState({ z: 1, x: 0, y: 0 });
+  const viewRef = useRef<HTMLDivElement>(null);
+  const pan = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  /** Zooms about a point (px from the canvas's top left) so what's under it stays put. */
+  const zoomBy = useCallback((factor: number, cx: number, cy: number) => {
+    setView((v) => {
+      const z = Math.min(2.5, Math.max(0.4, v.z * factor));
+      const k = z / v.z;
+      return { z, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
+    });
+  }, []);
+  function zoomFromCentre(factor: number) {
+    const r = viewRef.current?.getBoundingClientRect();
+    if (r) zoomBy(factor, r.width / 2, r.height / 2);
+  }
+  // A trackpad pinch (or ctrl + scroll) zooms; a plain scroll still moves the page.
+  useEffect(() => {
+    const el = viewRef.current;
+    if (!el || !wide) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      zoomBy(Math.exp(-e.deltaY * 0.01), e.clientX - r.left, e.clientY - r.top);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [wide, zoomBy]);
+
+  // The panel: how many chairs a new table gets, and what's being dragged in from it.
+  const [newCapacity, setNewCapacity] = useState(8);
+  const dragItem = useRef<{ payload: DragPayload; startX: number; startY: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
+  const [ghost, setGhost] = useState<{ kind: DragPayload["kind"]; label: string; x: number; y: number } | null>(null);
+  const [hoverTable, setHoverTable] = useState<string | null>(null);
 
   // Take the server's word whenever fresh data arrives.
   useEffect(() => {
@@ -296,20 +344,84 @@ export default function FloorPlan({
     save(() => setTableShapeAction(id, shape));
   }
 
+  const tableUnder = (x: number, y: number) =>
+    (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-table-id]")?.dataset.tableId ?? null;
+
+  function addTableAt(shape: TableShape, x: number, y: number) {
+    save(() => addTableAtAction(shape, newCapacity, x, y));
+  }
+
+  /** A tap on a shape tile (rather than a drag): the table goes on the next free spot. */
+  function placeNext(shape: TableShape) {
+    const spot = defaultSpot(tables.length);
+    addTableAt(shape, keep(spot.x), keepY(spot.y));
+  }
+
+  /**
+   * Makes a panel item draggable onto the plan: a name or group onto a table
+   * sits them there; a shape tile onto the room adds a table where it lands.
+   * A tap (no drag) falls through to `click`.
+   */
+  function dragProps(payload: DragPayload, click: () => void) {
+    return {
+      onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+        if (e.button !== 0) return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragItem.current = { payload, startX: e.clientX, startY: e.clientY, moved: false };
+      },
+      onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
+        const d = dragItem.current;
+        if (!d) return;
+        if (!d.moved && Math.hypot(e.clientX - d.startX, e.clientY - d.startY) < 6) return;
+        d.moved = true;
+        setGhost({ kind: payload.kind, label: payload.label, x: e.clientX, y: e.clientY });
+        setHoverTable(payload.kind === "table" ? null : tableUnder(e.clientX, e.clientY));
+      },
+      onPointerUp: (e: React.PointerEvent<HTMLElement>) => {
+        const d = dragItem.current;
+        dragItem.current = null;
+        setGhost(null);
+        setHoverTable(null);
+        if (!d?.moved) return;
+        justDragged.current = true;
+        setTimeout(() => (justDragged.current = false), 80);
+        if (payload.kind === "table") {
+          const p = pointAt(e.clientX, e.clientY);
+          if (p && p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100) addTableAt(payload.shape, keep(p.x), keepY(p.y));
+          return;
+        }
+        const onto = tableUnder(e.clientX, e.clientY);
+        if (!onto) return;
+        if (payload.kind === "guest") seat(payload.id, onto);
+        else seatGroup(payload.id, onto);
+      },
+      onPointerCancel: () => {
+        dragItem.current = null;
+        setGhost(null);
+        setHoverTable(null);
+      },
+      onClick: () => {
+        if (justDragged.current) return;
+        click();
+      },
+    };
+  }
+
   const picked = guests.find((g) => g.id === selectedGuest);
   const pickedGroup = openGroups.find((g) => g.id === selectedGroup);
   const table = tables.find((t) => t.id === selectedTable);
   const tableIndex = tables.findIndex((t) => t.id === selectedTable);
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-5">
+      <div className="min-w-0">
       {error && (
         <p role="alert" className="mb-4 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
           {error}
         </p>
       )}
 
-      <p className="mb-3 text-sm text-stone" aria-live="polite">
+      <p className={`mb-3 text-sm text-stone ${picked || pickedGroup ? "" : "lg:hidden"}`} aria-live="polite">
         {pickedGroup
           ? <>Now tap a table to sit <span className="text-ink">{pickedGroup.name}</span> together ({pickedGroup.waiting}).</>
           : picked
@@ -320,6 +432,31 @@ export default function FloorPlan({
       {/* Below ~560px the room scrolls sideways instead of shrinking past readable. */}
       <div className="-mx-[var(--gutter)] overflow-x-auto px-[var(--gutter)] pb-2 sm:mx-0 sm:px-0">
         <div
+          ref={viewRef}
+          onPointerDown={(e) => {
+            if (!wide || e.button !== 0) return;
+            if ((e.target as HTMLElement).closest("[data-table-id],[data-nopan]")) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            pan.current = { sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y };
+          }}
+          onPointerMove={(e) => {
+            const p = pan.current;
+            if (p) setView((v) => ({ ...v, x: p.ox + e.clientX - p.sx, y: p.oy + e.clientY - p.sy }));
+          }}
+          onPointerUp={() => (pan.current = null)}
+          onPointerCancel={() => (pan.current = null)}
+          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:cursor-grab lg:touch-none"
+          style={
+            wide
+              ? {
+                  backgroundImage: "radial-gradient(circle,#E3DACB 1.5px,transparent 1.5px)",
+                  backgroundSize: `${5 * view.z}% ${(100 / 15) * view.z}%`,
+                  backgroundPosition: `${view.x}px ${view.y}px`,
+                }
+              : undefined
+          }
+        >
+        <div
           ref={roomRef}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -327,7 +464,8 @@ export default function FloorPlan({
             drag.current = null;
             setLifted(null);
           }}
-          className="relative aspect-[4/3] w-full min-w-[560px] rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"
+          style={wide ? { transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})` } : undefined}
+          className="absolute inset-0 origin-top-left rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"
           aria-label="Floor plan"
         >
           {tables.length === 0 && (
@@ -352,6 +490,7 @@ export default function FloorPlan({
               <button
                 key={t.id}
                 type="button"
+                data-table-id={t.id}
                 onPointerDown={(e) => onPointerDown(e, t.id)}
                 onKeyDown={(e) => onKeyDown(e, t.id)}
                 onClick={(e) => {
@@ -370,7 +509,7 @@ export default function FloorPlan({
                 className={`absolute -translate-x-1/2 -translate-y-1/2 touch-none select-none border transition-[border-color,box-shadow] ${
                   shape === "round" ? "rounded-full" : "rounded-lg"
                 } ${full ? "bg-champagne-100" : "bg-cream"} ${
-                  active ? "border-ink shadow-[0_0_0_2px_#1E1B18]" : "border-champagne-400"
+                  active ? "border-ink shadow-[0_0_0_2px_#1E1B18]" : hoverTable === t.id ? "border-champagne-600 shadow-[0_0_0_3px_#B8914F]" : "border-champagne-400"
                 } ${selectedGuest || selectedGroup ? "cursor-copy" : "cursor-grab active:cursor-grabbing"}`}
               >
                 {seatDots(shape, t.capacity).map((d, i) => (
@@ -399,10 +538,27 @@ export default function FloorPlan({
             );
           })}
         </div>
+        <div data-nopan className="glass-card absolute bottom-3 right-3 hidden items-center gap-0.5 rounded-full p-1 lg:flex">
+          <button type="button" aria-label="Zoom out" onClick={() => zoomFromCentre(1 / 1.25)} className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-champagne-100">
+            <Minus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          </button>
+          <button
+            type="button"
+            aria-label="Fit the room to the screen"
+            onClick={() => setView({ z: 1, x: 0, y: 0 })}
+            className="h-9 min-w-14 rounded-full px-2 text-sm tabular-nums text-ink hover:bg-champagne-100"
+          >
+            {Math.round(view.z * 100)}%
+          </button>
+          <button type="button" aria-label="Zoom in" onClick={() => zoomFromCentre(1.25)} className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-champagne-100">
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          </button>
+        </div>
+        </div>
       </div>
 
       {tables.length > 0 && unseated.length > 0 && (
-        <section className="mt-6">
+        <section className="mt-6 lg:hidden">
           <p className="label">Not seated yet · {unseated.length}</p>
           {openGroups.length > 0 && (
             <ul aria-label="Groups" className="mt-3 flex flex-wrap gap-2">
@@ -459,7 +615,52 @@ export default function FloorPlan({
         </section>
       )}
       {tables.length > 0 && unseated.length === 0 && guests.length > 0 && (
-        <p className="mt-6 text-sm text-stone">Everyone coming has a seat.</p>
+        <p className="mt-6 text-sm text-stone lg:hidden">Everyone coming has a seat.</p>
+      )}
+      </div>
+
+      <FloorPlanPanel
+        tables={tables.map((t) => {
+          const people = atTable(t.id);
+          return {
+            id: t.id,
+            name: t.name,
+            shape: shapes[t.id] ?? "round",
+            capacity: t.capacity,
+            sitting: people.length,
+            diets: people.filter((g) => needs[g.id]?.length).length,
+          };
+        })}
+        unseated={unseated.map((g) => ({ id: g.id, name: fullName(g), initials: [g.first_name, g.last_name].filter(Boolean).map((n) => n!.trim().charAt(0).toUpperCase()).join("") }))}
+        parties={openGroups.map((g) => ({ id: g.id, name: g.name, kind: g.kind, waiting: g.waiting }))}
+        needs={needs}
+        selectedGuest={selectedGuest}
+        selectedGroup={selectedGroup}
+        capacity={newCapacity}
+        onCapacity={setNewCapacity}
+        drag={dragProps}
+        onPlace={placeNext}
+        onOpenTable={setSelectedTable}
+        onPickGuest={(id) => {
+          setSelectedGroup(null);
+          setSelectedGuest((current) => (current === id ? null : id));
+        }}
+        onPickGroup={(id) => {
+          setSelectedGuest(null);
+          setSelectedGroup((current) => (current === id ? null : id));
+        }}
+        activeTable={selectedTable}
+        everyoneSeated={tables.length > 0 && unseated.length === 0}
+      />
+
+      {ghost && (
+        <div
+          aria-hidden
+          style={{ left: ghost.x, top: ghost.y }}
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 -rotate-2 rounded-full border border-champagne-400 bg-white px-3.5 py-1.5 text-sm text-ink shadow-[0_12px_24px_-10px_rgba(60,50,40,0.45)]"
+        >
+          {ghost.kind === "table" ? `New ${ghost.label.toLowerCase()} table` : ghost.label}
+        </div>
       )}
 
       {table && (

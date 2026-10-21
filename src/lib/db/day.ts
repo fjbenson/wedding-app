@@ -80,11 +80,13 @@ export async function addTable(
   capacity: number,
   sortOrder: number,
   shape: TableShape = "round",
+  /** Where it stands on the floor plan (0–100%); none: the plan finds it a spot. */
+  spot?: { x: number; y: number },
 ): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("seating_tables")
-    .insert({ wedding_id: weddingId, name, capacity, sort_order: sortOrder, shape });
+    .insert({ wedding_id: weddingId, name, capacity, sort_order: sortOrder, shape, ...(spot ? { pos_x: spot.x, pos_y: spot.y } : {}) });
   if (error) throw error;
 }
 

@@ -241,6 +241,23 @@ export async function moveTableAction(id: string, x: number, y: number): Promise
   return null;
 }
 
+/** A new table dropped (or placed) on the floor plan's panel: adds it where it landed. */
+export async function addTableAtAction(shape: string, capacity: number, x: number, y: number): Promise<string | null> {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  const wid = await weddingId();
+  const asked = shape === "long" || shape === "top" ? shape : "round";
+  const chairs = Math.max(1, Math.min(40, Math.round(Number(capacity)) || 8));
+  try {
+    const day = await getDay(wid);
+    const count = day?.tables.length ?? 0;
+    await addTable(wid, `Table ${count + 1}`, chairs, count, asked, { x: clamp(x), y: clamp(y) });
+  } catch (error) {
+    return floorPlanError(error);
+  }
+  refresh();
+  return null;
+}
+
 export async function setTableShapeAction(id: string, shape: string): Promise<string | null> {
   if (shape !== "round" && shape !== "long" && shape !== "top") return null;
   try {

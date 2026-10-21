@@ -261,7 +261,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   filling gold as stages are done (Round 10, D3; `src/lib/hub-stages.ts`),
   and a column on the right filling the screen — **Needs a push** (the areas furthest behind, each
   with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
-- **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
+- **Area pages** (`/area/[key]`, `area-view.tsx`; on a laptop a wide cover then
+  two columns — Next up and the stages left, Everything for / Only for / the
+  foot right; canvas 4 "Laptop · Round 9", 2): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
   circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;
   canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quote · Book · Pay · Ready (`src/lib/area-stage.ts`;

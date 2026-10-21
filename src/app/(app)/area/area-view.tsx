@@ -160,7 +160,7 @@ function AreaCover({
   return (
     <div className={`relative -mx-[var(--gutter)] -mt-[max(2.5rem,env(safe-area-inset-top))] overflow-hidden md:mx-0 md:mt-0 md:rounded-3xl ${
         // Shorter until there are pictures (owner, 16 Oct 2026): empty tiles shouldn't take a third of the screen.
-        photos.length > 0 ? "h-[300px] md:h-[360px]" : "h-[220px] md:h-[240px]"
+        photos.length > 0 ? "h-[300px] md:h-[360px] lg:h-[340px]" : "h-[220px] md:h-[240px]"
       }`}>
       {/* Nothing saved yet: the soft tiles open "Add inspo" too (the button up top does the same). */}
       <Link
@@ -1077,10 +1077,14 @@ export default function AreaView({
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
-    <main className="page relative pb-40 lg:pb-16">
+    // On a laptop (canvas 4 "Laptop · Round 9", 2, owner's pick 21 Oct 2026): a
+    // wide cover, then two columns — what to do (Next up and the stages) on the
+    // left, everything about the area on the right. One column on phones.
+    <main className="page relative pb-40 lg:max-w-[1280px] lg:px-10 lg:pb-16">
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} decor={!!decor} />
 
-      <div className="relative mt-5 flex flex-col gap-3.5">
+      <div className="relative mt-5 flex flex-col gap-3.5 lg:mt-7 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-7">
+        <div className="flex min-w-0 flex-col gap-3.5">
         <OpenOnHash />
         {error && (
           <p role="alert" className="rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -1119,6 +1123,9 @@ export default function AreaView({
         ) : (
         <StageTabs key={openStage} stages={stages} done={stage.done} current={stage.current} initial={openStage} />
         )}
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-3.5 lg:[&>section:first-child]:mt-0">
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}
         <section aria-label={`Everything for ${area.label}`} className="mt-3">
@@ -1396,6 +1403,7 @@ export default function AreaView({
             <Timeline scope={`area:${area.key}`} folded />
           </div>
         </section>
+        </div>
       </div>
     </main>
     </SupplierCards>

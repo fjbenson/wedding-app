@@ -61,7 +61,8 @@ lists keep the list in view with the card opening beside it on a click, and
 closing (1); with no card open, the guest list shows its details in columns
 (1b); area pages in two columns (2); the run sheet as a carousel of sheets
 (3b, the pick); 3c (sheets side by side on one clock) liked, kept for later.
-Seating and Travel later. Not built yet.
+Seating and Travel later. Built: the area page (21 Oct 2026). Still to
+build: the guest list (1, 1b), the run sheet carousel (3b).
 
 Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
 tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;

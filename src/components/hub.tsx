@@ -172,7 +172,7 @@ function StageRing({ done }: { done: number }) {
   const around = 2 * Math.PI * r;
   return (
     <svg aria-hidden viewBox="0 0 62 62" className="absolute -left-2 -top-2 hidden h-[calc(var(--disc)+16px)] w-[calc(var(--disc)+16px)] -rotate-90 lg:block">
-      <circle cx="31" cy="31" r={r} fill="none" className="stroke-[#E8DCC6]" strokeWidth="2" />
+      <circle cx="31" cy="31" r={r} fill="none" className="stroke-[#EEE4D3]" strokeWidth="1" />
       {done > 0 && (
         <circle
           cx="31"
@@ -180,7 +180,7 @@ function StageRing({ done }: { done: number }) {
           r={r}
           fill="none"
           className="stroke-champagne-400"
-          strokeWidth="2.5"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeDasharray={`${(around * Math.min(done, STAGES.length)) / STAGES.length} ${around}`}
         />

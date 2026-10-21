@@ -181,6 +181,15 @@ almost everything else is still the phone layout in a narrow column.
 
 ## Design decisions still open
 
+- **Money, made clear** (owner, 21 Oct 2026; its own chat, mock-ups first).
+  Couples want three numbers: the total, what's paid, what's to go. But which
+  number means "the total" depends on the stage: before a quote it's the
+  budget; with quotes, the quote you're leaning to against the budget; once
+  booked, the agreed price, then paid and to go. Idea to mock: each area
+  shows one "best guess" figure (booked price, else quote, else budget), and
+  the Money tab adds those up as the wedding's likely total, with paid and to
+  go under it. The area page's Payment now has "Paid £X of £Y" (21 Oct).
+
 Each would be an added column, not a rebuild:
 
 - Meal choices are free text (one menu for everyone was the owner's call).

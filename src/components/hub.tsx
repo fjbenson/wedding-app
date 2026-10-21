@@ -19,6 +19,14 @@ export interface HubArea {
 /** How far the nodes sit from the middle, as a share of the box's width. */
 const RING_RADIUS = 0.39;
 
+/**
+ * Under each button on a laptop, what's been reached, in the past tense to
+ * match the gold line (owner, 21 Oct 2026: "Payment" read oddly on the ring,
+ * though nouns suit the area page, where you're inside a stage). Indexed by
+ * how many stages are done.
+ */
+const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
+
 function nodePosition(index: number, total: number) {
   // Start at the top and go clockwise.
   const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
@@ -132,21 +140,21 @@ function Node({
   stage?: number;
   children: React.ReactNode;
 }) {
-  const stageName = stage === undefined ? null : STAGES[Math.min(stage, STAGES.length - 1)];
+  const stageName = stage === undefined ? null : DONE_WORDS[Math.min(stage, STAGES.length)];
   return (
     <Link
       href={href}
       style={position}
       title={label}
       aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
-      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)]"
+      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
     >
-      <span className="relative">{children}</span>
+      <span className="relative lg:mb-3.5">{children}</span>
       <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.9cqw,14px)] lg:text-ink">
         {label}
       </span>
       {stageName && (
-        <span aria-hidden className={`-mt-1 hidden text-xs lg:block lg:text-[clamp(12px,1.9cqw,14px)] ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
+        <span aria-hidden className={`hidden text-xs lg:mt-1 lg:block lg:text-[clamp(12px,1.9cqw,14px)] ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
           {stageName}
         </span>
       )}

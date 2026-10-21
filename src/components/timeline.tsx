@@ -34,6 +34,7 @@ export default function Timeline({
   bare = false,
   folded = false,
   only,
+  skipSent = false,
 }: {
   scope: string;
   label?: string;
@@ -47,6 +48,8 @@ export default function Timeline({
   folded?: boolean;
   /** Just one kind, no chips or Add (a payment's card: every payment to them). */
   only?: TimelineGroup;
+  /** Leave out save the dates, invitations and thank-yous: the card lists them already (a household's). */
+  skipSent?: boolean;
 }) {
   const [items, setItems] = useState<TimelineItem[] | null>(null);
   const [today, setToday] = useState("");
@@ -73,12 +76,13 @@ export default function Timeline({
   }, [scope, n]);
 
   const pick = only ?? group;
-  const shown = (items ?? []).filter((i) => pick === "all" || i.group === pick);
+  const kept = (items ?? []).filter((i) => !(skipSent && i.sending));
+  const shown = kept.filter((i) => pick === "all" || i.group === pick);
   // History is what's happened (owner, 21 Oct 2026: Plan is what's to come).
   // Only a payment's "All payments to …" (`only`) still lists what's due.
   const coming = only ? shown.filter((i) => i.upcoming) : [];
   const before = shown.filter((i) => !i.upcoming);
-  const groups = GROUPS.filter((g) => g.value === "all" || (items ?? []).some((i) => i.group === g.value));
+  const groups = GROUPS.filter((g) => g.value === "all" || kept.some((i) => i.group === g.value));
   const addHref = `/history/new?with=${encodeURIComponent(scope)}&back=${encodeURIComponent(here)}`;
 
   const remove = async (id: string) => {
@@ -116,7 +120,7 @@ export default function Timeline({
         <p className="mt-3 text-[14px] text-stone">…</p>
       ) : only && shown.length === 0 ? (
         <p className="mt-2 text-[14px] text-stone">Nothing yet.</p>
-      ) : items.length === 0 ? (
+      ) : kept.length === 0 ? (
         <p className="mt-2 text-[14px] text-stone">
           Nothing yet.{" "}
           <Link href={addHref} className="text-champagne-600">

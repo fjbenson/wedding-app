@@ -142,9 +142,9 @@ export default function HouseholdSheet({
       {/* The save the date, invitation and thank-you (canvas 3 "Sent · On the household card"). */}
       <SentToThem unit={`h:${household.id}`} />
 
-      {/* What's been sent to them and said, past and to come (canvas 3 "History · Round 2", 4). */}
+      {/* What's been said and done with them; the sendings are above, so they're left out here. */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`household:${household.id}`} folded />
+        <Timeline scope={`household:${household.id}`} folded skipSent />
       </section>
 
       <div id="household-details">

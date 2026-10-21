@@ -27,6 +27,8 @@ export interface TimelineItem {
   done: boolean;
   /** Opens its card (`CardLink`) or the file. */
   href?: string;
+  /** A save the date, invitation or thank-you going out: a household's card already lists these under "Sent to them". */
+  sending?: boolean;
   /** A timeline entry, which can be taken off. */
   entryId?: string;
   /** To-dos that came out of this call. */
@@ -99,6 +101,7 @@ export function buildTimeline(src: TimelineSources, today: string): TimelineItem
       upcoming: e.happened_on > today,
       done: true,
       entryId: e.id,
+      sending,
       todos: fromCall.get(e.id),
     });
   }

@@ -274,7 +274,7 @@ export function GroupSheet({
 
       {sent.length > 0 && (
         <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-          <h2 className="label">Sent to them</h2>
+          <h2 className="label">History</h2>
           <ul className="mt-1">
             {sent.map((m) => (
               <li key={m.id} className="flex min-h-[52px] items-center gap-3 border-b border-linen text-[15px] text-ink last:border-b-0">

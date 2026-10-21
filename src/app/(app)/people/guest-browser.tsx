@@ -3,7 +3,7 @@
 import type { GuestSeating } from "@/lib/db/day";
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Search, SlidersHorizontal, Star, TriangleAlert, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
@@ -732,6 +732,8 @@ export default function GuestBrowser({
             openId={openId}
             sortCol={colSort}
             setSortCol={setColSort}
+            // Said in the first heading while the rows are grouped (owner, 21 Oct 2026).
+            groupedBy={sort === "first" || sort === "last" || colSort ? undefined : SORTS.find((o) => o.key === sort)?.short}
             // Tapping the open guest again closes their card (owner, 21 Oct 2026).
             onOpen={(id) => showGuest(openId === id ? undefined : id)}
           />
@@ -1495,7 +1497,10 @@ function GuestTable({
   onOpen,
   sortCol,
   setSortCol,
+  groupedBy,
 }: {
+  /** What the table is grouped by ("by household"), said beside the Guest heading. */
+  groupedBy?: string;
   sortCol: { col: TableColumn; desc: boolean } | null;
   setSortCol: (s: { col: TableColumn; desc: boolean } | null) => void;
   groups: Group[];
@@ -1560,7 +1565,7 @@ function GuestTable({
     return [{ key: "sorted", guests: sorted }] as Group[];
   }, [sortCol, groups, ownEvent, events, answers, dietOf, tables]);
 
-  const sortHead = (col: TableColumn, label: string, extra = "") => {
+  const sortHead = (col: TableColumn, label: ReactNode, extra = "") => {
     const on = sortCol?.col === col;
     return (
       <th scope="col" aria-sort={on ? (sortCol.desc ? "descending" : "ascending") : "none"} className={`${head} ${extra}`}>
@@ -1591,7 +1596,16 @@ function GuestTable({
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
-            {sortHead("guest", "Guest")}
+            {sortHead(
+              "guest",
+              groupedBy ? (
+                <>
+                  Guest <span className="ml-1 truncate font-normal normal-case tracking-normal text-stone">{groupedBy}</span>
+                </>
+              ) : (
+                "Guest"
+              ),
+            )}
             {sortHead("event", "Guest of")}
             {sortHead("rsvp", "RSVP")}
             {sortHead("meal", "Meal", gap)}

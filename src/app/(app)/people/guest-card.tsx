@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
 import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
@@ -104,9 +104,29 @@ export default function GuestCard({
   // A dashed Text, Call or Email goes to the box to type it in (`n` changes on every tap).
   const [adding, setAdding] = useState<{ field: "phone" | "email"; n: number }>();
   const add = (field: "phone" | "email") => {
-    setAdding((a) => ({ field, n: (a?.n ?? 0) + 1 }));
+    // Contact is a fold: it opens first, then the box takes the cursor.
     jumpTo(field === "phone" ? "guest-phone" : "guest-email");
+    window.setTimeout(() => setAdding((a) => ({ field, n: (a?.n ?? 0) + 1 })), 80);
   };
+
+  // One line for each fold, saying what's set without opening it.
+  const eventName = (e?: WeddingEvent) => (e ? e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase()) : "");
+  const answerWord: Record<Rsvp["status"], string> = { attending: "Coming", pending: "Yet to respond", to_invite: "To invite", declined: "Can't come" };
+  const attendance = own ? [eventName(events.find((e) => e.id === own.event_id)), answerWord[own.status]].filter(Boolean).join(" · ") : "Day or evening?";
+  const needs = needsOf(own?.dietary_notes);
+  const food = [
+    MEAL_KINDS.find((k) => k.value === mealKindOf(guest))?.label,
+    noAlcoholOf(guest) ? "Soft drinks only" : "Alcohol",
+    own ? (needs.length > 0 ? needs.join(", ") : "No dietary needs") : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const hasTables = Boolean(seating && seating.tables.length > 0);
+  const place = travel?.stays.find((s) => s.id === guest.stay_id);
+  const stayingLine = guest.staying === "no" ? "Not staying over" : guest.staying === "yes" ? (place?.name ?? "Staying, not sure where") : "Staying not sure yet";
+  const seatingLine = [hasTables ? (table ? `Table ${table}` : "No table yet") : null, travel ? stayingLine : null].filter(Boolean).join(" · ");
+  const theirGroups = (groups ?? []).filter((g) => g.members.includes(guest.id)).map((g) => g.name);
+  const belongsLine = [household?.name ?? "No household", groups ? (theirGroups.length > 0 ? theirGroups.join(", ") : "No groups") : null].filter(Boolean).join(" · ");
 
   return (
     <CardSheet
@@ -149,49 +169,94 @@ export default function GuestCard({
         />
       </RoundActions>
 
-      {/* The answer first — it's what changes most — then day or evening, then roles. */}
-      {events.length > 0 && <GuestOfAndAnswer guest={guest} events={events} own={own} />}
+      {/*
+        The top is the picture; this is where you change it (owner, 21 Oct 2026,
+        canvas 4 "Guest card · Round 1", A): one folded row for each job, a
+        line of what's set, and a tap on a figure above opens its row.
+      */}
+      <div className="-mx-[22px] mt-6 border-b border-linen">
+        {events.length > 0 && (
+          <Fold title="Attendance" summary={attendance}>
+            <GuestOfAndAnswer guest={guest} events={events} own={own} />
+          </Fold>
+        )}
 
-      <Roles guest={guest} />
+        <Fold title="Food & drink" summary={food}>
+          <MealRow guest={guest} onSave={save} />
+          {own && (
+            <dl className="mt-3">
+              <DietaryRow rsvp={own} own={ownNeeds} />
+            </dl>
+          )}
+        </Fold>
 
-      <MealRow guest={guest} onSave={save} />
+        {(hasTables || travel) && (
+          <Fold title="Seating & travel" summary={seatingLine}>
+            {hasTables && (
+              <dl>
+                <TableRow guest={guest} seating={seating!} />
+              </dl>
+            )}
+            {travel && <GuestTravelSection guest={guest} travel={travel} bare />}
+          </Fold>
+        )}
 
-      {travel && <GuestTravelSection guest={guest} travel={travel} />}
+        <Fold title="Household & groups" summary={belongsLine}>
+          <dl>
+            <HouseholdRow guest={guest} households={households} onSave={save} />
+          </dl>
+          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} bare />}
+        </Fold>
 
-      {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} />}
+        <Fold title="Role" summary={rolesOf(guest).join(" · ") || "None"}>
+          <Roles guest={guest} bare />
+        </Fold>
+
+        {/* What's been said and sent (canvas 3 "Timeline · Round 3"). Someone not in a household is sent things on their own: those sit at the top of their History, as on a household's. */}
+        <section className="border-t border-linen px-[22px]">
+          <Timeline
+            scope={`guest:${guest.id}`}
+            folded
+            caps
+            skipSent={!guest.household_id}
+            lead={!guest.household_id ? <SentToThem unit={`c:${guest.id}`} bare /> : undefined}
+          />
+        </section>
+
+        <Fold title="Contact & notes" summary={[guest.phone, guest.email].filter(Boolean).join(" · ") || "Add a number or email"}>
+          <dl>
+            <TextRow id="guest-phone" label="Phone" value={guest.phone} type="tel" editSignal={adding?.field === "phone" ? adding.n : 0} onSave={(v) => save({ phone: v })} />
+            <TextRow id="guest-email" label="Email" value={guest.email} type="email" editSignal={adding?.field === "email" ? adding.n : 0} onSave={(v) => save({ email: v })} />
+            <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
+          </dl>
+        </Fold>
+      </div>
 
       <GuestPlanSection guestId={guest.id} />
 
-      {/* What's been said and sent, past and to come (canvas 3 "Timeline · Round 3"). */}
-      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        {/* Someone not in a household is sent things on their own: those sit at the top of their History, as on a household's. */}
-        <Timeline
-          scope={`guest:${guest.id}`}
-          folded
-          skipSent={!guest.household_id}
-          lead={!guest.household_id ? <SentToThem unit={`c:${guest.id}`} bare /> : undefined}
-        />
-      </section>
-
-      {/* A hairline right across the card between sections. */}
-      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
-          <HouseholdRow guest={guest} households={households} onSave={save} />
-          <TextRow id="guest-phone" label="Phone" value={guest.phone} type="tel" editSignal={adding?.field === "phone" ? adding.n : 0} onSave={(v) => save({ phone: v })} />
-          <TextRow id="guest-email" label="Email" value={guest.email} type="email" editSignal={adding?.field === "email" ? adding.n : 0} onSave={(v) => save({ email: v })} />
-          {seating && seating.tables.length > 0 && <TableRow guest={guest} seating={seating} />}
-          {own && (
-            <>
-              <DietaryRow rsvp={own} own={ownNeeds} />
-            </>
-          )}
-          <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
-        </dl>
-      </section>
-
       <RemoveGuest guest={guest} name={name} />
     </CardSheet>
+  );
+}
+
+/**
+ * One folded row of the guest card: its name in small capitals, a line of
+ * what's set under it, opening in place (tapping a figure at the top opens
+ * the right one — `jumpTo`). The body stays in the page when shut, so what
+ * was half typed isn't lost.
+ */
+function Fold({ title, summary, children }: { title: string; summary: ReactNode; children: ReactNode }) {
+  return (
+    <details className="group border-t border-linen px-[22px]">
+      <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="section-label block">{title}</span>
+          <span className="mt-1 block truncate text-[14px] text-ink">{summary}</span>
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
+      </summary>
+      <div className="pb-5">{children}</div>
+    </details>
   );
 }
 
@@ -590,7 +655,7 @@ function MealRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) 
   const [failed, setFailed] = useState<string>();
 
   return (
-    <section id="guest-mealkind" className="mt-6 rounded-xl">
+    <section id="guest-mealkind" className="rounded-xl">
       <MealPicker
         kind={kind}
         noAlcohol={soft}
@@ -641,7 +706,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
   const off = "text-stone hover:text-ink";
 
   return (
-    <section className="mt-6 space-y-5">
+    <section className="space-y-5">
       <div id="guest-of" className="rounded-xl">
         <h3 className="section-label">Guest of</h3>
         <div role="group" aria-label="Guest of" className={track}>
@@ -728,7 +793,7 @@ const COMMON_ROLES = ["Maid of honour", "Bridesmaid", "Best man", "Groomsman"];
  * away again. Tap any role to put it on or take it off. Shows the change at
  * once and saves behind it.
  */
-function Roles({ guest }: { guest: Contact }) {
+function Roles({ guest, bare = false }: { guest: Contact; bare?: boolean }) {
   const saved = rolesOf(guest);
   const [roles, setRoles] = useOptimistic(saved);
   const [, startTransition] = useTransition();
@@ -753,15 +818,17 @@ function Roles({ guest }: { guest: Contact }) {
   const offPill = `${pill} border-linen bg-white text-ink hover:border-champagne-400`;
 
   return (
-    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-      {/* The same gold star that marks anyone with a role in the list. */}
-      <h3 className="section-label flex items-center gap-2">
-        <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
-          <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
-        </span>
-        Role on the day
-      </h3>
-      <div className="mt-2.5 flex flex-wrap gap-2">
+    <section className={bare ? "" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
+      {!bare && (
+        <h3 className="section-label flex items-center gap-2">
+          {/* The same gold star that marks anyone with a role in the list. */}
+          <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
+            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+          </span>
+          Role on the day
+        </h3>
+      )}
+      <div className={`${bare ? "" : "mt-2.5 "}flex flex-wrap gap-2`}>
         {theirs.map((role) => (
           <button
             key={role}

@@ -24,7 +24,7 @@ const CHIP =
  * chosen yet shows dashed, like Travel's "still to sort" cards; a tap picks.
  * Journeys themselves are chosen in Travel, where the seats are.
  */
-export function GuestTravelSection({ guest, travel }: { guest: Contact; travel: TravelInfo }) {
+export function GuestTravelSection({ guest, travel, bare = false }: { guest: Contact; travel: TravelInfo; bare?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
   const [picking, setPicking] = useState(false);
@@ -51,8 +51,8 @@ export function GuestTravelSection({ guest, travel }: { guest: Contact; travel: 
   ];
 
   return (
-    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-      <h3 className="section-label">Travel</h3>
+    <section className={bare ? "mt-5" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
+      {!bare && <h3 className="section-label">Travel</h3>}
 
       <button
         type="button"

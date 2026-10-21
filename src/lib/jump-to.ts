@@ -6,6 +6,18 @@
 export function jumpTo(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
+  // A fold that's closed (the guest card's Food & drink…) opens first, then it scrolls.
+  let folded = false;
+  for (let d = el.closest("details"); d; d = d.parentElement?.closest("details") ?? null) {
+    if (!d.open) {
+      d.open = true;
+      folded = true;
+    }
+  }
+  if (folded) {
+    requestAnimationFrame(() => jumpTo(id));
+    return;
+  }
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   el.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" });
   el.animate?.([{ backgroundColor: "rgb(241 231 212 / 0.9)" }, { backgroundColor: "rgb(241 231 212 / 0)" }], {

@@ -58,10 +58,13 @@ export function GuestGroupsSection({
   firstName,
   groups,
   onShowGroup,
+  bare = false,
 }: {
   guestId: string;
   firstName: string;
   groups: GroupSummary[];
+  /** Inside one of the guest card's folds: no hairline above, a little less room. */
+  bare?: boolean;
   /** Tapping a pill shows that group on the guest list (on the list itself). */
   onShowGroup?: (id: string) => void;
 }) {
@@ -72,7 +75,7 @@ export function GuestGroupsSection({
   const others = groups.filter((g) => !g.members.includes(guestId));
 
   return (
-    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
+    <section className={bare ? "mt-5" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
       <h3 className="section-label">Groups</h3>
       <div className="mt-3 flex flex-wrap gap-2">
         {theirs.map((g) => (

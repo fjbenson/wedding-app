@@ -36,6 +36,7 @@ export default function Timeline({
   only,
   skipSent = false,
   lead,
+  caps = false,
 }: {
   scope: string;
   label?: string;
@@ -53,6 +54,8 @@ export default function Timeline({
   skipSent?: boolean;
   /** Shown first inside a folded history: a household's three sendings, ticked off or still to do. */
   lead?: ReactNode;
+  /** Headed in small capitals, like the guest card's other folds, with no icon. */
+  caps?: boolean;
 }) {
   const [items, setItems] = useState<TimelineItem[] | null>(null);
   const [today, setToday] = useState("");
@@ -191,13 +194,24 @@ export default function Timeline({
   if (!folded) return content;
   return (
     <details className="group">
-      <summary className="flex min-h-[60px] cursor-pointer list-none items-center gap-3 py-2.5 [&::-webkit-details-marker]:hidden">
-        <span aria-hidden className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-          <History className="h-[17px] w-[17px]" strokeWidth={1.6} />
-        </span>
+      <summary className={`flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden ${caps ? "min-h-[64px] py-3" : "min-h-[60px] py-2.5"}`}>
+        {!caps && (
+          <span aria-hidden className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+            <History className="h-[17px] w-[17px]" strokeWidth={1.6} />
+          </span>
+        )}
         <span className="min-w-0 flex-1">
-          <span className="block text-[15.5px] text-ink">{label}</span>
-          <span className="block truncate text-[13px] text-stone">{summary}</span>
+          {caps ? (
+            <>
+              <span className="section-label block">{label}</span>
+              <span className="mt-1 block truncate text-[14px] text-ink">{summary}</span>
+            </>
+          ) : (
+            <>
+              <span className="block text-[15.5px] text-ink">{label}</span>
+              <span className="block truncate text-[13px] text-stone">{summary}</span>
+            </>
+          )}
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
       </summary>

@@ -73,7 +73,8 @@ Rule one still comes first.
 
 - **No pull requests** (owner, 29 Sep 2026): push straight to `main` with
   `git push origin HEAD:main` (allowed in `.claude/settings.json`), and to
-  the chat's own branch. Before every push, `npm run typecheck` and
+  the chat's own branch **after** — main first (21 Oct 2026: pushed the other
+  way round, Vercel seems to have skipped the change on main). Before every push, `npm run typecheck` and
   `npm run build` must pass. Gather small changes into one push.
 - **Vercel** builds `main` about a minute later; a failed build leaves the
   last good version live. Live at https://wedding-app-tau-dusky.vercel.app.

@@ -56,6 +56,13 @@ journey times, wrapped table names, New area's ideas. Still open:
 
 ## Laptop audit, 20 Oct 2026
 
+**Picked 21 Oct 2026 (canvas 4 "Laptop · Round 9", three kinds of page):**
+lists keep the list in view with the card opening beside it on a click, and
+closing (1); with no card open, the guest list shows its details in columns
+(1b); area pages in two columns (2); the run sheet as several sheets — 3b
+(a carousel) and 3c (side by side on one clock) both liked, pick to come.
+Seating and Travel later. Not built yet.
+
 Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
 tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;
 almost everything else is still the phone layout in a narrow column.

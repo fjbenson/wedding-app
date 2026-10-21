@@ -242,6 +242,24 @@ export default function GuestBrowser({
     replaceQuery({ groupcard: groupCardId ?? null });
   }, [groupCardId]);
   const openGroupCard = guestGroups.find((g) => g.id === groupCardId);
+  // One card at a time: opening a guest, household or group closes whichever is
+  // open first (owner, 21 Oct 2026: a household's card beside the list blocked
+  // a group's from showing).
+  const showHousehold = (id: string) => {
+    setOpenId(undefined);
+    setGroupCardId(undefined);
+    setHouseholdId(id);
+  };
+  const showGroup = (id: string) => {
+    setOpenId(undefined);
+    setHouseholdId(undefined);
+    setGroupCardId(id);
+  };
+  const showGuest = (id: string | undefined) => {
+    setHouseholdId(undefined);
+    setGroupCardId(undefined);
+    setOpenId(id);
+  };
 
   // The sort is a preference (owner's call, 11 Oct 2026): kept on this phone
   // until it's changed. Read after the first draw so the server's page and
@@ -471,7 +489,7 @@ export default function GuestBrowser({
       .map((group) => ({
         key: group.id,
         title: group.name,
-        onOpen: () => setGroupCardId(group.id),
+        onOpen: () => showGroup(group.id),
         guests: shown.filter((g) => members(group).has(g.id)),
       }))
       .filter((group) => group.guests.length > 0);
@@ -483,7 +501,7 @@ export default function GuestBrowser({
       .map((h) => ({
         key: h.id,
         title: h.name,
-        onOpen: () => setHouseholdId(h.id),
+        onOpen: () => showHousehold(h.id),
         guests: shown.filter((g) => g.household_id === h.id),
       }))
       .filter((group) => group.guests.length > 0);
@@ -690,7 +708,7 @@ export default function GuestBrowser({
                   <ul>
                     {(folded.has(group.key) ? [] : group.guests).map((g) => (
                       <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b-[0.5px] border-champagne-400">
-                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => setOpenId(g.id)} />
+                        <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => showGuest(g.id)} />
                       </li>
                     ))}
                   </ul>
@@ -715,7 +733,7 @@ export default function GuestBrowser({
             sortCol={colSort}
             setSortCol={setColSort}
             // Tapping the open guest again closes their card (owner, 21 Oct 2026).
-            onOpen={(id) => setOpenId((o) => (o === id ? undefined : id))}
+            onOpen={(id) => showGuest(openId === id ? undefined : id)}
           />
         </>
       )}
@@ -731,8 +749,8 @@ export default function GuestBrowser({
           onClose={() => setSendOpen(false)}
           onOpenUnit={(u) => {
             setSendOpen(false);
-            if (u.householdId) setHouseholdId(u.householdId);
-            else if (u.contactId) setOpenId(u.contactId);
+            if (u.householdId) showHousehold(u.householdId);
+            else if (u.contactId) showGuest(u.contactId);
           }}
         />
       )}
@@ -760,14 +778,8 @@ export default function GuestBrowser({
           travel={travel}
           groups={guestGroups}
           ownNeeds={ownNeeds(rsvps.map((r) => r.dietary_notes))}
-          onShowGroup={(id) => {
-            setOpenId(undefined);
-            setGroupCardId(id);
-          }}
-          onOpenHousehold={(id) => {
-            setOpenId(undefined);
-            setHouseholdId(id);
-          }}
+          onShowGroup={showGroup}
+          onOpenHousehold={showHousehold}
           onClose={close}
         />
       )}

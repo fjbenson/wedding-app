@@ -17,7 +17,8 @@ function failed(back: string, message: string, error: unknown): never {
   const code = (error as { code?: string }).code;
   const detail =
     code === "PGRST205" || code === "42P01" ? "Run supabase/migrations/0010_inspo.sql in Supabase first." : describe(error);
-  redirect(`${back}${back.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}&detail=${encodeURIComponent(detail)}`);
+  const [path, hash] = back.split("#");
+  redirect(`${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}&detail=${encodeURIComponent(detail)}${hash ? `#${hash}` : ""}`);
 }
 
 function refresh() {
@@ -28,7 +29,7 @@ function refresh() {
 
 /** Only ever back to a page inside the app. */
 function safeReturn(value: string | null, fallback: string): string {
-  return value && /^\/[a-z0-9/_?=&%-]*$/i.test(value) && !value.startsWith("//") ? value : fallback;
+  return value && /^\/[a-z0-9/_?=&%-]*(#[a-z-]+)?$/i.test(value) && !value.startsWith("//") ? value : fallback;
 }
 
 /**

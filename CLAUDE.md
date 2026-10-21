@@ -263,7 +263,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
   each can step back). **Ideas are notes or inspo** (21 Oct 2026, canvas 4
   "Area page · Round 2", A): one card with the pictures, the area's notes as
-  rows and "+ Add an idea" (A note · Inspo) at the foot; key facts became
+  rows and "+ Add an idea" (A note · Inspo, both full screens; a note's is
+  `/area/[key]/note`) at the foot, counted as "N ideas"; key facts became
   notes (`areas.details` kept, unshown); "Save an idea" is now "Add inspo".
   Then **"Everything for [area]"**, one line each for
   suppliers, plan, money, the day and the timeline (Decor and Stationery,

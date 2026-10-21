@@ -13,7 +13,7 @@ import BudgetBar from "@/components/budget-bar";
 import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
 import AreaIcon from "./area-icon";
-import { InlineSubmit, RemoveButton } from "@/components/form-bits";
+import { InlineSubmit } from "@/components/form-bits";
 import { areaStage, STAGES } from "@/lib/area-stage";
 import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
@@ -23,7 +23,6 @@ import FoodCosts from "./food-costs";
 import { pricesOf } from "@/lib/meals";
 import { DecorThings } from "../decor/decor-things";
 import { howsLine, stationeryNextUp, type sendingCounts } from "@/lib/stationery";
-import NoteEditor from "@/components/note-editor";
 import TickableNote from "@/components/tickable-note";
 import { startSoundCheckAction } from "./actions";
 import { musicTitle, SOUND_CHECK } from "@/lib/music";
@@ -41,9 +40,6 @@ import { StageIcon } from "../people/supplier-list";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import { planDate } from "@/lib/plan";
 import {
-  addAreaNoteAction,
-  deleteAreaNoteAction,
-  saveAreaNoteAction,
   setAreaAction,
   setAreaStageFlagAction,
   unbookSupplierAction,
@@ -99,10 +95,6 @@ function Tile({ photo, index }: { photo?: InspoWithPicture; index: number }) {
   return <span aria-hidden className="block h-full w-full" style={{ background: PLACEHOLDERS[index] }} />;
 }
 
-/** The box notes are typed into. */
-const NOTE_BOX =
-  "w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
-
 /**
  * An idea is a note (words) or inspo (a picture or a link) — owner, 21 Oct
  * 2026, canvas 4 "Area page · Round 2", A: "Save an idea" read as only a
@@ -111,8 +103,9 @@ const NOTE_BOX =
 function ideaChoices(area: AreaRow): AddChoice[] {
   const k = encodeURIComponent(area.key);
   return [
-    { icon: <NotebookPen />, title: "A note", line: "Words, a list, what you've ruled out", href: `/area/${k}?edit=note#ideas` },
-    { icon: <ImagePlus />, title: "Inspo", line: "A picture or a link", href: `/inspo/new?folder=${k}&from=${encodeURIComponent(`/area/${area.key}`)}` },
+    // Both on a full screen (owner, 21 Oct 2026: a note in place felt squished).
+    { icon: <NotebookPen />, title: "A note", line: "Words, a list, what you've ruled out", href: `/area/${k}/note` },
+    { icon: <ImagePlus />, title: "Inspo", line: "A picture or a link", href: `/inspo/new?folder=${k}&from=${encodeURIComponent(`/area/${area.key}#ideas`)}` },
   ];
 }
 
@@ -609,7 +602,6 @@ export default function AreaView({
   notes,
   photos,
   ideaCount,
-  editing,
   error,
   detail,
   areas,
@@ -654,8 +646,6 @@ export default function AreaView({
   photos: InspoWithPicture[];
   /** Everything in this area's Inspo folder, pictures or not. */
   ideaCount: number;
-  /** A box to type in under Ideas: `?edit=note` (a new note) or `?edit=note:<id>` (changing that note). */
-  editing: string | null;
   error?: string;
   detail?: string;
 }) {
@@ -811,7 +801,7 @@ export default function AreaView({
   const ideaNotes = (
     <>
           {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check note with tick-boxes, once. */}
-          {music && !notes.some((n) => n.body?.startsWith(SOUND_CHECK.name)) && editing !== "note" && (
+          {music && !notes.some((n) => n.body?.startsWith(SOUND_CHECK.name)) && (
             <form action={startSoundCheckAction.bind(null, area.key)}>
               <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
                 <ListChecks className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
@@ -822,52 +812,18 @@ export default function AreaView({
               </button>
             </form>
           )}
-          {editing === "note" && (
-            <form action={addAreaNoteAction.bind(null, area.key)} className="py-3">
-              <div className={NOTE_BOX}>
-                <NoteEditor autoFocus placeholder="A thought, a link, a checklist…" textClass="text-[15px] leading-relaxed" />
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-4">
-                <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
-                  Cancel
-                </Link>
-                <InlineSubmit label="Save note" pendingLabel="Saving…" />
-              </div>
-            </form>
-          )}
           {notes.length > 0 && (
             <ul className="divide-y divide-linen">
-              {notes.map((n) =>
-                editing === `note:${n.id}` ? (
-                  <li key={n.id} className="py-3">
-                    <form action={saveAreaNoteAction.bind(null, area.key, n.id, n.body && n.url ? n.url : null)}>
-                      <div className={NOTE_BOX}>
-                        <NoteEditor initial={n.body ?? n.url ?? ""} autoFocus textClass="text-[15px] leading-relaxed" />
-                      </div>
-                      <div className="mt-2 flex items-center justify-end gap-4">
-                        <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
-                          Cancel
-                        </Link>
-                        <InlineSubmit label="Save" pendingLabel="Saving…" />
-                      </div>
-                    </form>
-                    <RemoveButton
-                      action={deleteAreaNoteAction.bind(null, area.key, n.id)}
-                      label="Remove this note"
-                      question="Remove this note?"
-                    />
-                  </li>
-                ) : (
-                  <li key={n.id} className="flex items-start gap-3 py-3.5">
-                    <div className="min-w-0 flex-1">
-                      <TickableNote note={n} />
-                    </div>
-                    <Link href={`/area/${area.key}?edit=note:${n.id}#ideas`} scroll={false} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
-                      Edit
-                    </Link>
-                  </li>
-                ),
-              )}
+              {notes.map((n) => (
+                <li key={n.id} className="flex items-start gap-3 py-3.5">
+                  <div className="min-w-0 flex-1">
+                    <TickableNote note={n} />
+                  </div>
+                  <Link href={`/area/${area.key}/note?id=${n.id}`} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
+                    Edit
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
     </>
@@ -878,7 +834,8 @@ export default function AreaView({
     {
       name: STAGES[0],
       id: "ideas",
-      line: ideaCount + notes.length > 0 ? [ideaCount > 0 && `${ideaCount} inspo`, notes.length > 0 && plural(notes.length, "note")].filter(Boolean).join(" · ") : "None yet",
+      // One count: notes and inspo are both ideas (owner, 21 Oct 2026).
+      line: ideaCount + notes.length > 0 ? plural(ideaCount + notes.length, "idea") : "None yet",
       // One card like Quotes: the pictures, the notes as rows, the add at the foot.
       content: (
         <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
@@ -1039,7 +996,7 @@ export default function AreaView({
       ),
     },
   ];
-  const openStage = editing?.startsWith("note") ? 0 : Math.min(stage.current, STAGES.length - 1);
+  const openStage = Math.min(stage.current, STAGES.length - 1);
 
   // The summary lines of "Everything for …".
   const suppliersLine =
@@ -1344,8 +1301,7 @@ export default function AreaView({
               icon={areaIcon(area.key, area.icon)}
               title={`${area.label} notes`}
               line={notesLine}
-              open={!!editing}
-              add={editing === "note" ? undefined : { href: `/area/${area.key}?edit=note#ideas`, label: "Add a note", stays: true }}
+              add={{ href: `/area/${area.key}/note`, label: "Add a note" }}
             >
               <div className="divide-y divide-linen">{ideaNotes}</div>
             </Everything>

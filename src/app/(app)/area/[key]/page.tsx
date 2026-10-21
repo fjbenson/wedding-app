@@ -34,13 +34,13 @@ export default async function AreaPage({
   searchParams,
 }: {
   params: Promise<{ key: string }>;
-  searchParams: Promise<{ error?: string; detail?: string; edit?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
   const { key } = await params;
-  const { error, detail, edit } = await searchParams;
+  const { error, detail } = await searchParams;
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
@@ -121,9 +121,6 @@ export default async function AreaPage({
       notes={notes ?? []}
       photos={(inspo ?? []).filter((i) => i.picture).slice(0, 4)}
       ideaCount={inspoCounts?.get(area.key) ?? 0}
-      editing={
-        edit === "facts" || edit === "note" || (edit && /^note:[0-9a-f-]{36}$/i.test(edit)) ? edit : null
-      }
       guestFacts={guestFacts}
       food={food}
       decor={decor}

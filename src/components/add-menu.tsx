@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import AddButton from "./add-button";
@@ -47,7 +48,9 @@ export default function AddMenu({
       ) : (
         <AddButton onClick={() => setOpen(true)} label={label} />
       )}
-      {open && (
+      {/* On the page's body: inside a glass card (backdrop-filter) a fixed sheet
+          is trapped in the card and clipped (21 Oct 2026: Inspo didn't open). */}
+      {open && createPortal(
         <CardSheet label={title} onClose={close} top={<span className="label">{title}</span>}>
           <ul className="mt-1 pb-2">
             {choices.map((c) => (
@@ -65,7 +68,8 @@ export default function AddMenu({
               </li>
             ))}
           </ul>
-        </CardSheet>
+        </CardSheet>,
+        document.body,
       )}
     </>
   );

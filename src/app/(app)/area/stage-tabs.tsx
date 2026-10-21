@@ -53,7 +53,11 @@ export default function StageTabs({
               id={`stage-tab-${s.id}`}
               aria-selected={isOpen}
               aria-controls="stage-panel"
-              onClick={() => setOpen(i)}
+              onClick={() => {
+                setOpen(i);
+                // In the address, so Back from a form opens this stage again (owner, 21 Oct 2026).
+                window.history.replaceState(window.history.state, "", `#${s.id}`);
+              }}
               className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
             >
               <span className="flex w-full items-center">

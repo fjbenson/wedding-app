@@ -67,13 +67,20 @@ export default function HouseholdSheet({
   // "3 people · 1 child · day guests"
   const children = people.filter((p) => p.is_child).length;
   const kinds = [...new Set(people.map(ownEvent).filter(Boolean).map((e) => eventWord(e!)))];
-  const summary = [
-    `${people.length} ${people.length === 1 ? "person" : "people"}`,
-    children > 0 && `${children} ${children === 1 ? "child" : "children"}`,
-    kinds.length === 1 && `${kinds[0]} ${people.length === 1 ? "guest" : "guests"}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Figures in champagne, like the group card's (owner, 21 Oct 2026).
+  const summary = (
+    [
+      people.length > 0 && [String(people.length), people.length === 1 ? "person" : "people"],
+      children > 0 && [String(children), children === 1 ? "child" : "children"],
+      kinds.length === 1 && ["", `${kinds[0]} ${people.length === 1 ? "guest" : "guests"}`],
+    ].filter(Boolean) as [string, string][]
+  ).map(([n, word], i) => (
+    <span key={word}>
+      {i > 0 && " · "}
+      {n && <span className="font-medium text-champagne-600">{n} </span>}
+      {word}
+    </span>
+  ));
 
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 

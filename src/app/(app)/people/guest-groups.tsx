@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Users, X } from "lucide-react";
+import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Search, Users, X } from "lucide-react";
 import { draftGroupMessageAction } from "../assistant/actions";
 import type { Contact, Rsvp } from "@/types/db";
 import {
@@ -183,12 +183,15 @@ export function GroupSheet({
   people,
   answerOf,
   weddingName,
+  others,
   onClose,
   onOpenGuest,
 }: {
   group: GroupSummary;
   /** Everyone in the group. */
   people: Contact[];
+  /** Guests not in it yet, for "Add someone to this group". */
+  others: Contact[];
   answerOf: (g: Contact) => Rsvp["status"] | undefined;
   weddingName: string;
   onClose: () => void;
@@ -266,6 +269,7 @@ export function GroupSheet({
           </ul>
         )}
       </section>
+      <AddToGroup group={group} others={others} />
 
       {/* What's been sent to them and said: emails and texts noted from here, calls and notes added to it. */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
@@ -297,6 +301,67 @@ const GROUP_RSVP_WORD: Record<Rsvp["status"] | "unset", string> = {
   declined: "Can’t come",
   unset: "Day or evening?",
 };
+
+/** "Add someone to this group": a quick search of the guest list; tap them and they're in. Like the household card's. */
+function AddToGroup({ group, others }: { group: GroupSummary; others: Contact[] }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const { pending, error, run } = useGroupSave();
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = others
+    .filter((g) => words.every((w) => fullName(g).toLowerCase().includes(w)))
+    .sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }));
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="mt-2 flex min-h-12 items-center gap-3 font-display text-[15px] italic text-stone hover:text-ink">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-dashed border-champagne-400 text-champagne-600">
+          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        </span>
+        Add someone to this group
+      </button>
+    );
+  }
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
+  return (
+    <div className="mt-4 rounded-2xl border border-linen bg-white p-3">
+      <label className="flex h-11 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+        <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Find a guest"
+          aria-label="Find a guest"
+          className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+        />
+      </label>
+      <ul className="mt-2 max-h-64 overflow-y-auto">
+        {matches.map((g) => (
+          <li key={g.id} className="border-b border-linen last:border-b-0">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => run(() => addToGroupAction(group.id, g.id), close)}
+              className="flex min-h-11 w-full items-center gap-3 px-1 py-2 text-left hover:text-champagne-600 disabled:opacity-60"
+            >
+              <span className="type-item min-w-0 flex-1 truncate text-[17px]">{fullName(g)}</span>
+              <Plus className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.8} aria-hidden />
+            </button>
+          </li>
+        ))}
+        {matches.length === 0 && <li className="px-1 py-3 text-sm text-stone">No one matches that.</li>}
+      </ul>
+      {error && <p role="alert" className="mt-2 px-1 text-sm text-ink">{error}</p>}
+      <button type="button" onClick={close} className="mt-2 w-full py-1.5 text-sm text-stone underline underline-offset-4 hover:text-ink">
+        Cancel
+      </button>
+    </div>
+  );
+}
 
 /** Rename the group, or remove it (its people stay on the guest list). */
 function EditGroup({ group, onDone, onRemoved }: { group: GroupSummary; onDone: () => void; onRemoved: () => void }) {

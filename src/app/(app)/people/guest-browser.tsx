@@ -763,6 +763,7 @@ export default function GuestBrowser({
           people={guests.filter((g) => openGroupCard.members.includes(g.id)).sort((a, b) => fullName(a).localeCompare(fullName(b), undefined, { sensitivity: "base" }))}
           answerOf={answerOf}
           weddingName={weddingName}
+          others={guests.filter((g) => !openGroupCard.members.includes(g.id))}
           onClose={closeGroupCard}
           onOpenGuest={setOpenId}
         />

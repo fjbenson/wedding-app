@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import type { Household, Rsvp } from "@/types/db";
 import { renameHouseholdAction, saveAddressAction } from "./household-actions";
 import { editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "./guest-card";
@@ -188,8 +189,14 @@ function AddressRow({ household }: { household: Household }) {
               )}
             </button>
             {lines.length > 0 && (
-              <button type="button" onClick={copy} className="mt-2.5 h-8 shrink-0 text-xs text-champagne-600 underline underline-offset-[3px] hover:text-ink">
-                {copied ? "Copied ✓" : "Copy"}
+              <button
+                type="button"
+                onClick={copy}
+                aria-label={copied ? "Address copied" : "Copy address"}
+                title="Copy address"
+                className="mt-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-champagne-600 hover:bg-white/70 hover:text-ink"
+              >
+                {copied ? <Check className="h-4 w-4" strokeWidth={2} aria-hidden /> : <Copy className="h-4 w-4" strokeWidth={1.7} aria-hidden />}
               </button>
             )}
           </div>

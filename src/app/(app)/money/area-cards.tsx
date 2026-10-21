@@ -51,7 +51,7 @@ function standing(a: AreaCard): { stage: "Booked" | "Quoted" | "Budgeted" | null
 }
 
 const PILL = {
-  Booked: "bg-champagne-600 text-white",
+  Booked: "bg-[#F1E7D4] text-[#6F5120]",
   Quoted: "border border-champagne-600 bg-white text-champagne-600",
   Budgeted: "border border-dashed border-stone text-stone",
 };
@@ -89,18 +89,23 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
                 </span>
                 <span className="mt-3 block type-figure text-[26px] leading-none !font-light">{figure === null ? "—" : formatMoney(figure)}</span>
                 <span className="mt-2 block h-[22px]">
-                  {stage && <span className={`inline-block rounded-full px-2.5 py-[3px] text-xs ${PILL[stage]}`}>{stage}</span>}
+                  {stage && <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] ${PILL[stage]}`}>{stage}</span>}
                 </span>
-                {stage === "Booked" && (
-                  <>
-                    <span className="mt-2.5 block h-2">
-                      <BudgetBar money={{ budget: null, committed: a.committed, paid: a.paid }} />
-                    </span>
-                    <span className="mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] text-stone">
-                      {a.paid >= a.committed ? "✓ All paid" : `${formatMoney(a.committed - a.paid)} to go`}
-                    </span>
-                  </>
-                )}
+                {/* Every card has the bar and the line, so they line up; unbooked ones are just empty (owner, 21 Oct 2026). */}
+                <span className="mt-2.5 block h-2">
+                  <BudgetBar money={{ budget: null, committed: stage === "Booked" ? a.committed : 0, paid: stage === "Booked" ? a.paid : 0 }} />
+                </span>
+                <span className="mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] text-stone">
+                  {stage === "Booked"
+                    ? a.paid >= a.committed
+                      ? "✓ All paid"
+                      : `${formatMoney(a.committed - a.paid)} to go`
+                    : stage === "Quoted"
+                      ? "Not booked yet"
+                      : stage === "Budgeted"
+                        ? "No quote yet"
+                        : "No budget yet"}
+                </span>
               </button>
             </li>
           );

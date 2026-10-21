@@ -332,7 +332,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   journeys there and back) and **Decor** (pack list). **More than one run
   sheet** (20 Oct 2026, `run_sheets`, 0035): "The day" is the main one, others
   (Bridesmaids, Groomsmen, the photographer's list) are picked at the top
-  (`sheet-picker.tsx`), made and edited on full screens (`/day/sheets/…`), and
+  (`sheet-picker.tsx`; on a laptop also as names along the top, with the
+  sheets either side peeking in to flip to — Round 9, 3b), made and edited on full screens (`/day/sheets/…`), and
   one tied to a group can be emailed to it. Each moment is on one sheet; Move
   to / Copy to on its card. Filter by area; Print. A moment's card: a cue card,
   then When · Where · In charge · Music · Notes · Area, food served there, and

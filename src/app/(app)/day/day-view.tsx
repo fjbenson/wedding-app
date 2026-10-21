@@ -3,7 +3,7 @@ import { AlsoInTheDay, DayPill, PieceTiles } from "./day-pieces";
 import { musicTitle } from "@/lib/music";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
-import { Music, WheatOff, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Music, WheatOff, X } from "lucide-react";
 import AddButton from "@/components/add-button";
 import ViewMenu from "@/components/view-menu";
 import NumbersCard from "@/components/numbers-card";
@@ -234,6 +234,14 @@ function RunSheet({
     ? [...new Set(guests.filter((g) => theGroup.members.includes(g.id)).map((g) => g.email?.trim()).filter((e): e is string => !!e))]
     : [];
   const sheetParam = current ? `sheet=${current.id}` : "";
+  // The carousel's order: The day, then the others as listed.
+  const order = [{ id: null as string | null, name: "The day" }, ...sheets.map((x) => ({ id: x.id as string | null, name: x.name }))];
+  const at = order.findIndex((x) => x.id === (current?.id ?? null));
+  const before = at > 0 ? order[at - 1] : undefined;
+  const after = at < order.length - 1 ? order[at + 1] : undefined;
+  const sheetHref = (id: string | null) => (id ? `/day?sheet=${id}` : "/day");
+  const momentsOf = (id: string | null) =>
+    all.filter((i) => (i.sheet_id ?? null) === id).sort((a, b) => a.at_time.localeCompare(b.at_time));
   const now = nowInLondon();
   const isTheDay = weddingDate === now.date;
   const nowId = isTheDay ? items.filter((i) => i.at_time.slice(0, 5) <= now.time).at(-1)?.id : undefined;
@@ -288,8 +296,31 @@ function RunSheet({
       )}
       {forWhom && area && items.length === 0 && !needle && <p className="mt-6 font-display text-xl italic text-ink">Nothing on the day for {forWhom} yet.</p>}
 
+      {/* Laptops: the run sheets as a carousel (canvas 4 "Laptop · Round 9", 3b,
+          owner's pick 21 Oct 2026) — their names along the top, the one you're
+          on in the middle, the sheets either side peeking in to flip to. */}
+      {order.length > 1 && (
+        <nav aria-label="Run sheets" className="mt-6 hidden flex-wrap justify-center gap-x-7 gap-y-2 lg:flex print:hidden">
+          {order.map((x) => (
+            <Link
+              key={x.id ?? "main"}
+              href={sheetHref(x.id)}
+              aria-current={x.id === (current?.id ?? null) ? "page" : undefined}
+              className={`border-b-[1.5px] py-1.5 text-sm ${x.id === (current?.id ?? null) ? "border-champagne-400 font-medium text-ink" : "border-transparent text-stone hover:text-ink"}`}
+            >
+              {x.name}
+            </Link>
+          ))}
+          <Link href="/day/sheets/new" className="py-1.5 text-sm text-champagne-600 hover:text-ink">
+            + New run sheet
+          </Link>
+        </nav>
+      )}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <SheetPeek side="before" sheet={before} items={before ? momentsOf(before.id) : []} href={before ? sheetHref(before.id) : ""} />
+        <div className="min-w-0">
       {items.length > 0 && (
-        <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-auto lg:max-w-xl print:shadow-none">
+        <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-0 lg:max-w-none print:shadow-none">
           <div className="border border-champagne-400 px-[18px] pb-3 pt-7 outline outline-1 -outline-offset-[5px] outline-champagne-100">
             <header className="text-center">
               <p className="label">{forWhom ? `The order of the day · ${forWhom}` : "The order of the day"}</p>
@@ -360,6 +391,9 @@ function RunSheet({
           </div>
         </article>
       )}
+        </div>
+        <SheetPeek side="after" sheet={after} items={after ? momentsOf(after.id) : []} href={after ? sheetHref(after.id) : ""} />
+      </div>
       {theGroup && items.length > 0 && (
         <div className="mx-auto mt-4 max-w-xl print:hidden">
           <SendSchedule group={theGroup.name} subject={`${sheetName}: the order of the day`} text={groupText} emails={groupEmails} />
@@ -373,6 +407,51 @@ function RunSheet({
         </p>
       )}
     </>
+  );
+}
+
+/**
+ * A neighbouring run sheet peeking in beside the one you're on (laptops only):
+ * its name with an arrow and its first few moments, faded; the whole of it
+ * flips to that sheet. Nothing there at either end.
+ */
+function SheetPeek({
+  side,
+  sheet,
+  items,
+  href,
+}: {
+  side: "before" | "after";
+  sheet?: { id: string | null; name: string };
+  items: RunSheetItem[];
+  href: string;
+}) {
+  if (!sheet) return <div aria-hidden className="hidden lg:block" />;
+  const shown = items.slice(0, 6);
+  return (
+    <Link
+      href={href}
+      aria-label={`${side === "before" ? "Previous" : "Next"} run sheet: ${sheet.name}`}
+      className={`mt-16 hidden w-full max-w-[300px] rounded bg-white/80 p-6 opacity-60 shadow-[0_14px_34px_rgb(60_45_20/0.08)] transition hover:opacity-100 lg:block print:!hidden ${
+        side === "before" ? "justify-self-end" : "justify-self-start"
+      }`}
+    >
+      <span className="flex items-center gap-2 font-display text-[22px] italic text-ink">
+        {side === "before" && <ChevronLeft className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />}
+        <span className="min-w-0 flex-1 truncate">{sheet.name}</span>
+        {side === "after" && <ChevronRight className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />}
+      </span>
+      <span className="mt-3 block space-y-2">
+        {shown.map((i) => (
+          <span key={i.id} className="flex gap-3 text-sm text-stone">
+            <span className="tabular-nums text-champagne-600">{formatClock(i.at_time)}</span>
+            <span className="min-w-0 truncate">{i.title}</span>
+          </span>
+        ))}
+        {items.length === 0 && <span className="block text-sm italic text-stone">Nothing on it yet</span>}
+      </span>
+      {items.length > shown.length && <span className="type-meta mt-3 block">{items.length} moments ›</span>}
+    </Link>
   );
 }
 

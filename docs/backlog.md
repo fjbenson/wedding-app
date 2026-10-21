@@ -35,6 +35,10 @@ From the last few chats, not yet confirmed:
   Notes and Inspo tiles opening Ideas, the note rows (icon, first line,
   "Note · date", tap to edit). Tick lists are now ticked inside the note,
   not on the area page.
+- 21 Oct 2026, laptop (Rounds 9–10): the ring's five dots; an area page in two
+  columns (Decor and Stationery too); the guest columns and a card beside the
+  list (swap rows, ✕ and Escape close; a supplier and a to-do too); the run
+  sheet's names along the top and the sheets peeking either side.
 - 21 Oct 2026, laptop Hub (Round 8, C): the bigger ring with the gold stage
   lines and names (do the labels crowd?), Needs a push and its buttons, This
   week stretching to the foot; the phone Hub unchanged.
@@ -62,8 +66,8 @@ closing (1); with no card open, the guest list shows its details in columns
 (1b); area pages in two columns (2); the run sheet as a carousel of sheets
 (3b, the pick); 3c (sheets side by side on one clock) liked, kept for later.
 Seating and Travel later. Built: the area page (21 Oct 2026). Then the guest
-list (1b) and cards beside the list (1). Still to build: the run sheet
-carousel (3b); suppliers in columns would want a mock first.
+list (1b) and cards beside the list (1). And the run sheet
+carousel (3b). Suppliers in columns would want a mock first.
 
 Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
 tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;

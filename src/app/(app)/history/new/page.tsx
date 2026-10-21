@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import FormPage from "@/components/form-page";
 import { getArea } from "@/lib/db/areas";
 import { getContact, getHousehold } from "@/lib/db/contacts";
+import { getGroup } from "@/lib/db/groups";
 import { getSupplier } from "@/lib/db/suppliers";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { parseScope } from "../actions";
@@ -11,7 +12,7 @@ export const metadata = { title: "Add to history — Wedding App" };
 
 /**
  * Add to history (canvas 3 "History · Round 2", 3): a call, a meeting, an
- * email, a message or a note with a supplier, guest, household or area —
+ * email, a message or a note with a supplier, guest, household, group or area —
  * what was said, and any to-dos that came out of it. A full screen, like all
  * adding.
  */
@@ -40,6 +41,8 @@ export default async function NewEntryPage({
     name = [g?.first_name, g?.last_name].filter(Boolean).join(" ");
   } else if ("household" in scope) {
     name = (await getHousehold(scope.household))?.name ?? "";
+  } else if ("group" in scope) {
+    name = (await getGroup(scope.group))?.name ?? "";
   } else {
     name = (await getArea(wedding.id, scope.area))?.label ?? scope.area;
     area = scope.area;

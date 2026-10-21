@@ -8,14 +8,11 @@ import {
   addToGroupAction,
   createGroupAction,
   deleteGroupAction,
-  groupMessagesAction,
   logGroupMessageAction,
   removeFromGroupAction,
-  removeGroupMessageAction,
   renameGroupAction,
-  type GroupMessage,
 } from "./group-actions";
-import { formatDayMonth } from "@/lib/dates";
+import Timeline from "@/components/timeline";
 import CardSheet from "@/components/card-sheet";
 import { RoundAction, RoundActions } from "@/components/round-actions";
 import { AnswerIcon } from "./guest-browser";
@@ -199,19 +196,8 @@ export function GroupSheet({
 }) {
   const [sheet, setSheet] = useState<"email" | "text" | null>(null);
   const [editing, setEditing] = useState(false);
-  // What's been sent to the group, once the couple said "it went" (subject, day, how; never the message).
-  const [sent, setSent] = useState<GroupMessage[]>([]);
-  const loadSent = async () => {
-    try {
-      setSent((await groupMessagesAction(group.id)).messages);
-    } catch {
-      // The list is a nicety; the sheet works without it.
-    }
-  };
-  useEffect(() => {
-    void loadSent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [group.id]);
+  // Bumped when an email or text is noted, so History reloads and shows it.
+  const [logged, setLogged] = useState(0);
   const coming = people.filter((p) => answerOf(p) === "attending").length;
   const invited = people.filter((p) => answerOf(p) === "pending").length;
   const counts = [`${coming} coming`, invited > 0 && `${invited} yet to respond`].filter(Boolean).join(" · ");
@@ -272,43 +258,14 @@ export function GroupSheet({
         )}
       </section>
 
-      {sent.length > 0 && (
-        <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-          <h2 className="label">History</h2>
-          <ul className="mt-1">
-            {sent.map((m) => (
-              <li key={m.id} className="flex min-h-[52px] items-center gap-3 border-b border-linen text-[15px] text-ink last:border-b-0">
-                <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-                  {m.kind === "email" ? <Mail className="h-4 w-4" strokeWidth={1.7} /> : <MessageSquare className="h-4 w-4" strokeWidth={1.7} />}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate">{m.summary ?? (m.kind === "email" ? "Email" : "Text")}</span>
-                  <span className="block text-xs text-stone">{formatDayMonth(m.happened_on)}</span>
-                </span>
-                <button
-                  type="button"
-                  aria-label="Take this off the list"
-                  onClick={async () => {
-                    setSent((all) => all.filter((x) => x.id !== m.id));
-                    try {
-                      await removeGroupMessageAction(m.id);
-                    } catch {
-                      void loadSent();
-                    }
-                  }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
-                >
-                  <X className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* What's been sent to them and said: emails and texts noted from here, calls and notes added to it. */}
+      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
+        <Timeline key={logged} scope={`group:${group.id}`} folded />
+      </section>
 
       {sheet && (
         <MessageSheet
-          onLogged={loadSent}
+          onLogged={() => setLogged((n) => n + 1)}
           kind={sheet}
           group={group}
           people={people}

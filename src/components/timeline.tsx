@@ -26,7 +26,7 @@ const SHOWN = 5;
  * 2026 — what's to come is Plan's), one mark for each kind, and chips to show
  * one kind. "+ Add" opens Add to history (a call, a meeting…).
  *
- * `scope` is "supplier:<id>", "guest:<id>", "household:<id>" or "area:<key>".
+ * `scope` is "supplier:<id>", "guest:<id>", "household:<id>", "group:<id>" or "area:<key>".
  */
 export default function Timeline({
   scope,

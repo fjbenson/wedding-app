@@ -6,6 +6,13 @@ export interface GroupWithMembers extends GuestGroup {
   members: string[];
 }
 
+/** One group's name, or null if it isn't there (or isn't this wedding's: row-level security). */
+export async function getGroup(groupId: string): Promise<GuestGroup | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("guest_groups").select("*").eq("id", groupId).maybeSingle();
+  return (data as GuestGroup | null) ?? null;
+}
+
 /**
  * The wedding's groups of guests (0019_guest_groups.sql), A–Z, each with who's
  * in it. Empty until 0019 is run, rather than breaking the guest list.

@@ -12,7 +12,7 @@ import type { TimelineKind } from "@/types/db";
 const UUID = /^[0-9a-f-]{36}$/i;
 const AREA = /^[a-z0-9-]{1,60}$/;
 
-/** "supplier:<id>", "guest:<id>", "household:<id>" or "area:<key>" → a scope. */
+/** "supplier:<id>", "guest:<id>", "household:<id>", "group:<id>" or "area:<key>" → a scope. */
 export async function parseScope(value: string): Promise<TimelineScope | null> {
   const [kind, id] = value.split(":");
   if (kind === "area") return AREA.test(id ?? "") ? { area: id } : null;
@@ -20,6 +20,7 @@ export async function parseScope(value: string): Promise<TimelineScope | null> {
   if (kind === "supplier") return { supplier: id };
   if (kind === "guest") return { guest: id };
   if (kind === "household") return { household: id };
+  if (kind === "group") return { group: id };
   return null;
 }
 
@@ -76,6 +77,7 @@ export async function saveEntryAction(formData: FormData) {
       happened_on: date,
       contact_id: "supplier" in scope ? scope.supplier : "guest" in scope ? scope.guest : null,
       household_id: "household" in scope ? scope.household : null,
+      group_id: "group" in scope ? scope.group : null,
       area_key: "area" in scope ? scope.area : AREA.test(area) ? area : null,
     });
     const titles = formData.getAll("todo").map((t) => String(t).trim());

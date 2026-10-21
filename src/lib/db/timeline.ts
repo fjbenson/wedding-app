@@ -14,6 +14,7 @@ export type TimelineScope =
   | { supplier: string }
   | { guest: string }
   | { household: string }
+  | { group: string }
   | { area: string };
 
 export type EntryFields = Omit<TimelineEntry, "id" | "wedding_id" | "created_at">;
@@ -97,6 +98,7 @@ export async function loadTimeline(weddingId: string, scope: TimelineScope): Pro
   const names: Record<string, string> = {};
   if ("supplier" in scope) contactIds = [scope.supplier];
   else if ("guest" in scope) contactIds = [scope.guest];
+  else if ("group" in scope) contactIds = [];
   else if ("household" in scope) {
     const r = await supabase.from("contacts").select("id").eq("household_id", scope.household);
     contactIds = rows<{ id: string }>(r).map((c) => c.id);
@@ -114,11 +116,12 @@ export async function loadTimeline(weddingId: string, scope: TimelineScope): Pro
     }
   }
   const ids = contactIds.length ? contactIds : ["00000000-0000-0000-0000-000000000000"];
-  const isGuestSide = "guest" in scope || "household" in scope;
+  const isGuestSide = "guest" in scope || "household" in scope || "group" in scope;
 
   // Timeline entries: theirs, the household's own, or the area's and its suppliers'.
   let entriesQuery = supabase.from("timeline_entries").select("*").eq("wedding_id", weddingId);
-  if ("household" in scope) entriesQuery = entriesQuery.or(`household_id.eq.${scope.household},contact_id.in.(${ids.join(",")})`);
+  if ("group" in scope) entriesQuery = entriesQuery.eq("group_id", scope.group);
+  else if ("household" in scope) entriesQuery = entriesQuery.or(`household_id.eq.${scope.household},contact_id.in.(${ids.join(",")})`);
   else if (areaKey !== null)
     // Stationery's own timeline also holds everything sent to guests: save the dates, invitations, thank-yous.
     entriesQuery = entriesQuery.or(

@@ -28,6 +28,9 @@ From the last few chats, not yet confirmed:
   fit at 320px?) and one-icon Next up card, the supplier card's four-step
   Progress, "In The Day ›" opening the right run sheet, the note panel as a
   standard card, Settings' Save rising on change.
+- 21 Oct 2026, later: Add an idea › Inspo opening (the sheet was clipped),
+  Back and Save landing on Ideas, the pale band under Save gone on every
+  form, the area Ideas rows (TL), Payment's "Paid £X of £Y".
 
 ## Phone audit, 20 Oct 2026
 

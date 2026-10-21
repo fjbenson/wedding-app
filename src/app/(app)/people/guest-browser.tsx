@@ -13,7 +13,7 @@ import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import EditEvents from "./edit-events";
 import HouseholdSheet from "./household-view";
-import { RolePill, fullName, initials } from "./guest-table";
+import { Avatar, RolePill, fullName, initials } from "./guest-table";
 import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
 import { mealKindOf, mealWord, noAlcoholOf } from "@/lib/meals";
@@ -1654,14 +1654,7 @@ function GuestTable({
                 >
                   <td className="overflow-hidden py-2 pl-2 pr-4">
                     <span className="flex items-center gap-3">
-                      <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
-                        {initials(g)}
-                        {roles.length > 0 && (
-                          <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
-                            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
-                          </span>
-                        )}
-                      </span>
+                      <Avatar guest={g} />
                       <span className="min-w-0">
                         <button type="button" aria-expanded={isOpen} className="block truncate text-left font-display text-[17px] text-ink hover:underline">
                           {fullName(g)}
@@ -1727,17 +1720,18 @@ function EventWord({ event, first }: { event: WeddingEvent; first: boolean }) {
 }
 
 /**
- * A guest's answer for one event: the phone's round icon with its word beside
- * it, for every answer alike (owner, 21 Oct 2026: a tick for Coming and a
- * dashed pill for the rest didn't match). Not invited to that event: a quiet dash.
+ * A guest's answer for one event: its word, then the phone's round icon at the
+ * edge, for every answer alike (owner, 21 Oct 2026: a tick for Coming and a
+ * dashed pill for the rest didn't match; the cards put the icon on the right).
+ * Not invited to that event: a quiet dash.
  */
 function AnswerCell({ status }: { status?: Rsvp["status"] }) {
   if (!status) return <span className="text-stone/60">–</span>;
-  const tone = status === "attending" ? "text-ink" : status === "pending" ? "text-champagne-600" : "text-stone";
+  // The word, then its icon at the column's edge: as on the group and household cards.
   return (
-    <span className={`inline-flex items-center gap-2 text-[13px] ${tone}`}>
-      <AnswerIcon status={status} small />
+    <span className="flex items-center justify-between gap-2 text-[13px] text-stone">
       {ANSWER_WORD[status].word}
+      <AnswerIcon status={status} small />
     </span>
   );
 }

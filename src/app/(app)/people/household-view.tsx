@@ -10,7 +10,7 @@ import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import CardSheet from "@/components/card-sheet";
 import { AnswerIcon, eventWord } from "./guest-browser";
-import { fullName, initials } from "./guest-table";
+import { Avatar, fullName } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
 import HouseholdEnvelope, { HouseholdDetails } from "./household-envelope";
 import type { GroupSummary } from "./guest-groups";
@@ -116,9 +116,7 @@ export default function HouseholdSheet({
                   onClick={() => setOpenId(g.id)}
                   className="flex min-h-[52px] w-full items-center gap-3 text-left text-[15px] text-ink hover:text-champagne-600"
                 >
-                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-[13px] font-semibold text-champagne-600">
-                    {initials(g)}
-                  </span>
+                  <Avatar guest={g} />
                   <span className="min-w-0 flex-1 truncate">
                     {fullName(g)}
                     {g.is_child && <em className="ml-1.5 font-display text-stone">child</em>}

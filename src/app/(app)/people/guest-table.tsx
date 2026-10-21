@@ -1,4 +1,4 @@
-import { Armchair, Baby, Check, House, Mail, MapPin, Minus, PenLine, Phone, Tag, UsersRound, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
+import { Armchair, Baby, Check, Star, House, Mail, MapPin, Minus, PenLine, Phone, Tag, UsersRound, UtensilsCrossed, WheatOff, X, type LucideIcon } from "lucide-react";
 import { rolesOf } from "@/lib/guest-roles";
 import type { Contact, Rsvp, RsvpStatus } from "@/types/db";
 
@@ -11,6 +11,24 @@ export function fullName(guest: Pick<Contact, "first_name" | "last_name">) {
 /** "ED" for Ellen Daniels — the circle at the start of each row. */
 export function initials(guest: Pick<Contact, "first_name" | "last_name">) {
   return (guest.first_name.charAt(0) + (guest.last_name?.charAt(0) ?? "")).toUpperCase();
+}
+
+/**
+ * A guest's initials in a circle, with a gold star if they have a role: white
+ * with a fine edge and the display face, as in the guest table (owner, 21 Oct
+ * 2026: the group and household cards were to match it).
+ */
+export function Avatar({ guest }: { guest: Contact }) {
+  return (
+    <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
+      {initials(guest)}
+      {rolesOf(guest).length > 0 && (
+        <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
+          <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+        </span>
+      )}
+    </span>
+  );
 }
 
 /** "Day" for "The day", "Eve" for "The evening": the heading over each dot. */

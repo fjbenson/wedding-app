@@ -16,7 +16,7 @@ import Timeline from "@/components/timeline";
 import CardSheet from "@/components/card-sheet";
 import { RoundAction, RoundActions } from "@/components/round-actions";
 import { AnswerIcon } from "./guest-browser";
-import { fullName, initials } from "./guest-table";
+import { Avatar, fullName, initials } from "./guest-table";
 
 /**
  * Groups of guests (canvas 3 "Groups · Round 1", owner's pick 14 Oct 2026):
@@ -254,9 +254,7 @@ export function GroupSheet({
                   onClick={() => onOpenGuest(g.id)}
                   className="flex min-h-[52px] w-full items-center gap-3 text-left text-[15px] text-ink hover:text-champagne-600"
                 >
-                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-[13px] font-semibold text-champagne-600">
-                    {initials(g)}
-                  </span>
+                  <Avatar guest={g} />
                   <span className="min-w-0 flex-1 truncate">{fullName(g)}</span>
                   <span className="flex shrink-0 items-center gap-2 text-[13px] text-stone">
                     {GROUP_RSVP_WORD[answerOf(g) ?? "unset"]}

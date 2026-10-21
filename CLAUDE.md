@@ -303,7 +303,12 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   own calendar (.ics, Google, Outlook).
 - **Money** (`/money`), **By area | By month**: Budget → Agreed → Paid. The
   top card leads with the budget until something's agreed. Area cards two to a
-  row, each opening its money from the bottom; quotes compared against the
+  row (owner, 21 Oct 2026; canvas 4 "Money · Rounds 2–3"): one figure (agreed,
+  else the lowest quote, else the budget), a **Budgeted / Quoted / Booked
+  pill**, and always a bar and a line under it (empty bar until booked; no
+  "of budget" or over-budget on the card). Each opens its money from the
+  bottom, headed by a **Next step** card (set a budget → add a quote →
+  choose or book → mark paid / add the balance); quotes compared against the
   budget line; the month columns and payments by month; the budget page with
   "Share it out for us"; money towards it and bills family are paying.
 - **The Day** (`/day`): the **run sheet** as an order of service, with three

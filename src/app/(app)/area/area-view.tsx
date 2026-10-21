@@ -1046,17 +1046,13 @@ export default function AreaView({
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
         <section aria-label="Next up" className="card-white rounded-[22px] p-4">
-          <div className="flex items-start gap-3.5">
-            <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-              <NextIcon className="h-5 w-5" strokeWidth={1.7} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="type-meta !text-champagne-600">{!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
-              <p className="mt-1 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
-              {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
-              {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
-            </div>
-          </div>
+          <p className="type-meta flex items-center gap-1.5 !text-champagne-600">
+            <NextIcon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+            {!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}
+          </p>
+          <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
+          {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
+          {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
         </section>
 
         {/* Decor is its own special area: its things in place of the stages (canvas 3 "Decor · Round 2", owner 19 Oct 2026). */}

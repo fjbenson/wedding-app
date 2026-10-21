@@ -23,7 +23,8 @@ import FoodCosts from "./food-costs";
 import { pricesOf } from "@/lib/meals";
 import { DecorThings } from "../decor/decor-things";
 import { howsLine, stationeryNextUp, type sendingCounts } from "@/lib/stationery";
-import TickableNote from "@/components/tickable-note";
+import { host } from "@/components/note-text";
+import JumpLink from "./jump-link";
 import { startSoundCheckAction } from "./actions";
 import { musicTitle, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
@@ -297,6 +298,15 @@ function Everything({
   );
 }
 
+/** The round gold icon on the foot's Notes and Inspo tiles, as on the rows above. */
+function FootIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span aria-hidden className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+      <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
+    </span>
+  );
+}
+
 /** The "+ Add …" links at the foot of a section's card. */
 function Adds({ links }: { links: { href: string; label: string; stays?: boolean }[] }) {
   return (
@@ -309,6 +319,13 @@ function Adds({ links }: { links: { href: string; label: string; stays?: boolean
       ))}
     </div>
   );
+}
+
+/** A note's first line as its title, the bullet or tick-box mark left off; a link's site if it has no words. */
+function noteTitle(n: Note) {
+  const first = (n.body ?? "").split("\n").find((l) => l.trim()) ?? "";
+  const words = first.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/, "").trim();
+  return words || (n.url ? host(n.url) : "A note");
 }
 
 /** One line of quiet text in a card with nothing in it yet. */
@@ -821,24 +838,26 @@ export default function AreaView({
           )}
           {notes.length > 0 && (
             <ul className="divide-y divide-linen">
-              {notes.map((n) => (
-                <li key={n.id} className="py-3.5">
-                  {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL).
-                      Edit top right and the day it was written (quiet, italic) bottom right, in their own
-                      column beside the note, so they add no row of their own (owner, 21 Oct 2026). */}
-                  <div className="flex gap-3 border-l-2 border-champagne-400/50 pl-3">
-                    <div className="min-w-0 flex-1">
-                      <TickableNote note={n} titled />
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end justify-between gap-2">
-                      <Link href={`/area/${area.key}/note?id=${n.id}`} className="-my-1 py-1 text-[13px] text-champagne-600 hover:text-ink">
-                        Edit
-                      </Link>
-                      <span className="text-xs italic text-stone">{formatDayMonth(n.created_at.slice(0, 10))}</span>
-                    </div>
-                  </div>
-                </li>
-              ))}
+              {/* A note icon, the first line, then "Note · 12 Sep"; tap the row to edit
+                  (owner, 21 Oct 2026: canvas 4 "Area page · Round 2", A — no Edit button,
+                  no gold line). A tick list says how far it's got instead of "Note". */}
+              {notes.map((n) => {
+                const ticks = (n.body ?? "").match(/^\s*\[( |x|X)\]/gm) ?? [];
+                const ticked = ticks.filter((t) => /x/i.test(t)).length;
+                return (
+                  <li key={n.id}>
+                    <Link href={`/area/${area.key}/note?id=${n.id}`} className="row-press flex items-start gap-3 py-3">
+                      <NotebookPen className="mt-[3px] h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[15px] text-ink">{noteTitle(n)}</span>
+                        <span className="mt-0.5 block text-[13px] text-stone">
+                          {ticks.length > 0 ? `${ticked} of ${ticks.length} ticked` : "Note"} · {formatDayMonth(n.created_at.slice(0, 10))}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
     </>
@@ -1054,6 +1073,7 @@ export default function AreaView({
       : transportRuns > 0 ? plural(transportRuns, "journey") : "Nothing yet";
   const notesLine =
     notes.length > 0 ? plural(notes.length, "note") : "Nothing yet";
+  const inspoLine = ideaCount > 0 ? `${ideaCount} inspo` : "Nothing yet";
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
@@ -1135,61 +1155,6 @@ export default function AreaView({
               <Everything id="guests" icon={Users} title={guestFacts.kind === "food" ? "Who you're feeding" : "Guests"} line={guestsLine} see={{ href: "/people", label: "The guest list" }}>
                 <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} area={area} />
               </Everything>
-            )}
-
-            {food && (
-              <>
-                <Everything
-                  id="menu"
-                  icon={UtensilsCrossed}
-                  title="The menu"
-                  line={
-                    food.courses.length === 0
-                      ? "Not started"
-                      : `${plural(food.courses.length, "course")} · ${dishCount(food.courses.reduce((n, c) => n + c.dishes, 0))}`
-                  }
-                  see={{ href: "/menu", label: "The menu" }}
-                  add={{ href: "/menu", label: "Add a dish" }}
-                >
-                  {food.courses.length > 0 && (
-                    <ul>
-                      {food.courses.map((c) => (
-                        <li key={c.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
-                          <span className="truncate">{c.name}</span>
-                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
-                            {[c.time && formatClock(c.time), dishCount(c.dishes)].filter(Boolean).join(" · ")}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </Everything>
-                <Everything
-                  id="drinks"
-                  icon={Wine}
-                  title="Drinks"
-                  line={
-                    food.drinks.length === 0
-                      ? "Not started"
-                      : `${plural(food.drinks.length, "drink")}${food.drinks.some((d) => d.status === "undecided") ? ` · ${food.drinks.filter((d) => d.status === "undecided").length} to decide` : ""}`
-                  }
-                  see={{ href: "/drinks", label: "Drinks" }}
-                  add={{ href: "/drinks", label: "Add a drink" }}
-                >
-                  {food.drinks.length > 0 && (
-                    <ul>
-                      {food.drinks.map((d) => (
-                        <li key={d.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
-                          <span className="truncate">{d.name}</span>
-                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
-                            {d.quantity !== null ? `${d.quantity}${d.unit ? ` ${d.unit}` : ""}` : "–"}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </Everything>
-              </>
             )}
 
             <Everything
@@ -1317,24 +1282,118 @@ export default function AreaView({
               <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} food={foodMoments} />
             </Everything>
 
-            {/* Everything with this area's suppliers and the area itself, past and to
-                come (canvas 3 "History · Round 2", 5 and "Timeline · Round 3"). */}
-            <Everything id="timeline" icon={History} title="Timeline" line="Calls, payments and to-dos, in date order">
-              <Timeline scope={`area:${area.key}`} bare />
-            </Everything>
+          </div>
+        </section>
 
-            {/* Decor and Stationery have no Ideas stage, so their notes stay here. */}
-            {(decor || stationery) && (
-            <Everything
-              id="ideas"
-              icon={areaIcon(area.key, area.icon)}
-              title={`${area.label} notes`}
-              line={notesLine}
-              add={{ href: `/area/${area.key}/note`, label: "Add a note" }}
-            >
-              <div className="divide-y divide-linen">{ideaNotes}</div>
-            </Everything>
+        {/* What only this area has, after the tabs' own (owner, 21 Oct 2026, canvas 4
+            "Area page · Round 4", A: "Everything for" follows the tabs along the bottom). */}
+        {food && (
+          <section aria-label={`Only for ${area.label}`} className="mt-3">
+            <h2 className="type-meta px-1">Only for {area.label}</h2>
+            <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+
+                <Everything
+                  id="menu"
+                  icon={UtensilsCrossed}
+                  title="The menu"
+                  line={
+                    food.courses.length === 0
+                      ? "Not started"
+                      : `${plural(food.courses.length, "course")} · ${dishCount(food.courses.reduce((n, c) => n + c.dishes, 0))}`
+                  }
+                  see={{ href: "/menu", label: "The menu" }}
+                  add={{ href: "/menu", label: "Add a dish" }}
+                >
+                  {food.courses.length > 0 && (
+                    <ul>
+                      {food.courses.map((c) => (
+                        <li key={c.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
+                          <span className="truncate">{c.name}</span>
+                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
+                            {[c.time && formatClock(c.time), dishCount(c.dishes)].filter(Boolean).join(" · ")}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Everything>
+                <Everything
+                  id="drinks"
+                  icon={Wine}
+                  title="Drinks"
+                  line={
+                    food.drinks.length === 0
+                      ? "Not started"
+                      : `${plural(food.drinks.length, "drink")}${food.drinks.some((d) => d.status === "undecided") ? ` · ${food.drinks.filter((d) => d.status === "undecided").length} to decide` : ""}`
+                  }
+                  see={{ href: "/drinks", label: "Drinks" }}
+                  add={{ href: "/drinks", label: "Add a drink" }}
+                >
+                  {food.drinks.length > 0 && (
+                    <ul>
+                      {food.drinks.map((d) => (
+                        <li key={d.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
+                          <span className="truncate">{d.name}</span>
+                          <span className="shrink-0 text-[13px] tabular-nums text-stone">
+                            {d.quantity !== null ? `${d.quantity}${d.unit ? ` ${d.unit}` : ""}` : "–"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Everything>
+            </div>
+          </section>
+        )}
+
+        {/* A foot like the Hub's: notes and inspo, then the timeline folded to one line (A).
+            Both tiles open the Ideas stage, where they live; Decor and Stationery have no
+            stages, so their notes fold sits under the tiles. */}
+        <section aria-label="Notes and story so far" className="mt-3">
+          <h2 className="type-meta px-1">Notes and story so far</h2>
+          <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+            <JumpLink to="ideas" className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
+              <FootIcon icon={NotebookPen} />
+              <span>
+                <span className="type-item block">Notes</span>
+                <span className="mt-0.5 block text-[13px] text-stone">{notesLine}</span>
+              </span>
+            </JumpLink>
+            {decor || stationery ? (
+              <Link href={`/inspo?folder=${key}`} className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
+                <FootIcon icon={ImagePlus} />
+                <span>
+                  <span className="type-item block">Inspo</span>
+                  <span className="mt-0.5 block text-[13px] text-stone">{inspoLine}</span>
+                </span>
+              </Link>
+            ) : (
+              <JumpLink to="ideas" className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
+                <FootIcon icon={ImagePlus} />
+                <span>
+                  <span className="type-item block">Inspo</span>
+                  <span className="mt-0.5 block text-[13px] text-stone">{inspoLine}</span>
+                </span>
+              </JumpLink>
             )}
+          </div>
+          {(decor || stationery) && (
+            <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+              <Everything
+                id="ideas"
+                icon={areaIcon(area.key, area.icon)}
+                title={`${area.label} notes`}
+                line={notesLine}
+                add={{ href: `/area/${area.key}/note`, label: "Add a note" }}
+              >
+                <div className="divide-y divide-linen">{ideaNotes}</div>
+              </Everything>
+            </div>
+          )}
+          {/* Everything with this area's suppliers and the area itself, past and to
+              come (canvas 3 "History · Round 2", 5 and "Timeline · Round 3"). */}
+          <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+            <Timeline scope={`area:${area.key}`} folded />
           </div>
         </section>
       </div>

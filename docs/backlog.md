@@ -30,7 +30,11 @@ From the last few chats, not yet confirmed:
   standard card, Settings' Save rising on change.
 - 21 Oct 2026, later: Add an idea › Inspo opening (the sheet was clipped),
   Back and Save landing on Ideas, the pale band under Save gone on every
-  form, the area Ideas rows (TL), Payment's "Paid £X of £Y".
+  form, Payment's "Paid £X of £Y".
+- 21 Oct 2026, evening: the area page in its new order (Round 4, A), the
+  Notes and Inspo tiles opening Ideas, the note rows (icon, first line,
+  "Note · date", tap to edit). Tick lists are now ticked inside the note,
+  not on the area page.
 
 ## Phone audit, 20 Oct 2026
 

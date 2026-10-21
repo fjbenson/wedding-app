@@ -30,7 +30,11 @@ export default function StageTabs({
   useEffect(() => {
     const fromHash = () => {
       const i = stages.findIndex((st) => st.id === window.location.hash.slice(1));
-      if (i >= 0) setOpen(i);
+      if (i >= 0) {
+        setOpen(i);
+        // Bring the stages into view: the stage's own id only exists once it's open.
+        requestAnimationFrame(() => document.getElementById("stages")?.scrollIntoView({ block: "start" }));
+      }
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
@@ -39,7 +43,7 @@ export default function StageTabs({
 
   const st = stages[open];
   return (
-    <div className="mt-4">
+    <div id="stages" className="mt-4 scroll-mt-6">
       <div role="tablist" aria-label="Stages" className="flex">
         {stages.map((s, i) => {
           const isDone = done[i];

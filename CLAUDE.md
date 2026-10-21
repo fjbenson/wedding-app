@@ -263,15 +263,18 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
   each can step back). **Ideas are notes or inspo** (21 Oct 2026, canvas 4
   "Area page · Round 2", A): one card with the pictures, the area's notes as
-  rows (first line as a title, a fine gold line down each, date and Edit
-  at the right underneath; canvas 4 "Area page · Round 3", TL) and "+ Add an
+  rows (a note icon, the first line, "Note · date"; tap to edit, no Edit
+  button; 21 Oct 2026, Round 2's A) and "+ Add an
   idea" (A note · Inspo, both full screens; a note's is `/area/[key]/note`,
   Bullet and Tick-box on top) at the foot, counted as "N ideas"; key facts
   became notes (`areas.details` kept, unshown); "Save an idea" is now "Add
   inspo". Payment starts "Paid £X of £Y" with a bar.
-  Then **"Everything for [area]"**, one line each for
-  suppliers, plan, money, the day and the timeline (Decor and Stationery,
-  with no stages, keep a notes line). Special areas swap
+  Then **"Everything for [area]"** in the tabs' order (suppliers, guests,
+  plan, money, the day), then **"Only for [area]"** (Food & drink's menu and
+  drinks), then a foot like the Hub: **Notes** and **Inspo** tiles (both open
+  the Ideas stage; Decor and Stationery, with no stages, keep a notes fold
+  there) and the timeline folded to one line (canvas 4 "Area page · Round 4",
+  A, 21 Oct 2026). Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,
   with every dietary need listed there, what it comes to at the caterer's prices, the menu `/menu`,
   Drinks `/drinks`, food through the day), **Stationery** (What you send:

@@ -841,9 +841,13 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
 }
 
 /**
- * Laptops: the numbers in one slim row of tiles (canvas 4 "Laptop · Round 9",
- * 1b, owner's pick 21 Oct 2026) — everyone still expected, then each answer,
- * each a tap to show just those, and how the answers are going as one bar.
+ * Laptops: the numbers in one slim row (canvas 4 "Laptop · Round 9", 1b, owner's
+ * pick 21 Oct 2026). Set like the phone's card (Round 2, A, owner's pick):
+ * the tiles share one frosted card and the picked one lifts out as white, with
+ * its number gold. Each answer carries its small icon (✓ coming, an envelope
+ * once invited, a dashed one still to invite, ✕ can't come), the same ones the
+ * table below uses as its key. Guests is everyone still expected, so Coming +
+ * Yet to respond + To invite add up to it; Can't come is set apart, not in it.
  */
 function AnswersStrip({
   total,
@@ -858,36 +862,46 @@ function AnswersStrip({
   showing: Showing;
   onShow: (s: Showing) => void;
 }) {
-  // The picked tile stands out (owner, 21 Oct 2026: they all looked the same):
-  // solid white, its number gold and a gold line along its foot.
-  const tile = (on: boolean) =>
-    `flex flex-col justify-between rounded-[18px] px-4 py-3.5 text-left transition ${
-      on ? "glass-tile-on shadow-[inset_0_-2.5px_0_#B8914F,0_10px_22px_-14px_rgb(60_50_40/0.35)]" : "bg-white/40 hover:bg-white/75"
-    }`;
-  const figure = (on: boolean) => `type-figure text-[32px] leading-none ${on ? "text-champagne-600" : "text-ink"}`;
-  const tiles: { status: Rsvp["status"]; label: string }[] = [
-    { status: "attending", label: "Coming" },
-    { status: "pending", label: "Yet to respond" },
-    { status: "to_invite", label: "To invite" },
+  const tiles: { key: Showing; status?: Rsvp["status"]; label: string; n: number }[] = [
+    { key: "all", label: `Guests · ${homes} ${homes === 1 ? "home" : "homes"}`, n: total },
+    { key: "attending", status: "attending", label: "Coming", n: counts.attending },
+    { key: "pending", status: "pending", label: "Yet to respond", n: counts.pending },
+    { key: "to_invite", status: "to_invite", label: "To invite", n: counts.to_invite },
+    { key: "declined", status: "declined", label: "Can't come", n: counts.declined },
   ];
+  const at = tiles.findIndex((t) => t.key === showing);
   const answered = counts.attending + counts.declined + counts.pending;
   const share = (n: number) => `${answered ? (n / answered) * 100 : 0}%`;
   return (
-    <section aria-label="RSVPs" className="hidden gap-3.5 lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_1.7fr]">
-      <button type="button" aria-pressed={showing === "all"} onClick={() => onShow("all")} className={tile(showing === "all")}>
-        <span className={figure(showing === "all")}>{total}</span>
-        <span className="type-meta mt-2">Guests · {homes} {homes === 1 ? "home" : "homes"}</span>
-      </button>
-      {tiles.map((t) => {
-        const on = showing === t.status;
-        return (
-          <button key={t.status} type="button" aria-pressed={on} onClick={() => onShow(on ? "all" : t.status)} className={tile(on)}>
-            <span className={figure(on)}>{counts[t.status]}</span>
-            <span className="type-meta mt-2">{t.label}</span>
-          </button>
-        );
-      })}
-      <div className="glass-card rounded-[18px] px-4 py-3.5">
+    <section aria-label="RSVPs" className="hidden gap-3.5 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,1.5fr)]">
+      <div className="glass-card flex items-stretch rounded-[22px] p-2">
+        {tiles.map((t, i) => {
+          const on = showing === t.key;
+          return (
+            <div key={t.key} className="flex min-w-0 flex-1 items-stretch">
+              <button
+                type="button"
+                aria-pressed={on}
+                onClick={() => onShow(on && t.key !== "all" ? "all" : (t.key as Showing))}
+                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-4 py-3 text-left transition ${
+                  on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]" : "hover:bg-white/60"
+                }`}
+              >
+                <span className={`type-figure text-[32px] leading-none ${on ? "text-champagne-600" : t.key === "declined" ? "text-stone" : "text-ink"}`}>{t.n}</span>
+                <span className="mt-2 flex items-center gap-1.5">
+                  {t.status && <AnswerIcon status={t.status} small />}
+                  <span className={`type-meta min-w-0 truncate ${on ? "!text-ink" : ""}`}>{t.label}</span>
+                </span>
+                {t.key === "declined" && <span className="text-xs text-stone">not in the {total}</span>}
+              </button>
+              {i < tiles.length - 1 && (
+                <span aria-hidden className={`my-3 w-px shrink-0 ${on || i + 1 === at ? "bg-transparent" : "bg-linen"}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="glass-card rounded-[22px] px-5 py-4">
         <p className="type-meta">Answers so far</p>
         <div aria-hidden className="mt-3 flex h-2 overflow-hidden rounded-full bg-champagne-100">
           <span className="bg-champagne-400" style={{ width: share(counts.attending) }} />
@@ -998,12 +1012,12 @@ const ICON: Record<Rsvp["status"] | "unset", { ring: string; icon: React.ReactNo
   unset: { ring: "border-[1.5px] border-dashed border-champagne-600 text-champagne-600", icon: <span className="font-display text-[0.8em] leading-none">?</span> },
 };
 
-export function AnswerIcon({ status, small = false }: { status?: Rsvp["status"]; small?: boolean }) {
+export function AnswerIcon({ status, small = false, tiny = false }: { status?: Rsvp["status"]; small?: boolean; tiny?: boolean }) {
   const look = ICON[status ?? "unset"];
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${small ? "h-5 w-5 text-[13px]" : "h-[22px] w-[22px] text-[13px]"}`}
+      className={`flex shrink-0 items-center justify-center rounded-full ${look.ring} ${tiny ? "h-4 w-4 text-[11px]" : small ? "h-5 w-5 text-[13px]" : "h-[22px] w-[22px] text-[13px]"}`}
     >
       {look.icon}
     </span>
@@ -1568,9 +1582,10 @@ function AnswerPill({ status }: { status?: Rsvp["status"] }) {
     to_invite: "border border-dashed border-linen text-stone",
     declined: "bg-[#EFECE8] text-stone line-through",
   };
+  // The same small icons as the tiles above, which are its key (owner, 21 Oct 2026).
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] leading-none ${look[status]}`}>
-      {status === "attending" && <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />}
+    <span className={`inline-flex items-center gap-1.5 rounded-full py-[3px] pl-1.5 pr-2.5 text-[13px] leading-none ${look[status]}`}>
+      <AnswerIcon status={status} tiny />
       {ANSWER_WORD[status].word}
     </span>
   );

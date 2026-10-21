@@ -81,7 +81,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
               <button
                 type="button"
                 onClick={() => show(a.key || "other")}
-                className="glass-card row-press block h-full w-full overflow-hidden rounded-[22px] p-4 text-left [--row-bleed:16px]"
+                className="glass-card row-press flex h-full w-full flex-col justify-start overflow-hidden rounded-[22px] p-4 text-left [--row-bleed:16px]"
               >
                 <span className="flex items-center gap-2">
                   <Icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
@@ -101,7 +101,6 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
                     </span>
                   </>
                 )}
-                {a.detail.perHead && <span className="mt-1 block text-xs text-stone">{aHead(a.detail.perHead)}</span>}
               </button>
             </li>
           );

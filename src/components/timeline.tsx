@@ -21,9 +21,9 @@ const GROUPS: { value: TimelineGroup | "all"; label: string }[] = [
 const SHOWN = 5;
 
 /**
- * Everything with someone, past and to come (canvas 3 "Timeline · Round 3",
- * owner: "bloody LOVE IT"): what's coming up above a Today line, what's
- * happened below it, newest first, one mark for each kind, and chips to show
+ * History: everything that's happened with someone, newest first (canvas 3
+ * "Timeline · Round 3", owner: "bloody LOVE IT"; only the past since 21 Oct
+ * 2026 — what's to come is Plan's), one mark for each kind, and chips to show
  * one kind. "+ Add" opens Add to history (a call, a meeting…).
  *
  * `scope` is "supplier:<id>", "guest:<id>", "household:<id>" or "area:<key>".
@@ -74,7 +74,9 @@ export default function Timeline({
 
   const pick = only ?? group;
   const shown = (items ?? []).filter((i) => pick === "all" || i.group === pick);
-  const coming = shown.filter((i) => i.upcoming);
+  // History is what's happened (owner, 21 Oct 2026: Plan is what's to come).
+  // Only a payment's "All payments to …" (`only`) still lists what's due.
+  const coming = only ? shown.filter((i) => i.upcoming) : [];
   const before = shown.filter((i) => !i.upcoming);
   const groups = GROUPS.filter((g) => g.value === "all" || (items ?? []).some((i) => i.group === g.value));
   const addHref = `/history/new?with=${encodeURIComponent(scope)}&back=${encodeURIComponent(here)}`;
@@ -149,16 +151,18 @@ export default function Timeline({
               <Row key={item.key} item={item} upcoming onRemove={remove} />
             ))}
             {/* Today sits on the line as a dot, with its words beside it: no rules across the page to cross the line. */}
+            {only && (
             <li className="relative py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-ink" aria-label="Today">
               <span aria-hidden className="absolute -left-10 top-1/2 flex w-[30px] -translate-y-1/2 justify-center">
                 <span className="h-3 w-3 rounded-full bg-ink ring-[3px] ring-ivory" />
               </span>
               Today{today ? ` · ${formatDayMonth(today)}` : ""}
             </li>
+            )}
             {(all ? before : before.slice(0, SHOWN)).map((item) => (
               <Row key={item.key} item={item} onRemove={remove} />
             ))}
-            {before.length === 0 && <li className="py-2 text-[14px] text-stone">Nothing before today.</li>}
+            {before.length === 0 && <li className="py-2 text-[14px] text-stone">{only ? "Nothing before today." : "Nothing yet."}</li>}
           </ol>
           {!all && before.length > SHOWN && (
             <button type="button" onClick={() => setAll(true)} className="mt-1 py-2 text-[14px] text-stone hover:text-ink">

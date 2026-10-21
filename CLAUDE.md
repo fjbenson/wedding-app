@@ -340,7 +340,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Send it.
 - **History** (called the timeline in code; renamed on screen 21 Oct 2026,
   owner: Plan is what's to come, History what's happened) on every supplier, guest and household card (folded to one
-  line), area page and payment: past and to come around a Today marker; calls,
+  line), area page: only what's happened, newest first (a payment's "All payments to
+  …" still shows what's due around a Today marker); calls,
   meetings, emails and notes are added on a full screen (`/history/new`; not `/timeline/…`, which an old redirect sends to Plan);
   stage changes and sendings are written by the app.
 - **Juno** (the assistant; named 20 Oct 2026, owner): the Hub pill and the

@@ -64,9 +64,16 @@ export async function planPdf(couple: string, date: string | null, tables: Venue
   const room = { x: left, y: 38, w: W - left * 2, h: (W - left * 2) * 0.75 };
   doc.setDrawColor(230, 224, 214);
   doc.roundedRect(room.x, room.y, room.w, room.h, 3, 3);
+  // A table may stand outside the room (0036): the page then shows all of them.
+  const lo = (n: number) => (n < 0 ? n - 14 : 0);
+  const hi = (n: number) => (n > 100 ? n + 14 : 100);
+  const bx0 = lo(Math.min(...tables.map((t) => t.x), 0));
+  const bx1 = hi(Math.max(...tables.map((t) => t.x), 100));
+  const by0 = lo(Math.min(...tables.map((t) => t.y), 0));
+  const by1 = hi(Math.max(...tables.map((t) => t.y), 100));
   for (const t of tables) {
-    const cx = room.x + (t.x / 100) * room.w;
-    const cy = room.y + (t.y / 100) * room.h;
+    const cx = room.x + ((t.x - bx0) / (bx1 - bx0)) * room.w;
+    const cy = room.y + ((t.y - by0) / (by1 - by0)) * room.h;
     doc.setDrawColor(...GOLD);
     doc.setFillColor(255, 253, 248);
     if (t.shape === "round") {

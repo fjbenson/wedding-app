@@ -113,11 +113,41 @@ export default function FloorPlan({
   /** Zooms about a point (px from the canvas's top left) so what's under it stays put. */
   const zoomBy = useCallback((factor: number, cx: number, cy: number) => {
     setView((v) => {
-      const z = Math.min(2.5, Math.max(0.4, v.z * factor));
+      const z = Math.min(2.5, Math.max(0.15, v.z * factor));
       const k = z / v.z;
       return { z, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
     });
   }, []);
+  /** Zooms and pans so the room and every table are in view (never bigger than 100%). */
+  function fitAll() {
+    const el = viewRef.current;
+    if (!el) return;
+    const vw = el.clientWidth;
+    const vh = el.clientHeight;
+    let [x0, y0, x1, y1] = [0, 0, vw, vh];
+    for (const t of tables) {
+      const s = spots[t.id];
+      if (!s) continue;
+      const { width, aspect } = tableSize(shapes[t.id] ?? "round", t.capacity);
+      const w = (vw * width) / 100;
+      const h = w / aspect;
+      const [cx, cy, m] = [(s.x / 100) * vw, (s.y / 100) * vh, 16];
+      x0 = Math.min(x0, cx - w / 2 - m);
+      x1 = Math.max(x1, cx + w / 2 + m);
+      y0 = Math.min(y0, cy - h / 2 - m);
+      y1 = Math.max(y1, cy + h / 2 + m);
+    }
+    const z = Math.min(1, vw / (x1 - x0), vh / (y1 - y0));
+    setView({ z, x: vw / 2 - ((x0 + x1) / 2) * z, y: vh / 2 - ((y0 + y1) / 2) * z });
+  }
+  // Opening the plan with a table outside the room: start with everything in view.
+  const fitted = useRef(false);
+  useEffect(() => {
+    if (!wide || fitted.current || tables.length === 0 || Object.keys(spots).length === 0) return;
+    fitted.current = true;
+    if (Object.values(spots).some((s) => s.x < 0 || s.x > 100 || s.y < 0 || s.y > 100)) fitAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wide, spots, tables.length]);
   function zoomFromCentre(factor: number) {
     const r = viewRef.current?.getBoundingClientRect();
     if (r) zoomBy(factor, r.width / 2, r.height / 2);
@@ -295,9 +325,10 @@ export default function FloorPlan({
 
   // Tables snap to the room's dots (owner, 19 Oct 2026): a 20 × 15 grid of
   // square cells (the room is 4:3), each dot in the middle of its cell.
+  // The dots carry on outside the room, three room-widths each way (0036).
   const snapTo = (n: number, step: number) => {
     const cells = Math.round(100 / step);
-    const k = Math.max(0, Math.min(cells - 1, Math.round((n - step / 2) / step)));
+    const k = Math.max(-3 * cells, Math.min(4 * cells - 1, Math.round((n - step / 2) / step)));
     return Math.round((k * step + step / 2) * 10) / 10;
   };
   const keep = (n: number) => snapTo(n, GRID_X);
@@ -386,8 +417,10 @@ export default function FloorPlan({
         justDragged.current = true;
         setTimeout(() => (justDragged.current = false), 80);
         if (payload.kind === "table") {
-          const p = pointAt(e.clientX, e.clientY);
-          if (p && p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100) addTableAt(payload.shape, keep(p.x), keepY(p.y));
+          const v = viewRef.current?.getBoundingClientRect();
+          const over = v && e.clientX >= v.left && e.clientX <= v.right && e.clientY >= v.top && e.clientY <= v.bottom;
+          const p = over ? pointAt(e.clientX, e.clientY) : null;
+          if (p) addTableAt(payload.shape, keep(p.x), keepY(p.y));
           return;
         }
         const onto = tableUnder(e.clientX, e.clientY);
@@ -545,7 +578,7 @@ export default function FloorPlan({
           <button
             type="button"
             aria-label="Fit the room to the screen"
-            onClick={() => setView({ z: 1, x: 0, y: 0 })}
+            onClick={fitAll}
             className="h-9 min-w-14 rounded-full px-2 text-sm tabular-nums text-ink hover:bg-champagne-100"
           >
             {Math.round(view.z * 100)}%

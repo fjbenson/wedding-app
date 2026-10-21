@@ -228,7 +228,8 @@ function floorPlanError(error: unknown): string {
     : `That didn't save. ${describe(error)}`;
 }
 
-const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n * 10) / 10));
+// −300 … 400, as 0036_floor_plan_wider.sql allows: a table may stand outside the room.
+const clamp = (n: number) => Math.max(-300, Math.min(400, Math.round(n * 10) / 10));
 
 export async function moveTableAction(id: string, x: number, y: number): Promise<string | null> {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;

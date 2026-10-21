@@ -5,7 +5,7 @@ import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Search, SlidersHorizontal, Star, UserRound, Users, X } from "lucide-react";
+import { CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Moon, Search, SlidersHorizontal, Star, Sun, TriangleAlert, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -702,6 +702,7 @@ export default function GuestBrowser({
             onFold={toggleFold}
             answers={data.answers}
             events={events}
+            ownEvent={ownEvent}
             tables={tables}
             dietOf={dietOf}
             openId={openId}
@@ -1461,6 +1462,7 @@ function GuestTable({
   onFold,
   answers,
   events,
+  ownEvent,
   tables,
   dietOf,
   openId,
@@ -1470,30 +1472,40 @@ function GuestTable({
   folded: Set<string>;
   onFold: (key: string) => void;
   answers: Map<string, Rsvp[]>;
-  /** One answer column per event (the day, the evening). */
   events: WeddingEvent[];
+  /** The one event a guest is a guest of (day or evening), and so the answer shown. */
+  ownEvent: (g: Contact) => WeddingEvent | undefined;
   tables: Record<string, string>;
   dietOf: (g: Contact) => string | null;
   /** The guest whose card is open beside the list, marked in it. */
   openId?: string;
   onOpen: (id: string) => void;
 }) {
+  // Three clusters, split by a hairline: who and their answer, what they eat, where they sit
+  // (owner, 21 Oct 2026: make the table more visual, with hierarchy).
   const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-champagne-600";
-  const word = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
-  const columns = 4 + events.length;
+  const gap = "border-l border-linen pl-5";
+  const columns = 6;
 
   return (
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
-      <table className="w-full border-collapse text-left text-sm">
+      <table className="w-full table-fixed border-collapse text-left text-sm">
+        <colgroup>
+          <col />
+          <col className="w-[8.5rem]" />
+          <col className="w-[10.5rem]" />
+          <col className="w-[8.5rem]" />
+          <col className="w-[15rem]" />
+          <col className="w-[8rem]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
             <th scope="col" className={head}>Guest</th>
-            {events.map((e) => (
-              <th key={e.id} scope="col" className={head}>{word(e)}</th>
-            ))}
-            <th scope="col" className={head}>Meal</th>
-            <th scope="col" className={head}>Needs</th>
-            <th scope="col" className={head}>Table</th>
+            <th scope="col" className={head}>Guest of</th>
+            <th scope="col" className={head}>Answer</th>
+            <th scope="col" className={`${head} ${gap}`}>Meal</th>
+            <th scope="col" className={head}>Dietary</th>
+            <th scope="col" className={`${head} ${gap}`}>Table</th>
           </tr>
         </thead>
         {groups.map((group) => (
@@ -1523,18 +1535,21 @@ function GuestTable({
             )}
             {(folded.has(group.key) ? [] : group.guests).map((g) => {
               const roles = rolesOf(g);
-              const needs = needsOf(dietOf(g));
+              const needs = needsOf(dietOf(g)).sort((a, b) => Number(isAllergy(b)) - Number(isAllergy(a)));
               const table = tables[g.id];
               const isOpen = openId === g.id;
+              const event = ownEvent(g);
+              const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;
+              const meal = mealKindOf(g);
               return (
                 <tr
                   key={g.id}
                   onClick={() => onOpen(g.id)}
                   className={`cursor-pointer border-t border-linen/80 align-middle ${isOpen ? "bg-white shadow-[inset_3px_0_0_#B8914F]" : "hover:bg-white/60"}`}
                 >
-                  <td className="py-1.5 pl-2 pr-4">
+                  <td className="py-2 pl-2 pr-4">
                     <span className="flex items-center gap-3">
-                      <span aria-hidden className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
+                      <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
                         {initials(g)}
                         {roles.length > 0 && (
                           <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
@@ -1543,34 +1558,53 @@ function GuestTable({
                         )}
                       </span>
                       <span className="min-w-0">
-                        <button type="button" aria-expanded={isOpen} className="block whitespace-nowrap text-left font-display text-base text-ink hover:underline">
+                        <button type="button" aria-expanded={isOpen} className="block truncate text-left font-display text-[17px] text-ink hover:underline">
                           {fullName(g)}
                         </button>
-                        {roles.length > 0 && <span className="block text-xs text-champagne-600">{roles.join(" · ")}</span>}
+                        {roles.length > 0 && <span className="block truncate text-xs text-champagne-600">{roles.join(" · ")}</span>}
                       </span>
                     </span>
                   </td>
-                  {events.map((e) => (
-                    <td key={e.id} className="whitespace-nowrap py-1.5 pr-4">
-                      <AnswerPill status={answers.get(g.id)?.find((r) => r.event_id === e.id)?.status} />
-                    </td>
-                  ))}
-                  <td className="whitespace-nowrap py-1.5 pr-4 text-ink">{mealWord(g)}</td>
-                  <td className="py-1.5 pr-4">
+                  <td className="py-2 pr-4">
+                    {event ? (
+                      <EventPill event={event} first={events[0]?.id === event.id} />
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 font-display text-sm italic text-champagne-600">
+                        <AnswerIcon tiny />
+                        Day or evening?
+                      </span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap py-2 pr-4">
+                    <AnswerPill status={rsvp?.status} />
+                  </td>
+                  <td className={`whitespace-nowrap py-2 pr-4 ${gap}`}>
+                    {meal === "adult" ? (
+                      <span className="text-ink">Adult</span>
+                    ) : meal === "child" ? (
+                      <span className="rounded-full bg-cream px-2.5 py-0.5 text-[13px] text-ink shadow-[inset_0_0_0_1px_#E3D3B3]">Child&apos;s</span>
+                    ) : (
+                      <span className="text-stone/70">No meal</span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-4">
                     <span className="flex flex-wrap gap-1.5">
-                      {needs.map((need) => (
-                        <span key={need} className="whitespace-nowrap rounded-full bg-cream px-2.5 py-0.5 text-xs text-stone shadow-[inset_0_0_0_1px_#E3D3B3]">
-                          {need}
-                        </span>
-                      ))}
+                      {needs.map((need) =>
+                        isAllergy(need) ? (
+                          <span key={need} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[#FBEDEA] px-2.5 py-0.5 text-xs font-medium text-[#9A3F2B] shadow-[inset_0_0_0_1px_#E8C2B9]">
+                            <TriangleAlert className="h-3 w-3" strokeWidth={2} aria-hidden />
+                            {need}
+                          </span>
+                        ) : (
+                          <span key={need} className="whitespace-nowrap rounded-full bg-cream px-2.5 py-0.5 text-xs text-stone shadow-[inset_0_0_0_1px_#E3D3B3]">
+                            {need}
+                          </span>
+                        ),
+                      )}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap py-1.5 pr-2">
-                    {table ? (
-                      <span className="font-display text-[15px] text-ink">{table}</span>
-                    ) : (
-                      <span className="text-stone/60">–</span>
-                    )}
+                  <td className={`whitespace-nowrap py-2 pr-2 ${gap}`}>
+                    {table ? <span className="font-display text-[16px] font-medium text-ink">{table}</span> : <span className="text-stone/50">–</span>}
                   </td>
                 </tr>
               );
@@ -1583,15 +1617,42 @@ function GuestTable({
 }
 
 /**
+ * Which part of the day a guest is a guest of, as a small pill with its own
+ * mark — a sun for the day, a moon for the evening — and always the word.
+ */
+function EventPill({ event, first }: { event: WeddingEvent; first: boolean }) {
+  const word = eventWord(event).replace(/^\w/, (c) => c.toUpperCase());
+  const Mark = first ? Sun : Moon;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] leading-none ${
+        first ? "bg-[#FBF3E2] text-champagne-600 shadow-[inset_0_0_0_1px_#EBD9B4]" : "bg-[#EEE9E2] text-[#5B554E] shadow-[inset_0_0_0_1px_#DDD5C9]"
+      }`}
+    >
+      <Mark className="h-3 w-3" strokeWidth={1.9} aria-hidden />
+      {word}
+    </span>
+  );
+}
+
+/**
  * A guest's answer for one event as a small pill (canvas 4 "Laptop · Round
  * 9", 1b, owner's pick 21 Oct 2026): always the word, never colour alone.
  * Not invited to that event: a quiet dash.
  */
 function AnswerPill({ status }: { status?: Rsvp["status"] }) {
   if (!status) return <span className="text-stone/60">–</span>;
-  const look: Record<Rsvp["status"], string> = {
-    attending: "bg-champagne-100 text-champagne-600",
-    pending: "border border-dashed border-champagne-400 text-stone",
+  // Coming is the usual answer, so it sits quietly; the others stand out as pills.
+  if (status === "attending") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[13px] text-ink">
+        <AnswerIcon status={status} tiny />
+        {ANSWER_WORD[status].word}
+      </span>
+    );
+  }
+  const look: Record<Exclude<Rsvp["status"], "attending">, string> = {
+    pending: "border border-dashed border-champagne-400 text-champagne-600",
     to_invite: "border border-dashed border-linen text-stone",
     declined: "bg-[#EFECE8] text-stone line-through",
   };

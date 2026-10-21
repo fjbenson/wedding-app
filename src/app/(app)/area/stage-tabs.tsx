@@ -63,19 +63,20 @@ export default function StageTabs({
               <span className="flex w-full items-center">
                 <span aria-hidden className={`h-0.5 flex-1 ${i === 0 ? "bg-transparent" : done[i - 1] ? "bg-champagne-600" : "bg-linen"}`} />
                 <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] ${
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
                     isDone
                       ? "bg-champagne-600 text-white"
                       : isHere
                         ? "border-2 border-champagne-600 bg-white font-display text-champagne-600"
                         : "border-[1.5px] border-dashed border-champagne-400 bg-ivory"
-                  } ${isOpen ? "shadow-[0_0_0_4px_rgb(184_145_79/0.25)]" : ""}`}
+                  } ${isOpen ? "shadow-[0_0_0_3px_rgb(184_145_79/0.22)]" : ""}`}
                 >
-                  {isDone ? <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden /> : isHere ? i + 1 : null}
+                  {isDone ? <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden /> : isHere ? i + 1 : null}
                 </span>
                 <span aria-hidden className={`h-0.5 flex-1 ${i === stages.length - 1 ? "bg-transparent" : isDone ? "bg-champagne-600" : "bg-linen"}`} />
               </span>
-              <span className={`label whitespace-nowrap !tracking-[0.05em] ${isOpen ? "!font-semibold !text-ink" : isDone ? "!text-champagne-600" : "!text-stone"}`}>
+              {/* Smaller and lighter (owner, 21 Oct 2026); 12px is the floor, so the names lose weight and tracking instead. */}
+              <span className={`label whitespace-nowrap !tracking-[0.03em] ${isOpen ? "!font-medium !text-ink/80" : isDone ? "!font-normal !text-champagne-600" : "!font-normal !text-stone"}`}>
                 {s.name}
                 {isDone && <span className="sr-only"> (done)</span>}
               </span>

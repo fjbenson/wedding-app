@@ -22,7 +22,7 @@ import type { AppointmentStepsBlock, Block, GuestStepsBlock, PaymentStepsBlock, 
  * a job gets a card that saves only on Yes.
  *
  * `variant` is the door: the Hub's pill under the ring, the round pen
- * above the menu bar on the other tabs, or a round pen in the laptop's
+ * beside the menu bar on a phone (`tab`), or a round pen in the laptop's
  * sidebar.
  */
 
@@ -38,7 +38,7 @@ const isSteps = (block: Block): block is StepsBlock =>
 
 type CardState = { state: "saving" } | { state: "saved"; link?: string; note?: string } | { state: "changed" } | { state: "error"; message: string };
 
-export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "fab" | "bar"; subtitle?: string }) {
+export default function AssistantSheet({ variant, subtitle }: { variant: "hub" | "tab" | "bar"; subtitle?: string }) {
   const [open, setOpen] = useState(false);
   // The conversation lasts while the page is open, so closing and reopening keeps it.
   const conversation = useConversation();
@@ -70,8 +70,8 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Juno"
-          className="glass fixed bottom-[calc(max(12px,env(safe-area-inset-bottom))+60px)] right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink print:hidden md:bottom-[84px] lg:hidden"
+          aria-label="Ask Juno"
+          className="glass pointer-events-auto relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-champagne-600 print:hidden min-[360px]:h-[52px] min-[360px]:w-[52px]"
         >
           <PenLine className="h-5 w-5" strokeWidth={1.8} aria-hidden />
         </button>

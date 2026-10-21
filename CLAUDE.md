@@ -312,7 +312,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   meetings, emails and notes are added on a full screen (`/history/new`; not `/timeline/…`, which an old redirect sends to Plan);
   stage changes and sendings are written by the app.
 - **Juno** (the assistant; named 20 Oct 2026, owner): the Hub pill and the
-  floating pen open it. Typing searches the whole wedding at once with no AI
+  round pen beside the phone's menu bar (21 Oct 2026, canvas 4: it no longer
+  floats over lists) open it. Typing searches the whole wedding at once with no AI
   (`searchWedding()`); Send asks Juno (`src/app/api/assistant/route.ts`,
   tools in `src/lib/assistant/tools.ts`, the general `look_up` in
   `src/lib/lookup-general.ts` — **what it can read is that file's list**).

@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import CaptureButton from "@/components/capture-button";
 import CapturedToast from "@/components/captured-toast";
 import MenuBar from "@/components/menu-bar";
 import SideBar from "@/components/side-bar";
@@ -24,7 +23,6 @@ export default function AppShell({
       <SideBar name={wedding.name} inboxCount={inboxCount} />
       <div className="min-w-0 lg:pl-[250px] print:!pl-0">{children}</div>
       <MenuBar />
-      <CaptureButton />
       <Suspense fallback={null}>
         <CapturedToast />
       </Suspense>

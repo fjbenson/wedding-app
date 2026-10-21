@@ -823,18 +823,20 @@ export default function AreaView({
             <ul className="divide-y divide-linen">
               {notes.map((n) => (
                 <li key={n.id} className="py-3.5">
-                  {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL). */}
-                  <div className="border-l-2 border-champagne-400/50 pl-3">
-                    <TickableNote note={n} titled />
+                  {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL).
+                      Edit top right and the day it was written (quiet, italic) bottom right, in their own
+                      column beside the note, so they add no row of their own (owner, 21 Oct 2026). */}
+                  <div className="flex gap-3 border-l-2 border-champagne-400/50 pl-3">
+                    <div className="min-w-0 flex-1">
+                      <TickableNote note={n} titled />
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end justify-between gap-2">
+                      <Link href={`/area/${area.key}/note?id=${n.id}`} className="-my-1 py-1 text-[13px] text-champagne-600 hover:text-ink">
+                        Edit
+                      </Link>
+                      <span className="text-xs italic text-stone">{formatDayMonth(n.created_at.slice(0, 10))}</span>
+                    </div>
                   </div>
-                  {/* The note runs the full width; the day it was written (quiet, italic) and Edit
-                      sit together at the right underneath (owner, 21 Oct 2026). */}
-                  <p className="mt-1.5 flex items-baseline justify-end gap-3">
-                    <span className="text-xs italic text-stone">{formatDayMonth(n.created_at.slice(0, 10))}</span>
-                    <Link href={`/area/${area.key}/note?id=${n.id}`} className="py-1 text-[13px] text-champagne-600 hover:text-ink">
-                      Edit
-                    </Link>
-                  </p>
                 </li>
               ))}
             </ul>

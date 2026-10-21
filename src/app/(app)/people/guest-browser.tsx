@@ -1586,14 +1586,15 @@ function GuestTable({
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
       {/* Narrow laptop windows scroll sideways rather than squeezing the name under the next column. */}
       <div className="overflow-x-auto">
-      <table className="w-full min-w-[52rem] table-fixed border-collapse text-left text-sm">
+      <table className="w-full min-w-[56rem] table-fixed border-collapse text-left text-sm">
         <colgroup>
-          <col className="w-[15rem]" />
-          <col className="w-[6.5rem]" />
-          <col className="w-[9rem]" />
-          <col className="w-[7.5rem]" />
+          {/* Guest takes what's left; Dietary is narrow (most have none, and the tags wrap). */}
           <col />
           <col className="w-[6.5rem]" />
+          <col className="w-[10rem]" />
+          <col className="w-[7rem]" />
+          <col className="w-[13rem]" />
+          <col className="w-[9.5rem]" />
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
@@ -1697,7 +1698,7 @@ function GuestTable({
                     </span>
                   </td>
                   <td className={`whitespace-nowrap py-2 pr-2 ${gap}`}>
-                    {table ? <span className="font-display text-[16px] font-medium text-ink">{table}</span> : <span className="text-stone/50">–</span>}
+                    {table ? <span className="block truncate font-display text-[16px] font-medium text-ink" title={table}>{table}</span> : <span className="text-stone/50">–</span>}
                   </td>
                 </tr>
               );

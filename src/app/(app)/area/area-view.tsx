@@ -808,7 +808,7 @@ export default function AreaView({
     {
       name: STAGES[0],
       id: "ideas",
-      line: ideaCount > 0 ? plural(ideaCount, "idea") : area.details ? "Key facts" : "None yet",
+      line: ideaCount + (area.details?.trim() ? 1 : 0) > 0 ? plural(ideaCount + (area.details?.trim() ? 1 : 0), "idea") : "None yet",
       content: (
         <>
           {photos.length > 0 && (

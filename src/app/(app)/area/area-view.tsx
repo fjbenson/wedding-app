@@ -1077,9 +1077,9 @@ export default function AreaView({
 
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
-    // On a laptop (canvas 4 "Laptop · Round 9", 2, owner's pick 21 Oct 2026): a
-    // wide cover, then two columns — what to do (Next up and the stages) on the
-    // left, everything about the area on the right. One column on phones.
+    {/* On a laptop (canvas 4 "Laptop · Round 9", 2, owner's pick 21 Oct 2026): a
+        wide cover, then two columns — what to do (Next up and the stages) on the
+        left, everything about the area on the right. One column on phones. */}
     <main className="page relative pb-40 lg:max-w-[1280px] lg:px-10 lg:pb-16">
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} decor={!!decor} />
 

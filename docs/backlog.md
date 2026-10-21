@@ -36,7 +36,6 @@ journey times, wrapped table names, New area's ideas. Still open:
 
 - Juno still reads the old typed dishes if asked (`lookups.ts`), and its
   lookups don't know the meal tiles yet (rule one: owner's call).
-- **Demo gaps**: no menu, drinks or extra run sheets in `demo-wedding.sql`.
 - **Not covered**: a real iPhone (keyboard, Safari's pickers), the laptop,
   Juno's answers (needs the key).
 
@@ -182,8 +181,9 @@ Each would be an added column, not a rebuild:
 ## Tech loose ends
 
 - Run sheets: the area page's "In The Day ›" opens the main sheet only, so a
-  moment on another sheet isn't in it; the demo seed (`demo-wedding.sql`)
-  doesn't make the extra sheets yet. The old group tags on moments
+  moment on another sheet isn't in it (Attire shows two moments but "Nothing on
+  the day" — mocked on canvas 4 "The Day · Round 1", waiting on the owner's
+  pick of A1, A2 or A3). The old group tags on moments
   (`run_sheet_groups`, 0034) are left unused.
 
 - Replace the hand-written types in `src/types/db.ts` with `npm run db:types`.

@@ -143,7 +143,8 @@ and Supabase sit in the same region; if one moves, move the other.
 - Home-screen app: `src/app/manifest.ts`, `appleWebApp` in `layout.tsx`.
 - **Demo wedding** "Olivia & Theo" (12 Jun 2027), on the owner's login beside
   their real one: ~79 guests, suppliers at every stage, money, plan, run
-  sheet, seating, travel, decor, stationery sendings, timeline. All made up
+  sheet (and the Bridesmaids and Groomsmen sheets), menu, drinks, seating,
+  travel, decor, stationery sendings, timeline. All made up
   (07700 900xxx phones, @example.com), safe to screenshot. Switch in Settings ›
   Your weddings (`wedding` cookie). Reset by re-running
   `supabase/seed/demo-wedding.sql` — ask the owner first; keep it in step when

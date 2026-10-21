@@ -512,9 +512,9 @@ select t.wedding_id, 'Send Ellie the colour swatches', 'flowers', '2026-10-23', 
 from timeline_entries t
 where t.wedding_id = (select id from weddings where name = 'Olivia & Theo') and t.kind = 'call' and t.summary like 'Ellie says peonies%';
 
--- Groups with their own schedules, and food and drink served at the day's
--- moments (0033, 0034): the bridesmaids' and groomsmen's mornings, and the
--- courses and drinks linked to the moments they're served at.
+-- The menu and the drinks, groups with their own run sheets (0033–0035: the
+-- bridesmaids' and groomsmen's mornings), and the courses and drinks linked to
+-- the moments they're served at.
 do $$
 declare
   w constant uuid := (select id from weddings where name = 'Olivia & Theo');
@@ -527,6 +527,32 @@ begin
     select bm, id, w from contacts where wedding_id = w and role_on_the_day in ('Maid of honour', 'Bridesmaid');
   insert into guest_group_members (group_id, contact_id, wedding_id)
     select gm, id, w from contacts where wedding_id = w and role_on_the_day in ('Best man', 'Groomsman');
+
+  -- The menu: three courses and their dishes (tags V = vegetarian).
+  insert into menu_courses (wedding_id, name, serve_time, note, evening, sort_order) values
+    (w, 'Canapés', '15:00', 'On the lawn', false, 0),
+    (w, 'Wedding breakfast', '17:00', 'Day guests', false, 1),
+    (w, 'Evening', '21:30', null, true, 2);
+  insert into menu_dishes (course_id, wedding_id, name, tags, instead, sort_order)
+  select c.id, w, v.dish, v.tags::text[], v.instead, v.ord
+  from (values
+    ('Canapés', 'Smoked salmon blini', '{}', null, 0),
+    ('Canapés', 'Wild mushroom tartlet', '{V}', null, 1),
+    ('Canapés', 'Honey-glazed chipolatas', '{}', null, 2),
+    ('Wedding breakfast', 'Heritage tomato and burrata', '{V}', null, 0),
+    ('Wedding breakfast', 'Slow-roast lamb shoulder, dauphinoise, tenderstem', '{}', 'Vegetarians: wild mushroom wellington', 1),
+    ('Wedding breakfast', 'Sticky toffee pudding', '{V}', null, 2),
+    ('Evening', 'Bacon rolls and halloumi fries', '{V}', null, 0)
+  ) as v(course, dish, tags, instead, ord)
+  join menu_courses c on c.wedding_id = w and c.name = v.course;
+  insert into drinks (wedding_id, name, moment, kind, serve_time, quantity, unit, supplied_by, status, sort_order) values
+    (w, 'Arrival fizz', 'Arrival', 'fizz', '14:30', 27, 'bottles', 'Bar company', 'ordered', 0),
+    (w, 'Pimm''s jugs', 'Canapés', 'other', '15:00', null, null, 'Us', 'to_order', 1),
+    (w, 'Red wine', 'With the meal', 'wine', '17:00', 20, 'bottles', 'Bar company', 'ordered', 2),
+    (w, 'White wine', 'With the meal', 'wine', '17:00', 20, 'bottles', 'Bar company', 'ordered', 3),
+    (w, 'Champagne for the toast', 'Toast', 'fizz', '18:30', 14, 'bottles', 'Us', 'to_order', 4),
+    (w, 'Local cask ale', 'Evening bar', 'beer', '20:00', 1, 'cask', 'Brewery', 'delivered', 5),
+    (w, 'Gin, spirits, soft drinks', 'Evening bar', 'spirits', '20:00', null, null, null, 'undecided', 6);
 
   insert into run_sheet_items (wedding_id, at_time, title, location, area_key) values
     (w, '08:00', 'Breakfast at Mum''s, everyone in their robes', 'The Bennetts'' kitchen', 'hair-makeup'),
@@ -541,6 +567,28 @@ begin
   insert into run_sheet_groups (moment_id, group_id, wedding_id)
     select id, gm, w from run_sheet_items
     where wedding_id = w and title in ('Breakfast at the pub', 'Suits on, buttonholes pinned', 'Guests arrive, welcome drinks', 'Group photos');
+
+  -- Each group's run sheet (0035): the moments tied to a group move onto its
+  -- sheet, and one tied to two groups (Group photos) is copied onto both, so
+  -- "The day" keeps the moments everyone shares.
+  insert into run_sheets (wedding_id, name, group_id, sort_order) values
+    (w, 'Bridesmaids', bm, 1),
+    (w, 'Groomsmen', gm, 2);
+  update run_sheet_items i set sheet_id = s.sheet_id
+  from (
+    select distinct on (rg.moment_id) rg.moment_id, rs.id as sheet_id
+    from run_sheet_groups rg
+    join run_sheets rs on rs.group_id = rg.group_id and rs.wedding_id = rg.wedding_id
+    where rg.wedding_id = w
+    order by rg.moment_id, rs.name
+  ) s
+  where i.id = s.moment_id;
+  insert into run_sheet_items (wedding_id, at_time, title, location, who, notes, area_key, music, music_url, music_kind, music_played, music_who, contact_id, sheet_id)
+  select i.wedding_id, i.at_time, i.title, i.location, i.who, i.notes, i.area_key, i.music, i.music_url, i.music_kind, i.music_played, i.music_who, i.contact_id, rs.id
+  from run_sheet_groups rg
+  join run_sheet_items i on i.id = rg.moment_id and i.wedding_id = rg.wedding_id
+  join run_sheets rs on rs.group_id = rg.group_id and rs.wedding_id = rg.wedding_id
+  where rg.wedding_id = w and rs.id <> i.sheet_id;
 
   select id into m_canape from run_sheet_items where wedding_id = w and title = 'Drinks, canapés and lawn games';
   select id into m_pizza from run_sheet_items where wedding_id = w and title = 'Pizza from the wood-fired oven';

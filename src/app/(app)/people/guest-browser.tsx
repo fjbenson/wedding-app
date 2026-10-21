@@ -195,8 +195,11 @@ export default function GuestBrowser({
   const [sort, setSort] = useState<SortBy>(
     initialView === "households" ? "household" : initialView === "diet" ? "diet" : isSendingKind(initialView) ? initialView : initialFilter === "party" ? "role" : "first",
   );
+  /** A laptop table heading being sorted by; it stands in for the View while it's on (owner, 21 Oct 2026). */
+  const [colSort, setColSort] = useState<{ col: TableColumn; desc: boolean } | null>(null);
   /** Picks a view, and switches on (or off) the filter that goes with it. */
   const chooseView = (next: SortBy) => {
+    setColSort(null);
     setFilters((on) => {
       const before = VIEW_FILTER[sort];
       const add = VIEW_FILTER[next];
@@ -584,7 +587,7 @@ export default function GuestBrowser({
 
           {/* Find or add on the row above; how the list is shown here: View left, Filter right (owner, 17 Oct 2026: View is the bigger choice; was Filter left, Sort right). */}
           <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 lg:order-1 lg:mt-0 lg:justify-start lg:gap-5">
-            <SortMenu sort={sort} onSort={chooseView} />
+            <SortMenu sort={sort} onSort={chooseView} column={colSort} />
             {/* On a laptop View and Filter sit together on the left, search and + on the right (owner, 21 Oct 2026). */}
             <span aria-hidden className="hidden h-5 w-px bg-champagne-400/60 lg:block" />
             <FilterMenu
@@ -708,6 +711,8 @@ export default function GuestBrowser({
             tables={tables}
             dietOf={dietOf}
             openId={openId}
+            sortCol={colSort}
+            setSortCol={setColSort}
             // Tapping the open guest again closes their card (owner, 21 Oct 2026).
             onOpen={(id) => setOpenId((o) => (o === id ? undefined : id))}
           />
@@ -1407,8 +1412,10 @@ function FilterMenu({
 }
 
 /** The Sort button and its menu: pick one; the menu closes as you do. */
-function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void }) {
+function SortMenu({ sort, onSort, column }: { sort: SortBy; onSort: (s: SortBy) => void; column: { col: TableColumn; desc: boolean } | null }) {
   const { open, setOpen, box } = useDropdown();
+  // A table heading's sort takes the button's place: "Dietary ↑".
+  const columnLabel = column ? `${COLUMN_LABEL[column.col]} ${column.desc ? "↓" : "↑"}` : null;
 
   return (
     <div ref={box} className="relative min-w-0">
@@ -1416,12 +1423,12 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`View: ${SORTS.find((o) => o.key === sort)!.label}`}
+        aria-label={`View: ${columnLabel ?? SORTS.find((o) => o.key === sort)!.label}`}
         onClick={() => setOpen((o) => !o)}
         className="type-meta flex h-9 min-w-0 items-center gap-1.5 hover:text-ink max-[359px]:tracking-[0.12em]"
       >
         <LayoutList className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
-        <span className="truncate">{SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
+        <span className="truncate">{columnLabel ?? SORTS.find((o) => o.key === sort)!.label.replace(", A–Z", "")}</span>
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} aria-hidden />
       </button>
 
@@ -1442,7 +1449,7 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
                   className="flex min-h-11 w-full items-center gap-3 text-left text-sm text-ink"
                 >
                   <span className="flex-1">{o.label}</span>
-                  {sort === o.key && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
+                  {sort === o.key && !column && <Check className="h-4 w-4 text-ink" strokeWidth={2.4} aria-hidden />}
                 </button>
               </li>
             ))}
@@ -1460,6 +1467,7 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
  */
 /** The table's headings that can be tapped to sort. */
 type TableColumn = "guest" | "event" | "rsvp" | "meal" | "diet" | "table";
+const COLUMN_LABEL: Record<TableColumn, string> = { guest: "Guest", event: "Guest of", rsvp: "RSVP", meal: "Meal", diet: "Dietary", table: "Table" };
 
 function GuestTable({
   groups,
@@ -1472,7 +1480,11 @@ function GuestTable({
   dietOf,
   openId,
   onOpen,
+  sortCol,
+  setSortCol,
 }: {
+  sortCol: { col: TableColumn; desc: boolean } | null;
+  setSortCol: (s: { col: TableColumn; desc: boolean } | null) => void;
   groups: Group[];
   folded: Set<string>;
   onFold: (key: string) => void;
@@ -1495,9 +1507,8 @@ function GuestTable({
   // Tap a heading to sort by it, again to flip it, a third time to go back to
   // the View's own order (owner, 21 Oct 2026). A sorted table is one run, so
   // the sort reaches across the groups instead of working inside each.
-  const [sortCol, setSortCol] = useState<{ col: TableColumn; desc: boolean } | null>(null);
   const clickHead = (col: TableColumn) =>
-    setSortCol((s) => (s?.col !== col ? { col, desc: false } : s.desc ? null : { col, desc: true }));
+    setSortCol(sortCol?.col !== col ? { col, desc: false } : sortCol.desc ? null : { col, desc: true });
   const shownGroups = useMemo<Group[]>(() => {
     if (!sortCol) return groups;
     const guests = groups.flatMap((g) => g.guests);

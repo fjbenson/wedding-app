@@ -504,11 +504,11 @@ export default function FloorPlan({
           }}
           onPointerUp={() => (pan.current = null)}
           onPointerCancel={() => (pan.current = null)}
-          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:aspect-auto lg:h-[calc(100vh-9rem)] lg:min-h-[480px] lg:min-w-0 lg:cursor-grab lg:touch-none"
+          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:border lg:border-linen lg:bg-white lg:aspect-auto lg:h-[calc(100vh-9rem)] lg:min-h-[480px] lg:min-w-0 lg:cursor-grab lg:touch-none"
           style={
             wide && box
               ? {
-                  backgroundImage: "radial-gradient(circle,#E3DACB 1.5px,transparent 1.5px)",
+                  backgroundImage: "radial-gradient(circle,#D8CFC2 1.5px,transparent 1.5px)",
                   backgroundSize: `${roomW * 0.05 * view.z}px ${(roomH / 15) * view.z}px`,
                   backgroundPosition: `${home.x + view.x}px ${home.y + view.y}px`,
                 }
@@ -528,7 +528,7 @@ export default function FloorPlan({
               ? { width: roomW, height: roomH, left: home.x, top: home.y, transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})` }
               : undefined
           }
-          className="absolute inset-0 origin-top-left rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"
+          className={`absolute inset-0 origin-top-left ${wide ? "" : "rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"}`}
           aria-label="Floor plan"
         >
           {tables.length === 0 && (

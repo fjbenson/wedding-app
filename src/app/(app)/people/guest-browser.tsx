@@ -858,8 +858,13 @@ function AnswersStrip({
   showing: Showing;
   onShow: (s: Showing) => void;
 }) {
+  // The picked tile stands out (owner, 21 Oct 2026: they all looked the same):
+  // solid white, its number gold and a gold line along its foot.
   const tile = (on: boolean) =>
-    `flex flex-col justify-between rounded-[18px] px-4 py-3.5 text-left transition ${on ? "glass-tile-on" : "glass-card hover:bg-white/80"}`;
+    `flex flex-col justify-between rounded-[18px] px-4 py-3.5 text-left transition ${
+      on ? "glass-tile-on shadow-[inset_0_-2.5px_0_#B8914F,0_10px_22px_-14px_rgb(60_50_40/0.35)]" : "bg-white/40 hover:bg-white/75"
+    }`;
+  const figure = (on: boolean) => `type-figure text-[32px] leading-none ${on ? "text-champagne-600" : "text-ink"}`;
   const tiles: { status: Rsvp["status"]; label: string }[] = [
     { status: "attending", label: "Coming" },
     { status: "pending", label: "Yet to respond" },
@@ -870,14 +875,14 @@ function AnswersStrip({
   return (
     <section aria-label="RSVPs" className="hidden gap-3.5 lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_1.7fr]">
       <button type="button" aria-pressed={showing === "all"} onClick={() => onShow("all")} className={tile(showing === "all")}>
-        <span className="type-figure text-[32px] leading-none text-ink">{total}</span>
+        <span className={figure(showing === "all")}>{total}</span>
         <span className="type-meta mt-2">Guests · {homes} {homes === 1 ? "home" : "homes"}</span>
       </button>
       {tiles.map((t) => {
         const on = showing === t.status;
         return (
           <button key={t.status} type="button" aria-pressed={on} onClick={() => onShow(on ? "all" : t.status)} className={tile(on)}>
-            <span className="type-figure text-[32px] leading-none text-ink">{counts[t.status]}</span>
+            <span className={figure(on)}>{counts[t.status]}</span>
             <span className="type-meta mt-2">{t.label}</span>
           </button>
         );

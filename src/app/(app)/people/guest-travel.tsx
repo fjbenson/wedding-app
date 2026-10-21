@@ -29,6 +29,7 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
   const [picking, setPicking] = useState(false);
+  const [getting, setGetting] = useState(false);
   const run = (save: () => Promise<{ error?: string }>, after?: () => void) =>
     startTransition(async () => {
       try {
@@ -55,20 +56,8 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
     <section className={bare ? "mt-5" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
       {!bare && <h3 className="section-label">Travel</h3>}
 
-      <button
-        type="button"
-        onClick={() => setPicking(!picking)}
-        aria-expanded={picking}
-        className={`mt-2 flex min-h-[58px] w-full items-center gap-3 rounded-[18px] px-4 text-left ${
-          staying ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-linen text-stone"
-        }`}
-      >
-        <span className="min-w-0 flex-1">
-          <span className="block text-xs text-stone">Accommodation</span>
-          <span className={`block truncate text-[15px] ${staying ? "text-ink" : "italic"}`}>{staying ?? "Optional · tap to add"}</span>
-        </span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-stone transition ${picking ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
-      </button>
+      {/* Both rows work the same way (owner, 21 Oct 2026): a label, what's set or "Optional · tap to add", a chevron; a tap opens the choices below. */}
+      <PickRow label="Accommodation" value={staying} open={picking} onToggle={() => setPicking(!picking)} />
       {picking && (
         <div className="mt-2 flex flex-wrap gap-2">
           {choices.map((c) => (
@@ -91,36 +80,28 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
         </div>
       )}
 
-      <div
-        className={`mt-2 flex min-h-[58px] items-center gap-3 rounded-[18px] px-4 py-2 ${
-          journeys.length || guest.own_way ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-linen"
-        }`}
-      >
-        <span className="min-w-0 flex-1">
-          <span className="block text-xs text-stone">Transport</span>
-          {journeys.length > 0 ? (
-            <Link href="/day?tab=travel" className="block text-[15px] text-ink hover:underline">
-              {journeys.join(" · ")}
-            </Link>
-          ) : guest.own_way ? (
-            <span className="block text-[15px] text-ink">Making their own way</span>
-          ) : (
-            <Link href="/day?tab=travel&open=nolift" className="block text-[15px] italic text-stone hover:text-ink hover:underline">
-              Optional · add a journey ›
-            </Link>
-          )}
-        </span>
-        {journeys.length === 0 && (
+      <PickRow
+        label="Transport"
+        value={journeys.length > 0 ? journeys.join(" · ") : guest.own_way ? "Making their own way" : null}
+        open={getting}
+        onToggle={() => setGetting(!getting)}
+      />
+      {getting && (
+        <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
             disabled={pending}
-            onClick={() => run(() => setOwnWayAction(guest.id, !guest.own_way))}
-            className="shrink-0 text-sm text-stone underline underline-offset-4 hover:text-ink disabled:opacity-50"
+            aria-pressed={Boolean(guest.own_way)}
+            onClick={() => run(() => setOwnWayAction(guest.id, !guest.own_way), () => setGetting(false))}
+            className={`${CHIP} ${guest.own_way ? "bg-champagne-100 text-ink ring-champagne-400" : "bg-ivory text-ink ring-linen hover:ring-champagne-400"}`}
           >
-            {guest.own_way ? "Undo" : "Own way"}
+            Own way
           </button>
-        )}
-      </div>
+          <Link href={journeys.length > 0 ? "/day?tab=travel" : "/day?tab=travel&open=nolift"} className={`${CHIP} bg-ivory text-champagne-600 ring-linen`}>
+            {journeys.length > 0 ? "See their journeys ›" : "Put them on a journey ›"}
+          </Link>
+        </div>
+      )}
 
       {error && (
         <p role="alert" className="mt-2 text-sm text-ink">
@@ -128,5 +109,25 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
         </p>
       )}
     </section>
+  );
+}
+
+/** One of the Travel part's rows: its label, what's set (or a quiet "Optional · tap to add"), and a chevron that opens the choices. */
+function PickRow({ label, value, open, onToggle }: { label: string; value: string | null; open: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      className={`mt-2 flex min-h-[58px] w-full items-center gap-3 rounded-[18px] px-4 text-left ${
+        value ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-linen text-stone"
+      }`}
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs text-stone">{label}</span>
+        <span className={`block truncate text-[15px] ${value ? "text-ink" : "italic"}`}>{value ?? "Optional · tap to add"}</span>
+      </span>
+      <ChevronDown className={`h-4 w-4 shrink-0 text-stone transition ${open ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
+    </button>
   );
 }

@@ -247,6 +247,9 @@ export default function GuestBrowser({
     try {
       const saved = window.localStorage.getItem(SORT_KEY) as SortBy | null;
       if (saved && SORTS.some((o) => o.key === saved) && !VIEW_FILTER[saved] && initialView === "az" && !initialFilter) setSort(saved);
+      // Nothing chosen yet on a laptop: by household, as the columns were
+      // designed (canvas 4 "Laptop · Round 9", 1b, 21 Oct 2026).
+      else if (!saved && initialView === "az" && !initialFilter && window.matchMedia("(min-width: 1024px)").matches) setSort("household");
     } catch {
       // Private browsing or blocked storage: start from the default.
     }
@@ -513,10 +516,25 @@ export default function GuestBrowser({
       {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the numbers
           card and "Who's coming" side by side, then search, View and Filter on
           one row, then the table across the width. */}
-      <div className="mt-6 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-x-4">
+      <div className="mt-6 lg:mt-5">
+        {/* Laptops: one slim row of numbers (canvas 4 "Laptop · Round 9", 1b, 21 Oct 2026). */}
+        {events.length > 0 && (
+          <AnswersStrip
+            total={filtered.filter((g) => answerOf(g) !== "declined").length}
+            homes={new Set(filtered.filter((g) => answerOf(g) !== "declined").map((g) => g.household_id).filter(Boolean)).size}
+            counts={{
+              to_invite: filtered.filter((g) => answerOf(g) === "to_invite").length,
+              attending: filtered.filter((g) => answerOf(g) === "attending").length,
+              pending: filtered.filter((g) => answerOf(g) === "pending").length,
+              declined: filtered.filter((g) => answerOf(g) === "declined").length,
+            }}
+            showing={showing}
+            onShow={setShowing}
+          />
+        )}
         {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
         {events.length > 0 && (
-          <div>
+          <div className="lg:hidden">
             <AnswersCard
               total={filtered.filter((g) => answerOf(g) !== "declined").length}
               homes={new Set(filtered.filter((g) => answerOf(g) !== "declined").map((g) => g.household_id).filter(Boolean)).size}
@@ -529,21 +547,16 @@ export default function GuestBrowser({
               showing={showing}
               onShow={setShowing}
             />
-            {/* Laptops have it on "Who's coming". */}
-            {caterer && <div className="lg:hidden"><CopyButton text={caterer} label="Copy the list for the caterer" /></div>}
+            {caterer && <CopyButton text={caterer} label="Copy the list for the caterer" />}
           </div>
         )}
-        {events.length > 0 && (
-          <WhoComing
-            guests={filtered.filter((g) => answerOf(g) !== "declined")}
-            dayId={events[0]?.id}
-            ownEvent={ownEvent}
-            dietOf={dietOf}
-            caterer={splitOf("diet", coming, look).copy}
-          />
+        {caterer && (
+          <div className="hidden lg:block lg:max-w-xs">
+            <CopyButton text={caterer} label="Copy the list for the caterer" />
+          </div>
         )}
 
-        <div className="mt-5 lg:col-span-2 lg:mt-6 lg:flex lg:flex-wrap lg:items-center lg:gap-x-6">
+        <div className="mt-5 lg:mt-5 lg:flex lg:flex-wrap lg:items-center lg:gap-x-6">
           <div className="flex items-center gap-2 lg:w-[520px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
@@ -767,60 +780,6 @@ export default function GuestBrowser({
   );
 }
 
-/**
- * Laptops only, beside the numbers card: who's coming — day, evening and
- * children as bars — and the dietary needs, with the caterer's copy. Counts
- * whatever the filters leave, like the numbers card, leaving out "can't come".
- */
-function WhoComing({
-  guests,
-  dayId,
-  ownEvent,
-  dietOf,
-  caterer,
-}: {
-  guests: Contact[];
-  dayId: string | undefined;
-  ownEvent: (g: Contact) => WeddingEvent | undefined;
-  dietOf: (g: Contact) => string | null;
-  caterer?: string;
-}) {
-  const total = guests.length;
-  const day = guests.filter((g) => ownEvent(g)?.id === dayId).length;
-  const tally = new Map<string, number>();
-  for (const g of guests) for (const need of needsOf(dietOf(g))) tally.set(need, (tally.get(need) ?? 0) + 1);
-  const needs = [...tally.entries()].sort((a, b) => b[1] - a[1] || needRank(a[0]) - needRank(b[0])).slice(0, 4);
-  const most = Math.max(1, ...needs.map(([, n]) => n));
-  const bar = (label: string, n: number, of: number) => (
-    <div key={label} className="grid grid-cols-[110px_1fr_36px] items-center gap-3 py-1.5">
-      <span className="truncate text-sm text-ink">{label}</span>
-      <span className="h-2 overflow-hidden rounded-full bg-[#E9E1D3]">
-        <span className="block h-full rounded-full bg-champagne-400" style={{ width: `${of ? Math.round((n / of) * 100) : 0}%` }} />
-      </span>
-      <span className="type-figure text-right text-[17px]">{n}</span>
-    </div>
-  );
-  return (
-    <section aria-label="Who's coming" className="glass-card hidden rounded-[22px] px-5 py-4 lg:grid lg:grid-cols-2 lg:gap-7">
-      <div>
-        <h2 className="section-label">Who&apos;s coming</h2>
-        <div className="mt-2">
-          {bar("Day", day, total)}
-          {bar("Evening", total - day, total)}
-          {bar("Children", guests.filter((g) => g.is_child).length, total)}
-        </div>
-      </div>
-      <div>
-        <h2 className="section-label">Dietary needs</h2>
-        <div className="mt-2">
-          {needs.length > 0 ? needs.map(([need, n]) => bar(need, n, most)) : <p className="py-1.5 text-sm italic text-stone">None yet</p>}
-        </div>
-        {needs.length > 0 && caterer && <CopyButton text={caterer} label="Copy the list for the caterer" />}
-      </div>
-    </section>
-  );
-}
-
 function GroupTitle({ group, folded, onFold }: { group: Group; folded: boolean; onFold: () => void }) {
   const inner = (
     <>
@@ -877,6 +836,62 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
         ),
       )}
     </nav>
+  );
+}
+
+/**
+ * Laptops: the numbers in one slim row of tiles (canvas 4 "Laptop · Round 9",
+ * 1b, owner's pick 21 Oct 2026) — everyone still expected, then each answer,
+ * each a tap to show just those, and how the answers are going as one bar.
+ */
+function AnswersStrip({
+  total,
+  homes,
+  counts,
+  showing,
+  onShow,
+}: {
+  total: number;
+  homes: number;
+  counts: Record<Rsvp["status"], number>;
+  showing: Showing;
+  onShow: (s: Showing) => void;
+}) {
+  const tile = (on: boolean) =>
+    `flex flex-col justify-between rounded-[18px] px-4 py-3.5 text-left transition ${on ? "glass-tile-on" : "glass-card hover:bg-white/80"}`;
+  const tiles: { status: Rsvp["status"]; label: string }[] = [
+    { status: "attending", label: "Coming" },
+    { status: "pending", label: "Yet to respond" },
+    { status: "to_invite", label: "To invite" },
+  ];
+  const answered = counts.attending + counts.declined + counts.pending;
+  const share = (n: number) => `${answered ? (n / answered) * 100 : 0}%`;
+  return (
+    <section aria-label="RSVPs" className="hidden gap-3.5 lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_1.7fr]">
+      <button type="button" aria-pressed={showing === "all"} onClick={() => onShow("all")} className={tile(showing === "all")}>
+        <span className="type-figure text-[32px] leading-none text-ink">{total}</span>
+        <span className="type-meta mt-2">Guests · {homes} {homes === 1 ? "home" : "homes"}</span>
+      </button>
+      {tiles.map((t) => {
+        const on = showing === t.status;
+        return (
+          <button key={t.status} type="button" aria-pressed={on} onClick={() => onShow(on ? "all" : t.status)} className={tile(on)}>
+            <span className="type-figure text-[32px] leading-none text-ink">{counts[t.status]}</span>
+            <span className="type-meta mt-2">{t.label}</span>
+          </button>
+        );
+      })}
+      <div className="glass-card rounded-[18px] px-4 py-3.5">
+        <p className="type-meta">Answers so far</p>
+        <div aria-hidden className="mt-3 flex h-2 overflow-hidden rounded-full bg-champagne-100">
+          <span className="bg-champagne-400" style={{ width: share(counts.attending) }} />
+          <span className="bg-[#C9C2B8]" style={{ width: share(counts.declined) }} />
+        </div>
+        <p className="mt-2 text-[13px] text-stone">
+          {counts.attending} coming · {counts.declined} can&apos;t · {counts.pending} yet to respond
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -1452,13 +1467,13 @@ function GuestTable({
           <tbody key={group.key}>
             {group.title && (
               <tr>
-                <th colSpan={columns} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
+                <th colSpan={columns} scope="colgroup" className="bg-champagne-100/40 px-2 pb-2 pt-3 text-left font-normal">
                   {group.onOpen ? (
-                    <button type="button" onClick={group.onOpen} className="font-display text-lg text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
+                    <button type="button" onClick={group.onOpen} className="font-display text-[17px] text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
                       {group.title}
                     </button>
                   ) : (
-                    <span className={`font-display text-lg ${group.rose ? "text-[#9A3F2B]" : "text-ink"}`}>{group.title}</span>
+                    <span className={`font-display text-[17px] ${group.rose ? "text-[#9A3F2B]" : "text-ink"}`}>{group.title}</span>
                   )}
                   <span className="type-meta ml-3">{group.count ?? guestCount(group.guests.length)}</span>
                   <button
@@ -1482,11 +1497,11 @@ function GuestTable({
                 <tr
                   key={g.id}
                   onClick={() => onOpen(g.id)}
-                  className={`cursor-pointer border-t-[0.5px] border-champagne-400 align-middle ${isOpen ? "bg-white shadow-[inset_3px_0_0_#B8914F]" : "hover:bg-champagne-100/50"}`}
+                  className={`cursor-pointer border-t border-linen/80 align-middle ${isOpen ? "bg-white shadow-[inset_3px_0_0_#B8914F]" : "hover:bg-white/60"}`}
                 >
-                  <td className="py-2 pl-2 pr-4">
+                  <td className="py-1.5 pl-2 pr-4">
                     <span className="flex items-center gap-3">
-                      <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
+                      <span aria-hidden className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
                         {initials(g)}
                         {roles.length > 0 && (
                           <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
@@ -1495,7 +1510,7 @@ function GuestTable({
                         )}
                       </span>
                       <span className="min-w-0">
-                        <button type="button" onClick={() => onOpen(g.id)} className="block whitespace-nowrap text-left font-display text-[17px] text-ink hover:underline">
+                        <button type="button" onClick={() => onOpen(g.id)} className="block whitespace-nowrap text-left font-display text-base text-ink hover:underline">
                           {fullName(g)}
                         </button>
                         {roles.length > 0 && <span className="block text-xs text-champagne-600">{roles.join(" · ")}</span>}
@@ -1503,12 +1518,12 @@ function GuestTable({
                     </span>
                   </td>
                   {events.map((e) => (
-                    <td key={e.id} className="whitespace-nowrap py-2 pr-4">
+                    <td key={e.id} className="whitespace-nowrap py-1.5 pr-4">
                       <AnswerPill status={answers.get(g.id)?.find((r) => r.event_id === e.id)?.status} />
                     </td>
                   ))}
-                  <td className="whitespace-nowrap py-2 pr-4 text-ink">{mealWord(g)}</td>
-                  <td className="py-2 pr-4">
+                  <td className="whitespace-nowrap py-1.5 pr-4 text-ink">{mealWord(g)}</td>
+                  <td className="py-1.5 pr-4">
                     <span className="flex flex-wrap gap-1.5">
                       {needs.map((need) => (
                         <span key={need} className="whitespace-nowrap rounded-full bg-cream px-2.5 py-0.5 text-xs text-stone shadow-[inset_0_0_0_1px_#E3D3B3]">
@@ -1517,11 +1532,9 @@ function GuestTable({
                       ))}
                     </span>
                   </td>
-                  <td className="py-2 pr-2">
+                  <td className="whitespace-nowrap py-1.5 pr-2">
                     {table ? (
-                      <span className="inline-flex h-8 min-w-8 items-center justify-center whitespace-nowrap rounded-full bg-white px-2.5 font-display text-[15px] text-ink shadow-[inset_0_0_0_1px_#CDB78E]">
-                        {table.replace(/^table\s+/i, "")}
-                      </span>
+                      <span className="font-display text-[15px] text-ink">{table}</span>
                     ) : (
                       <span className="text-stone/60">–</span>
                     )}

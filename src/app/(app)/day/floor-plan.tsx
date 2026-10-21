@@ -172,6 +172,8 @@ export default function FloorPlan({
   const justDragged = useRef(false);
   const [ghost, setGhost] = useState<{ kind: DragPayload["kind"]; label: string; x: number; y: number } | null>(null);
   const [hoverTable, setHoverTable] = useState<string | null>(null);
+  /** The chair under a name being dragged (from 1), so it can be dropped on one seat. */
+  const [hoverChair, setHoverChair] = useState<{ table: string; chair: number } | null>(null);
 
   // Take the server's word whenever fresh data arrives.
   useEffect(() => {
@@ -375,8 +377,13 @@ export default function FloorPlan({
     save(() => setTableShapeAction(id, shape));
   }
 
-  const tableUnder = (x: number, y: number) =>
-    (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-table-id]")?.dataset.tableId ?? null;
+  /** The table (and the chair, if it's on one) under a point on the screen. */
+  const targetAt = (x: number, y: number) => {
+    const el = document.elementFromPoint(x, y) as HTMLElement | null;
+    const table = el?.closest<HTMLElement>("[data-table-id]")?.dataset.tableId ?? null;
+    const chair = Number(el?.closest<HTMLElement>("[data-chair]")?.dataset.chair) || null;
+    return { table, chair: table && chair ? chair : null };
+  };
 
   function addTableAt(shape: TableShape, x: number, y: number) {
     save(() => addTableAtAction(shape, newCapacity, x, y));
@@ -406,13 +413,17 @@ export default function FloorPlan({
         if (!d.moved && Math.hypot(e.clientX - d.startX, e.clientY - d.startY) < 6) return;
         d.moved = true;
         setGhost({ kind: payload.kind, label: payload.label, x: e.clientX, y: e.clientY });
-        setHoverTable(payload.kind === "table" ? null : tableUnder(e.clientX, e.clientY));
+        if (payload.kind === "table") return;
+        const over = targetAt(e.clientX, e.clientY);
+        setHoverTable(over.table);
+        setHoverChair(over.table && over.chair ? { table: over.table, chair: over.chair } : null);
       },
       onPointerUp: (e: React.PointerEvent<HTMLElement>) => {
         const d = dragItem.current;
         dragItem.current = null;
         setGhost(null);
         setHoverTable(null);
+        setHoverChair(null);
         if (!d?.moved) return;
         justDragged.current = true;
         setTimeout(() => (justDragged.current = false), 80);
@@ -423,15 +434,18 @@ export default function FloorPlan({
           if (p) addTableAt(payload.shape, keep(p.x), keepY(p.y));
           return;
         }
-        const onto = tableUnder(e.clientX, e.clientY);
-        if (!onto) return;
-        if (payload.kind === "guest") seat(payload.id, onto);
-        else seatGroup(payload.id, onto);
+        const onto = targetAt(e.clientX, e.clientY);
+        if (!onto.table) return;
+        const where = tables.find((t) => t.id === onto.table);
+        if (payload.kind === "guest" && where && onto.chair) seatAt(payload.id, where, onto.chair);
+        else if (payload.kind === "guest") seat(payload.id, onto.table);
+        else seatGroup(payload.id, onto.table);
       },
       onPointerCancel: () => {
         dragItem.current = null;
         setGhost(null);
         setHoverTable(null);
+        setHoverChair(null);
       },
       onClick: () => {
         if (justDragged.current) return;
@@ -549,9 +563,13 @@ export default function FloorPlan({
                   <span
                     key={i}
                     aria-hidden
+                    data-chair={i + 1}
                     style={{ left: `${d.x}%`, top: `${d.y}%` }}
                     // A rose dot: the person in that seat has a dietary need (owner, 19 Oct 2026).
-                    className={`absolute h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full border ${
+                    // While a name is dragged the chairs grow into targets (owner, 21 Oct 2026).
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border transition-[width,height] ${
+                      ghost?.kind === "guest" ? "h-[18px] w-[18px]" : "h-[7px] w-[7px]"
+                    } ${hoverChair?.table === t.id && hoverChair.chair === i + 1 ? "ring-2 ring-champagne-600 ring-offset-1" : ""} ${
                       chairs[i]
                         ? needs[chairs[i]!]?.length
                           ? "border-[#9A3F2B] bg-[#9A3F2B]"

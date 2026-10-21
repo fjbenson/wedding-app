@@ -57,7 +57,7 @@ export default function Cover({
         )}
       </header>
 
-      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:mb-0 lg:mt-2 lg:w-[min(600px,100%)]">
+      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:mb-0 lg:mt-2 lg:w-[min(100%,calc(100dvh-190px),900px)]">
         <Hub weddingDate={weddingDate} areas={areas} />
       </div>
     </section>

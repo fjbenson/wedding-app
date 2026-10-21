@@ -74,9 +74,10 @@ export default async function HomePage() {
   // Laptop (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026): a
   // bigger ring whose buttons show how far along each area is, and a column
   // on the right that fills the screen — Needs a push, then This week.
-  // Your notes and Inspo are in the sidebar there. Ask Juno too.
+  // Your notes and Inspo are in the sidebar there. Ask Juno too. The page
+  // and the ring grow with the screen, the ring as tall as the window allows.
   return (
-    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1190px] lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-7 lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1640px] lg:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,480px)] lg:gap-7 lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10">
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
       <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:flex-col lg:gap-[18px]">
         <NeedsAPush items={pushes} />

@@ -41,7 +41,7 @@ function Countdown({ weddingDate }: { weddingDate: string | null }) {
     <div>
       <p
         className={`font-display font-light leading-[0.8] tracking-[-0.05em] text-ink ${
-          days > 1 ? "text-[min(68px,18vw)] md:text-[84px]" : "text-2xl tracking-[-0.02em] md:text-3xl"
+          days > 1 ? "text-[min(68px,18vw)] md:text-[84px] lg:text-[clamp(84px,17cqw,132px)]" : "text-2xl tracking-[-0.02em] md:text-3xl"
         }`}
       >
         {big}
@@ -76,7 +76,10 @@ export default function Hub({
   const total = areas.length + 1; // + the "add an area" node
 
   return (
-    <div className="relative aspect-square w-full">
+    // On a laptop the ring grows with the screen (owner, 21 Oct 2026: it
+    // looked small on a big monitor), and its buttons, names and countdown
+    // grow with it: sizes there are shares of the ring's width (cqw).
+    <div className="relative aspect-square w-full [--disc:46px] lg:[--disc:clamp(46px,8.5cqw,66px)] lg:[container-type:inline-size]">
       <div
         aria-hidden
         className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md"
@@ -97,16 +100,16 @@ export default function Hub({
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
             {area.stage !== undefined && <StageRing done={area.stage} />}
-            <span className="relative flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
-              <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+            <span className="relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
+              <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)]" strokeWidth={1.5} aria-hidden />
             </span>
           </Node>
         );
       })}
 
       <Node position={nodePosition(areas.length, total)} href="/area/new" label="Add" ariaLabel="Add an area">
-        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/45 text-champagne-600 backdrop-blur-md">
-          <Plus className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+        <span className="flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/45 text-champagne-600 backdrop-blur-md">
+          <Plus className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)]" strokeWidth={1.5} aria-hidden />
         </span>
       </Node>
     </div>
@@ -136,14 +139,14 @@ function Node({
       style={position}
       title={label}
       aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
-      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[23px] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[120px]"
+      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)]"
     >
       <span className="relative">{children}</span>
-      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-ink">
+      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.9cqw,14px)] lg:text-ink">
         {label}
       </span>
       {stageName && (
-        <span aria-hidden className={`-mt-1 hidden text-xs lg:block ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
+        <span aria-hidden className={`-mt-1 hidden text-xs lg:block lg:text-[clamp(12px,1.9cqw,14px)] ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
           {stageName}
         </span>
       )}
@@ -160,7 +163,7 @@ function StageRing({ done }: { done: number }) {
   const r = 29;
   const around = 2 * Math.PI * r;
   return (
-    <svg aria-hidden viewBox="0 0 62 62" className="absolute -left-2 -top-2 hidden h-[62px] w-[62px] -rotate-90 lg:block">
+    <svg aria-hidden viewBox="0 0 62 62" className="absolute -left-2 -top-2 hidden h-[calc(var(--disc)+16px)] w-[calc(var(--disc)+16px)] -rotate-90 lg:block">
       <circle cx="31" cy="31" r={r} fill="none" className="stroke-[#E8DCC6]" strokeWidth="2" />
       {done > 0 && (
         <circle

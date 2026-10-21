@@ -35,6 +35,9 @@ From the last few chats, not yet confirmed:
   Notes and Inspo tiles opening Ideas, the note rows (icon, first line,
   "Note · date", tap to edit). Tick lists are now ticked inside the note,
   not on the area page.
+- 21 Oct 2026, laptop Hub (Round 8, C): the bigger ring with the gold stage
+  lines and names (do the labels crowd?), Needs a push and its buttons, This
+  week stretching to the foot; the phone Hub unchanged.
 
 ## Phone audit, 20 Oct 2026
 

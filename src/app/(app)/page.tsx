@@ -7,7 +7,7 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { listMilestones } from "@/lib/db/milestones";
 import { listPayments } from "@/lib/db/money";
 import { countInspo, listInspo } from "@/lib/db/inspo";
-import { listNotes } from "@/lib/db/notes";
+import { countNotes, listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
 import { areaOptions, STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
@@ -17,6 +17,8 @@ import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
 import { involvedNames } from "@/lib/db/involved";
 import { RowPeopleProvider } from "@/components/row-people";
+import NeedsAPush from "@/components/needs-a-push";
+import { hubStages, needsAPush } from "@/lib/hub-stages";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -31,7 +33,7 @@ export default async function HomePage() {
   // First visit: the setup screens make the wedding and choose its areas.
   if (!wedding) redirect("/setup");
 
-  const [milestones, areas, suppliers, appointments, payments, unfiled, inspo, latestInspo, people] = await Promise.all([
+  const [milestones, areas, suppliers, appointments, payments, unfiled, inspo, latestInspo, people, areaNotes] = await Promise.all([
     listMilestones(wedding.id),
     listAreas(wedding.id),
     listSuppliers(wedding.id),
@@ -41,6 +43,7 @@ export default async function HomePage() {
     countInspo(wedding.id),
     listInspo(wedding.id, { limit: 4 }),
     involvedNames(wedding.id),
+    countNotes(wedding.id),
   ]);
   const sortable = (unfiled ?? []).filter(toSort);
   const toSortCount = sortable.length;
@@ -48,7 +51,15 @@ export default async function HomePage() {
   // Empty: made before setup had an areas step, so send them to finish it.
   // null: the database hasn't got the areas table yet, so show the starter set.
   if (areas && areas.length === 0) redirect("/setup");
-  const onHub = areas ? areas.filter((a) => a.enabled && a.show_on_hub) : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
+  // Where each area stands, for the laptop's ring and "Needs a push" (an
+  // area's ideas are its inspo and its notes together, 21 Oct 2026).
+  const ideasByArea = new Map(inspo ?? []);
+  for (const [k, n] of areaNotes) ideasByArea.set(k, (ideasByArea.get(k) ?? 0) + n);
+  const stages = areas ? hubStages(areas, suppliers, payments ?? [], ideasByArea) : new Map();
+  const pushes = areas ? needsAPush(areas, stages, suppliers, payments ?? []) : [];
+  const onHub = areas
+    ? areas.filter((a) => a.enabled && a.show_on_hub).map((a) => ({ ...a, stage: stages.get(a.key)?.current }))
+    : STARTER_AREAS.map(({ key, label }) => ({ key, label }));
 
   // Under the ring (canvas 2, "Home · Round 2 · Calm under the ring",
   // option B, owner's pick 13 Oct 2026): a small pill — "Jot or ask…" since
@@ -60,13 +71,15 @@ export default async function HomePage() {
     .join(" · ");
 
   // Phone: the names and ring, then those under them.
-  // Laptop (canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026): one
-  // calm screen beside the sidebar — the names and ring centred, Your notes
-  // and This week in a column on the right. Ask Juno is in the sidebar.
+  // Laptop (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026): a
+  // bigger ring whose buttons show how far along each area is, and a column
+  // on the right that fills the screen — Needs a push, then This week.
+  // Your notes and Inspo are in the sidebar there. Ask Juno too.
   return (
-    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1190px] lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-10 lg:px-12 lg:pb-12 lg:pt-10">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1190px] lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-7 lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10">
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
-      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:flex-col lg:gap-4 lg:[&>*:last-child]:order-first">
+      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:flex-col lg:gap-[18px]">
+        <NeedsAPush items={pushes} />
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
           <div className="mb-6 flex justify-center lg:hidden">
@@ -79,6 +92,7 @@ export default async function HomePage() {
           appointments={appointments ?? []}
           payments={payments ?? []}
           hasDate={wedding.wedding_date !== null}
+          fill
           areas={areaOptions(areas)}
           suppliers={suppliers.map((s) => ({
             id: s.id,
@@ -87,12 +101,14 @@ export default async function HomePage() {
           }))}
         />
         </RowPeopleProvider>
+        <div className="lg:hidden">
         <HubTiles
           note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}
           toSort={toSortCount}
           pictures={(latestInspo ?? []).map((i) => i.picture)}
           ideas={ideas}
         />
+        </div>
       </div>
       {email && <SignedIn email={email} />}
     </main>

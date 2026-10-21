@@ -255,8 +255,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   wedding's areas, its heart the days to go, opening **Where things stand**
   `/standing`; the + adds an area in three steps), **"Ask Juno"**, **This
   week** (due by Sunday plus overdue, ticked off in place), and tiles for
-  Your notes and Inspo. On a laptop it's one calm screen: the names and ring
-  centred, Your notes and This week in a column on the right (G). The Hub's look is the owner's call.
+  Your notes and Inspo. On a laptop (canvas 4 "Laptop · Round 8", C, 21 Oct
+  2026): a bigger ring whose buttons carry a gold line and the stage's name
+  (how far along each area is, `src/lib/hub-stages.ts`), and a column on the
+  right filling the screen — **Needs a push** (the areas furthest behind, each
+  with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
   circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;

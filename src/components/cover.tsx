@@ -8,7 +8,8 @@ import { formatFullDotDate, formatLongDate } from "@/lib/dates";
  * The top of the home screen: the couple's names set like Editorial's
  * byline, and the hub ring sitting straight on the ivory page.
  *
- * On a laptop (canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026) it
+ * On a laptop (canvas 4 "Laptop · Round 7", G, 20 Oct 2026; the ring made
+ * bigger and its buttons showing each area's stage in Round 8, C, 21 Oct) it
  * is centred in the page beside the sidebar: the date as a small label, the
  * names on one line, then the ring large under them. Ask Juno and Settings
  * are in the sidebar there.
@@ -56,7 +57,7 @@ export default function Cover({
         )}
       </header>
 
-      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:mb-0 lg:mt-3 lg:w-[560px]">
+      <div className="mx-auto mb-8 mt-4 w-[min(100%,350px)] md:mt-6 md:w-[440px] lg:mb-0 lg:mt-2 lg:w-[min(600px,100%)]">
         <Hub weddingDate={weddingDate} areas={areas} />
       </div>
     </section>

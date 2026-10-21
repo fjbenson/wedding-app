@@ -2,12 +2,19 @@ import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
+import { daysUntil } from "@/lib/dates";
+import { STAGES } from "@/lib/area-stage";
+
 export interface HubArea {
   key: string;
   label: string;
   icon?: string | null;
+  /**
+   * How many of the five stages are done (0–5), for the laptop's gold line
+   * round each button; undefined for areas without stages (Decor, Stationery).
+   */
+  stage?: number;
 }
-import { daysUntil } from "@/lib/dates";
 
 /** How far the nodes sit from the middle, as a share of the box's width. */
 const RING_RADIUS = 0.39;
@@ -88,8 +95,9 @@ export default function Hub({
       {areas.map((area, index) => {
         const Icon = areaIcon(area.key, area.icon);
         return (
-          <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label}>
-            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
+          <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
+            {area.stage !== undefined && <StageRing done={area.stage} />}
+            <span className="relative flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
               <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
             </span>
           </Node>
@@ -111,26 +119,61 @@ function Node({
   href,
   label,
   ariaLabel = label,
+  stage,
   children,
 }: {
   position: { left: string; top: string };
   href: string;
   label: string;
   ariaLabel?: string;
+  stage?: number;
   children: React.ReactNode;
 }) {
+  const stageName = stage === undefined ? null : STAGES[Math.min(stage, STAGES.length - 1)];
   return (
     <Link
       href={href}
       style={position}
       title={label}
-      aria-label={ariaLabel}
-      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[23px] flex-col items-center gap-1.5 transition active:scale-95"
+      aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
+      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[23px] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[120px]"
     >
-      {children}
-      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block">
+      <span className="relative">{children}</span>
+      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-ink">
         {label}
       </span>
+      {stageName && (
+        <span aria-hidden className={`-mt-1 hidden text-xs lg:block ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
+          {stageName}
+        </span>
+      )}
     </Link>
+  );
+}
+
+/**
+ * On a laptop, a thin gold line round an area's button, filled a fifth for
+ * each stage done (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026).
+ * The stage's name under the label says the same in words.
+ */
+function StageRing({ done }: { done: number }) {
+  const r = 29;
+  const around = 2 * Math.PI * r;
+  return (
+    <svg aria-hidden viewBox="0 0 62 62" className="absolute -left-2 -top-2 hidden h-[62px] w-[62px] -rotate-90 lg:block">
+      <circle cx="31" cy="31" r={r} fill="none" className="stroke-[#E8DCC6]" strokeWidth="2" />
+      {done > 0 && (
+        <circle
+          cx="31"
+          cy="31"
+          r={r}
+          fill="none"
+          className="stroke-champagne-400"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={`${(around * Math.min(done, STAGES.length)) / STAGES.length} ${around}`}
+        />
+      )}
+    </svg>
   );
 }

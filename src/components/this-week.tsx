@@ -64,6 +64,7 @@ export default function ThisWeek({
   hasDate,
   areas = [],
   suppliers = [],
+  fill = false,
 }: {
   milestones: Milestone[];
   appointments: Appointment[];
@@ -72,6 +73,8 @@ export default function ThisWeek({
   /** For each row's grey line: its area and who it's with (RowLine's rule). */
   areas?: AreaOption[];
   suppliers?: { id: string; name: string; area: string | null }[];
+  /** On the laptop Hub: stretch to the foot of the column (Round 8, C). */
+  fill?: boolean;
 }) {
   const today = todayISO();
   const supplier = (id: string | null) => suppliers.find((s) => s.id === id);
@@ -141,8 +144,8 @@ export default function ThisWeek({
   }
 
   return (
-    <section className="relative px-5 lg:px-0">
-      <div className="glass-card rounded-[22px] px-4 pb-2 pt-4">
+    <section className={`relative px-5 lg:px-0 ${fill ? "lg:flex lg:flex-1 lg:flex-col" : ""}`}>
+      <div className={`glass-card rounded-[22px] px-4 pb-2 pt-4 ${fill ? "lg:flex lg:flex-1 lg:flex-col lg:px-5" : ""}`}>
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="section-label">This week</h2>
           <span className="type-meta tabular-nums">{weekRange(monday, sunday)}</span>
@@ -174,7 +177,7 @@ export default function ThisWeek({
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between gap-3 border-t border-linen py-3">
+            <div className="flex items-center justify-between gap-3 border-t border-linen py-3 lg:mt-auto">
               {more > 0 ? (
                 <Link href="/plan" className="type-meta !text-champagne-600 hover:!text-ink">
                   And {more} more ›

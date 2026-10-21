@@ -45,6 +45,14 @@ From the last few chats, not yet confirmed:
   the sheets going round with ‹ ›, Filter / Print / + by the sheet); History
   (past only). Compare each with canvas 4 and say what's off.
 
+- 21 Oct 2026, later (built, not seen on a screen): the guest table (RSVP
+  icon on the right, italic Day / Evening, heading sorts, narrow-window scroll,
+  column widths), the new View menu, the group and household cards (History,
+  Add someone, subtitle figures, envelope without the stamp), and the **new
+  guest card** (RSVP always up, folded rows by job, Accommodation / Transport,
+  Details). Open question: the guest card now looks plain — icon circles on the
+  rows and richer summary lines (the app's marks) were suggested; not mocked up.
+
 ## Phone audit, 20 Oct 2026
 
 Every phone screen checked on a private copy with the demo wedding (393px).

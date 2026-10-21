@@ -297,10 +297,16 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   staying / meal / sent…) and Filter; rows with initials, role star and an
   answer icon (on a laptop: one card with the total big and Coming · Yet to respond ·
   To invite beside it (they add up to it), each with its answer icon, and
-  Can't come set apart; then columns — Guest of (a sun or moon pill, day or evening), Answer
-  (Coming quiet, the rest as pills with the same icons), Meal (Adult / Child's),
-  Dietary tags (allergies marked), Table, hairlines between who / food / seat;
-  Round 9, 1b); can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
+  Can't come set apart; then columns — Guest of (italic words: champagne Day, grey
+  Evening), RSVP (word, then its icon at the edge, like the cards), Meal (Adult /
+  Child), Dietary tags (allergies marked, a narrow column), Table, hairlines between
+  who / food / seat; Round 9, 1b). **Tap a heading to sort** (again to flip, a
+  third time to go back); the View button then says "Dietary ↑" and picking a View
+  clears it; the Guest heading says what the rows are grouped by. On a laptop
+  View | Filter sit left, search and + right; narrow windows scroll sideways.
+  The View menu is Order · Group by (incl. Bridal party, Dietary needs) · Sent
+  (21 Oct 2026; Age group went). Opening a guest, household or group closes the
+  card already open. Can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure and its row below opens), Text · Call · Email,
   the **RSVP slider always on view** (it changes most), then **folded rows with
   a line of what's set** (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):
@@ -312,8 +318,13 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   dropped — one menu for everyone; old `rsvps.meal_choice` values stay in the
   database, unshown). Every guest count is **everyone still expected**
   (can't-comes left out), as the numbers card has it. **Households** open as an
-  envelope card; **groups** as a card with Email them / Text (the couple's own
-  app, everyone in Bcc). RSVP steps: To invite → Invited ("Yet to respond")
+  envelope card (no stamp; "2 of 3 responded" under it, name and address higher,
+  a copy icon on the address); **groups** as a card with Email them / Text (the
+  couple's own app, everyone in Bcc). Both: a Guests list with the table's initials
+  circle and RSVP word-then-icon, an "Add someone" line, and **one History** (a
+  household's save the date / invitation / thank-you sit at the top of it; a
+  group's is its emails and texts plus calls and notes — `timeline_entries.group_id`
+  already existed, no migration). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
   grouped by area, the stage as a badge; the **supplier card** is a business
   card with Progress (In touch → Quote in → Booked → Paid; steps tick once reached, Paid from Money), Money, Documents (private

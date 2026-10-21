@@ -218,7 +218,7 @@ refine later — it is all tokens, so changing it is cheap:
   invitation slides out with the details; "reduce motion" skips the movement.
 - **Guest profile** (canvas 3 "Guest card · Round 2", A, replacing the place
   card): initials in a large champagne circle on the left, name in italic on
-  the right, then Answer · Table · Meal across in a row, then flat Text ·
+  the right, then RSVP · Table · Meal across in a row, then flat Text ·
   Call · Email buttons.
 - **Lists inside a page sit on a glass card** (household's "Who's in it": small
   initials, name, ›) — owner preferred it to the guest list's open rows there.

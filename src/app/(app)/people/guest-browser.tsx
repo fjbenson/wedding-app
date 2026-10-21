@@ -688,8 +688,10 @@ export default function GuestBrowser({
             folded={folded}
             onFold={toggleFold}
             answers={data.answers}
-            ownEvent={ownEvent}
-            showEvent={sort !== "type"}
+            events={events}
+            tables={tables}
+            dietOf={dietOf}
+            openId={openId}
             onOpen={setOpenId}
           />
         </>
@@ -1410,19 +1412,27 @@ function GuestTable({
   folded,
   onFold,
   answers,
-  ownEvent,
-  showEvent,
+  events,
+  tables,
+  dietOf,
+  openId,
   onOpen,
 }: {
   groups: Group[];
   folded: Set<string>;
   onFold: (key: string) => void;
   answers: Map<string, Rsvp[]>;
-  ownEvent: (g: Contact) => WeddingEvent | undefined;
-  showEvent: boolean;
+  /** One answer column per event (the day, the evening). */
+  events: WeddingEvent[];
+  tables: Record<string, string>;
+  dietOf: (g: Contact) => string | null;
+  /** The guest whose card is open beside the list, marked in it. */
+  openId?: string;
   onOpen: (id: string) => void;
 }) {
-  const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-stone";
+  const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-champagne-600";
+  const word = (e: WeddingEvent) => e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase());
+  const columns = 4 + events.length;
 
   return (
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
@@ -1430,19 +1440,19 @@ function GuestTable({
         <thead>
           <tr className="border-b border-champagne-400">
             <th scope="col" className={head}>Guest</th>
-            <th scope="col" className={head}>Role</th>
-            <th scope="col" className={head}>RSVP</th>
+            {events.map((e) => (
+              <th key={e.id} scope="col" className={head}>{word(e)}</th>
+            ))}
             <th scope="col" className={head}>Meal</th>
-            <th scope="col" className={head}>Dietary</th>
-            <th scope="col" className={head}>Phone</th>
-            <th scope="col" className={head}>Email</th>
+            <th scope="col" className={head}>Needs</th>
+            <th scope="col" className={head}>Table</th>
           </tr>
         </thead>
         {groups.map((group) => (
           <tbody key={group.key}>
             {group.title && (
               <tr>
-                <th colSpan={7} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
+                <th colSpan={columns} scope="colgroup" className="pb-1.5 pt-5 text-left font-normal">
                   {group.onOpen ? (
                     <button type="button" onClick={group.onOpen} className="font-display text-lg text-ink hover:underline hover:decoration-champagne-400 hover:underline-offset-4">
                       {group.title}
@@ -1464,35 +1474,58 @@ function GuestTable({
               </tr>
             )}
             {(folded.has(group.key) ? [] : group.guests).map((g) => {
-              const event = ownEvent(g);
-              // Meal and diet are recorded per event: show the ones for their own.
-              const rsvp = event ? answers.get(g.id)?.find((r) => r.event_id === event.id) : undefined;
-              const answer = rsvp ? ANSWER_WORD[rsvp.status] : { word: "Day or evening?", className: "text-champagne-600" };
+              const roles = rolesOf(g);
+              const needs = needsOf(dietOf(g));
+              const table = tables[g.id];
+              const isOpen = openId === g.id;
               return (
-                <tr key={g.id} onClick={() => onOpen(g.id)} className="cursor-pointer border-t-[0.5px] border-champagne-400 align-middle hover:bg-champagne-100/50">
-                  <td className="py-2.5 pr-4">
-                    <button type="button" onClick={() => onOpen(g.id)} className="whitespace-nowrap text-left font-display text-[17px] text-ink hover:underline">
-                      {fullName(g)}
-                    </button>
-                    {event && showEvent && (
-                      <span className="ml-2 whitespace-nowrap font-display text-sm italic text-champagne-600">{eventWord(event)}</span>
+                <tr
+                  key={g.id}
+                  onClick={() => onOpen(g.id)}
+                  className={`cursor-pointer border-t-[0.5px] border-champagne-400 align-middle ${isOpen ? "bg-white shadow-[inset_3px_0_0_#B8914F]" : "hover:bg-champagne-100/50"}`}
+                >
+                  <td className="py-2 pl-2 pr-4">
+                    <span className="flex items-center gap-3">
+                      <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
+                        {initials(g)}
+                        {roles.length > 0 && (
+                          <span className="absolute -bottom-1 -right-1.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-ivory bg-champagne-400">
+                            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
+                          </span>
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <button type="button" onClick={() => onOpen(g.id)} className="block whitespace-nowrap text-left font-display text-[17px] text-ink hover:underline">
+                          {fullName(g)}
+                        </button>
+                        {roles.length > 0 && <span className="block text-xs text-champagne-600">{roles.join(" · ")}</span>}
+                      </span>
+                    </span>
+                  </td>
+                  {events.map((e) => (
+                    <td key={e.id} className="whitespace-nowrap py-2 pr-4">
+                      <AnswerPill status={answers.get(g.id)?.find((r) => r.event_id === e.id)?.status} />
+                    </td>
+                  ))}
+                  <td className="whitespace-nowrap py-2 pr-4 text-ink">{mealWord(g)}</td>
+                  <td className="py-2 pr-4">
+                    <span className="flex flex-wrap gap-1.5">
+                      {needs.map((need) => (
+                        <span key={need} className="whitespace-nowrap rounded-full bg-cream px-2.5 py-0.5 text-xs text-stone shadow-[inset_0_0_0_1px_#E3D3B3]">
+                          {need}
+                        </span>
+                      ))}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-2">
+                    {table ? (
+                      <span className="inline-flex h-8 min-w-8 items-center justify-center whitespace-nowrap rounded-full bg-white px-2.5 font-display text-[15px] text-ink shadow-[inset_0_0_0_1px_#CDB78E]">
+                        {table.replace(/^table\s+/i, "")}
+                      </span>
+                    ) : (
+                      <span className="text-stone/60">–</span>
                     )}
                   </td>
-                  <td className="py-2.5 pr-4">
-                    <span className="flex flex-wrap gap-1">
-                      {rolesOf(g).map((role) => <RolePill key={role} role={role} />)}
-                    </span>
-                  </td>
-                  <td className={`whitespace-nowrap py-2.5 pr-4 ${answer.className}`}>
-                    <span className="flex items-center gap-2">
-                      <AnswerIcon status={rsvp?.status} small />
-                      {answer.word}
-                    </span>
-                  </td>
-                  <td className="py-2.5 pr-4 text-ink">{mealWord(g)}</td>
-                  <td className="py-2.5 pr-4 text-stone">{rsvp?.dietary_notes}</td>
-                  <td className="whitespace-nowrap py-2.5 pr-4 text-stone">{g.phone}</td>
-                  <td className="max-w-56 truncate py-2.5 pr-4 text-stone">{g.email}</td>
                 </tr>
               );
             })}
@@ -1500,6 +1533,27 @@ function GuestTable({
         ))}
       </table>
     </div>
+  );
+}
+
+/**
+ * A guest's answer for one event as a small pill (canvas 4 "Laptop · Round
+ * 9", 1b, owner's pick 21 Oct 2026): always the word, never colour alone.
+ * Not invited to that event: a quiet dash.
+ */
+function AnswerPill({ status }: { status?: Rsvp["status"] }) {
+  if (!status) return <span className="text-stone/60">–</span>;
+  const look: Record<Rsvp["status"], string> = {
+    attending: "bg-champagne-100 text-champagne-600",
+    pending: "border border-dashed border-champagne-400 text-stone",
+    to_invite: "border border-dashed border-linen text-stone",
+    declined: "bg-[#EFECE8] text-stone line-through",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] leading-none ${look[status]}`}>
+      {status === "attending" && <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />}
+      {ANSWER_WORD[status].word}
+    </span>
   );
 }
 

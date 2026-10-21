@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { Check, ChevronRight, Globe, Mail, MoreHorizontal, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
+import { useBeside } from "@/components/card-sheet";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
@@ -81,31 +82,36 @@ export default function SupplierCard({
   };
 
   // Escape closes it, and the list behind doesn't scroll while it's open.
+  // On a laptop it sits beside the list instead (as CardSheet's `beside`).
+  const wide = useBeside(true);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
+    if (wide) return () => document.removeEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, [onClose, wide]);
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={name}>
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onClose}
-        style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
-        className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
-      />
+    <div className={`fixed inset-0 z-50 ${wide ? "left-auto w-[440px]" : ""}`} role="dialog" aria-modal={!wide} aria-label={name}>
+      {!wide && (
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+          className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+        />
+      )}
       <div
         style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-        className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
-          drag.dragging ? "" : "transition-transform duration-200 ease-out"
-        }`}
+        className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none ${
+          wide ? "border-l border-champagne-400/45 lg:shadow-[-24px_0_50px_-36px_rgb(60_50_40/0.4)]" : "lg:rounded-l-[28px]"
+        } ${drag.dragging ? "" : "transition-transform duration-200 ease-out"}`}
       >
         <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center lg:hidden">
           <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />

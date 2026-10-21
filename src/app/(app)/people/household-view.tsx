@@ -78,7 +78,7 @@ export default function HouseholdSheet({
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 
   return (
-    <CardSheet label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
+    <CardSheet beside label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
       {/* The envelope goes to the name and address to change them; the line under it to who's in it (owner, 19 Oct 2026). */}
       <button type="button" onClick={() => jumpTo("household-details")} className="block w-full text-left">
         <HouseholdEnvelope household={household} answers={people.map(statusOf)} />

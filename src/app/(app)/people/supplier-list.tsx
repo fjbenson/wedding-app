@@ -213,7 +213,7 @@ export default function SupplierList({
         Suppliers
       </PageTitle>
 
-        <div className="lg:max-w-xl">
+        <div className="lg:max-w-3xl">
           <CountCard
             total={counted.length}
             areasWith={areas.filter((a) => counted.some((s) => cat(s) === a.key)).length}

@@ -110,6 +110,7 @@ export default function GuestCard({
 
   return (
     <CardSheet
+      beside
       label={name}
       onClose={onClose}
       top={

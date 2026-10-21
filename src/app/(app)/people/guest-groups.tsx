@@ -217,7 +217,7 @@ export function GroupSheet({
   const counts = [`${coming} coming`, invited > 0 && `${invited} yet to respond`].filter(Boolean).join(" · ");
 
   return (
-    <CardSheet label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
+    <CardSheet beside label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
       <div className="flex items-center gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
           <Users className="h-5 w-5" strokeWidth={1.7} aria-hidden />

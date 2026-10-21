@@ -244,7 +244,10 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
   the menu down the left like a magazine's contents (`side-bar.tsx`, 250px;
   canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
-  top bar), pages beside it, cards still open from the right.
+  top bar), pages beside it. **Cards sit beside the list** on a laptop
+  (CardSheet's `beside`, `useBeside`; guest, household, group, supplier and
+  plan cards): no dimming, the page steps aside 440px, another row swaps the
+  card (canvas 4 "Laptop · Round 9", 1, 21 Oct 2026).
 
 ## The app today (21 Oct 2026)
 
@@ -292,7 +295,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   (`guest-browser.tsx`): numbers card (Guests · Coming · Invited · To invite),
   search +, View (order, group by household / group / event / RSVP / table /
   staying / meal / sent…) and Filter; rows with initials, role star and an
-  answer icon; can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
+  answer icon (on a laptop, columns: an answer pill per event, meal, needs as
+  tags, table — Round 9, 1b); can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure to jump to it), Text · Call · Email, Guest of
   and RSVP sliders, roles, details (meal and drinks tiles, dietary picker,
   table), groups, travel, in the plan, timeline. A guest's meal is only the

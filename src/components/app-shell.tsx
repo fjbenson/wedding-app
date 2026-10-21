@@ -21,7 +21,7 @@ export default function AppShell({
   return (
     <div>
       <SideBar name={wedding.name} inboxCount={inboxCount} />
-      <div className="min-w-0 lg:pl-[250px] print:!pl-0">{children}</div>
+      <div className="page-frame min-w-0 lg:pl-[250px] print:!pl-0">{children}</div>
       <MenuBar />
       <Suspense fallback={null}>
         <CapturedToast />

@@ -297,3 +297,14 @@ body::before {
   overflow: hidden;
   animation: tick-away 0.45s ease-in forwards;
 }
+
+/* A card open beside the list on a laptop (CardSheet's `beside`, canvas 4
+   "Laptop · Round 9", 1): the page steps aside to make room for it. */
+@media (min-width: 1024px) {
+  .page-frame {
+    transition: padding-right 0.2s ease-out;
+  }
+  html[data-card-beside] .page-frame {
+    padding-right: 440px;
+  }
+}

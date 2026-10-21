@@ -102,7 +102,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
             : data.payment.description;
 
   return (
-    <CardSheet label={title} onClose={onClose} top={<span className="label">{label}</span>}>
+    <CardSheet beside label={title} onClose={onClose} top={<span className="label">{label}</span>}>
       {data === undefined && <p className="py-10 text-center text-sm text-stone">One moment…</p>}
       {data === null && <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t here any more.</p>}
 

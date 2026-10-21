@@ -20,8 +20,9 @@ const CHIP =
 
 /**
  * The guest card's Travel part (canvas 3 "Travel · First version", 15 Oct
- * 2026): where they're staying and how they're getting there and back. Not
- * chosen yet shows dashed, like Travel's "still to sort" cards; a tap picks.
+ * 2026): where they're staying and how they're getting there and back. Both
+ * are optional (a guest may live nearby and drive), so unset shows as a quiet
+ * dashed box saying so, not a job to do (owner, 21 Oct 2026); a tap picks.
  * Journeys themselves are chosen in Travel, where the seats are.
  */
 export function GuestTravelSection({ guest, travel, bare = false }: { guest: Contact; travel: TravelInfo; bare?: boolean }) {
@@ -59,12 +60,12 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
         onClick={() => setPicking(!picking)}
         aria-expanded={picking}
         className={`mt-2 flex min-h-[58px] w-full items-center gap-3 rounded-[18px] px-4 text-left ${
-          staying ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-champagne-400 text-champagne-600"
+          staying ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-linen text-stone"
         }`}
       >
         <span className="min-w-0 flex-1">
           <span className="block text-xs text-stone">Accommodation</span>
-          <span className={`block truncate text-[15px] ${staying ? "text-ink" : "italic"}`}>{staying ?? "Not sure yet · tap to pick"}</span>
+          <span className={`block truncate text-[15px] ${staying ? "text-ink" : "italic"}`}>{staying ?? "Optional · tap to add"}</span>
         </span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-stone transition ${picking ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
       </button>
@@ -92,7 +93,7 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
 
       <div
         className={`mt-2 flex min-h-[58px] items-center gap-3 rounded-[18px] px-4 py-2 ${
-          journeys.length || guest.own_way ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-champagne-400"
+          journeys.length || guest.own_way ? "bg-white ring-1 ring-linen" : "border-[1.5px] border-dashed border-linen"
         }`}
       >
         <span className="min-w-0 flex-1">
@@ -104,8 +105,8 @@ export function GuestTravelSection({ guest, travel, bare = false }: { guest: Con
           ) : guest.own_way ? (
             <span className="block text-[15px] text-ink">Making their own way</span>
           ) : (
-            <Link href="/day?tab=travel&open=nolift" className="block text-[15px] italic text-champagne-600 hover:underline">
-              No lift yet · put them on a journey ›
+            <Link href="/day?tab=travel&open=nolift" className="block text-[15px] italic text-stone hover:text-ink hover:underline">
+              Optional · add a journey ›
             </Link>
           )}
         </span>

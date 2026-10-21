@@ -604,6 +604,7 @@ export default function AreaView({
   ideaCount,
   error,
   detail,
+  openStage: askedStage,
   areas,
   guestFacts,
   food,
@@ -648,6 +649,12 @@ export default function AreaView({
   ideaCount: number;
   error?: string;
   detail?: string;
+  /**
+   * The stage to open on arrival (`?stage=ideas`): a server redirect, like
+   * saving a note, can't count on the #hash reaching the page (owner, 21 Oct
+   * 2026: Save landed on Payment, not Ideas).
+   */
+  openStage?: string;
 }) {
   const today = todayISO();
   const key = encodeURIComponent(area.key);
@@ -818,6 +825,8 @@ export default function AreaView({
                 <li key={n.id} className="flex items-start gap-3 py-3.5">
                   <div className="min-w-0 flex-1">
                     <TickableNote note={n} />
+                    {/* When it was written, small at the foot (owner, 21 Oct 2026). */}
+                    <p className="mt-1.5 text-right text-xs text-champagne-600">{formatDayMonth(n.created_at.slice(0, 10))}</p>
                   </div>
                   <Link href={`/area/${area.key}/note?id=${n.id}`} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
                     Edit
@@ -996,7 +1005,8 @@ export default function AreaView({
       ),
     },
   ];
-  const openStage = Math.min(stage.current, STAGES.length - 1);
+  const asked = stages.findIndex((st) => st.id === askedStage);
+  const openStage = asked >= 0 ? asked : Math.min(stage.current, STAGES.length - 1);
 
   // The summary lines of "Everything for …".
   const suppliersLine =
@@ -1068,7 +1078,7 @@ export default function AreaView({
         ) : stationery ? (
           <WhatYouSend counts={stationery.counts} weddingDate={stationery.weddingDate} />
         ) : (
-        <StageTabs stages={stages} done={stage.done} current={stage.current} initial={openStage} />
+        <StageTabs key={openStage} stages={stages} done={stage.done} current={stage.current} initial={openStage} />
         )}
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}

@@ -187,7 +187,7 @@ export async function addAreaNoteAction(key: string, formData: FormData) {
     }
     refreshNotes(key);
   }
-  redirect(`/area/${key}#ideas`);
+  redirect(`/area/${key}?stage=ideas#ideas`);
 }
 
 /**
@@ -205,7 +205,7 @@ export async function saveAreaNoteAction(key: string, noteId: string, keepUrl: s
     failed(`/area/${key}`, "That note didn't save.", error);
   }
   refreshNotes(key);
-  redirect(`/area/${key}#ideas`);
+  redirect(`/area/${key}?stage=ideas#ideas`);
 }
 
 export async function deleteAreaNoteAction(key: string, noteId: string) {
@@ -215,7 +215,7 @@ export async function deleteAreaNoteAction(key: string, noteId: string) {
     failed(`/area/${key}`, "That note wasn't removed.", error);
   }
   refreshNotes(key);
-  redirect(`/area/${key}#ideas`);
+  redirect(`/area/${key}?stage=ideas#ideas`);
 }
 
 /** The typed text as a note: a lone web address is kept as a link. Null if empty. */
@@ -263,7 +263,7 @@ export async function startSoundCheckAction(key: string) {
     failed(`/area/${area}`, "That didn't save.", error);
   }
   refreshNotes(area);
-  redirect(`/area/${area}#ideas`);
+  redirect(`/area/${area}?stage=ideas#ideas`);
 }
 
 /**

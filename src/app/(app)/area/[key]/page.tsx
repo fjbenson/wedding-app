@@ -34,13 +34,13 @@ export default async function AreaPage({
   searchParams,
 }: {
   params: Promise<{ key: string }>;
-  searchParams: Promise<{ error?: string; detail?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; stage?: string }>;
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
 
   const { key } = await params;
-  const { error, detail } = await searchParams;
+  const { error, detail, stage } = await searchParams;
   const area = await getArea(wedding.id, decodeURIComponent(key));
   if (!area) notFound();
 
@@ -132,6 +132,7 @@ export default async function AreaPage({
       couple={coupleName(wedding.name)}
       error={error}
       detail={detail}
+      openStage={stage}
     />
     </RowPeopleProvider>
   );

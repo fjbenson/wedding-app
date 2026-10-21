@@ -37,16 +37,24 @@ const aHead = (p: NonNullable<AreaDetail["perHead"]>) => `${formatMoney(Math.rou
 
 export type AreaCard = AreaOption & Money & { detail: AreaDetail };
 
-/** The short word under an area's bar (short enough for a half-width card). */
-function flag(m: Money): { text: string; tone: string } {
-  if (m.budget !== null && m.committed > m.budget) {
-    return { text: `▲ Over by ${formatMoney(m.committed - m.budget)}`, tone: "text-[#9A3F2B]" };
-  }
-  if (m.committed > 0 && m.paid >= m.committed) return { text: "✓ All paid", tone: "text-ink" };
-  if (m.committed > 0) return { text: `${formatMoney(m.committed - m.paid)} to go`, tone: "text-stone" };
-  if (m.budget !== null) return { text: "Not booked yet", tone: "text-stone" };
-  return { text: "No budget yet", tone: "text-champagne-600" };
+/**
+ * What an area's card shows (owner, 21 Oct 2026): one figure and where it
+ * stands — the agreed price once booked, else the lowest quote in, else the
+ * budget. Over-budget and the comparison live in the card that opens.
+ */
+function standing(a: AreaCard): { stage: "Booked" | "Quoted" | "Budgeted" | null; figure: number | null } {
+  if (a.committed > 0) return { stage: "Booked", figure: a.committed };
+  const quotes = a.detail.suppliers.filter((s) => s.status === "quoted" && s.quote > 0).map((s) => s.quote);
+  if (quotes.length > 0) return { stage: "Quoted", figure: Math.min(...quotes) };
+  if (a.budget !== null) return { stage: "Budgeted", figure: a.budget };
+  return { stage: null, figure: null };
 }
+
+const PILL = {
+  Booked: "bg-champagne-600 text-white",
+  Quoted: "border border-champagne-600 bg-white text-champagne-600",
+  Budgeted: "border border-dashed border-stone text-stone",
+};
 
 /**
  * Money's areas as little cards, two to a row (owner, 12 Oct 2026; four on a laptop). Tapping
@@ -66,9 +74,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
     <>
       <ul className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:grid-cols-4 lg:gap-3.5">
         {areas.map((a) => {
-          const note = !a.key && a.committed === 0 && a.paid === 0 ? { text: "Nothing yet", tone: "text-stone" } : flag(a);
-          const figure = a.committed > 0 ? formatMoney(a.committed) : a.budget !== null ? formatMoney(a.budget) : "—";
-          const ofBudget = a.committed > 0 ? (a.budget !== null ? `of ${formatMoney(a.budget)}` : "agreed") : a.budget !== null ? "budget" : "";
+          const { stage, figure } = standing(a);
           const Icon = areaIcon(a.key || "other", a.icon);
           return (
             <li key={a.key || "other"}>
@@ -81,13 +87,20 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
                   <Icon className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />
                   <span className="type-item min-w-0 truncate text-[15px]">{a.label}</span>
                 </span>
-                <span className="mt-3 block type-figure text-[26px] leading-none !font-light">{figure}</span>
-                <span className="mt-1 block h-4 text-xs text-stone">{ofBudget}</span>
-                {/* No budget and nothing agreed: no bar, just the word. */}
-                <span className="mt-2.5 block h-2">{(a.budget !== null || a.committed > 0) && <BudgetBar money={a} />}</span>
-                <span className={`mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] ${note.tone}`}>
-                  {note.text}
+                <span className="mt-3 block type-figure text-[26px] leading-none !font-light">{figure === null ? "—" : formatMoney(figure)}</span>
+                <span className="mt-2 block h-[22px]">
+                  {stage && <span className={`inline-block rounded-full px-2.5 py-[3px] text-xs ${PILL[stage]}`}>{stage}</span>}
                 </span>
+                {stage === "Booked" && (
+                  <>
+                    <span className="mt-2.5 block h-2">
+                      <BudgetBar money={{ budget: null, committed: a.committed, paid: a.paid }} />
+                    </span>
+                    <span className="mt-2.5 block text-[11px] font-semibold uppercase leading-snug tracking-[0.08em] text-stone">
+                      {a.paid >= a.committed ? "✓ All paid" : `${formatMoney(a.committed - a.paid)} to go`}
+                    </span>
+                  </>
+                )}
                 {a.detail.perHead && <span className="mt-1 block text-xs text-stone">{aHead(a.detail.perHead)}</span>}
               </button>
             </li>

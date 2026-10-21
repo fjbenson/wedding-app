@@ -822,18 +822,19 @@ export default function AreaView({
           {notes.length > 0 && (
             <ul className="divide-y divide-linen">
               {notes.map((n) => (
-                <li key={n.id} className="flex items-start gap-3 py-3.5">
-                  <div className="min-w-0 flex-1">
-                    {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL). */}
-                    <div className="border-l-2 border-champagne-400/50 pl-3">
-                      <TickableNote note={n} titled />
-                    </div>
-                    {/* When it was written, small at the foot (owner, 21 Oct 2026). */}
-                    <p className="mt-1.5 text-right text-xs text-champagne-600">{formatDayMonth(n.created_at.slice(0, 10))}</p>
+                <li key={n.id} className="py-3.5">
+                  {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL). */}
+                  <div className="border-l-2 border-champagne-400/50 pl-3">
+                    <TickableNote note={n} titled />
                   </div>
-                  <Link href={`/area/${area.key}/note?id=${n.id}`} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
-                    Edit
-                  </Link>
+                  {/* The note runs the full width; the day it was written (quiet, italic) and Edit
+                      sit together at the right underneath (owner, 21 Oct 2026). */}
+                  <p className="mt-1.5 flex items-baseline justify-end gap-3">
+                    <span className="text-xs italic text-stone">{formatDayMonth(n.created_at.slice(0, 10))}</span>
+                    <Link href={`/area/${area.key}/note?id=${n.id}`} className="py-1 text-[13px] text-champagne-600 hover:text-ink">
+                      Edit
+                    </Link>
+                  </p>
                 </li>
               ))}
             </ul>

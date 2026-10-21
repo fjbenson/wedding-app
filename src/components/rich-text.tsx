@@ -10,10 +10,13 @@ export default function RichText({
   text,
   className = "",
   onToggle,
+  titled = false,
 }: {
   text: string;
   className?: string;
   onToggle?: (lineIndex: number) => void;
+  /** The first line reads as the note's title, in the serif; the rest in grey (owner, 21 Oct 2026, canvas 4 "Area page · Round 3", TL). */
+  titled?: boolean;
 }) {
   type Block = { kind: "p"; lines: string[] } | { kind: "ul"; items: string[] } | { kind: "ticks"; items: { text: string; done: boolean; index: number }[] };
   const blocks: Block[] = [];
@@ -34,8 +37,16 @@ export default function RichText({
     }
   });
 
+  // A title only when the note starts with plain words.
+  let title: string | null = null;
+  if (titled && blocks[0]?.kind === "p" && blocks[0].lines.length > 0) {
+    title = blocks[0].lines[0];
+    blocks[0] = { kind: "p", lines: blocks[0].lines.slice(1) };
+  }
+
   return (
-    <div className={`space-y-2 text-[15px] leading-relaxed text-ink ${className}`}>
+    <div className={`space-y-2 leading-relaxed ${title !== null ? "text-[14px] text-stone" : "text-[15px] text-ink"} ${className}`}>
+      {title !== null && <p className="font-display text-[18px] leading-snug text-ink">{title}</p>}
       {blocks.map((b, i) =>
         b.kind === "ul" ? (
           <ul key={i} className="list-disc space-y-0.5 pl-5 marker:text-champagne-600">
@@ -56,7 +67,7 @@ export default function RichText({
                   {item.done && <Check className="h-3 w-3" strokeWidth={3} />}
                 </span>
               );
-              const words = <span className={`text-[15px] ${item.done ? "text-stone line-through" : ""}`}>{item.text}</span>;
+              const words = <span className={`${title !== null ? "text-[14px]" : "text-[15px]"} ${item.done ? "text-stone line-through" : ""}`}>{item.text}</span>;
               return (
                 <li key={item.index}>
                   {onToggle ? (

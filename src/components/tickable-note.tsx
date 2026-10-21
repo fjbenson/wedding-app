@@ -12,7 +12,7 @@ import type { Note } from "@/types/db";
  * panel, an area page (owner, 19 Oct 2026). A tick saves at once; it shows
  * straight away and the page catches up.
  */
-export default function TickableNote({ note, className }: { note: Note; className?: string }) {
+export default function TickableNote({ note, className, titled }: { note: Note; className?: string; titled?: boolean }) {
   const router = useRouter();
   const [body, setBody] = useState(note.body ?? "");
   const [error, setError] = useState<string>();
@@ -22,6 +22,7 @@ export default function TickableNote({ note, className }: { note: Note; classNam
       <NoteText
         note={{ ...note, body }}
         className={className}
+        titled={titled}
         onToggle={(index) => {
           const next = toggleLine(body, index);
           setBody(next);

@@ -824,7 +824,10 @@ export default function AreaView({
               {notes.map((n) => (
                 <li key={n.id} className="flex items-start gap-3 py-3.5">
                   <div className="min-w-0 flex-1">
-                    <TickableNote note={n} />
+                    {/* A title and a fine gold line down the note, so each reads as one (canvas 4 "Area page · Round 3", TL). */}
+                    <div className="border-l-2 border-champagne-400/50 pl-3">
+                      <TickableNote note={n} titled />
+                    </div>
                     {/* When it was written, small at the foot (owner, 21 Oct 2026). */}
                     <p className="mt-1.5 text-right text-xs text-champagne-600">{formatDayMonth(n.created_at.slice(0, 10))}</p>
                   </div>

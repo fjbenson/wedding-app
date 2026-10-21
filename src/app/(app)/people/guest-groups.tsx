@@ -198,9 +198,14 @@ export function GroupSheet({
   const [editing, setEditing] = useState(false);
   // Bumped when an email or text is noted, so History reloads and shows it.
   const [logged, setLogged] = useState(0);
-  const coming = people.filter((p) => answerOf(p) === "attending").length;
-  const invited = people.filter((p) => answerOf(p) === "pending").length;
-  const counts = [`${coming} coming`, invited > 0 && `${invited} yet to respond`].filter(Boolean).join(" · ");
+  // The subtitle's figures in champagne, and any that is 0 left off (owner, 21 Oct 2026).
+  const tally = (status: Rsvp["status"]) => people.filter((p) => answerOf(p) === status).length;
+  const facts: [number, string][] = [
+    [people.length, people.length === 1 ? "person" : "people"],
+    [tally("attending"), "coming"],
+    [tally("pending"), "yet to respond"],
+    [tally("declined"), "can’t come"],
+  ];
 
   return (
     <CardSheet beside label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
@@ -211,8 +216,14 @@ export function GroupSheet({
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-[26px] italic leading-tight text-ink">{group.name}</p>
           <p className="mt-0.5 text-[13px] text-stone">
-            {people.length} {people.length === 1 ? "person" : "people"}
-            {people.length > 0 && ` · ${counts}`}
+            {facts
+              .filter(([n]) => n > 0)
+              .map(([n, word], i) => (
+                <span key={word}>
+                  {i > 0 && " · "}
+                  <span className="font-medium text-champagne-600">{n}</span> {word}
+                </span>
+              ))}
           </p>
         </div>
       </div>

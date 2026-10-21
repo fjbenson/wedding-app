@@ -255,7 +255,7 @@ function Profile({
             <span className={`block font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
               {own ? answer[own.status] : "Day or evening?"}
             </span>
-            <span className="mt-0.5 block text-xs text-stone">Answer</span>
+            <span className="mt-0.5 block text-xs text-stone">RSVP</span>
           </button>
         </div>
         <div className="border-x border-linen px-1">

@@ -338,7 +338,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   to / Copy to on its card. Filter by area; Print. A moment's card: a cue card,
   then When · Where · In charge · Music · Notes · Area, food served there, and
   Send it.
-- **The timeline** on every supplier, guest and household card (folded to one
+- **History** (called the timeline in code; renamed on screen 21 Oct 2026,
+  owner: Plan is what's to come, History what's happened) on every supplier, guest and household card (folded to one
   line), area page and payment: past and to come around a Today marker; calls,
   meetings, emails and notes are added on a full screen (`/history/new`; not `/timeline/…`, which an old redirect sends to Plan);
   stage changes and sendings are written by the app.

@@ -30,7 +30,7 @@ const SHOWN = 5;
  */
 export default function Timeline({
   scope,
-  label = "Timeline",
+  label = "History",
   bare = false,
   folded = false,
   only,
@@ -66,7 +66,7 @@ export default function Timeline({
         setToday(r.today);
         setError(r.error);
       })
-      .catch(() => live && setError("The timeline didn't load."));
+      .catch(() => live && setError("The history didn't load."));
     return () => {
       live = false;
     };

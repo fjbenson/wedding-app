@@ -33,7 +33,7 @@ export async function timelineAction(scope: string): Promise<{ items: TimelineIt
     return { items: buildTimeline(await loadTimeline(wedding.id, parsed), today), today };
   } catch (error) {
     console.error("loading a timeline failed", error);
-    return { items: [], today, error: "The timeline didn't load." };
+    return { items: [], today, error: "The history didn't load." };
   }
 }
 

@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Wedding App",
     short_name: "Wedding",
-    description: "Plan a wedding — contacts, timeline and RSVPs in one place.",
+    description: "Plan a wedding — contacts, plans and RSVPs in one place.",
     start_url: "/",
     display: "standalone",
     background_color: "#F4EEE4",

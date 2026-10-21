@@ -29,7 +29,7 @@ const script = Pinyon_Script({
 
 export const metadata: Metadata = {
   title: "Wedding App",
-  description: "Plan a wedding — contacts, timeline and RSVPs in one place.",
+  description: "Plan a wedding — contacts, plans and RSVPs in one place.",
   // On an iPhone, "Add to Home Screen" opens it full screen, like an app.
   // The icon is src/app/apple-icon.png; the rest is in manifest.ts.
   // "black-translucent" lets the page run up under the clock (whose text the

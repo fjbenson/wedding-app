@@ -1,5 +1,5 @@
 import PageTitle from "@/components/page-title";
-import { AlsoInTheDay, DayPill, PieceTiles } from "./day-pieces";
+import { AlsoInTheDay, DayPill, PiecePills, PieceTiles } from "./day-pieces";
 import { musicTitle } from "@/lib/music";
 import Link from "next/link";
 import CardLink from "@/components/card-link";
@@ -234,11 +234,20 @@ function RunSheet({
     ? [...new Set(guests.filter((g) => theGroup.members.includes(g.id)).map((g) => g.email?.trim()).filter((e): e is string => !!e))]
     : [];
   const sheetParam = current ? `sheet=${current.id}` : "";
+  const pieceFacts = {
+    seating: `${pieces.seated} of ${pieces.coming} seated`,
+    travel: pieces.noLift === 0 ? "Everyone has a lift" : `${pieces.noLift} without a lift`,
+    decor: pieces.decor.all === 0 ? "Nothing yet" : pieces.decor.toGet === 0 ? "All got" : `${pieces.decor.toGet} still to get`,
+  };
+  const addMomentHref = `/day/run-sheet/new${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).length ? `?${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).join("&")}` : ""}`;
   // The carousel's order: The day, then the others as listed.
   const order = [{ id: null as string | null, name: "The day" }, ...sheets.map((x) => ({ id: x.id as string | null, name: x.name }))];
   const at = order.findIndex((x) => x.id === (current?.id ?? null));
-  const before = at > 0 ? order[at - 1] : undefined;
-  const after = at < order.length - 1 ? order[at + 1] : undefined;
+  // They go round, so the sheet you're on always has one either side from three sheets up
+  // (owner, 21 Oct 2026: the main sheet sat alone at the left end); with two, just the other one.
+  const n = order.length;
+  const before = n >= 3 ? order[(at - 1 + n) % n] : n === 2 && at === 1 ? order[0] : undefined;
+  const after = n >= 3 ? order[(at + 1) % n] : n === 2 && at === 0 ? order[1] : undefined;
   const sheetHref = (id: string | null) => (id ? `/day?sheet=${id}` : "/day");
   const momentsOf = (id: string | null) =>
     all.filter((i) => (i.sheet_id ?? null) === id).sort((a, b) => a.at_time.localeCompare(b.at_time));
@@ -254,19 +263,19 @@ function RunSheet({
 
   return (
     <>
-      <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
-        The Day
-      </PageTitle>
+      {/* Laptops (canvas 4 "Laptop · Round 9", 3b): the pieces as slim pills beside the title; the sheets, filter, print and + are by the sheet below. */}
+      <div className="lg:flex lg:items-center lg:justify-between lg:gap-6">
+        <PageTitle drawing="day" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
+          The Day
+        </PageTitle>
+        <PiecePills facts={pieceFacts} />
+      </div>
       {/* Search with the black +, then Filter and Print (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
-      <div className="print:hidden">
+      <div className="print:hidden lg:hidden">
       {/* No numbers card here (owner, 20 Oct 2026: the run sheet doesn't need KPIs). What's left is the doorway to the day's pieces (canvas 3 "The Day · Round 2", option 1). */}
       <PieceTiles
         className="mt-6 lg:max-w-xl"
-        facts={{
-          seating: `${pieces.seated} of ${pieces.coming} seated`,
-          travel: pieces.noLift === 0 ? "Everyone has a lift" : `${pieces.noLift} without a lift`,
-          decor: pieces.decor.all === 0 ? "Nothing yet" : pieces.decor.toGet === 0 ? "All got" : `${pieces.decor.toGet} still to get`,
-        }}
+        facts={pieceFacts}
       />
       <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
@@ -274,7 +283,7 @@ function RunSheet({
         placeholder="Find a moment"
         end={
           <AddButton
-            href={`/day/run-sheet/new${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).length ? `?${[area && area !== "none" ? `area=${encodeURIComponent(area)}` : "", sheetParam].filter(Boolean).join("&")}` : ""}`}
+            href={addMomentHref}
             label="Add a moment"
           />
         }
@@ -299,8 +308,7 @@ function RunSheet({
       {/* Laptops: the run sheets as a carousel (canvas 4 "Laptop · Round 9", 3b,
           owner's pick 21 Oct 2026) — their names along the top, the one you're
           on in the middle, the sheets either side peeking in to flip to. */}
-      {order.length > 1 && (
-        <nav aria-label="Run sheets" className="mt-6 hidden flex-wrap justify-center gap-x-7 gap-y-2 lg:flex print:hidden">
+        <nav aria-label="Run sheets" className="mt-5 hidden flex-wrap justify-center gap-x-7 gap-y-2 lg:flex print:hidden">
           {order.map((x) => (
             <Link
               key={x.id ?? "main"}
@@ -315,10 +323,22 @@ function RunSheet({
             + New run sheet
           </Link>
         </nav>
-      )}
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <div className="relative lg:mt-5">
         <SheetPeek side="before" sheet={before} items={before ? momentsOf(before.id) : []} href={before ? sheetHref(before.id) : ""} />
-        <div className="min-w-0">
+        <div className="relative z-10 min-w-0 lg:mx-auto lg:max-w-xl">
+          {/* Laptops: Filter, Print and the + by the sheet, not in a row of their own. */}
+          <div className="hidden items-center justify-end gap-1 pb-3 lg:flex print:hidden">
+            <FilterMenu
+              base={`/day${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).length ? `?${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).join("&")}` : ""}`}
+              start={<span aria-hidden />}
+              groups={[{ param: "area", title: "Area", current: area, rows: areaFilterRows(areas) }]}
+              expandable={{ results: items.length, noun: "moment" }}
+            />
+            {items.length > 0 && <PrintButton />}
+            <span className="ml-2">
+              <AddButton href={addMomentHref} label="Add a moment" />
+            </span>
+          </div>
       {items.length > 0 && (
         <article className="mt-6 rounded bg-white p-2.5 shadow-[0_1px_2px_rgb(60_45_20/0.06),0_14px_34px_rgb(60_45_20/0.10)] lg:mx-0 lg:max-w-none print:shadow-none">
           <div className="border border-champagne-400 px-[18px] pb-3 pt-7 outline outline-1 -outline-offset-[5px] outline-champagne-100">
@@ -393,6 +413,8 @@ function RunSheet({
       )}
         </div>
         <SheetPeek side="after" sheet={after} items={after ? momentsOf(after.id) : []} href={after ? sheetHref(after.id) : ""} />
+        {before && <SheetArrow side="before" name={before.name} href={sheetHref(before.id)} />}
+        {after && <SheetArrow side="after" name={after.name} href={sheetHref(after.id)} />}
       </div>
       {theGroup && items.length > 0 && (
         <div className="mx-auto mt-4 max-w-xl print:hidden">
@@ -411,9 +433,10 @@ function RunSheet({
 }
 
 /**
- * A neighbouring run sheet peeking in beside the one you're on (laptops only):
- * its name with an arrow and its first few moments, faded; the whole of it
- * flips to that sheet. Nothing there at either end.
+ * A neighbouring run sheet tucked behind the one you're on (laptops only;
+ * canvas 4 "Laptop · Round 9", 3b): its name and its first moments, faded
+ * towards the foot, the part beyond the main sheet showing. The whole of it
+ * flips to that sheet.
  */
 function SheetPeek({
   side,
@@ -426,22 +449,18 @@ function SheetPeek({
   items: RunSheetItem[];
   href: string;
 }) {
-  if (!sheet) return <div aria-hidden className="hidden lg:block" />;
-  const shown = items.slice(0, 6);
+  if (!sheet) return null;
+  const shown = items.slice(0, 8);
   return (
     <Link
       href={href}
       aria-label={`${side === "before" ? "Previous" : "Next"} run sheet: ${sheet.name}`}
-      className={`mt-16 hidden w-full max-w-[300px] rounded bg-white/80 p-6 opacity-60 shadow-[0_14px_34px_rgb(60_45_20/0.08)] transition hover:opacity-100 lg:block print:!hidden ${
-        side === "before" ? "justify-self-end" : "justify-self-start"
+      className={`absolute top-10 hidden h-[34rem] w-[24rem] overflow-hidden rounded-[20px] bg-white/70 py-7 opacity-60 shadow-[0_14px_34px_rgb(60_45_20/0.08)] transition [mask-image:linear-gradient(to_bottom,black_55%,transparent)] hover:opacity-90 lg:block print:!hidden ${
+        side === "before" ? "right-[calc(50%+8rem)] pl-7 pr-[11rem]" : "left-[calc(50%+8rem)] pl-[11rem] pr-7"
       }`}
     >
-      <span className="flex items-center gap-2 font-display text-[22px] italic text-ink">
-        {side === "before" && <ChevronLeft className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />}
-        <span className="min-w-0 flex-1 truncate">{sheet.name}</span>
-        {side === "after" && <ChevronRight className="h-5 w-5 shrink-0 text-champagne-600" strokeWidth={1.6} aria-hidden />}
-      </span>
-      <span className="mt-3 block space-y-2">
+      <span className="block truncate font-display text-[24px] italic text-ink">{sheet.name}</span>
+      <span className="mt-4 block space-y-2.5">
         {shown.map((i) => (
           <span key={i.id} className="flex gap-3 text-sm text-stone">
             <span className="tabular-nums text-champagne-600">{formatClock(i.at_time)}</span>
@@ -450,7 +469,22 @@ function SheetPeek({
         ))}
         {items.length === 0 && <span className="block text-sm italic text-stone">Nothing on it yet</span>}
       </span>
-      {items.length > shown.length && <span className="type-meta mt-3 block">{items.length} moments ›</span>}
+    </Link>
+  );
+}
+
+/** The round ‹ › on the main sheet's edges that flip to the sheet either side. */
+function SheetArrow({ side, name, href }: { side: "before" | "after"; name: string; href: string }) {
+  const Icon = side === "before" ? ChevronLeft : ChevronRight;
+  return (
+    <Link
+      href={href}
+      aria-label={`${side === "before" ? "Previous" : "Next"} run sheet: ${name}`}
+      className={`absolute top-[20rem] z-20 hidden h-11 w-11 items-center justify-center rounded-full border border-linen bg-white text-ink shadow-[0_8px_20px_-10px_rgb(60_50_40/0.4)] hover:border-champagne-400 lg:flex print:!hidden ${
+        side === "before" ? "left-[calc(50%-18rem-3.25rem)]" : "right-[calc(50%-18rem-3.25rem)]"
+      }`}
+    >
+      <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden />
     </Link>
   );
 }

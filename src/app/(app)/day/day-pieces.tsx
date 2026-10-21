@@ -43,6 +43,24 @@ export function PieceTiles({ facts, className = "" }: { facts: Record<Piece, str
   );
 }
 
+/** Laptops: the three pieces as slim pills in the title's row, each with its one fact (canvas 4 "Laptop · Round 9", 3b). */
+export function PiecePills({ facts }: { facts: Record<Piece, string> }) {
+  return (
+    <nav aria-label="Pieces of the day" className="hidden items-center gap-2.5 lg:flex print:hidden">
+      {PIECES.map((p) => (
+        <Link
+          key={p.key}
+          href={p.href}
+          className="flex h-10 items-center gap-2.5 rounded-full bg-white/60 px-4 shadow-[0_0_0_0.5px_rgb(60_50_40/0.12)] transition hover:bg-white"
+        >
+          <span className="font-display text-[16px] text-ink">{p.title}</span>
+          <span className="text-[13px] text-stone">{facts[p.key]}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 /** Above a piece's title: the way back to the whole day (no back arrow). */
 export function DayPill() {
   return (

@@ -392,9 +392,20 @@ export default function FloorPlan({
   /** The table (and the chair, if it's on one) under a point on the screen. */
   const targetAt = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y) as HTMLElement | null;
-    const table = el?.closest<HTMLElement>("[data-table-id]")?.dataset.tableId ?? null;
-    const chair = Number(el?.closest<HTMLElement>("[data-chair]")?.dataset.chair) || null;
-    return { table, chair: table && chair ? chair : null };
+    const tableEl = el?.closest<HTMLElement>("[data-table-id]");
+    if (!tableEl) return { table: null, chair: null };
+    // The chair nearest the cursor within reach, so it needn't be hit exactly.
+    let chair: number | null = null;
+    let nearest = 36;
+    tableEl.querySelectorAll<HTMLElement>("[data-chair]").forEach((c) => {
+      const r = c.getBoundingClientRect();
+      const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+      if (d < nearest) {
+        nearest = d;
+        chair = Number(c.dataset.chair);
+      }
+    });
+    return { table: tableEl.dataset.tableId ?? null, chair };
   };
 
   function addTableAt(shape: TableShape, x: number, y: number) {
@@ -588,7 +599,7 @@ export default function FloorPlan({
                     } ${
                       // The chair a name would land in: a bolder edge, like the table's (owner, 21 Oct 2026).
                       hoverChair?.table === t.id && hoverChair.chair === i + 1
-                        ? `scale-110 border-champagne-600 shadow-[0_0_0_3px_#B8914F] ${chairs[i] ? (needs[chairs[i]!]?.length ? "bg-[#9A3F2B]" : "bg-champagne-600") : "bg-champagne-100"}`
+                        ? `scale-125 border-2 border-champagne-600 shadow-[0_0_0_3px_#B8914F] ${chairs[i] ? (needs[chairs[i]!]?.length ? "bg-[#9A3F2B]" : "bg-champagne-600") : "bg-champagne-100"}`
                         : chairs[i]
                         ? needs[chairs[i]!]?.length
                           ? "border-[#9A3F2B] bg-[#9A3F2B]"

@@ -19,7 +19,10 @@ export default function NoteEditor({
   placeholder = "What's on your mind?",
   onChange,
   textClass = "font-display text-[19px] italic leading-snug",
+  fill = false,
 }: {
+  /** Fill its box: the writing space grows to the toolbar, and a tap anywhere in it writes (a full-screen note). */
+  fill?: boolean;
   name?: string;
   initial?: string | null;
   autoFocus?: boolean;
@@ -62,9 +65,18 @@ export default function NoteEditor({
   };
 
   return (
-    <div>
+    <div className={fill ? "flex flex-1 flex-col" : undefined}>
       <input type="hidden" name={name} value={body} />
-      <div className="space-y-1">
+      <div
+        className={fill ? "flex-1 cursor-text space-y-1" : "space-y-1"}
+        // A tap in the empty space below the lines carries on the last one.
+        onClick={(e) => {
+          if (!fill || e.target !== e.currentTarget) return;
+          const last = lines.length - 1;
+          want.current = { index: last, at: lines[last].text.length };
+          setFocus(last);
+        }}
+      >
         {lines.map((line, i) => (
           <div key={i} className="flex items-start gap-2.5">
             {line.kind === "bullet" && <span aria-hidden className="mt-[0.7em] h-1.5 w-1.5 shrink-0 rounded-full bg-champagne-600" />}

@@ -37,8 +37,9 @@ export default async function AreaNotePage({
   return (
     <FormPage backHref={`/area/${area.key}#ideas`} backLabel={area.label} title={note ? "Your note" : `A note for ${area.label}`} error={error} detail={detail}>
       <form action={action}>
-        <div className="glass-card min-h-[40dvh] rounded-[22px] px-4 py-4">
-          <NoteEditor initial={note ? (note.body ?? note.url ?? "") : ""} autoFocus={!note} placeholder="A thought, a list, what you've ruled out" />
+        {/* The writing space fills the card down to the toolbar (owner, 21 Oct 2026: one line felt squashed). */}
+        <div className="glass-card flex min-h-[55dvh] flex-col rounded-[22px] px-4 py-4">
+          <NoteEditor fill initial={note ? (note.body ?? note.url ?? "") : ""} autoFocus={!note} placeholder="A thought, a list, what you've ruled out" />
         </div>
         <SubmitBar label="Save note" whenChanged={!!note} />
       </form>

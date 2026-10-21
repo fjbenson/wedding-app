@@ -96,9 +96,11 @@ export function SubmitBar({
   return (
     <div
       ref={ref}
+      // Fades from the page's own ground, not ivory, so no paler band shows
+      // under the buttons (owner, 21 Oct 2026).
       className={
         shown
-          ? `sticky bottom-0 z-20 -mx-[var(--gutter)] mt-8 bg-gradient-to-t from-ivory from-60% to-ivory/0 px-[var(--gutter)] pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 ${whenChanged ? "rise-in" : ""}`
+          ? `sticky bottom-0 z-20 -mx-[var(--gutter)] mt-8 bg-gradient-to-t from-ground from-60% to-ground/0 px-[var(--gutter)] pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 ${whenChanged ? "rise-in" : ""}`
           : "hidden"
       }
     >

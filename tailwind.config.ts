@@ -21,6 +21,7 @@ export default {
       white: "#FFFFFF", // cards; highlights on glass
       ivory: "#FBF9F5", // the page, everywhere
       cream: "#F4EFE7", // secondary panels, pressed states
+      ground: "#EFE7DA", // the page below the light at the top (body::before in globals.css)
       linen: "#E6E0D6", // hairline dividers between rows
       champagne: {
         100: "#F1E7D4", // "done" fills

@@ -120,9 +120,12 @@ export default function GuestCard({
     .filter(Boolean)
     .join(" · ");
   const hasTables = Boolean(seating && seating.tables.length > 0);
+  // Only what's been set: no table, no place to stay and no journey say nothing (owner, 21 Oct 2026).
   const place = travel?.stays.find((s) => s.id === guest.stay_id);
-  const stayingLine = guest.staying === "no" ? "Not staying over" : guest.staying === "yes" ? (place?.name ?? "Staying, not sure where") : "Staying not sure yet";
-  const seatingLine = [hasTables ? (table ? `Table ${table}` : "No table yet") : null, travel ? stayingLine : null].filter(Boolean).join(" · ");
+  const stayingLine = guest.staying === "no" ? "Not staying over" : guest.staying === "yes" ? (place?.name ?? "Staying, not sure where") : null;
+  const journeys = travel?.journeys[guest.id] ?? [];
+  const transportLine = journeys.length > 0 ? journeys.join(" · ") : guest.own_way ? "Own way" : null;
+  const seatingLine = [hasTables && table ? `Table ${table}` : null, stayingLine, transportLine].filter(Boolean).join(" · ") || "Nothing yet";
   const theirGroups = (groups ?? []).filter((g) => g.members.includes(guest.id)).map((g) => g.name);
   const roleLine = [rolesOf(guest).join(" · ") || "No role", groups ? (theirGroups.length > 0 ? theirGroups.join(", ") : "No groups") : null].filter(Boolean).join(" · ");
   const ownEventName = eventName(events.find((e) => e.id === own?.event_id));

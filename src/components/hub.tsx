@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 import { daysUntil } from "@/lib/dates";
@@ -145,16 +145,26 @@ function Node({
     <Link
       href={href}
       style={position}
-      title={label}
+      title={stageName ? undefined : label}
       aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
-      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
+      className="group absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
     >
-      <span className="relative lg:mb-3">{children}</span>
+      <span className="relative lg:mb-3">
+        {children}
+        {/* Ready: a small gold tick, so the finished areas stand out at a glance. */}
+        {stage === STAGES.length && (
+          <span aria-hidden className="absolute -right-1.5 -top-1.5 hidden h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-600 text-white shadow-[0_2px_6px_-2px_rgb(60_50_40/0.4)] lg:flex">
+            <Check className="h-3 w-3" strokeWidth={2.6} />
+          </span>
+        )}
+      </span>
       <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(13px,2.3cqw,16px)] lg:text-ink">
         {label}
       </span>
       {stageName && (
-        <span aria-hidden className={`hidden text-xs lg:mt-0.5 lg:block ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
+        // The word only on hover (owner, 21 Oct 2026: keep the ring clean; the
+        // gold line says it at a glance). It keeps its space, so nothing jumps.
+        <span aria-hidden className="hidden text-xs text-stone opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:mt-0.5 lg:block">
           {stageName}
         </span>
       )}
@@ -165,7 +175,7 @@ function Node({
 /**
  * On a laptop, a thin gold line round an area's button, filled a fifth for
  * each stage done (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026).
- * The stage's name under the label says the same in words.
+ * Hovering shows the stage's name under the label; Ready also gets a tick.
  */
 function StageRing({ done }: { done: number }) {
   const r = 29;

@@ -258,7 +258,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Your notes and Inspo. On a laptop (canvas 4 "Laptop · Round 8", C, 21 Oct
   2026): a bigger ring whose buttons carry a gold line and the stage's name
   (how far along each area is, `src/lib/hub-stages.ts`), and a column on the
-  right filling the screen — **Needs a push** (the areas furthest behind, each
+  right filling the screen (the stage word shows on hover, a gold tick on Ready) — **Needs a push** (the areas furthest behind, each
   with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of

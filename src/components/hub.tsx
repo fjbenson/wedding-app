@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 import { daysUntil } from "@/lib/dates";
@@ -20,10 +20,9 @@ export interface HubArea {
 const RING_RADIUS = 0.39;
 
 /**
- * Under each button on a laptop, what's been reached, in the past tense to
- * match the gold line (owner, 21 Oct 2026: "Payment" read oddly on the ring,
- * though nouns suit the area page, where you're inside a stage). Indexed by
- * how many stages are done.
+ * What's been reached, in the past tense (owner, 21 Oct 2026: nouns suit the
+ * area page, where you're inside a stage; here it's what's done). Said on
+ * hover and to screen readers; the five dots show it. By stages done.
  */
 const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
 
@@ -90,7 +89,7 @@ export default function Hub({
     <div className="relative aspect-square w-full [--disc:46px] lg:[--disc:clamp(46px,8.5cqw,66px)] lg:[container-type:inline-size]">
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md"
+        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md lg:w-[78%] lg:bg-[#E6D5BA]/35 lg:shadow-none"
       />
 
       {/* The heart of the ring opens Where things stand (owner, 13 Oct 2026). */}
@@ -107,7 +106,6 @@ export default function Hub({
         const Icon = areaIcon(area.key, area.icon);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
-            {area.stage !== undefined && <StageRing done={area.stage} />}
             <span className="relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
               <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)]" strokeWidth={1.5} aria-hidden />
             </span>
@@ -145,56 +143,35 @@ function Node({
     <Link
       href={href}
       style={position}
-      title={stageName ? undefined : label}
+      title={stageName ? `${label} · ${stageName}` : label}
       aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
-      className="group absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
+      className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
     >
-      <span className="relative lg:mb-3">
-        {children}
-        {/* Ready: a small gold tick, so the finished areas stand out at a glance. */}
-        {stage === STAGES.length && (
-          <span aria-hidden className="absolute -right-1.5 -top-1.5 hidden h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-600 text-white shadow-[0_2px_6px_-2px_rgb(60_50_40/0.4)] lg:flex">
-            <Check className="h-3 w-3" strokeWidth={2.6} />
-          </span>
-        )}
-      </span>
-      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(13px,2.3cqw,16px)] lg:text-ink">
+      <span className="relative lg:mb-2.5">{children}</span>
+      {/* Small grey capitals (21 Oct 2026: big black names made the ring heavy). */}
+      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.8cqw,14px)] lg:tracking-[0.16em]">
         {label}
       </span>
-      {stageName && (
-        // The word only on hover (owner, 21 Oct 2026: keep the ring clean; the
-        // gold line says it at a glance). It keeps its space, so nothing jumps.
-        <span aria-hidden className="hidden text-xs text-stone opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:mt-0.5 lg:block">
-          {stageName}
-        </span>
-      )}
+      {stage !== undefined && <StageDots done={stage} />}
     </Link>
   );
 }
 
 /**
- * On a laptop, a thin gold line round an area's button, filled a fifth for
- * each stage done (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026).
- * Hovering shows the stage's name under the label; Ready also gets a tick.
+ * On a laptop, five small dots under an area's name, filled gold for each
+ * stage done (canvas 4 "Laptop · Round 10", D3, owner's pick 21 Oct 2026: the
+ * gold arcs round each button pointed every which way and looked heavy).
+ * They match the five stage circles on the area page.
  */
-function StageRing({ done }: { done: number }) {
-  const r = 29;
-  const around = 2 * Math.PI * r;
+function StageDots({ done }: { done: number }) {
   return (
-    <svg aria-hidden viewBox="0 0 62 62" className="absolute -left-2 -top-2 hidden h-[calc(var(--disc)+16px)] w-[calc(var(--disc)+16px)] -rotate-90 lg:block">
-      <circle cx="31" cy="31" r={r} fill="none" className="stroke-[#EEE4D3]" strokeWidth="1" />
-      {done > 0 && (
-        <circle
-          cx="31"
-          cy="31"
-          r={r}
-          fill="none"
-          className="stroke-champagne-400"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeDasharray={`${(around * Math.min(done, STAGES.length)) / STAGES.length} ${around}`}
+    <span aria-hidden className="mt-1.5 hidden gap-1 lg:flex">
+      {STAGES.map((name, i) => (
+        <span
+          key={name}
+          className={`h-[5px] w-[5px] rounded-full ${i < done ? "bg-champagne-400" : "shadow-[inset_0_0_0_1px_#CDB78E]"}`}
         />
-      )}
-    </svg>
+      ))}
+    </span>
   );
 }

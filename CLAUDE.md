@@ -256,9 +256,10 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   `/standing`; the + adds an area in three steps), **"Ask Juno"**, **This
   week** (due by Sunday plus overdue, ticked off in place), and tiles for
   Your notes and Inspo. On a laptop (canvas 4 "Laptop · Round 8", C, 21 Oct
-  2026): a bigger ring whose buttons carry a gold line and the stage's name
-  (how far along each area is, `src/lib/hub-stages.ts`), and a column on the
-  right filling the screen (the stage word shows on hover, a gold tick on Ready) — **Needs a push** (the areas furthest behind, each
+  2026): a bigger ring (it grows with the screen) whose buttons sit on the edge of
+  a faint circle, each with its name in small grey capitals and **five dots**
+  filling gold as stages are done (Round 10, D3; `src/lib/hub-stages.ts`),
+  and a column on the right filling the screen — **Needs a push** (the areas furthest behind, each
   with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
@@ -271,8 +272,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   idea" (A note · Inspo, both full screens; a note's is `/area/[key]/note`,
   Bullet and Tick-box on top) at the foot, counted as "N ideas"; key facts
   became notes (`areas.details` kept, unshown); "Save an idea" is now "Add
-  inspo". Pay starts "Paid £X of £Y" with a bar. On the laptop Hub's ring the same
-  stages read as done: Not started · Ideas · Quoted · Booked · Paid · Ready.
+  inspo". Pay starts "Paid £X of £Y" with a bar. On the laptop Hub's ring, hovering a
+  button says what's done: Not started · Ideas · Quoted · Booked · Paid · Ready.
   Then **"Everything for [area]"** in the tabs' order (suppliers, guests,
   plan, money, the day), then **"Only for [area]"** (Food & drink's menu and
   drinks), then a foot like the Hub: **Notes** and **Inspo** tiles (both open

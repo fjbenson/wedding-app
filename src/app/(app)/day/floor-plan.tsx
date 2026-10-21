@@ -103,6 +103,21 @@ export default function FloorPlan({
   const [view, setView] = useState({ z: 1, x: 0, y: 0 });
   const viewRef = useRef<HTMLDivElement>(null);
   const pan = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null);
+  // On a laptop the canvas fills the space and the room sits in it as a 4:3
+  // sheet (positions are % of the room), centred, with the dots going on round it.
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = viewRef.current;
+    if (!el || !wide) return setBox(null);
+    const measure = () => setBox({ w: el.clientWidth, h: el.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [wide]);
+  const roomW = box ? Math.min(box.w, (box.h * 4) / 3) : 0;
+  const roomH = (roomW * 3) / 4;
+  const home = box ? { x: (box.w - roomW) / 2, y: (box.h - roomH) / 2 } : { x: 0, y: 0 };
   useEffect(() => {
     const query = window.matchMedia("(min-width: 1024px)");
     const update = () => setWide(query.matches);
@@ -120,34 +135,31 @@ export default function FloorPlan({
   }, []);
   /** Zooms and pans so the room and every table are in view (never bigger than 100%). */
   function fitAll() {
-    const el = viewRef.current;
-    if (!el) return;
-    const vw = el.clientWidth;
-    const vh = el.clientHeight;
-    let [x0, y0, x1, y1] = [0, 0, vw, vh];
+    if (!box || !roomW) return;
+    let [x0, y0, x1, y1] = [0, 0, roomW, roomH];
     for (const t of tables) {
       const s = spots[t.id];
       if (!s) continue;
       const { width, aspect } = tableSize(shapes[t.id] ?? "round", t.capacity);
-      const w = (vw * width) / 100;
+      const w = (roomW * width) / 100;
       const h = w / aspect;
-      const [cx, cy, m] = [(s.x / 100) * vw, (s.y / 100) * vh, 16];
+      const [cx, cy, m] = [(s.x / 100) * roomW, (s.y / 100) * roomH, 16];
       x0 = Math.min(x0, cx - w / 2 - m);
       x1 = Math.max(x1, cx + w / 2 + m);
       y0 = Math.min(y0, cy - h / 2 - m);
       y1 = Math.max(y1, cy + h / 2 + m);
     }
-    const z = Math.min(1, vw / (x1 - x0), vh / (y1 - y0));
-    setView({ z, x: vw / 2 - ((x0 + x1) / 2) * z, y: vh / 2 - ((y0 + y1) / 2) * z });
+    const z = Math.min(1, box.w / (x1 - x0), box.h / (y1 - y0));
+    setView({ z, x: box.w / 2 - ((x0 + x1) / 2) * z - home.x, y: box.h / 2 - ((y0 + y1) / 2) * z - home.y });
   }
   // Opening the plan with a table outside the room: start with everything in view.
   const fitted = useRef(false);
   useEffect(() => {
-    if (!wide || fitted.current || tables.length === 0 || Object.keys(spots).length === 0) return;
+    if (!wide || !box || fitted.current || tables.length === 0 || Object.keys(spots).length === 0) return;
     fitted.current = true;
     if (Object.values(spots).some((s) => s.x < 0 || s.x > 100 || s.y < 0 || s.y > 100)) fitAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wide, spots, tables.length]);
+  }, [wide, box, spots, tables.length]);
   function zoomFromCentre(factor: number) {
     const r = viewRef.current?.getBoundingClientRect();
     if (r) zoomBy(factor, r.width / 2, r.height / 2);
@@ -492,13 +504,13 @@ export default function FloorPlan({
           }}
           onPointerUp={() => (pan.current = null)}
           onPointerCancel={() => (pan.current = null)}
-          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:w-[min(100%,calc((100vh-9rem)*1.3333))] lg:min-w-0 lg:cursor-grab lg:touch-none"
+          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:aspect-auto lg:h-[calc(100vh-9rem)] lg:min-h-[480px] lg:min-w-0 lg:cursor-grab lg:touch-none"
           style={
-            wide
+            wide && box
               ? {
                   backgroundImage: "radial-gradient(circle,#E3DACB 1.5px,transparent 1.5px)",
-                  backgroundSize: `${5 * view.z}% ${(100 / 15) * view.z}%`,
-                  backgroundPosition: `${view.x}px ${view.y}px`,
+                  backgroundSize: `${roomW * 0.05 * view.z}px ${(roomH / 15) * view.z}px`,
+                  backgroundPosition: `${home.x + view.x}px ${home.y + view.y}px`,
                 }
               : undefined
           }
@@ -511,7 +523,11 @@ export default function FloorPlan({
             drag.current = null;
             setLifted(null);
           }}
-          style={wide ? { transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})` } : undefined}
+          style={
+            wide && box
+              ? { width: roomW, height: roomH, left: home.x, top: home.y, transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})` }
+              : undefined
+          }
           className="absolute inset-0 origin-top-left rounded-2xl border border-linen bg-white bg-[radial-gradient(circle,#D8CFC2_1.5px,transparent_1.5px)] [background-size:5%_6.6667%]"
           aria-label="Floor plan"
         >

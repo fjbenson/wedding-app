@@ -110,7 +110,7 @@ export default function DayView({
   const data: DayData = day ?? { runSheet: [], tables: [], seats: [], runs: [], passengers: [] };
 
   return (
-    <main className={`page pb-40 lg:pb-16 print:p-0 ${tab === "run-sheet" || (tab === "seating" && seatingView === "plan") ? "lg:max-w-[1368px]" : ""}`}>
+    <main className={`page pb-40 lg:pb-16 print:p-0 ${tab === "run-sheet" ? "lg:max-w-[1368px]" : tab === "seating" && seatingView === "plan" ? "lg:max-w-none" : ""}`}>
 
       {error && (
         <p role="alert" className="mt-5 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">

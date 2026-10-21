@@ -346,7 +346,7 @@ function Panel({
 
   return (
     <div
-      className="fixed inset-x-0 top-0 z-50 h-dvh"
+      className="pointer-events-auto fixed inset-x-0 top-0 z-50 h-dvh"
       style={view ? { height: view.height } : undefined}
       role="dialog"
       aria-modal="true"

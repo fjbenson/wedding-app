@@ -585,8 +585,11 @@ export default function FloorPlan({
                     // While a name is dragged the chairs grow into targets (owner, 21 Oct 2026).
                     className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border transition-[width,height] ${
                       ghost?.kind === "guest" ? "h-[18px] w-[18px]" : "h-[7px] w-[7px]"
-                    } ${hoverChair?.table === t.id && hoverChair.chair === i + 1 ? "ring-2 ring-champagne-600 ring-offset-1" : ""} ${
-                      chairs[i]
+                    } ${
+                      // The chair a name would land in: a bolder edge, like the table's (owner, 21 Oct 2026).
+                      hoverChair?.table === t.id && hoverChair.chair === i + 1
+                        ? `scale-110 border-champagne-600 shadow-[0_0_0_3px_#B8914F] ${chairs[i] ? (needs[chairs[i]!]?.length ? "bg-[#9A3F2B]" : "bg-champagne-600") : "bg-champagne-100"}`
+                        : chairs[i]
                         ? needs[chairs[i]!]?.length
                           ? "border-[#9A3F2B] bg-[#9A3F2B]"
                           : "border-champagne-600 bg-champagne-600"

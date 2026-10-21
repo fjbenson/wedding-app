@@ -139,12 +139,10 @@ export default function HouseholdSheet({
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
 
-      {/* The save the date, invitation and thank-you (canvas 3 "Sent · On the household card"). */}
-      <SentToThem unit={`h:${household.id}`} />
-
-      {/* What's been said and done with them; the sendings are above, so they're left out here. */}
+      {/* One History (owner, 21 Oct 2026): the save the date, invitation and thank-you
+          (canvas 3 "Sent · On the household card") sit at the top of it, then what's been said and done. */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`household:${household.id}`} folded skipSent />
+        <Timeline scope={`household:${household.id}`} label="History" folded skipSent lead={<SentToThem unit={`h:${household.id}`} bare />} />
       </section>
 
       <div id="household-details">

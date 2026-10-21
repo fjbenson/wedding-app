@@ -162,12 +162,15 @@ export default function GuestCard({
 
       <GuestPlanSection guestId={guest.id} />
 
-      {/* Someone not in a household is sent things on their own; a household's card has it otherwise. */}
-      {!guest.household_id && <SentToThem unit={`c:${guest.id}`} />}
-
       {/* What's been said and sent, past and to come (canvas 3 "Timeline · Round 3"). */}
       <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`guest:${guest.id}`} folded />
+        {/* Someone not in a household is sent things on their own: those sit at the top of their History, as on a household's. */}
+        <Timeline
+          scope={`guest:${guest.id}`}
+          folded
+          skipSent={!guest.household_id}
+          lead={!guest.household_id ? <SentToThem unit={`c:${guest.id}`} bare /> : undefined}
+        />
       </section>
 
       {/* A hairline right across the card between sections. */}

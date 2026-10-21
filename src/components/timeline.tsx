@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, Check, ChevronDown, FileText, History, Mail, MessageCircle, NotebookPen, Phone, Send, Users } from "lucide-react";
 import CardLink from "@/components/card-link";
@@ -35,6 +35,7 @@ export default function Timeline({
   folded = false,
   only,
   skipSent = false,
+  lead,
 }: {
   scope: string;
   label?: string;
@@ -50,6 +51,8 @@ export default function Timeline({
   only?: TimelineGroup;
   /** Leave out save the dates, invitations and thank-yous: the card lists them already (a household's). */
   skipSent?: boolean;
+  /** Shown first inside a folded history: a household's three sendings, ticked off or still to do. */
+  lead?: ReactNode;
 }) {
   const [items, setItems] = useState<TimelineItem[] | null>(null);
   const [today, setToday] = useState("");
@@ -82,6 +85,8 @@ export default function Timeline({
   // Only a payment's "All payments to …" (`only`) still lists what's due.
   const coming = only ? shown.filter((i) => i.upcoming) : [];
   const before = shown.filter((i) => !i.upcoming);
+  // The folded line counts everything that happened, sendings too, even where they're listed in `lead`.
+  const latest = (items ?? []).filter((i) => !i.upcoming && (pick === "all" || i.group === pick))[0];
   const groups = GROUPS.filter((g) => g.value === "all" || kept.some((i) => i.group === g.value));
   const addHref = `/history/new?with=${encodeURIComponent(scope)}&back=${encodeURIComponent(here)}`;
 
@@ -98,8 +103,8 @@ export default function Timeline({
       ? "…"
       : soonest
         ? `Next: ${soonest.title} · ${formatDayMonth(soonest.date!)}`
-        : before[0]
-          ? `Last: ${before[0].kind}${before[0].date ? ` · ${formatDayMonth(before[0].date)}` : ""}`
+        : latest
+          ? `Last: ${latest.kind}${latest.date ? ` · ${formatDayMonth(latest.date)}` : ""}`
           : "Nothing yet";
   const inside = bare || folded;
 
@@ -196,7 +201,10 @@ export default function Timeline({
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
       </summary>
-      <div className="pb-3">{content}</div>
+      <div className="pb-3">
+        {lead}
+        {content}
+      </div>
     </details>
   );
 }

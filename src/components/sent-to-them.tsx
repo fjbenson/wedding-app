@@ -7,13 +7,13 @@ import { markSentAction, sentToAction, unmarkSentAction } from "@/app/(app)/stat
 import { afterTheDay, HOWS, SENDINGS, sentLine, type SendingKind, type SentRecord } from "@/lib/stationery";
 
 /**
- * "Sent to them" on a household's card, or the card of a guest not in a
+ * "Sent to them" on a household's card (`bare`: the top of its History, owner 21 Oct 2026), or the card of a guest not in a
  * household (canvas 3 "Sent · On the household card"): the save the date,
  * invitation and thank-you, each a gold tick with how and when once it's
  * gone, dashed until then. Tap a dashed one to say how it went (today);
  * tap a ticked one to take it off.
  */
-export default function SentToThem({ unit }: { unit: string }) {
+export default function SentToThem({ unit, bare = false }: { unit: string; bare?: boolean }) {
   const [records, setRecords] = useState<SentRecord[] | null>(null);
   const [weddingDate, setWeddingDate] = useState<string | null>(null);
   const [error, setError] = useState<string>();
@@ -57,8 +57,8 @@ export default function SentToThem({ unit }: { unit: string }) {
   const first = (kind: SendingKind) => (records ?? []).find((r) => r.kind === kind);
 
   return (
-    <section aria-label="Sent to them" className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-      <h2 className="label">Sent to them</h2>
+    <section aria-label="Sent to them" className={bare ? "mb-3 border-b border-linen pb-1" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
+      {!bare && <h2 className="label">Sent to them</h2>}
       {error && (
         <p role="alert" className="mt-2 text-sm text-ink">
           {error}

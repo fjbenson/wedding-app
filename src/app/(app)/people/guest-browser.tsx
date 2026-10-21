@@ -557,7 +557,7 @@ export default function GuestBrowser({
         )}
 
         <div className="mt-5 lg:mt-5 lg:flex lg:flex-wrap lg:items-center lg:gap-x-6">
-          <div className="flex items-center gap-2 lg:w-[520px]">
+          <div className="flex items-center gap-2 lg:order-2 lg:ml-auto lg:w-[460px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a guest</span>
@@ -583,8 +583,10 @@ export default function GuestBrowser({
           </div>
 
           {/* Find or add on the row above; how the list is shown here: View left, Filter right (owner, 17 Oct 2026: View is the bigger choice; was Filter left, Sort right). */}
-          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 lg:mt-0 lg:flex-1">
+          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 lg:order-1 lg:mt-0 lg:justify-start lg:gap-5">
             <SortMenu sort={sort} onSort={chooseView} />
+            {/* On a laptop View and Filter sit together on the left, search and + on the right (owner, 21 Oct 2026). */}
+            <span aria-hidden className="hidden h-5 w-px bg-champagne-400/60 lg:block" />
             <FilterMenu
               guestOf={ofCounted}
               ofOn={guestOf}
@@ -604,7 +606,7 @@ export default function GuestBrowser({
             />
           </div>
           {filters.length + guestOf.length + picks.length + (group ? 1 : 0) > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 lg:mt-3 lg:w-full">
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 lg:order-3 lg:mt-3 lg:w-full">
               {group && (
                 <button
                   type="button"

@@ -11,7 +11,9 @@ import { DetailLabel } from "./guest-table";
  * A household as an envelope: the top of the household card, as a guest has
  * a profile and a supplier a business card. Only the front — the name in
  * calligraphy, the address in plain italic, a fine gold border, on crisp
- * white card — with a gold **postmark** saying how the replies stand.
+ * white card. How the replies stand is the line under it (`RepliesLine`); the
+ * gold postmark in the corner went on 21 Oct 2026 (owner: a different vibe;
+ * canvas 4 "Household · Round 1", A), and the name and address moved up.
  *
  * It used to turn over and open, with an invitation inside (14–16 Oct 2026);
  * the owner took that out on 16 Oct: the invitation is for the guest, not the
@@ -26,42 +28,26 @@ export default function HouseholdEnvelope({
   answers: (Rsvp["status"] | undefined)[];
 }) {
   const lines = [household.address_line1, household.address_line2, household.city, household.postcode].filter(Boolean) as string[];
-  const mark = postmark(answers);
   return (
     <div
       role="img"
-      aria-label={`${household.name}${lines.length ? `, ${lines.join(", ")}` : ", no address yet"}${mark ? `. ${mark.say}` : ""}`}
-      className="relative mx-auto mt-2 h-[220px] w-full max-w-[400px] rounded-md"
+      aria-label={`${household.name}${lines.length ? `, ${lines.join(", ")}` : ", no address yet"}`}
+      className="relative mx-auto mt-2 h-[190px] w-full max-w-[400px] rounded-md"
     >
       <Front name={household.name} lines={lines} />
-      {mark && <Postmark top={mark.top} main={mark.main} />}
     </div>
   );
 }
 
-/** How the replies stand, for the postmark: nothing until there's someone in it. */
-function postmark(answers: (Rsvp["status"] | undefined)[]) {
+/** How the replies stand, as the line under the envelope: "2 of 3 responded", the figures in champagne. Nothing until there's someone in it. */
+export function RepliesLine({ answers }: { answers: (Rsvp["status"] | undefined)[] }) {
   const n = answers.length;
   if (n === 0) return null;
   const sent = answers.filter((a) => a === "pending" || a === "attending" || a === "declined").length;
   const replied = answers.filter((a) => a === "attending" || a === "declined").length;
-  const coming = answers.filter((a) => a === "attending").length;
-  if (sent === 0) return { top: "Invite", main: "Not sent", say: "Invitation not sent yet" };
-  if (coming === n) return { top: "All", main: "Coming", say: "Everyone's coming" };
-  if (replied === n) return { top: "Replied", main: `All ${n}`, say: `All ${n} have replied` };
-  return { top: "Replied", main: `${replied} of ${n}`, say: `${replied} of ${n} have replied` };
-}
-
-/** A round gold postmark in the corner, slightly askew (no wavy lines — owner, 16 Oct 2026). */
-function Postmark({ top, main }: { top: string; main: string }) {
-  return (
-    <span aria-hidden className="absolute right-[18px] top-[18px] flex rotate-[-8deg] items-center">
-      <span className="flex h-[58px] w-[58px] flex-col items-center justify-center rounded-full border-[1.5px] border-[#B8914F] text-champagne-600 shadow-[inset_0_0_0_3px_#FFFFFF,inset_0_0_0_4px_#D8C7A4]">
-        <span className="font-body text-[7.5px] font-semibold uppercase tracking-[0.16em]">{top}</span>
-        <span className="mt-0.5 whitespace-nowrap font-display text-[11px] italic leading-none">{main}</span>
-      </span>
-    </span>
-  );
+  if (sent === 0) return <>Invitation not sent yet</>;
+  const gold = (v: number | string) => <span className="font-medium text-champagne-600">{v}</span>;
+  return replied === n ? <>All {gold(n)} responded</> : <>{gold(replied)} of {gold(n)} responded</>;
 }
 
 /** Crisp white card with a fine shadow and the odd fleck, like good cotton card. */
@@ -87,7 +73,7 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
       <Paper />
       <span aria-hidden className="absolute inset-[9px] rounded-[3px] border border-[#C9B07E]" />
       <span aria-hidden className="absolute inset-[13px] rounded-[2px] border-[0.5px] border-[#E2D3B4]" />
-      <span className="absolute inset-x-6 top-[63%] block -translate-y-1/2 text-center">
+      <span className="absolute inset-x-6 top-1/2 block -translate-y-1/2 text-center">
         <span className={`block font-script leading-none text-ink ${name.length > 16 ? "text-[28px]" : "text-[36px]"}`}>{name}</span>
         <span aria-hidden className="mx-auto my-2 block h-px w-12 bg-[#C9B07E]" />
         {lines.length > 0 ? (

@@ -213,7 +213,7 @@ refine later — it is all tokens, so changing it is cheap:
   with only a few sparse flecks (a grain all over was rejected), a fine gold
   double border; the name in calligraphy — **Pinyon Script**, the one place
   it's used (`font-script`) — and the address in Fraunces italic (the script
-  alone wasn't legible enough). No stamp or postmark (tried, removed). Tap it:
+  alone wasn't legible enough). No stamp or postmark (tried, removed twice; last 21 Oct 2026): how the replies stand is the line under it, "2 of 3 responded". Tap it:
   it turns over (gold wax seal with the initial), the flap opens, the
   invitation slides out with the details; "reduce motion" skips the movement.
 - **Guest profile** (canvas 3 "Guest card · Round 2", A, replacing the place

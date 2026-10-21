@@ -9,10 +9,10 @@ import { Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
 import CardSheet from "@/components/card-sheet";
-import { AnswerIcon, eventWord } from "./guest-browser";
+import { AnswerIcon } from "./guest-browser";
 import { Avatar, fullName } from "./guest-table";
 import { removeHouseholdAction } from "./household-actions";
-import HouseholdEnvelope, { HouseholdDetails } from "./household-envelope";
+import HouseholdEnvelope, { HouseholdDetails, RepliesLine } from "./household-envelope";
 import type { GroupSummary } from "./guest-groups";
 import { updateGuestAction } from "./actions";
 import type { TravelInfo } from "./guest-travel";
@@ -22,8 +22,8 @@ import { jumpTo } from "@/lib/jump-to";
 /**
  * One household (screen 9), as a card over the guest list — since 16 Oct 2026
  * it opens like a guest's card (owner), from `?household=` on /people. Topped
- * by its envelope (`household-envelope.tsx`): the address, and a postmark
- * saying how the replies stand. Then
+ * by its envelope (`household-envelope.tsx`): the address; under it, how many
+ * have responded. Then
  * Text · Call · Email, the guests with their RSVP, and Details (name and
  * address) like the guest card's. Each guest's card opens on top of it.
  */
@@ -64,24 +64,6 @@ export default function HouseholdSheet({
     return e ? answersOf(g).find((r) => r.event_id === e.id)?.status : undefined;
   };
 
-  // "3 people · 1 child · day guests"
-  const children = people.filter((p) => p.is_child).length;
-  const kinds = [...new Set(people.map(ownEvent).filter(Boolean).map((e) => eventWord(e!)))];
-  // Figures in champagne, like the group card's (owner, 21 Oct 2026).
-  const summary = (
-    [
-      people.length > 0 && [String(people.length), people.length === 1 ? "person" : "people"],
-      children > 0 && [String(children), children === 1 ? "child" : "children"],
-      kinds.length === 1 && ["", `${kinds[0]} ${people.length === 1 ? "guest" : "guests"}`],
-    ].filter(Boolean) as [string, string][]
-  ).map(([n, word], i) => (
-    <span key={word}>
-      {i > 0 && " · "}
-      {n && <span className="font-medium text-champagne-600">{n} </span>}
-      {word}
-    </span>
-  ));
-
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 
   return (
@@ -91,7 +73,7 @@ export default function HouseholdSheet({
         <HouseholdEnvelope household={household} answers={people.map(statusOf)} />
       </button>
       <button type="button" onClick={() => jumpTo("household-guests")} className="mx-auto mt-2.5 block rounded-lg px-2 py-1 text-center text-[13px] text-stone hover:bg-cream/70 hover:text-ink">
-        {summary}
+        <RepliesLine answers={people.map(statusOf)} />
       </button>
 
       <div className="mt-5 flex justify-center gap-8">

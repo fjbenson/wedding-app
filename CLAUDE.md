@@ -367,6 +367,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 
 ## Next up
 
+**Laptop (21 Oct 2026):** the Hub, area page, People and The Day were laid out
+for laptops this chat, from canvas 4 Rounds 8–10 — built without being seen
+(`/check` couldn't start; see the backlog). The owner is looking live and
+will say what's off; fix those first.
+
 From the audit of 20 Oct 2026 (agreed with the owner: notes tidied first):
 
 1. **Polish over new features** for a week or two: the checks in

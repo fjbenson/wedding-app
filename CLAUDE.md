@@ -302,10 +302,12 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Dietary tags (allergies marked), Table, hairlines between who / food / seat;
   Round 9, 1b); can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure and its row below opens), Text · Call · Email,
-  then **folded rows with a line of what's set** (owner, 21 Oct 2026, canvas 4
-  "Guest card · Round 1", A): ATTENDANCE (Guest of, RSVP) · FOOD & DRINK (meal and
-  drinks tiles, dietary) · SEATING & TRAVEL · HOUSEHOLD & GROUPS · ROLE ·
-  HISTORY · CONTACT & NOTES, then in the plan. A guest's meal is only the
+  the **RSVP slider always on view** (it changes most), then **folded rows with
+  a line of what's set** (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):
+  FOOD & DRINK (meal and drinks tiles, dietary) · SEATING & TRAVEL · ROLE &
+  GROUPS · HISTORY · DETAILS (Guest of, household, phone, email, notes), then in
+  the plan. Day or evening hardly ever changes, so it's in Details until a guest
+  has none, when it shows up top. A guest's meal is only the
   Adult / Child / No meal tile (owner, 20 Oct 2026: the typed dish was
   dropped — one menu for everyone; old `rsvps.meal_choice` values stay in the
   database, unshown). Every guest count is **everyone still expected**

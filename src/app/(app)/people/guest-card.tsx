@@ -111,8 +111,6 @@ export default function GuestCard({
 
   // One line for each fold, saying what's set without opening it.
   const eventName = (e?: WeddingEvent) => (e ? e.name.replace(/^the\s+/i, "").replace(/^\w/, (c) => c.toUpperCase()) : "");
-  const answerWord: Record<Rsvp["status"], string> = { attending: "Coming", pending: "Yet to respond", to_invite: "To invite", declined: "Can't come" };
-  const attendance = own ? [eventName(events.find((e) => e.id === own.event_id)), answerWord[own.status]].filter(Boolean).join(" · ") : "Day or evening?";
   const needs = needsOf(own?.dietary_notes);
   const food = [
     MEAL_KINDS.find((k) => k.value === mealKindOf(guest))?.label,
@@ -126,7 +124,9 @@ export default function GuestCard({
   const stayingLine = guest.staying === "no" ? "Not staying over" : guest.staying === "yes" ? (place?.name ?? "Staying, not sure where") : "Staying not sure yet";
   const seatingLine = [hasTables ? (table ? `Table ${table}` : "No table yet") : null, travel ? stayingLine : null].filter(Boolean).join(" · ");
   const theirGroups = (groups ?? []).filter((g) => g.members.includes(guest.id)).map((g) => g.name);
-  const belongsLine = [household?.name ?? "No household", groups ? (theirGroups.length > 0 ? theirGroups.join(", ") : "No groups") : null].filter(Boolean).join(" · ");
+  const roleLine = [rolesOf(guest).join(" · ") || "No role", groups ? (theirGroups.length > 0 ? theirGroups.join(", ") : "No groups") : null].filter(Boolean).join(" · ");
+  const ownEventName = eventName(events.find((e) => e.id === own?.event_id));
+  const detailsLine = [ownEventName && `${ownEventName} guest`, household?.name, guest.phone].filter(Boolean).join(" · ") || "Add a number or email";
 
   return (
     <CardSheet
@@ -174,13 +174,14 @@ export default function GuestCard({
         canvas 4 "Guest card · Round 1", A): one folded row for each job, a
         line of what's set, and a tap on a figure above opens its row.
       */}
-      <div className="-mx-[22px] mt-6 border-b border-linen">
-        {events.length > 0 && (
-          <Fold title="Attendance" summary={attendance}>
-            <GuestOfAndAnswer guest={guest} events={events} own={own} />
-          </Fold>
-        )}
+      {/* The answer is what changes most, so it stays on view; day or evening hardly ever changes, so it's in Details (owner, 21 Oct 2026). Until they have one, it's the thing to set. */}
+      {events.length > 0 && (
+        <div className="mt-6">
+          <GuestOfAndAnswer guest={guest} events={events} own={own} only={own ? "answer" : "of"} />
+        </div>
+      )}
 
+      <div className="-mx-[22px] mt-6 border-t border-linen border-b">
         <Fold title="Food & drink" summary={food}>
           <MealRow guest={guest} onSave={save} />
           {own && (
@@ -201,15 +202,10 @@ export default function GuestCard({
           </Fold>
         )}
 
-        <Fold title="Household & groups" summary={belongsLine}>
-          <dl>
-            <HouseholdRow guest={guest} households={households} onSave={save} />
-          </dl>
-          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} bare />}
-        </Fold>
-
-        <Fold title="Role" summary={rolesOf(guest).join(" · ") || "None"}>
+        <Fold title={groups ? "Role & groups" : "Role"} summary={roleLine}>
+          <h3 className="section-label">Role on the day</h3>
           <Roles guest={guest} bare />
+          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} bare />}
         </Fold>
 
         {/* What's been said and sent (canvas 3 "Timeline · Round 3"). Someone not in a household is sent things on their own: those sit at the top of their History, as on a household's. */}
@@ -223,8 +219,10 @@ export default function GuestCard({
           />
         </section>
 
-        <Fold title="Contact & notes" summary={[guest.phone, guest.email].filter(Boolean).join(" · ") || "Add a number or email"}>
-          <dl>
+        <Fold title="Details" summary={detailsLine}>
+          {own && <GuestOfAndAnswer guest={guest} events={events} own={own} only="of" />}
+          <dl className={own ? "mt-4" : ""}>
+            <HouseholdRow guest={guest} households={households} onSave={save} />
             <TextRow id="guest-phone" label="Phone" value={guest.phone} type="tel" editSignal={adding?.field === "phone" ? adding.n : 0} onSave={(v) => save({ phone: v })} />
             <TextRow id="guest-email" label="Email" value={guest.email} type="email" editSignal={adding?.field === "email" ? adding.n : 0} onSave={(v) => save({ email: v })} />
             <TextRow label="Notes" value={guest.notes} multiline onSave={(v) => save({ notes: v })} />
@@ -693,7 +691,7 @@ const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
  * row in the list shows. A day guest's evening follows along, so there's
  * no answer per event. Both change with a tap and save behind it.
  */
-function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: WeddingEvent[]; own?: Rsvp }) {
+function GuestOfAndAnswer({ guest, events, own, only }: { guest: Contact; events: WeddingEvent[]; own?: Rsvp; only?: "of" | "answer" }) {
   const [of, setOf] = useOptimistic(own?.event_id);
   const [answer, setAnswer] = useOptimistic(own?.status);
   const [, startTransition] = useTransition();
@@ -707,6 +705,7 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
 
   return (
     <section className="space-y-5">
+      {only !== "answer" && (
       <div id="guest-of" className="rounded-xl">
         <h3 className="section-label">Guest of</h3>
         <div role="group" aria-label="Guest of" className={track}>
@@ -729,8 +728,9 @@ function GuestOfAndAnswer({ guest, events, own }: { guest: Contact; events: Wedd
         </div>
         {!own && <p className="mt-2 text-sm text-champagne-600">Are they a day or an evening guest?</p>}
       </div>
+      )}
 
-      {own && (
+      {own && only !== "of" && (
         <div id="guest-rsvp" className="rounded-xl">
           <h3 className="section-label">RSVP</h3>
           <div role="group" aria-label="RSVP" className={track}>
@@ -828,7 +828,7 @@ function Roles({ guest, bare = false }: { guest: Contact; bare?: boolean }) {
           Role on the day
         </h3>
       )}
-      <div className={`${bare ? "" : "mt-2.5 "}flex flex-wrap gap-2`}>
+      <div className="mt-2.5 flex flex-wrap gap-2">
         {theirs.map((role) => (
           <button
             key={role}

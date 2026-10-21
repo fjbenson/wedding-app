@@ -6,6 +6,7 @@ import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Mail, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
+import StageTabs from "./stage-tabs";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
 import BudgetBar from "@/components/budget-bar";
@@ -1063,47 +1064,7 @@ export default function AreaView({
         ) : stationery ? (
           <WhatYouSend counts={stationery.counts} weddingDate={stationery.weddingDate} />
         ) : (
-        /* The five stages down a gold line; tap any to open it (the others close). */
-        <ol aria-label="Stages" className="mt-3">
-          {stages.map((st, i) => {
-            const done = stage.done[i];
-            const now = i === stage.current;
-            return (
-              <li key={st.name} className="relative pl-10">
-                {i < stages.length - 1 && (
-                  <span aria-hidden className={`absolute bottom-0 left-[13px] top-7 w-0.5 ${done ? "bg-champagne-600" : "bg-linen"}`} />
-                )}
-                <details name="area-stages" open={i === openStage} id={st.id} className="group scroll-mt-6 pb-5">
-                  <summary className="flex min-h-7 cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
-                    <span
-                      aria-hidden
-                      className={`absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full text-[13px] ${
-                        done
-                          ? "bg-champagne-600 text-white"
-                          : now
-                            ? "border-2 border-champagne-600 bg-white font-display text-champagne-600"
-                            : "border-[1.5px] border-dashed border-champagne-400 bg-ivory"
-                      }`}
-                    >
-                      {done ? <Check className="h-3.5 w-3.5" strokeWidth={2.4} /> : now ? i + 1 : null}
-                    </span>
-                    <span className={`label w-[7.75rem] shrink-0 ${done ? "!text-champagne-600" : now ? "!text-ink" : "!text-stone"}`}>
-                      {st.name}
-                      {now && <span className="normal-case tracking-normal"> · now</span>}
-                      {done && <span className="sr-only"> (done)</span>}
-                    </span>
-                    <span className="flex min-w-0 flex-1 items-center gap-1 text-[13px] text-stone">
-                      {/* Always a count or a state, starting at the same point on every line (owner, 21 Oct 2026). */}
-                      <span className="min-w-0 flex-1 truncate">{st.line}</span>
-                      <ChevronRight className="h-3.5 w-3.5 shrink-0 transition group-open:rotate-90" strokeWidth={1.8} aria-hidden />
-                    </span>
-                  </summary>
-                  <div className="mt-3">{st.content}</div>
-                </details>
-              </li>
-            );
-          })}
-        </ol>
+        <StageTabs stages={stages} done={stage.done} current={stage.current} initial={openStage} />
         )}
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}

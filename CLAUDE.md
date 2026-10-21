@@ -258,8 +258,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Your notes and Inspo. On a laptop it's one calm screen: the names and ring
   centred, Your notes and This week in a column on the right (G). The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
-  page's one + (`AddMenu`), a **Next up** card, the **five stages down a gold
-  line** — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
+  page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
+  circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;
+  canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
   each can step back) — then **"Everything for [area]"**, one line each for
   suppliers, plan, money, the day, notes and the timeline. Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,

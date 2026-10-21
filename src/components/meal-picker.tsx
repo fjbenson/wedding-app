@@ -4,7 +4,7 @@ import { Baby, Ban, CupSoda, Utensils, Wine } from "lucide-react";
 import { MEAL_KINDS, type MealKind } from "@/lib/meals";
 
 /**
- * A guest's meal (Adult · Child's · No meal) and drinks (Alcohol · Soft
+ * A guest's meal (Adult · Child · No meal) and drinks (Alcohol · Soft
  * drinks only) as picture tiles — canvas 3 "Children · Round 1", C, owner's
  * pick 19 Oct 2026. Both decide what the caterer charges. Controlled: the
  * guest card saves on each tap, the add form keeps them in hidden fields.

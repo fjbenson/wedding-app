@@ -12,13 +12,13 @@ export type MealKind = "adult" | "child" | "none";
 
 export const MEAL_KINDS: { value: MealKind; label: string; line: string }[] = [
   { value: "adult", label: "Adult", line: "The adult menu" },
-  { value: "child", label: "Child's", line: "The children's menu" },
+  { value: "child", label: "Child", line: "The children's menu" },
   { value: "none", label: "No meal", line: "A baby, say" },
 ];
 
-/** How a guest's meal reads in a list or on their card: "Adult meal", "Child's meal", "No meal". */
+/** How a guest's meal reads in a list or on their card: "Adult meal", "Child meal", "No meal". */
 export const mealWord = (g: Pick<Contact, "is_child" | "meal_kind">): string =>
-  ({ adult: "Adult meal", child: "Child's meal", none: "No meal" })[mealKindOf(g)];
+  ({ adult: "Adult meal", child: "Child meal", none: "No meal" })[mealKindOf(g)];
 
 export const isMealKind = (v: unknown): v is MealKind => v === "adult" || v === "child" || v === "none";
 

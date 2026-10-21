@@ -5,7 +5,7 @@ import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Moon, Search, SlidersHorizontal, Star, Sun, TriangleAlert, UserRound, Users, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Search, SlidersHorizontal, Star, TriangleAlert, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
 import { usePullToClose } from "@/components/use-pull-to-close";
@@ -62,7 +62,7 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
   { key: "party", label: "Bridal party" },
   { key: "dietary", label: "Dietary needs" },
   { key: "children", label: "Children" },
-  { key: "childmeal", label: "Child's meal" },
+  { key: "childmeal", label: "Child meal" },
   { key: "nomeal", label: "No meal" },
   { key: "soft", label: "Soft drinks only" },
   { key: "noaddress", label: "No address yet" },
@@ -293,7 +293,7 @@ export default function GuestBrowser({
   const ownEvent = (g: Contact) => events.find((e) => statusFor(g, e));
   const dietOf = (g: Contact) => data.answers.get(g.id)?.find((r) => r.dietary_notes)?.dietary_notes ?? null;
   const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
-  // A guest's meal is the Adult / Child's / No meal tile (owner, 20 Oct 2026: the typed dish went).
+  // A guest's meal is the Adult / Child / No meal tile (owner, 20 Oct 2026: the typed dish went).
   const mealOf = (g: Contact) => mealWord(g);
   const look = { dietOf, mealOf, ownEvent };
 
@@ -1456,6 +1456,9 @@ function SortMenu({ sort, onSort }: { sort: SortBy; onSort: (s: SortBy) => void 
  * name with "day" or "evening", roles, their answer in a word, then meal,
  * diet and how to reach them.
  */
+/** The table's headings that can be tapped to sort. */
+type TableColumn = "guest" | "event" | "rsvp" | "meal" | "diet" | "table";
+
 function GuestTable({
   groups,
   folded,
@@ -1487,6 +1490,66 @@ function GuestTable({
   const gap = "border-l border-linen pl-5";
   const columns = 6;
 
+  // Tap a heading to sort by it, again to flip it, a third time to go back to
+  // the View's own order (owner, 21 Oct 2026). A sorted table is one run, so
+  // the sort reaches across the groups instead of working inside each.
+  const [sortCol, setSortCol] = useState<{ col: TableColumn; desc: boolean } | null>(null);
+  const clickHead = (col: TableColumn) =>
+    setSortCol((s) => (s?.col !== col ? { col, desc: false } : s.desc ? null : { col, desc: true }));
+  const shownGroups = useMemo<Group[]>(() => {
+    if (!sortCol) return groups;
+    const guests = groups.flatMap((g) => g.guests);
+    const key = (g: Contact): string | number | null => {
+      const event = ownEvent(g);
+      switch (sortCol.col) {
+        case "guest":
+          return null;
+        case "event":
+          return event ? events.findIndex((e) => e.id === event.id) : null;
+        case "rsvp": {
+          const status = event ? answers.get(g.id)?.find((r) => r.event_id === event.id)?.status : undefined;
+          return status ? ["attending", "pending", "to_invite", "declined"].indexOf(status) : null;
+        }
+        case "meal":
+          return ["adult", "child", "none"].indexOf(mealKindOf(g));
+        case "diet": {
+          const needs = needsOf(dietOf(g));
+          if (needs.length === 0) return null;
+          return `${needs.some(isAllergy) ? 0 : 1}${needs.slice().sort((a, b) => a.localeCompare(b))[0]}`;
+        }
+        case "table":
+          return tables[g.id] ?? null;
+      }
+    };
+    const sign = sortCol.desc ? -1 : 1;
+    const sorted = guests.slice().sort((a, b) => {
+      const x = key(a);
+      const y = key(b);
+      // Guests with nothing in the column always go last, whichever way it runs.
+      if (x === null || y === null) return x === y ? byName(a, b) : x === null ? 1 : -1;
+      const order = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: "base" });
+      return sign * order || byName(a, b);
+    });
+    if (sortCol.col === "guest" && sortCol.desc) sorted.reverse();
+    return [{ key: "sorted", guests: sorted }] as Group[];
+  }, [sortCol, groups, ownEvent, events, answers, dietOf, tables]);
+
+  const sortHead = (col: TableColumn, label: string, extra = "") => {
+    const on = sortCol?.col === col;
+    return (
+      <th scope="col" aria-sort={on ? (sortCol.desc ? "descending" : "ascending") : "none"} className={`${head} ${extra}`}>
+        <button type="button" onClick={() => clickHead(col)} className="group -mx-1 inline-flex items-center gap-1 rounded px-1 uppercase tracking-[0.16em] hover:text-ink">
+          {label}
+          {on ? (
+            sortCol.desc ? <ArrowDown className="h-3 w-3" strokeWidth={2.2} aria-hidden /> : <ArrowUp className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+          ) : (
+            <ArrowUp className="h-3 w-3 opacity-0 group-hover:opacity-40" strokeWidth={2.2} aria-hidden />
+          )}
+        </button>
+      </th>
+    );
+  };
+
   return (
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
       <table className="w-full table-fixed border-collapse text-left text-sm">
@@ -1500,15 +1563,15 @@ function GuestTable({
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
-            <th scope="col" className={head}>Guest</th>
-            <th scope="col" className={head}>Guest of</th>
-            <th scope="col" className={head}>Answer</th>
-            <th scope="col" className={`${head} ${gap}`}>Meal</th>
-            <th scope="col" className={head}>Dietary</th>
-            <th scope="col" className={`${head} ${gap}`}>Table</th>
+            {sortHead("guest", "Guest")}
+            {sortHead("event", "Guest of")}
+            {sortHead("rsvp", "RSVP")}
+            {sortHead("meal", "Meal", gap)}
+            {sortHead("diet", "Dietary")}
+            {sortHead("table", "Table", gap)}
           </tr>
         </thead>
-        {groups.map((group) => (
+        {shownGroups.map((group) => (
           <tbody key={group.key}>
             {group.title && (
               <tr>
@@ -1567,7 +1630,7 @@ function GuestTable({
                   </td>
                   <td className="py-2 pr-4">
                     {event ? (
-                      <EventPill event={event} first={events[0]?.id === event.id} />
+                      <EventWord event={event} first={events[0]?.id === event.id} />
                     ) : (
                       <span className="inline-flex items-center gap-1.5 font-display text-sm italic text-champagne-600">
                         <AnswerIcon tiny />
@@ -1576,16 +1639,10 @@ function GuestTable({
                     )}
                   </td>
                   <td className="whitespace-nowrap py-2 pr-4">
-                    <AnswerPill status={rsvp?.status} />
+                    <AnswerCell status={rsvp?.status} />
                   </td>
                   <td className={`whitespace-nowrap py-2 pr-4 ${gap}`}>
-                    {meal === "adult" ? (
-                      <span className="text-ink">Adult</span>
-                    ) : meal === "child" ? (
-                      <span className="rounded-full bg-cream px-2.5 py-0.5 text-[13px] text-ink shadow-[inset_0_0_0_1px_#E3D3B3]">Child&apos;s</span>
-                    ) : (
-                      <span className="text-stone/70">No meal</span>
-                    )}
+                    {meal === "none" ? <span className="text-stone/70">No meal</span> : <span className="text-ink">{meal === "child" ? "Child" : "Adult"}</span>}
                   </td>
                   <td className="py-2 pr-4">
                     <span className="flex flex-wrap gap-1.5">
@@ -1617,49 +1674,26 @@ function GuestTable({
 }
 
 /**
- * Which part of the day a guest is a guest of, as a small pill with its own
- * mark — a sun for the day, a moon for the evening — and always the word.
+ * Which part of the day a guest is a guest of: the same italic word the phone
+ * list puts after a name — champagne for the day, a soft grey for the evening
+ * (owner, 21 Oct 2026).
  */
-function EventPill({ event, first }: { event: WeddingEvent; first: boolean }) {
+function EventWord({ event, first }: { event: WeddingEvent; first: boolean }) {
   const word = eventWord(event).replace(/^\w/, (c) => c.toUpperCase());
-  const Mark = first ? Sun : Moon;
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] leading-none ${
-        first ? "bg-[#FBF3E2] text-champagne-600 shadow-[inset_0_0_0_1px_#EBD9B4]" : "bg-[#EEE9E2] text-[#5B554E] shadow-[inset_0_0_0_1px_#DDD5C9]"
-      }`}
-    >
-      <Mark className="h-3 w-3" strokeWidth={1.9} aria-hidden />
-      {word}
-    </span>
-  );
+  return <span className={`font-display text-[15px] italic ${first ? "text-champagne-600" : "text-[#6B645C]"}`}>{word}</span>;
 }
 
 /**
- * A guest's answer for one event as a small pill (canvas 4 "Laptop · Round
- * 9", 1b, owner's pick 21 Oct 2026): always the word, never colour alone.
- * Not invited to that event: a quiet dash.
+ * A guest's answer for one event: the phone's round icon with its word beside
+ * it, for every answer alike (owner, 21 Oct 2026: a tick for Coming and a
+ * dashed pill for the rest didn't match). Not invited to that event: a quiet dash.
  */
-function AnswerPill({ status }: { status?: Rsvp["status"] }) {
+function AnswerCell({ status }: { status?: Rsvp["status"] }) {
   if (!status) return <span className="text-stone/60">–</span>;
-  // Coming is the usual answer, so it sits quietly; the others stand out as pills.
-  if (status === "attending") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-[13px] text-ink">
-        <AnswerIcon status={status} tiny />
-        {ANSWER_WORD[status].word}
-      </span>
-    );
-  }
-  const look: Record<Exclude<Rsvp["status"], "attending">, string> = {
-    pending: "border border-dashed border-champagne-400 text-champagne-600",
-    to_invite: "border border-dashed border-linen text-stone",
-    declined: "bg-[#EFECE8] text-stone line-through",
-  };
-  // The same small icons as the tiles above, which are its key (owner, 21 Oct 2026).
+  const tone = status === "attending" ? "text-ink" : status === "pending" ? "text-champagne-600" : "text-stone";
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full py-[3px] pl-1.5 pr-2.5 text-[13px] leading-none ${look[status]}`}>
-      <AnswerIcon status={status} tiny />
+    <span className={`inline-flex items-center gap-2 text-[13px] ${tone}`}>
+      <AnswerIcon status={status} small />
       {ANSWER_WORD[status].word}
     </span>
   );

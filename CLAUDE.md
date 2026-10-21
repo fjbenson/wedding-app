@@ -263,7 +263,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
   circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;
-  canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
+  canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quote · Book · Pay · Ready (`src/lib/area-stage.ts`;
   each can step back). **Ideas are notes or inspo** (21 Oct 2026, canvas 4
   "Area page · Round 2", A): one card with the pictures, the area's notes as
   rows (a note icon, the first line, "Note · date"; tap to edit, no Edit
@@ -271,7 +271,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   idea" (A note · Inspo, both full screens; a note's is `/area/[key]/note`,
   Bullet and Tick-box on top) at the foot, counted as "N ideas"; key facts
   became notes (`areas.details` kept, unshown); "Save an idea" is now "Add
-  inspo". Payment starts "Paid £X of £Y" with a bar.
+  inspo". Pay starts "Paid £X of £Y" with a bar. On the laptop Hub's ring the same
+  stages read as done: Not started · Ideas · Quoted · Booked · Paid · Ready.
   Then **"Everything for [area]"** in the tabs' order (suppliers, guests,
   plan, money, the day), then **"Only for [area]"** (Food & drink's menu and
   drinks), then a foot like the Hub: **Notes** and **Inspo** tiles (both open

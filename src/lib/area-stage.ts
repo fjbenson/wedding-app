@@ -7,9 +7,11 @@ import type { AreaRow } from "@/types/db";
  * page design, round 4, 7 Oct 2026). The first four tick themselves from
  * what's recorded; Ready is the one the couple ticks.
  */
-// Nouns, not past tense (owner, 21 Oct 2026: "Booked" read as already booked
-// while you were still choosing; 16 Oct had Ideas · Quotes · Booked · Paid · Ready).
-export const STAGES = ["Ideas", "Quotes", "Booking", "Payment", "Ready"] as const;
+// Short instructions, what to do at each (owner, 21 Oct 2026: "Booked" read
+// as already booked while you were still choosing; then Ideas · Quotes ·
+// Booking · Payment · Ready the same day). The laptop Hub's ring says the
+// same in the past tense, what's done: Quoted, Booked, Paid (hub.tsx).
+export const STAGES = ["Ideas", "Quote", "Book", "Pay", "Ready"] as const;
 
 export interface AreaStage {
   /** Which stages are done, in order. A later stage done counts the earlier ones done too. */

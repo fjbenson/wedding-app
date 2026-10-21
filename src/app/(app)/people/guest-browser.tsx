@@ -1565,14 +1565,16 @@ function GuestTable({
 
   return (
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
-      <table className="w-full table-fixed border-collapse text-left text-sm">
+      {/* Narrow laptop windows scroll sideways rather than squeezing the name under the next column. */}
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[52rem] table-fixed border-collapse text-left text-sm">
         <colgroup>
-          <col />
-          <col className="w-[8.5rem]" />
-          <col className="w-[10.5rem]" />
-          <col className="w-[8.5rem]" />
           <col className="w-[15rem]" />
-          <col className="w-[8rem]" />
+          <col className="w-[6.5rem]" />
+          <col className="w-[9rem]" />
+          <col className="w-[7.5rem]" />
+          <col />
+          <col className="w-[6.5rem]" />
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
@@ -1623,7 +1625,7 @@ function GuestTable({
                   onClick={() => onOpen(g.id)}
                   className={`cursor-pointer border-t border-linen/80 align-middle ${isOpen ? "bg-white shadow-[inset_3px_0_0_#B8914F]" : "hover:bg-white/60"}`}
                 >
-                  <td className="py-2 pl-2 pr-4">
+                  <td className="overflow-hidden py-2 pl-2 pr-4">
                     <span className="flex items-center gap-3">
                       <span aria-hidden className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600">
                         {initials(g)}
@@ -1682,6 +1684,7 @@ function GuestTable({
           </tbody>
         ))}
       </table>
+      </div>
     </div>
   );
 }

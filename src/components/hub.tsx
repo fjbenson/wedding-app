@@ -149,12 +149,12 @@ function Node({
       aria-label={stageName ? `${ariaLabel}: ${stageName}` : ariaLabel}
       className="absolute flex w-[84px] -translate-x-1/2 -translate-y-[calc(var(--disc)/2)] flex-col items-center gap-1.5 transition active:scale-95 lg:w-[clamp(120px,21cqw,160px)] lg:gap-0"
     >
-      <span className="relative lg:mb-3.5">{children}</span>
-      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.9cqw,14px)] lg:text-ink">
+      <span className="relative lg:mb-3">{children}</span>
+      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(13px,2.3cqw,16px)] lg:text-ink">
         {label}
       </span>
       {stageName && (
-        <span aria-hidden className={`hidden text-xs lg:mt-1 lg:block lg:text-[clamp(12px,1.9cqw,14px)] ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
+        <span aria-hidden className={`hidden text-xs lg:mt-0.5 lg:block ${stage === STAGES.length ? "text-champagne-600" : "text-stone"}`}>
           {stageName}
         </span>
       )}

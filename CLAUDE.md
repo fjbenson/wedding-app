@@ -265,7 +265,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   and a column on the right filling the screen — **Needs a push** (the areas furthest behind, each
   with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`; on a laptop a wide cover then
-  two columns — Next up and the stages left, Everything for / Only for / the
+  two columns — a slim Next up row and the stages together in one big card left, Everything for / Only for / the
   foot right; canvas 4 "Laptop · Round 9", 2): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
   circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;

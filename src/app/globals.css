@@ -308,3 +308,13 @@ body::before {
     padding-right: 440px;
   }
 }
+
+/* A stage's contents sit inside the big stage card on a laptop (stage-tabs.tsx),
+   so the cards they draw for themselves go flat rather than nesting. */
+@media (min-width: 1024px) {
+  .stage-card .glass-card {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+}

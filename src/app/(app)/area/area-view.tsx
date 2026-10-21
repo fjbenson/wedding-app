@@ -160,7 +160,7 @@ function AreaCover({
   return (
     <div className={`relative -mx-[var(--gutter)] -mt-[max(2.5rem,env(safe-area-inset-top))] overflow-hidden md:mx-0 md:mt-0 md:rounded-3xl ${
         // Shorter until there are pictures (owner, 16 Oct 2026): empty tiles shouldn't take a third of the screen.
-        photos.length > 0 ? "h-[300px] md:h-[360px] lg:h-[340px]" : "h-[220px] md:h-[240px]"
+        photos.length > 0 ? "h-[300px] md:h-[360px] lg:h-[260px]" : "h-[220px] md:h-[240px] lg:h-[210px]"
       }`}>
       {/* Nothing saved yet: the soft tiles open "Add inspo" too (the button up top does the same). */}
       <Link
@@ -1084,7 +1084,8 @@ export default function AreaView({
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} decor={!!decor} />
 
       <div className="relative mt-5 flex flex-col gap-3.5 lg:mt-7 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-7">
-        <div className="flex min-w-0 flex-col gap-3.5">
+        {/* The pt lines Next up up with the card under "Everything for" on the right. */}
+        <div className="flex min-w-0 flex-col gap-3.5 lg:pt-[26px]">
         <OpenOnHash />
         {error && (
           <p role="alert" className="rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -1103,14 +1104,17 @@ export default function AreaView({
         )}
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
-        <section aria-label="Next up" className="card-white rounded-[22px] p-4">
-          <p className="type-meta flex items-center gap-1.5 !text-champagne-600">
+        {/* A slim row on a laptop (canvas 4 "Laptop · Round 9", 2): the label, what to do, and its action. */}
+        <section aria-label="Next up" className="card-white rounded-[22px] p-4 lg:flex lg:items-center lg:gap-6 lg:px-6 lg:py-4">
+          <p className="type-meta flex items-center gap-1.5 !text-champagne-600 lg:shrink-0">
             <NextIcon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
             {!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}
           </p>
-          <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
-          {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
-          {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
+          <div className="min-w-0 lg:flex-1">
+            <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink lg:mt-0">{shownNext.title}</p>
+            {shownNext.line && <p className="mt-1 text-sm text-stone lg:mt-0.5">{shownNext.line}</p>}
+          </div>
+          {shownNext.action && <div className="mt-2.5 lg:mt-0 lg:shrink-0">{shownNext.action}</div>}
         </section>
 
         {/* Decor is its own special area: its things in place of the stages (canvas 3 "Decor · Round 2", owner 19 Oct 2026). */}

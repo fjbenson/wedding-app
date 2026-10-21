@@ -43,7 +43,10 @@ export default function StageTabs({
 
   const st = stages[open];
   return (
-    <div id="stages" className="mt-4 scroll-mt-6">
+    // On a laptop the circles and the open stage's contents sit together in one
+    // big card, as in canvas 4 "Laptop · Round 9", 2 (owner, 21 Oct 2026: it
+    // looked like the phone's layout stretched); the cards inside go flat (globals.css).
+    <div id="stages" className="stage-card mt-4 scroll-mt-6 lg:mt-0 lg:rounded-[22px] lg:bg-white/60 lg:px-7 lg:pb-7 lg:pt-6 lg:shadow-[0_0_0_0.5px_rgb(60_50_40/0.06),0_18px_40px_-24px_rgb(60_50_40/0.32)]">
       <div role="tablist" aria-label="Stages" className="flex">
         {stages.map((s, i) => {
           const isDone = done[i];
@@ -89,7 +92,7 @@ export default function StageTabs({
         })}
       </div>
 
-      <div role="tabpanel" id="stage-panel" aria-labelledby={`stage-tab-${st.id}`} className="mt-5">
+      <div role="tabpanel" id="stage-panel" aria-labelledby={`stage-tab-${st.id}`} className="mt-5 lg:mt-6 lg:border-t lg:border-linen lg:pt-6">
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <h3 className="font-display text-xl text-ink">{st.name}</h3>
           <span className="text-sm text-stone">{st.line}</span>

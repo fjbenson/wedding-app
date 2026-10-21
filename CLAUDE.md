@@ -63,9 +63,11 @@ Rule one still comes first.
   lists, music_played, run_sheet_groups, the typed dish).
 - **One topic per chat.** A new idea mid-chat goes in `docs/backlog.md`; suggest
   a fresh chat for it rather than building it there.
-- **`/check` before every push that changes a screen** (the private copy with
-  the demo wedding, `.claude/skills/check/SKILL.md`). **`/status`** gives the
-  owner five lines on where things stand — use it when they ask what's next.
+- **Screen changes: typecheck, build, push, and the owner looks on their
+  phone** (owner, 21 Oct 2026: starting the private copy takes minutes; their
+  phone takes 30 seconds). `/check` (`.claude/skills/check/SKILL.md`) only
+  when the owner asks. **`/status`** gives the owner five lines on where
+  things stand — use it when they ask what's next.
 
 ## Shipping
 

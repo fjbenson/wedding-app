@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Check, Plus } from "lucide-react";
-import { DateInput, Field, InlineSubmit, SubmitButton } from "@/components/form-bits";
+import { DateInput, Field, InlineSubmit, SubmitBar } from "@/components/form-bits";
+import ResetBoundary from "@/components/reset-boundary";
 import { INPUT } from "@/components/form-styles";
 import { areaIcon } from "@/lib/areas";
 import type { Login } from "@/lib/db/auth";
@@ -67,20 +68,18 @@ export default function SettingsView({
 
       <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
-        <form action={saveWeddingAction} className="mt-5 space-y-5">
-          <Field label="Whose wedding?">
-            <input name="name" required defaultValue={wedding.name} className={INPUT} />
-          </Field>
-          <Field label="The date" hint="if you have one">
-            <DateInput name="wedding_date" defaultValue={wedding.wedding_date ?? ""} className={INPUT} />
-          </Field>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 sm:max-w-xs">
-              <SubmitButton label="Save" />
-            </div>
-            {saved === "wedding" && <span className="text-sm text-stone">Saved.</span>}
-          </div>
-        </form>
+        {/* Save only rises once something has changed. */}
+        <ResetBoundary>
+          <form action={saveWeddingAction} className="mt-5 space-y-5">
+            <Field label="Whose wedding?">
+              <input name="name" required defaultValue={wedding.name} className={INPUT} />
+            </Field>
+            <Field label="The date" hint="if you have one">
+              <DateInput name="wedding_date" defaultValue={wedding.wedding_date ?? ""} className={INPUT} />
+            </Field>
+            <SubmitBar label="Save" whenChanged />
+          </form>
+        </ResetBoundary>
       </section>
 
       <section className="glass-card mt-6 rounded-[22px] p-5">

@@ -39,8 +39,6 @@ journey times, wrapped table names, New area's ideas. Still open:
   Moving or shrinking the pen is a look change: the owner's call.
 - Food & drink's "Everything for…" has 11 lines (Guests and Dietary needs
   overlap) — could merge, owner's call.
-- The note panel (Your notes) still uses its older list of actions.
-- Settings' The wedding card still has an always-on black Save.
 - Juno still reads the old typed dishes if asked (`lookups.ts`), and its
   lookups don't know the meal tiles yet (rule one: owner's call).
 - **Demo gaps**: no menu, drinks or extra run sheets in `demo-wedding.sql`.

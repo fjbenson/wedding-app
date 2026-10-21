@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import CardLink from "@/components/card-link";
+import CardSheet from "@/components/card-sheet";
 import { useEffect, useState, useTransition } from "react";
 import { Check, ChevronDown, ChevronRight, CircleCheck, Link2, PenLine, Plus, Trash2 } from "lucide-react";
 import { DateInput } from "@/components/form-bits";
@@ -212,12 +213,6 @@ function NotePanel({
   const [asking, setAsking] = useState(false);
   const [whenDate, setWhenDate] = useState("");
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   // Done: the note has left the inbox (or changed), so close and let the page refresh.
   const run = (work: () => Promise<Result>, closeAfter = true) =>
     start(async () => {
@@ -227,11 +222,7 @@ function NotePanel({
     });
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center lg:items-center" role="dialog" aria-modal="true" aria-label="Note">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-ink/30" />
-      <div className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-ivory px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_40px_rgb(30_27_24/0.2)] lg:rounded-[28px] lg:pb-6">
-        <div aria-hidden className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#E0D3BC] lg:hidden" />
-
+    <CardSheet label="Note" onClose={onClose}>
         {editing ? (
           <form
             onSubmit={(event) => {
@@ -381,8 +372,7 @@ function NotePanel({
           <Trash2 className="h-5 w-5" strokeWidth={1.8} aria-hidden />
           Remove
         </button>
-      </div>
-    </div>
+    </CardSheet>
   );
 }
 

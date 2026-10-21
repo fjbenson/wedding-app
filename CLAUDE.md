@@ -284,7 +284,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   app, everyone in Bcc). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
   grouped by area, the stage as a badge; the **supplier card** is a business
-  card with Progress (In touch → Quote in → Booked), Money, Documents (private
+  card with Progress (In touch → Quote in → Booked → Paid; steps tick once reached, Paid from Money), Money, Documents (private
   `files` bucket), Contact, Decor from them, timeline.
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only
   (payments live in Money). Calendar month on a glass card, a day card on

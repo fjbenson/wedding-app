@@ -56,6 +56,12 @@ export default function SupplierCard({
   const name = supplierName(supplier);
   const d = supplier.supplier_details;
   const area = areas.find((a) => a.key === d?.category);
+  // Paid up: booked, and what was agreed (the quote, else the payments) is paid.
+  const paidSoFar = (d?.deposit_paid ?? 0) + payments.filter((p) => p.paid_on).reduce((sum, p) => sum + p.amount, 0);
+  const paidUp =
+    d?.status === "booked" &&
+    (d.quoted_cost && d.quoted_cost > 0 ? paidSoFar >= d.quoted_cost : payments.length > 0 && payments.every((p) => p.paid_on));
+  const moneyHref = area ? `/money?view=month&area=${encodeURIComponent(area.key)}` : "/money?view=month";
   const drag = usePullToClose(onClose);
   const phone = supplier.phone?.replace(/\s+/g, "");
   const [error, setError] = useState<string>();
@@ -130,7 +136,7 @@ export default function SupplierCard({
               part changed by tapping it — no longer the add form filled in. */}
           <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
 
-          <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} onError={setError} />
+          <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} paidUp={paidUp} moneyHref={moneyHref} onError={setError} />
 
           <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
 
@@ -403,8 +409,26 @@ function BusinessCard({
   );
 }
 
-/** In touch → Quote in → Booked, as steps joined by a line that fills gold. Tap one to move them on (or back). */
-function Progress({ supplierId, status, onError }: { supplierId: string; status: SupplierStatus; onError: (message?: string) => void }) {
+/**
+ * In touch → Quote in → Booked → Paid, as steps joined by a line that fills
+ * gold. A step ticks when it's been reached, like the area page's stages
+ * (owner, 21 Oct 2026); the first one not ticked is where they are. Tap one
+ * of the first three to move them on (or back); Paid ticks itself from
+ * Money, so it opens Money instead.
+ */
+function Progress({
+  supplierId,
+  status,
+  paidUp,
+  moneyHref,
+  onError,
+}: {
+  supplierId: string;
+  status: SupplierStatus;
+  paidUp: boolean;
+  moneyHref: string;
+  onError: (message?: string) => void;
+}) {
   const [current, setCurrent] = useOptimistic<SupplierStatus>(status === "researching" ? "enquired" : status);
   const [, startTransition] = useTransition();
   const at = SUPPLIER_STAGES.findIndex((s) => s.status === current);
@@ -413,34 +437,46 @@ function Progress({ supplierId, status, onError }: { supplierId: string; status:
       setCurrent(next);
       onError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: next }))).error);
     });
+  const steps = [...SUPPLIER_STAGES.map((s) => ({ key: s.status as string, label: s.label })), { key: "paid", label: "Paid" }];
+  const done = steps.map((_, i) => (i < SUPPLIER_STAGES.length ? at >= 0 && i <= at : at === SUPPLIER_STAGES.length - 1 && paidUp));
+  for (let i = done.length - 1; i > 0; i--) if (done[i]) done[i - 1] = true;
+  const here = at >= 0 ? done.indexOf(false) : -1;
 
   return (
     <section className="mt-7">
       <h2 className="section-label font-body">Progress</h2>
       <div className="mt-3 flex items-start">
-        {SUPPLIER_STAGES.map((stage, i) => {
-          const done = at >= 0 && (i < at || (i === at && i === SUPPLIER_STAGES.length - 1));
-          const here = i === at;
-          return (
-            <div key={stage.status} className="flex flex-1 items-start last:flex-none">
-              <button
-                type="button"
-                onClick={() => set(stage.status)}
-                aria-pressed={here}
-                className="flex w-[74px] flex-col items-center gap-1.5"
+        {steps.map((step, i) => {
+          const isHere = i === here;
+          const mark = (
+            <>
+              <span
+                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
+                  done[i] ? "bg-champagne-600 text-white" : isHere ? "border-2 border-champagne-600 bg-white" : "border-[1.5px] border-[#D8D0C4] bg-white"
+                }`}
               >
-                <span
-                  className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
-                    done ? "bg-champagne-600 text-white" : here ? "border-2 border-champagne-600 bg-white" : "border-[1.5px] border-[#D8D0C4] bg-white"
-                  }`}
+                {done[i] && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
+              </span>
+              <span className={`text-[12px] ${isHere ? "font-semibold text-ink" : "text-stone"}`}>{step.label}</span>
+            </>
+          );
+          return (
+            <div key={step.key} className="flex flex-1 items-start last:flex-none">
+              {i < SUPPLIER_STAGES.length ? (
+                <button
+                  type="button"
+                  onClick={() => set(SUPPLIER_STAGES[i].status)}
+                  aria-pressed={done[i]}
+                  className="flex w-16 flex-col items-center gap-1.5"
                 >
-                  {done && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
-                </span>
-                <span className={`text-[12px] ${here ? "font-semibold text-ink" : "text-stone"}`}>{stage.label}</span>
-              </button>
-              {i < SUPPLIER_STAGES.length - 1 && (
-                <span aria-hidden className={`mt-3 h-0.5 flex-1 ${at > i ? "bg-champagne-600" : "bg-linen"}`} />
+                  {mark}
+                </button>
+              ) : (
+                <Link href={moneyHref} className="flex w-16 flex-col items-center gap-1.5">
+                  {mark}
+                </Link>
               )}
+              {i < steps.length - 1 && <span aria-hidden className={`mt-3 h-0.5 flex-1 ${done[i + 1] ? "bg-champagne-600" : "bg-linen"}`} />}
             </div>
           );
         })}

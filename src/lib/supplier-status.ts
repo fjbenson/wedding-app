@@ -2,7 +2,8 @@ import type { SupplierStatus } from "@/types/db";
 
 /**
  * Where a supplier is up to. The journey is three steps, in order (owner,
- * 12 Oct 2026): **In touch → Quote in → Booked** — booked last. "Not taken"
+ * 12 Oct 2026): **In touch → Quote in → Booked** — booked last. The card adds a
+ * fourth, Paid, which isn't a status: it ticks itself from the supplier's money. "Not taken"
  * (we didn't go with them) isn't a step, so it isn't in the row of stages;
  * the supplier card has a quiet "We didn't go with them" instead, and they
  * stay on the list greyed out with their quote. "Looking" was folded into

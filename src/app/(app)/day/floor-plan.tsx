@@ -413,7 +413,7 @@ export default function FloorPlan({
   const tableIndex = tables.findIndex((t) => t.id === selectedTable);
 
   return (
-    <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-5">
+    <div className="mt-6 lg:mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-5">
       <div className="min-w-0">
       {error && (
         <p role="alert" className="mb-4 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -445,7 +445,7 @@ export default function FloorPlan({
           }}
           onPointerUp={() => (pan.current = null)}
           onPointerCancel={() => (pan.current = null)}
-          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:cursor-grab lg:touch-none"
+          className="relative aspect-[4/3] w-full min-w-[560px] overflow-hidden rounded-2xl lg:w-[min(100%,calc((100vh-9rem)*1.3333))] lg:min-w-0 lg:cursor-grab lg:touch-none"
           style={
             wide
               ? {

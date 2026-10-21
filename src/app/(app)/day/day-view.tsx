@@ -568,35 +568,57 @@ function Seating({
     };
   });
 
+  const plan = view === "plan";
+  const viewMenu = (
+    <ViewMenu
+      options={[
+        { label: "Floor plan", href: "/day?tab=seating", active: view === "plan" },
+        { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
+      ]}
+    />
+  );
+
   return (
     <>
-      <DayPill />
-      <PageTitle drawing="day" spacing="mt-3" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
-        Seating
-      </PageTitle>
+      {/* On a laptop the floor plan gets the whole screen (canvas 4 "Laptop · Round 11", A): one header row, no numbers card or search above it. */}
+      <div className="lg:flex lg:items-end lg:justify-between lg:gap-6">
+        <div>
+          <DayPill />
+          <PageTitle drawing="day" spacing="mt-3" className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">
+            Seating
+          </PageTitle>
+        </div>
+        {plan && (
+          <div className="hidden items-center gap-5 lg:flex">
+            {viewMenu}
+            <span className="text-sm tabular-nums text-stone">
+              {seated} of {coming.length} seated
+            </span>
+            {data.tables.length > 0 && <SendToVenue couple={couple} date={date} tables={venueTables} unseated={unseated.map(person)} />}
+            <AddButton href="/day/tables/new" label="Add a table" />
+          </div>
+        )}
+      </div>
       {/* The tab's numbers, search with the black +, then View (canvas 3 "The Day · Round 1", A, owner 17 Oct 2026). */}
-      <NumbersCard
-        big={{ label: "Seated", value: seated, sub: `of ${coming.length} coming` }}
-        rows={[
-          { value: unseated.length, label: "To seat" },
-          { value: data.tables.length, label: data.tables.length === 1 ? "Table" : "Tables" },
-          { value: Math.max(seats - seated, 0), label: "Seats free" },
-        ]}
-      />
-      <SeatingSearch
-        guests={coming.map((g) => {
-          const t = tableOf.get(g.id);
-          return { id: g.id, name: fullName(g), table: t ? (data.tables.find((x) => x.id === t)?.name ?? null) : null };
-        })}
-        tables={data.tables.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, count: coming.filter((g) => tableOf.get(g.id) === t.id).length }))}
-      />
-      <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
-        <ViewMenu
-          options={[
-            { label: "Floor plan", href: "/day?tab=seating", active: view === "plan" },
-            { label: "List", href: "/day?tab=seating&view=list", active: view === "list" },
+      <div className={plan ? "lg:hidden" : ""}>
+        <NumbersCard
+          big={{ label: "Seated", value: seated, sub: `of ${coming.length} coming` }}
+          rows={[
+            { value: unseated.length, label: "To seat" },
+            { value: data.tables.length, label: data.tables.length === 1 ? "Table" : "Tables" },
+            { value: Math.max(seats - seated, 0), label: "Seats free" },
           ]}
         />
+        <SeatingSearch
+          guests={coming.map((g) => {
+            const t = tableOf.get(g.id);
+            return { id: g.id, name: fullName(g), table: t ? (data.tables.find((x) => x.id === t)?.name ?? null) : null };
+          })}
+          tables={data.tables.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, count: coming.filter((g) => tableOf.get(g.id) === t.id).length }))}
+        />
+      </div>
+      <div className={`mt-3 flex min-h-9 items-center justify-between gap-3 px-1 ${plan ? "lg:hidden" : ""}`}>
+        {viewMenu}
         {data.tables.length > 0 && <SendToVenue couple={couple} date={date} tables={venueTables} unseated={unseated.map(person)} />}
       </div>
 

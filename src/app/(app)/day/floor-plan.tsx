@@ -26,8 +26,11 @@ function tableSize(shape: TableShape, capacity: number) {
     const width = Math.max(16, Math.min(36, 6 + capacity * 1.8));
     return { width, aspect: width / 8 };
   }
-  const width = Math.max(11, Math.min(18, 9 + capacity * 0.6));
-  return { width, aspect: 1 };
+  // The chairs stand 62% of the box out from the middle, so this width puts the
+  // top, bottom, left and right chairs exactly two (or three) dots from the
+  // table's middle, on the dots (owner, 21 Oct 2026).
+  const ring = capacity > 12 ? 3 : 2;
+  return { width: (ring * GRID_X) / 0.62, aspect: 1 };
 }
 
 /** The little seat dots: round the edge of a round table, both sides of a long one, behind a top table. */

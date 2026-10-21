@@ -842,12 +842,13 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
 
 /**
  * Laptops: the numbers in one slim row (canvas 4 "Laptop · Round 9", 1b, owner's
- * pick 21 Oct 2026). Set like the phone's card (Round 2, A, owner's pick):
- * the tiles share one frosted card and the picked one lifts out as white, with
- * its number gold. Each answer carries its small icon (✓ coming, an envelope
- * once invited, a dashed one still to invite, ✕ can't come), the same ones the
- * table below uses as its key. Guests is everyone still expected, so Coming +
- * Yet to respond + To invite add up to it; Can't come is set apart, not in it.
+ * pick 21 Oct 2026). Set like the phone's card: one frosted card with the big
+ * total on the left and the three numbers that break it down beside it —
+ * Coming + Yet to respond + To invite add up to it. The picked one lifts out
+ * white, its number gold. Each answer carries its small icon (✓ coming, an
+ * envelope once invited, a dashed one still to invite, ✕ can't come), the same
+ * ones the table below uses as its key. Can't come is set apart, not in the
+ * total. (A bar showing the split was tried and dropped, owner, 21 Oct 2026.)
  */
 function AnswersStrip({
   total,
@@ -862,55 +863,67 @@ function AnswersStrip({
   showing: Showing;
   onShow: (s: Showing) => void;
 }) {
-  const tiles: { key: Showing; status?: Rsvp["status"]; label: string; n: number }[] = [
-    { key: "all", label: `Guests · ${homes} ${homes === 1 ? "home" : "homes"}`, n: total },
-    { key: "attending", status: "attending", label: "Coming", n: counts.attending },
-    { key: "pending", status: "pending", label: "Yet to respond", n: counts.pending },
-    { key: "to_invite", status: "to_invite", label: "To invite", n: counts.to_invite },
-    { key: "declined", status: "declined", label: "Can't come", n: counts.declined },
+  const parts: { status: Rsvp["status"]; label: string }[] = [
+    { status: "attending", label: "Coming" },
+    { status: "pending", label: "Yet to respond" },
+    { status: "to_invite", label: "To invite" },
   ];
-  const at = tiles.findIndex((t) => t.key === showing);
-  const answered = counts.attending + counts.declined + counts.pending;
-  const share = (n: number) => `${answered ? (n / answered) * 100 : 0}%`;
+  const at = parts.findIndex((t) => t.status === showing);
+  const lifted = "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]";
+  const cant = showing === "declined";
   return (
-    <section aria-label="RSVPs" className="hidden gap-3.5 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,1.5fr)]">
-      <div className="glass-card flex items-stretch rounded-[22px] p-2">
-        {tiles.map((t, i) => {
-          const on = showing === t.key;
+    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 lg:flex">
+      <div className="glass-card flex min-w-0 flex-1 items-stretch rounded-[22px] p-2">
+        <button
+          type="button"
+          aria-pressed={showing === "all"}
+          onClick={() => onShow("all")}
+          className={`flex w-[210px] shrink-0 flex-col justify-between rounded-2xl px-5 py-3.5 text-left transition ${showing === "all" ? lifted : "hover:bg-white/60"}`}
+        >
+          <span className={`type-figure text-[52px] leading-none ${showing === "all" ? "text-champagne-600" : "text-ink"}`}>{total}</span>
+          <span className="type-meta mt-3">
+            Guests · {homes} {homes === 1 ? "home" : "homes"}
+          </span>
+        </button>
+        <span aria-hidden className="mx-1.5 my-3 w-px shrink-0 bg-linen" />
+        {parts.map((t, i) => {
+          const on = showing === t.status;
           return (
-            <div key={t.key} className="flex min-w-0 flex-1 items-stretch">
+            <div key={t.status} className="flex min-w-0 flex-1 items-stretch">
               <button
                 type="button"
                 aria-pressed={on}
-                onClick={() => onShow(on && t.key !== "all" ? "all" : (t.key as Showing))}
-                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-4 py-3 text-left transition ${
-                  on ? "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]" : "hover:bg-white/60"
-                }`}
+                onClick={() => onShow(on ? "all" : t.status)}
+                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-4 py-3.5 text-left transition ${on ? lifted : "hover:bg-white/60"}`}
               >
-                <span className={`type-figure text-[32px] leading-none ${on ? "text-champagne-600" : t.key === "declined" ? "text-stone" : "text-ink"}`}>{t.n}</span>
-                <span className="mt-2 flex items-center gap-1.5">
-                  {t.status && <AnswerIcon status={t.status} small />}
+                <span className={`type-figure text-[34px] leading-none ${on ? "text-champagne-600" : "text-ink"}`}>{counts[t.status]}</span>
+                <span className="mt-3 flex items-center gap-1.5">
+                  <AnswerIcon status={t.status} small />
                   <span className={`type-meta min-w-0 truncate ${on ? "!text-ink" : ""}`}>{t.label}</span>
                 </span>
-                {t.key === "declined" && <span className="text-xs text-stone">not in the {total}</span>}
               </button>
-              {i < tiles.length - 1 && (
-                <span aria-hidden className={`my-3 w-px shrink-0 ${on || i + 1 === at ? "bg-transparent" : "bg-linen"}`} />
-              )}
+              {i < parts.length - 1 && <span aria-hidden className={`my-3 w-px shrink-0 ${on || i + 1 === at ? "bg-transparent" : "bg-linen"}`} />}
             </div>
           );
         })}
       </div>
-      <div className="glass-card rounded-[22px] px-5 py-4">
-        <p className="type-meta">Answers so far</p>
-        <div aria-hidden className="mt-3 flex h-2 overflow-hidden rounded-full bg-champagne-100">
-          <span className="bg-champagne-400" style={{ width: share(counts.attending) }} />
-          <span className="bg-[#C9C2B8]" style={{ width: share(counts.declined) }} />
-        </div>
-        <p className="mt-2 text-[13px] text-stone">
-          {counts.attending} coming · {counts.declined} can&apos;t · {counts.pending} yet to respond
-        </p>
-      </div>
+      <button
+        type="button"
+        aria-pressed={cant}
+        onClick={() => onShow(cant ? "all" : "declined")}
+        className={`flex w-[170px] shrink-0 flex-col justify-between rounded-[22px] px-5 py-3.5 text-left transition ${
+          cant ? `${lifted} ring-1 ring-linen` : "border-[1.5px] border-dashed border-[#D6CDBF] hover:bg-white/50"
+        }`}
+      >
+        <span className={`type-figure text-[34px] leading-none ${cant ? "text-champagne-600" : "text-stone"}`}>{counts.declined}</span>
+        <span>
+          <span className="flex items-center gap-1.5">
+            <AnswerIcon status="declined" small />
+            <span className={`type-meta ${cant ? "!text-ink" : ""}`}>Can&apos;t come</span>
+          </span>
+          <span className="mt-1 block text-xs text-stone">not in the {total}</span>
+        </span>
+      </button>
     </section>
   );
 }

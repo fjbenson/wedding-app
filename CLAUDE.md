@@ -104,7 +104,7 @@ and Supabase sit in the same region; if one moves, move the other.
 
 ## Data and the database
 
-- Schema in `supabase/migrations/0001_init.sql` … `0035_run_sheets.sql`,
+- Schema in `supabase/migrations/0001_init.sql` … `0036_floor_plan_wider.sql`,
   **all run** on the live project (**wedding-app**, `hfyuvtrglkdpqvtkzohb`).
 - The Supabase connector is set up, so Claude can run migrations — but
   **always says in plain words what a change does and waits for the owner's
@@ -347,7 +347,13 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 - **The Day** (`/day`): the **run sheet** as an order of service, with three
   piece tiles — **Seating** (floor plan on a dot grid, round / long / top
   tables, a table close-up with saved chairs, dietary marks, seat a group or
-  household, Send to the venue as a PDF), **Travel** (where everyone sleeps,
+  household, Send to the venue as a PDF; **on a laptop** (canvas 4 "Laptop ·
+  Round 11", A, 21 Oct 2026) one header row, a white board filling the screen
+  that zooms (pinch / ctrl + scroll / ± buttons) and pans (drag the paper) with
+  tables allowed outside the original room (0036, positions −300–400% of it),
+  and a control panel right: add a table (drag a shape on), still to seat (drag
+  a name onto a table or one chair; groups onto a table), the tables;
+  `floor-plan-panel.tsx`), **Travel** (where everyone sleeps,
   journeys there and back) and **Decor** (pack list). **More than one run
   sheet** (20 Oct 2026, `run_sheets`, 0035): "The day" is the main one, others
   (Bridesmaids, Groomsmen, the photographer's list) are picked at the top

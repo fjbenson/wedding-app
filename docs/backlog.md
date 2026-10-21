@@ -122,14 +122,10 @@ almost everything else is still the phone layout in a narrow column.
 
 ## Parked ideas
 
-- **Seating: an endless canvas** (owner, 21 Oct 2026, "like Figma"): built — zoom
-  out and tables can stand outside the room (pinch / ctrl + scroll, drag the
-  paper); the plan and the venue PDF fit to wherever they are. **Waiting on
-  the owner:** `0036_floor_plan_wider.sql` (widens `pos_x` / `pos_y` from 0–100
-  to −300–400; changes no row) is written but **not run** — until it is, a
-  table dropped outside the room says it didn't save. Run it once the owner
-  has tried the zoom and says so.
-
+- **Seating, loose ends** (21 Oct 2026, built blind — check on the laptop): long
+  and top tables' chairs don't sit on the dots (round ones do); diagonal chairs
+  on a round table fall between dots; the guest search was dropped from the
+  laptop plan (still on phone and List).
 - **Run sheets side by side on one clock** (canvas 4 "Laptop · Round 9", 3c):
   every sheet in its own column against the hours; liked, kept for later.
 - **Search on the laptop run sheet** was left out to match the mock-up; say if

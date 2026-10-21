@@ -64,9 +64,55 @@ export default function NoteEditor({
     want.current = { index: i, at: lines[i].text.length };
   };
 
+  // The toolbar: the line you're on becomes a bullet or a tick-box. On a
+  // full-screen note it sits on top, where the phone's keyboard can't cover
+  // it (owner, 21 Oct 2026).
+  const toolbar = (
+      <div className={fill ? "mb-3 flex gap-2 border-b border-ink/10 pb-3" : "mt-4 flex gap-2 border-t border-ink/10 pt-3"}>
+        {(
+          [
+            ["bullet", "Bullet", "M9 7h11M9 12h11M9 17h11"],
+            ["tick", "Tick-box", "M12 7h9M12 17h9"],
+          ] as const
+        ).map(([kind, label, path]) => {
+          const on = lines[Math.min(focus, lines.length - 1)]?.kind === kind;
+          return (
+            <button
+              key={kind}
+              type="button"
+              // Keep the caret in the line while tapping the button.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => turn(kind)}
+              aria-pressed={on}
+              className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[13px] transition ${on ? "bg-champagne-100 text-champagne-600" : "text-ink hover:bg-white/70"}`}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                {kind === "bullet" ? (
+                  <>
+                    <circle cx="5" cy="7" r="1" />
+                    <circle cx="5" cy="12" r="1" />
+                    <circle cx="5" cy="17" r="1" />
+                  </>
+                ) : (
+                  <>
+                    <rect x="3" y="4" width="6" height="6" rx="1.5" />
+                    <path d="M4.5 7l1 1 2-2" />
+                    <rect x="3" y="14" width="6" height="6" rx="1.5" />
+                  </>
+                )}
+                <path d={path} />
+              </svg>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+  );
+
   return (
     <div className={fill ? "flex flex-1 flex-col" : undefined}>
       <input type="hidden" name={name} value={body} />
+      {fill && toolbar}
       <div
         className={fill ? "flex-1 cursor-text space-y-1" : "space-y-1"}
         // A tap in the empty space below the lines carries on the last one.
@@ -141,46 +187,7 @@ export default function NoteEditor({
           </div>
         ))}
       </div>
-      {/* The toolbar: the line you're on becomes a bullet or a tick-box. */}
-      <div className="mt-4 flex gap-2 border-t border-ink/10 pt-3">
-        {(
-          [
-            ["bullet", "Bullet", "M9 7h11M9 12h11M9 17h11"],
-            ["tick", "Tick-box", "M12 7h9M12 17h9"],
-          ] as const
-        ).map(([kind, label, path]) => {
-          const on = lines[Math.min(focus, lines.length - 1)]?.kind === kind;
-          return (
-            <button
-              key={kind}
-              type="button"
-              // Keep the caret in the line while tapping the button.
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => turn(kind)}
-              aria-pressed={on}
-              className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[13px] transition ${on ? "bg-champagne-100 text-champagne-600" : "text-ink hover:bg-white/70"}`}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                {kind === "bullet" ? (
-                  <>
-                    <circle cx="5" cy="7" r="1" />
-                    <circle cx="5" cy="12" r="1" />
-                    <circle cx="5" cy="17" r="1" />
-                  </>
-                ) : (
-                  <>
-                    <rect x="3" y="4" width="6" height="6" rx="1.5" />
-                    <path d="M4.5 7l1 1 2-2" />
-                    <rect x="3" y="14" width="6" height="6" rx="1.5" />
-                  </>
-                )}
-                <path d={path} />
-              </svg>
-              {label}
-            </button>
-          );
-        })}
-      </div>
+      {!fill && toolbar}
     </div>
   );
 }

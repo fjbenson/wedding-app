@@ -958,6 +958,19 @@ export default function AreaView({
       line: money.committed <= 0 ? "None yet" : money.paid >= money.committed ? "All paid" : `${formatMoney(money.committed - money.paid)} to go`,
       content: (
         <>
+        {/* Paid so far against what's agreed, so the balance below isn't read as the price
+            (owner, 21 Oct 2026: a £2,200 quote showed as £1,700 here). */}
+        {money.committed > 0 && (
+          <div className="mb-3 px-1">
+            <p className="flex justify-between text-[13px] text-stone">
+              <span>Paid {formatMoney(Math.min(money.paid, money.committed))}</span>
+              <span>of {formatMoney(money.committed)}</span>
+            </p>
+            <span aria-hidden className="mt-1.5 block h-2 overflow-hidden rounded-full bg-champagne-100">
+              <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, Math.round((money.paid / money.committed) * 100))}%` }} />
+            </span>
+          </div>
+        )}
         {unpaid.length + unscheduled.length > 0 ? (
           <ul className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             {unpaid.slice(0, 3).map((p) => (

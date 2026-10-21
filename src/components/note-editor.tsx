@@ -84,7 +84,8 @@ export default function NoteEditor({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => turn(kind)}
               aria-pressed={on}
-              className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[13px] transition ${on ? "bg-champagne-100 text-champagne-600" : "text-ink hover:bg-white/70"}`}
+              // Soft rounded buttons, so they read as tappable (owner, 21 Oct 2026); on, they turn champagne.
+              className={`flex h-10 items-center gap-2 rounded-xl border px-3 text-[13px] transition ${on ? "border-champagne-400/60 bg-champagne-100 text-champagne-600" : "border-linen bg-white/70 text-ink hover:bg-white"}`}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 {kind === "bullet" ? (

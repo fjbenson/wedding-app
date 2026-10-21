@@ -705,7 +705,8 @@ export default function GuestBrowser({
             tables={tables}
             dietOf={dietOf}
             openId={openId}
-            onOpen={setOpenId}
+            // Tapping the open guest again closes their card (owner, 21 Oct 2026).
+            onOpen={(id) => setOpenId((o) => (o === id ? undefined : id))}
           />
         </>
       )}
@@ -1510,7 +1511,7 @@ function GuestTable({
                         )}
                       </span>
                       <span className="min-w-0">
-                        <button type="button" onClick={() => onOpen(g.id)} className="block whitespace-nowrap text-left font-display text-base text-ink hover:underline">
+                        <button type="button" aria-expanded={isOpen} className="block whitespace-nowrap text-left font-display text-base text-ink hover:underline">
                           {fullName(g)}
                         </button>
                         {roles.length > 0 && <span className="block text-xs text-champagne-600">{roles.join(" · ")}</span>}

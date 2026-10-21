@@ -331,7 +331,8 @@ export default function SupplierList({
                         supplier={s}
                         onOpen={(field) => {
                           setEditField(field);
-                          setOpenId(s.id);
+                          // Tapping the open supplier again closes their card (owner, 21 Oct 2026).
+                          setOpenId((o) => (o === s.id && !field ? null : s.id));
                         }}
                       />
                     </li>

@@ -37,8 +37,6 @@ journey times, wrapped table names, New area's ideas. Still open:
 - **The floating pen covers the right edge** of a list while it's at the top
   (the A–Z letters, a row's tick or £, the last table on the floor plan).
   Moving or shrinking the pen is a look change: the owner's call.
-- Food & drink's "Everything for…" has 11 lines (Guests and Dietary needs
-  overlap) — could merge, owner's call.
 - Juno still reads the old typed dishes if asked (`lookups.ts`), and its
   lookups don't know the meal tiles yet (rule one: owner's call).
 - **Demo gaps**: no menu, drinks or extra run sheets in `demo-wedding.sql`.

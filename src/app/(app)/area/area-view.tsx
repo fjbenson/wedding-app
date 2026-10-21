@@ -4,7 +4,7 @@ import Timeline from "@/components/timeline";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -402,7 +402,6 @@ function FactRow({ href, title, line, dashed = false }: { href: string; title: s
 function GuestsSection({ facts, supplier, couple, area }: { facts: AreaGuestFacts; supplier?: string; couple: string; area: AreaRow }) {
   const people = "/people";
   if (facts.kind === "food") {
-    const names = facts.dietary.slice(0, 2).map((d) => `${d.name.split(" ")[0]} · ${d.note}`);
     return (
       <>
         <div className={`grid gap-2 pb-3.5 pt-3.5 ${facts.eveningEventId ? "grid-cols-3" : "grid-cols-2"}`}>
@@ -434,11 +433,19 @@ function GuestsSection({ facts, supplier, couple, area }: { facts: AreaGuestFact
         </div>
         <FoodCosts areaId={area.id} areaKey={area.key} counts={facts.counts} prices={pricesOf(area)} />
         {facts.dietary.length > 0 ? (
-          <FactRow
-            href={`${people}?f=dietary&view=diet`}
-            title={facts.dietary.length === 1 ? "1 dietary need" : `${facts.dietary.length} dietary needs`}
-            line={[...names, facts.dietary.length > 2 ? `+${facts.dietary.length - 2} more` : ""].filter(Boolean).join(", ")}
-          />
+          <div className="border-t border-linen py-3.5">
+            <Link href={`${people}?f=dietary&view=diet`} className="text-sm text-stone hover:text-ink">
+              {facts.dietary.length === 1 ? "1 dietary need" : `${facts.dietary.length} dietary needs`}
+            </Link>
+            <ul className="mt-1">
+              {facts.dietary.map((d, i) => (
+                <li key={i} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
+                  <span className="truncate">{d.name}</span>
+                  <span className="shrink-0 text-right text-[13px] text-[#9A3F2B]">{d.note}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : (
           <p className="border-t border-linen py-3.5 text-sm text-stone">No dietary needs recorded yet.</p>
         )}
@@ -1130,33 +1137,8 @@ export default function AreaView({
             </Everything>
 
             {guestFacts && guestFacts.kind !== "transport" && (
-              <Everything id="guests" icon={Users} title="Guests" line={guestsLine} see={{ href: "/people", label: "The guest list" }}>
+              <Everything id="guests" icon={Users} title={guestFacts.kind === "food" ? "Who you're feeding" : "Guests"} line={guestsLine} see={{ href: "/people", label: "The guest list" }}>
                 <GuestsSection facts={guestFacts} supplier={booked[0] ? supplierName(booked[0]) : undefined} couple={couple} area={area} />
-              </Everything>
-            )}
-
-            {guestFacts?.kind === "food" && (
-              <Everything
-                id="dietary"
-                icon={WheatOff}
-                title="Dietary needs"
-                line={
-                  guestFacts.dietary.length === 0
-                    ? "None recorded yet"
-                    : `${plural(guestFacts.dietary.length, "guest")} · ${[...new Set(guestFacts.dietary.flatMap((d) => d.note.split(" · ")))].join(", ")}`
-                }
-                see={{ href: "/people?f=dietary&view=diet", label: "In the guest list" }}
-              >
-                {guestFacts.dietary.length > 0 && (
-                  <ul>
-                    {guestFacts.dietary.map((d, i) => (
-                      <li key={i} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
-                        <span className="truncate">{d.name}</span>
-                        <span className="shrink-0 text-right text-[13px] text-[#9A3F2B]">{d.note}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </Everything>
             )}
 

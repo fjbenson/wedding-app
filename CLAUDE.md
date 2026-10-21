@@ -262,7 +262,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   each can step back) — then **"Everything for [area]"**, one line each for
   suppliers, plan, money, the day, notes and the timeline. Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,
-  dietary needs, what it comes to at the caterer's prices, the menu `/menu`,
+  with every dietary need listed there, what it comes to at the caterer's prices, the menu `/menu`,
   Drinks `/drinks`, food through the day), **Stationery** (What you send:
   Save the date · Invitation · Thank-you, with Send and "Did it go?"),
   **Decor** (items by where they go; `/day/decor` is the pack list),

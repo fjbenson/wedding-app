@@ -297,8 +297,10 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   staying / meal / sent…) and Filter; rows with initials, role star and an
   answer icon (on a laptop: one card with the total big and Coming · Yet to respond ·
   To invite beside it (they add up to it), each with its answer icon, and
-  Can't come set apart; then columns — an answer pill per event, the same
-  icons, meal, needs as tags, table — Round 9, 1b); can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
+  Can't come set apart; then columns — Guest of (a sun or moon pill, day or evening), Answer
+  (Coming quiet, the rest as pills with the same icons), Meal (Adult / Child's),
+  Dietary tags (allergies marked), Table, hairlines between who / food / seat;
+  Round 9, 1b); can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure to jump to it), Text · Call · Email, Guest of
   and RSVP sliders, roles, details (meal and drinks tiles, dietary picker,
   table), groups, travel, in the plan, timeline. A guest's meal is only the

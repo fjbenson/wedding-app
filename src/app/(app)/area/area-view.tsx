@@ -4,7 +4,7 @@ import Timeline from "@/components/timeline";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Mail, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -794,12 +794,9 @@ export default function AreaView({
         }
       : next;
   const soon = planNow[0];
-  const then = soon
-    ? soon.kind === "todo"
-      ? `${soon.m.title}${soon.date ? ` · ${formatDayMonth(soon.date)}` : ""}`
-      : `${soon.a.title} · ${formatWeekdayDayMonth(soon.a.on_date)}${soon.a.at_time ? `, ${formatTime(soon.a.at_time)}` : ""}`
-    : null;
-
+  // A small picture of what kind of thing it is (owner, 21 Oct 2026: one item
+  // at the top, quick to read): an idea, a supplier, money, or all in hand.
+  const NextIcon: LucideIcon = decor ? ListChecks : stationery ? Mail : [ImagePlus, Users, PoundSterling, PoundSterling, Check, Sparkles][Math.min(stage.current, 5)];
   // One line per stage when it's closed, and what it holds when open.
   const withQuote = live.filter((s) => (statusOf(s) === "quoted" || statusOf(s) === "booked") && (s.supplier_details?.quoted_cost ?? 0) > 0);
   const stages: { name: string; id: string; line: string; content: React.ReactNode }[] = [
@@ -1044,15 +1041,17 @@ export default function AreaView({
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
         <section aria-label="Next up" className="card-white rounded-[22px] p-4">
-          <p className="type-meta !text-champagne-600">{!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
-          <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
-          {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
-          {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
-          {then && (
-            <p className="mt-3 border-t border-linen pt-2.5 text-[13px] text-stone">
-              Then: {then}
-            </p>
-          )}
+          <div className="flex items-start gap-3.5">
+            <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+              <NextIcon className="h-5 w-5" strokeWidth={1.7} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="type-meta !text-champagne-600">{!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}</p>
+              <p className="mt-1 font-display text-[22px] font-light leading-tight text-ink">{shownNext.title}</p>
+              {shownNext.line && <p className="mt-1 text-sm text-stone">{shownNext.line}</p>}
+              {shownNext.action && <div className="mt-2.5">{shownNext.action}</div>}
+            </div>
+          </div>
         </section>
 
         {/* Decor is its own special area: its things in place of the stages (canvas 3 "Decor · Round 2", owner 19 Oct 2026). */}

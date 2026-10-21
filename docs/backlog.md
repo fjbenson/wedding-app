@@ -200,6 +200,12 @@ Each would be an added column, not a rebuild:
 
 ## Tech loose ends
 
+- **Vercel slow to pick up pushes** (21 Oct 2026): two pushes to main in a
+  row didn't show in Deployments for 10+ minutes (the first came through on
+  its own; the second was started by hand, Create Deployment › main). The
+  GitHub link shows "Connected Sep 20". If it keeps happening: Settings ›
+  Git, disconnect and reconnect the repo; check vercel-status.com.
+
 - Run sheets: the old group tags on moments (`run_sheet_groups`, 0034) are left unused.
 
 - Replace the hand-written types in `src/types/db.ts` with `npm run db:types`.

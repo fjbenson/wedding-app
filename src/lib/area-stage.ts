@@ -19,9 +19,10 @@ export interface AreaStage {
 }
 
 export function areaStage(
-  area: Pick<AreaRow, "details" | "diy" | "ready">,
+  area: Pick<AreaRow, "diy" | "ready">,
   suppliers: Supplier[],
   money: Money,
+  /** Its inspo and its notes together (owner, 21 Oct 2026: an idea is either). */
   ideaCount: number,
 ): AreaStage {
   const statuses = suppliers.map((s) => s.supplier_details?.status);
@@ -30,7 +31,7 @@ export function areaStage(
   const toPay = money.committed - money.paid;
 
   const done = [
-    ideaCount > 0 || !!area.details?.trim(),
+    ideaCount > 0,
     diy || booked || statuses.includes("quoted"),
     diy || booked,
     // Paid up: nothing left owing, and something actually agreed (a booked

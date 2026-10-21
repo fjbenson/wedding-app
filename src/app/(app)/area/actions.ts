@@ -29,19 +29,6 @@ function refresh(key: string) {
   revalidatePath("/plan");
 }
 
-/** The key-facts block. */
-export async function saveAreaDetailsAction(areaId: string, key: string, formData: FormData) {
-  const details = String(formData.get("details") ?? "").trim() || null;
-  try {
-    await updateArea(areaId, { details });
-  } catch (error) {
-    failed(`/area/${key}`, "That didn't save.", error);
-  }
-  revalidatePath(`/area/${key}`);
-  // Back to the notes, not the top of the page.
-  redirect(`/area/${key}#notes`);
-}
-
 /**
  * Takes an area off the hub (still planned, still in the lists), stops
  * planning it altogether, or brings it back — the plan keeps "in use" and
@@ -183,8 +170,8 @@ export async function setAreaStageFlagAction(areaId: string, key: string, flag: 
 }
 
 /**
- * A note written straight into an area's Notes card — the same little box
- * as key facts, rather than a trip to the capture page. A note that's just
+ * A note written straight into an area's Ideas, rather than a trip to the
+ * capture page. A note that's just
  * a web address is kept as a link, as capture would.
  */
 export async function addAreaNoteAction(key: string, formData: FormData) {
@@ -200,7 +187,7 @@ export async function addAreaNoteAction(key: string, formData: FormData) {
     }
     refreshNotes(key);
   }
-  redirect(`/area/${key}#notes`);
+  redirect(`/area/${key}#ideas`);
 }
 
 /**
@@ -218,7 +205,7 @@ export async function saveAreaNoteAction(key: string, noteId: string, keepUrl: s
     failed(`/area/${key}`, "That note didn't save.", error);
   }
   refreshNotes(key);
-  redirect(`/area/${key}#notes`);
+  redirect(`/area/${key}#ideas`);
 }
 
 export async function deleteAreaNoteAction(key: string, noteId: string) {
@@ -228,7 +215,7 @@ export async function deleteAreaNoteAction(key: string, noteId: string) {
     failed(`/area/${key}`, "That note wasn't removed.", error);
   }
   refreshNotes(key);
-  redirect(`/area/${key}#notes`);
+  redirect(`/area/${key}#ideas`);
 }
 
 /** The typed text as a note: a lone web address is kept as a link. Null if empty. */
@@ -276,7 +263,7 @@ export async function startSoundCheckAction(key: string) {
     failed(`/area/${area}`, "That didn't save.", error);
   }
   refreshNotes(area);
-  redirect(`/area/${area}#notes`);
+  redirect(`/area/${area}#ideas`);
 }
 
 /**

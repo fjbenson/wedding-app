@@ -116,7 +116,8 @@ export async function searchWedding(weddingId: string, query: string): Promise<S
     run("run_sheet_items", "id, title, location, who, notes, music, at_time", ["title", "location", "who", "notes", "music"]),
     run("decor_items", "id, name, place, notes, from_name", ["name", "place", "notes", "from_name"]),
     run("notes", "id, body, url", ["body", "url"]),
-    run("areas", "id, key, label, details", ["label", "details"]),
+    // Key facts became notes (21 Oct 2026), so only the name is searched.
+    run("areas", "id, key, label", ["label"]),
     run("inspo_items", "id, title, note", ["title", "note"]),
     run("menu_dishes", "id, name, instead", ["name", "instead"]),
     run("menu_courses", "id, name, note", ["name", "note"]),
@@ -162,7 +163,7 @@ export async function searchWedding(weddingId: string, query: string): Promise<S
   // Tick-box and bullet marks don't show in a result.
   const plain = (t: string | null) => t?.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/gm, "") ?? null;
   for (const r of notes) add({ kind: "note", id: r.id, title: around(plain(str(r.body)), q) ?? plain(str(r.body))?.slice(0, 60) ?? str(r.url) ?? "A note", line: null, href: `/inbox?note=${r.id}` });
-  for (const r of areas) add({ kind: "area", id: r.id, title: str(r.label) ?? "An area", line: around(str(r.details), q), href: `/area/${str(r.key)}` });
+  for (const r of areas) add({ kind: "area", id: r.id, title: str(r.label) ?? "An area", line: null, href: `/area/${str(r.key)}` });
   for (const r of ideas) add({ kind: "idea", id: r.id, title: str(r.title) ?? around(str(r.note), q) ?? "An idea", line: str(r.title) ? around(str(r.note), q) : null, href: `/inspo/${r.id}` });
   for (const r of [...courses, ...dishes]) add({ kind: "menu", id: r.id, title: str(r.name) ?? "On the menu", line: "The menu", href: "/menu" });
   for (const r of drinks) add({ kind: "drink", id: r.id, title: str(r.name) ?? "A drink", line: str(r.supplied_by), href: "/drinks" });

@@ -23,13 +23,30 @@ export type AddChoice = {
  * its own full-screen form (adding is always a full screen; a card is for
  * something that already exists).
  */
-export default function AddMenu({ label, title, choices }: { label: string; title: string; choices: AddChoice[] }) {
+export default function AddMenu({
+  label,
+  title,
+  choices,
+  textClass,
+}: {
+  label: string;
+  title: string;
+  choices: AddChoice[];
+  /** Shown as a quiet text link in a card's foot ("+ Add an idea") instead of the round black +. */
+  textClass?: string;
+}) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
   return (
     <>
-      <AddButton onClick={() => setOpen(true)} label={label} />
+      {textClass ? (
+        <button type="button" onClick={() => setOpen(true)} className={textClass}>
+          {label}
+        </button>
+      ) : (
+        <AddButton onClick={() => setOpen(true)} label={label} />
+      )}
       {open && (
         <CardSheet label={title} onClose={close} top={<span className="label">{title}</span>}>
           <ul className="mt-1 pb-2">

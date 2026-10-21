@@ -75,7 +75,7 @@ export default function InspoView({
     <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <div className="mt-3 flex items-center justify-between gap-3">
         <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">{title}</h1>
-        <AddButton href={newHref} label="Save an idea" />
+        <AddButton href={newHref} label="Add inspo" />
       </div>
 
       {error && (

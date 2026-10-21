@@ -19,6 +19,19 @@ export async function listNotes(weddingId: string, options: { area?: string | nu
   return data ?? [];
 }
 
+/** How many notes are filed under each area — with its inspo, an area's ideas. */
+export async function countNotes(weddingId: string): Promise<Map<string, number>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("notes").select("area_key").eq("wedding_id", weddingId).not("area_key", "is", null);
+  if (error) {
+    if (error.code === "42P01" || error.code === "PGRST205") return new Map();
+    throw error;
+  }
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) counts.set(row.area_key as string, (counts.get(row.area_key as string) ?? 0) + 1);
+  return counts;
+}
+
 export async function getNote(noteId: string): Promise<Note | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("notes").select("*").eq("id", noteId).maybeSingle();

@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import { parseNote } from "@/lib/note-lines";
 
 /**
- * A note's or key facts' words: plain lines, bullets ("- ") and tick-boxes
+ * A note's words: plain lines, bullets ("- ") and tick-boxes
  * ("[ ] ", "[x] "), a blank line between paragraphs. `onToggle` (from a
  * client component) makes the tick-boxes tappable; without it they just show.
  */

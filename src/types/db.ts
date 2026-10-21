@@ -162,7 +162,7 @@ export interface AreaRow {
   enabled: boolean;
   show_on_hub: boolean;
   sort_order: number;
-  /** Free-text key facts shown on the area's page (0005_area_details.sql). */
+  /** The old key facts (0005_area_details.sql); moved into notes on 21 Oct 2026 and no longer shown. */
   details?: string | null;
   /** This area's share of the budget, if set (0006_money.sql). */
   budget?: number | null;

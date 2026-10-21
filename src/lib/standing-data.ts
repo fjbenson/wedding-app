@@ -4,6 +4,7 @@ import { listGuests, listHouseholds } from "@/lib/db/contacts";
 import { getDay } from "@/lib/db/day";
 import { countInspo } from "@/lib/db/inspo";
 import { listMilestones } from "@/lib/db/milestones";
+import { countNotes } from "@/lib/db/notes";
 import { listPayments } from "@/lib/db/money";
 import { listEvents, listRsvps } from "@/lib/db/rsvps";
 import { listSuppliers } from "@/lib/db/suppliers";
@@ -16,7 +17,7 @@ import type { Wedding } from "@/types/db";
  * agree.
  */
 export async function loadStanding(wedding: Wedding): Promise<Standing> {
-  const [areas, guests, households, events, rsvps, suppliers, payments, milestones, appointments, ideas, day] = await Promise.all([
+  const [areas, guests, households, events, rsvps, suppliers, payments, milestones, appointments, inspo, notes, day] = await Promise.all([
     listAreas(wedding.id),
     listGuests(wedding.id),
     listHouseholds(wedding.id),
@@ -27,8 +28,13 @@ export async function loadStanding(wedding: Wedding): Promise<Standing> {
     listMilestones(wedding.id),
     listAppointments(wedding.id),
     countInspo(wedding.id),
+    countNotes(wedding.id),
     getDay(wedding.id),
   ]);
+
+  // An area's ideas are its inspo and its notes together (21 Oct 2026).
+  const ideas = new Map(inspo ?? []);
+  for (const [k, n] of notes) ideas.set(k, (ideas.get(k) ?? 0) + n);
 
   return whereThingsStand({
     budget: wedding.budget ?? null,

@@ -14,7 +14,6 @@ import CopyText from "@/components/copy-text";
 import { catererText, type AreaGuestFacts } from "@/lib/area-guests";
 import AreaIcon from "./area-icon";
 import { InlineSubmit, RemoveButton } from "@/components/form-bits";
-import RichText from "@/components/rich-text";
 import { areaStage, STAGES } from "@/lib/area-stage";
 import { decorNextUp } from "@/lib/decor";
 import type { DecorWithHelpers } from "@/lib/db/decor";
@@ -44,7 +43,6 @@ import { planDate } from "@/lib/plan";
 import {
   addAreaNoteAction,
   deleteAreaNoteAction,
-  saveAreaDetailsAction,
   saveAreaNoteAction,
   setAreaAction,
   setAreaStageFlagAction,
@@ -101,9 +99,22 @@ function Tile({ photo, index }: { photo?: InspoWithPicture; index: number }) {
   return <span aria-hidden className="block h-full w-full" style={{ background: PLACEHOLDERS[index] }} />;
 }
 
-/** The box notes and key facts are typed into. */
+/** The box notes are typed into. */
 const NOTE_BOX =
   "w-full resize-y rounded-xl border border-linen bg-ivory px-3 py-2 text-[15px] leading-relaxed text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30";
+
+/**
+ * An idea is a note (words) or inspo (a picture or a link) — owner, 21 Oct
+ * 2026, canvas 4 "Area page · Round 2", A: "Save an idea" read as only a
+ * picture, and key facts were notes by another name.
+ */
+function ideaChoices(area: AreaRow): AddChoice[] {
+  const k = encodeURIComponent(area.key);
+  return [
+    { icon: <NotebookPen />, title: "A note", line: "Words, a list, what you've ruled out", href: `/area/${k}?edit=note#ideas` },
+    { icon: <ImagePlus />, title: "Inspo", line: "A picture or a link", href: `/inspo/new?folder=${k}&from=${encodeURIComponent(`/area/${area.key}`)}` },
+  ];
+}
 
 const glassButton = "glass-card flex h-11 items-center justify-center rounded-full text-ink hover:border-champagne-400";
 
@@ -138,8 +149,7 @@ function AreaCover({
     ...planChoices({ area: area.key }),
     { icon: <PoundSterling />, title: "A payment", line: "Something to pay, or already paid", href: `/money/payments/new?area=${k}` },
     { icon: <Clock />, title: "A moment on the day", line: "For the run sheet", href: `/day/run-sheet/new?area=${k}&from=area` },
-    { icon: <ImagePlus />, title: "An idea", line: "A picture or a link", href: saveHref },
-    { icon: <NotebookPen />, title: "A note", line: `Just for ${area.label}`, href: `/area/${k}?edit=note#notes` },
+    ...ideaChoices(area),
   ];
 
   const collage = (
@@ -158,10 +168,10 @@ function AreaCover({
         // Shorter until there are pictures (owner, 16 Oct 2026): empty tiles shouldn't take a third of the screen.
         photos.length > 0 ? "h-[300px] md:h-[360px]" : "h-[220px] md:h-[240px]"
       }`}>
-      {/* Nothing saved yet: the soft tiles open "Save an idea" too (the button up top does the same). */}
+      {/* Nothing saved yet: the soft tiles open "Add inspo" too (the button up top does the same). */}
       <Link
         href={photos.length > 0 ? galleryHref : saveHref}
-        aria-label={photos.length > 0 ? `See all ${plural(ideaCount, "saved idea")}` : "Save an idea"}
+        aria-label={photos.length > 0 ? `See all ${ideaCount} inspo` : "Add inspo"}
       >
         {collage}
       </Link>
@@ -178,7 +188,7 @@ function AreaCover({
         <div className="flex gap-2">
           <Link href={saveHref} className={`${glassButton} gap-1.5 px-4 text-sm`}>
             <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            Save an idea
+            Add inspo
           </Link>
           {(area.show_on_hub || canDiy) && (
             <details className="relative">
@@ -586,7 +596,7 @@ function DaySection({
  * template"), then the tabs, filtered to this area (canvas 2 "Area page ·
  * Made of the tabs", option A, 12 Oct 2026): People (its suppliers), Plan
  * (to-dos and appointments by date), Money (budget, agreed, paid, then the
- * payments), and the extras only an area has — key facts, notes, pictures.
+ * payments), and the extras only an area has — its ideas (notes and inspo).
  * The old supplier / to-pay / next-appointment tiles folded into those.
  */
 export default function AreaView({
@@ -644,17 +654,15 @@ export default function AreaView({
   photos: InspoWithPicture[];
   /** Everything in this area's Inspo folder, pictures or not. */
   ideaCount: number;
-  /**
-   * A box to type in, open in the Notes card: `?edit=facts` (key facts),
-   * `?edit=note` (a new note) or `?edit=note:<id>` (changing that note).
-   */
+  /** A box to type in under Ideas: `?edit=note` (a new note) or `?edit=note:<id>` (changing that note). */
   editing: string | null;
   error?: string;
   detail?: string;
 }) {
   const today = todayISO();
   const key = encodeURIComponent(area.key);
-  const stage = areaStage(area, suppliers, money, ideaCount);
+  // Ideas are its inspo and its notes together.
+  const stage = areaStage(area, suppliers, money, ideaCount + notes.length);
 
   const sorted = [...suppliers].sort(
     (a, b) => STATUS_ORDER[a.supplier_details?.status ?? "enquired"] - STATUS_ORDER[b.supplier_details?.status ?? "enquired"],
@@ -716,12 +724,8 @@ export default function AreaView({
   if (stage.current === 0) {
     next = {
       title: "Save a first idea",
-      line: "A picture, a link, or a few key facts.",
-      action: (
-        <Link href={`/inspo/new?folder=${key}&from=${encodeURIComponent(`/area/${area.key}`)}`} className={quietLink}>
-          Save an idea ›
-        </Link>
-      ),
+      line: "A note, a picture or a link.",
+      action: <AddMenu label="Add an idea ›" title="Add an idea" choices={ideaChoices(area)} textClass={quietLink} />,
     };
   } else if (stage.current === 1) {
     next =
@@ -803,64 +807,107 @@ export default function AreaView({
   // A small picture of what kind of thing it is (owner, 21 Oct 2026: one item
   // at the top, quick to read): an idea, a supplier, money, or all in hand.
   const NextIcon: LucideIcon = decor ? ListChecks : stationery ? Mail : [ImagePlus, Users, PoundSterling, PoundSterling, Check, Sparkles][Math.min(stage.current, 5)];
+  // The area's notes, with their edit boxes: under Ideas, or in Decor's and Stationery's own fold.
+  const ideaNotes = (
+    <>
+          {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check note with tick-boxes, once. */}
+          {music && !notes.some((n) => n.body?.startsWith(SOUND_CHECK.name)) && editing !== "note" && (
+            <form action={startSoundCheckAction.bind(null, area.key)}>
+              <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
+                <ListChecks className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
+                <span>
+                  Start a sound check list
+                  <span className="block text-[12.5px] text-stone">Backups, offline playlists, a mic for the speeches</span>
+                </span>
+              </button>
+            </form>
+          )}
+          {editing === "note" && (
+            <form action={addAreaNoteAction.bind(null, area.key)} className="py-3">
+              <div className={NOTE_BOX}>
+                <NoteEditor autoFocus placeholder="A thought, a link, a checklist…" textClass="text-[15px] leading-relaxed" />
+              </div>
+              <div className="mt-2 flex items-center justify-end gap-4">
+                <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
+                  Cancel
+                </Link>
+                <InlineSubmit label="Save note" pendingLabel="Saving…" />
+              </div>
+            </form>
+          )}
+          {notes.length > 0 && (
+            <ul className="divide-y divide-linen">
+              {notes.map((n) =>
+                editing === `note:${n.id}` ? (
+                  <li key={n.id} className="py-3">
+                    <form action={saveAreaNoteAction.bind(null, area.key, n.id, n.body && n.url ? n.url : null)}>
+                      <div className={NOTE_BOX}>
+                        <NoteEditor initial={n.body ?? n.url ?? ""} autoFocus textClass="text-[15px] leading-relaxed" />
+                      </div>
+                      <div className="mt-2 flex items-center justify-end gap-4">
+                        <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
+                          Cancel
+                        </Link>
+                        <InlineSubmit label="Save" pendingLabel="Saving…" />
+                      </div>
+                    </form>
+                    <RemoveButton
+                      action={deleteAreaNoteAction.bind(null, area.key, n.id)}
+                      label="Remove this note"
+                      question="Remove this note?"
+                    />
+                  </li>
+                ) : (
+                  <li key={n.id} className="flex items-start gap-3 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <TickableNote note={n} />
+                    </div>
+                    <Link href={`/area/${area.key}?edit=note:${n.id}#ideas`} scroll={false} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
+                      Edit
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
+          )}
+    </>
+  );
   // One line per stage when it's closed, and what it holds when open.
   const withQuote = live.filter((s) => (statusOf(s) === "quoted" || statusOf(s) === "booked") && (s.supplier_details?.quoted_cost ?? 0) > 0);
   const stages: { name: string; id: string; line: string; content: React.ReactNode }[] = [
     {
       name: STAGES[0],
       id: "ideas",
-      line: ideaCount + (area.details?.trim() ? 1 : 0) > 0 ? plural(ideaCount + (area.details?.trim() ? 1 : 0), "idea") : "None yet",
+      line: ideaCount + notes.length > 0 ? [ideaCount > 0 && `${ideaCount} inspo`, notes.length > 0 && plural(notes.length, "note")].filter(Boolean).join(" · ") : "None yet",
+      // One card like Quotes: the pictures, the notes as rows, the add at the foot.
       content: (
-        <>
-          {photos.length > 0 && (
-            <Link href={`/inspo?folder=${key}`} aria-label={`See all ${plural(ideaCount, "idea")}`} className="grid grid-cols-4 gap-1 overflow-hidden rounded-2xl">
-              {photos.map((ph, n) => (
-                <span key={ph.id} className="aspect-square">
-                  <Tile photo={ph} index={n} />
-                </span>
-              ))}
-            </Link>
-          )}
-          <p className="mt-2 flex gap-4 px-1">
-            <Link href={`/inspo/new?folder=${key}&from=${encodeURIComponent(`/area/${area.key}`)}`} className="text-[13px] text-champagne-600 hover:text-ink">
-              + Save an idea
-            </Link>
-            {ideaCount > 0 && (
-              <Link href={`/inspo?folder=${key}`} className="text-[13px] text-champagne-600 hover:text-ink">
-                All {plural(ideaCount, "idea")} ›
-              </Link>
-            )}
-          </p>
-          <div className="glass-card mt-3 rounded-[22px] px-4">
-          <div>
-            <div className="flex items-baseline justify-between pt-3.5">
-              <h3 className="label">Key facts</h3>
-              {editing !== "facts" && (
-                <Link href={`/area/${area.key}?edit=facts#ideas`} scroll={false} className="py-1 text-[13px] text-champagne-600 hover:text-ink">
-                  {area.details ? "Edit" : "Write"}
+        <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+          <div className="divide-y divide-linen">
+            {photos.length > 0 ? (
+              <div className="py-3">
+                <Link href={`/inspo?folder=${key}`} aria-label={`See all ${ideaCount} inspo`} className="grid grid-cols-4 gap-1 overflow-hidden rounded-2xl">
+                  {photos.map((ph, n) => (
+                    <span key={ph.id} className="aspect-square">
+                      <Tile photo={ph} index={n} />
+                    </span>
+                  ))}
                 </Link>
-              )}
-            </div>
-            {editing === "facts" ? (
-              <form action={saveAreaDetailsAction.bind(null, area.id, area.key)} className="py-3">
-                <div className={NOTE_BOX}>
-                  <NoteEditor name="details" initial={area.details ?? ""} autoFocus placeholder="Colours, numbers, who's deciding" textClass="text-[15px] leading-relaxed" />
-                </div>
-                <div className="mt-2 flex items-center justify-end gap-4">
-                  <Link href={`/area/${area.key}#ideas`} scroll={false} className="text-sm text-stone hover:text-ink">
-                    Cancel
-                  </Link>
-                  <InlineSubmit label="Save" pendingLabel="Saving…" />
-                </div>
-              </form>
-            ) : area.details ? (
-              <RichText text={area.details} className="pb-3.5 pt-2" />
-            ) : (
-              <p className="pb-3.5 pt-1.5 text-sm text-stone/70">Colours, numbers, what you&apos;ve ruled out.</p>
-            )}
+              </div>
+            ) : ideaCount > 0 ? (
+              <Link href={`/inspo?folder=${key}`} className="flex min-h-12 items-center justify-between gap-3 text-[15px] text-ink">
+                {ideaCount} inspo
+                <span className="text-[13px] text-champagne-600">See them ›</span>
+              </Link>
+            ) : null}
+            {ideaNotes}
+            <AddMenu
+              label="+ Add an idea"
+              title="Add an idea"
+              choices={ideaChoices(area)}
+              textClass="flex min-h-12 w-full items-center text-left text-[15px] text-champagne-600 hover:text-ink"
+            />
           </div>
-          </div>
-        </>
+        </div>
       ),
     },
     {
@@ -992,7 +1039,7 @@ export default function AreaView({
       ),
     },
   ];
-  const openStage = editing === "facts" ? 0 : Math.min(stage.current, STAGES.length - 1);
+  const openStage = editing?.startsWith("note") ? 0 : Math.min(stage.current, STAGES.length - 1);
 
   // The summary lines of "Everything for …".
   const suppliersLine =
@@ -1290,82 +1337,19 @@ export default function AreaView({
               <Timeline scope={`area:${area.key}`} bare />
             </Everything>
 
+            {/* Decor and Stationery have no Ideas stage, so their notes stay here. */}
+            {(decor || stationery) && (
             <Everything
-              id="notes"
+              id="ideas"
               icon={areaIcon(area.key, area.icon)}
               title={`${area.label} notes`}
               line={notesLine}
-              open={!!editing && editing !== "facts"}
-              add={editing === "note" ? undefined : { href: `/area/${area.key}?edit=note#notes`, label: "Add a note", stays: true }}
+              open={!!editing}
+              add={editing === "note" ? undefined : { href: `/area/${area.key}?edit=note#ideas`, label: "Add a note", stays: true }}
             >
-          {/* The Music area's backup plan (owner, 19 Oct 2026): a ready-made Sound check note with tick-boxes, once. */}
-          {music && !notes.some((n) => n.body?.startsWith(SOUND_CHECK.name)) && editing !== "note" && (
-            <form action={startSoundCheckAction.bind(null, area.key)} className="border-b border-linen">
-              <button type="submit" className="flex min-h-12 w-full items-center gap-2 text-left text-[15px] text-champagne-600 hover:text-ink">
-                <ListChecks className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden />
-                <span>
-                  Start a sound check list
-                  <span className="block text-[12.5px] text-stone">Backups, offline playlists, a mic for the speeches</span>
-                </span>
-              </button>
-            </form>
-          )}
-          {editing === "note" && (
-            <form action={addAreaNoteAction.bind(null, area.key)} className="border-b border-linen py-3">
-              <div className={NOTE_BOX}>
-                <NoteEditor autoFocus placeholder="A thought, a link, a checklist…" textClass="text-[15px] leading-relaxed" />
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-4">
-                <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
-                  Cancel
-                </Link>
-                <InlineSubmit label="Save note" pendingLabel="Saving…" />
-              </div>
-            </form>
-          )}
-          {notes.length > 0 && (
-            <ul>
-              {notes.map((n) =>
-                editing === `note:${n.id}` ? (
-                  <li key={n.id} className="border-b border-linen py-3 last:border-b-0">
-                    <form action={saveAreaNoteAction.bind(null, area.key, n.id, n.body && n.url ? n.url : null)}>
-                      <div className={NOTE_BOX}>
-                        <NoteEditor initial={n.body ?? n.url ?? ""} autoFocus textClass="text-[15px] leading-relaxed" />
-                      </div>
-                      <div className="mt-2 flex items-center justify-end gap-4">
-                        <Link href={`/area/${area.key}#notes`} scroll={false} className="text-sm text-stone hover:text-ink">
-                          Cancel
-                        </Link>
-                        <InlineSubmit label="Save" pendingLabel="Saving…" />
-                      </div>
-                    </form>
-                    <RemoveButton
-                      action={deleteAreaNoteAction.bind(null, area.key, n.id)}
-                      label="Remove this note"
-                      question="Remove this note?"
-                    />
-                  </li>
-                ) : (
-                  <li key={n.id} className="flex items-start gap-3 border-b border-linen py-3.5 last:border-b-0">
-                    <div className="min-w-0 flex-1">
-                      <TickableNote note={n} />
-                    </div>
-                    <Link href={`/area/${area.key}?edit=note:${n.id}#notes`} scroll={false} className="shrink-0 py-0.5 text-[13px] text-champagne-600 hover:text-ink">
-                      Edit
-                    </Link>
-                  </li>
-                ),
-              )}
-            </ul>
-          )}
-          <Link
-            href={ideaCount > 0 ? `/inspo?folder=${key}` : `/inspo/new?folder=${key}&from=${encodeURIComponent(`/area/${area.key}`)}`}
-            className="flex items-center justify-between gap-3 border-t border-linen py-3.5"
-          >
-            <span className="text-sm text-ink">{ideaCount > 0 ? `${plural(ideaCount, "idea")} in Inspo` : "No pictures yet"}</span>
-            <span className="shrink-0 text-[13px] text-champagne-600">{ideaCount > 0 ? "See them ›" : "Save one ›"}</span>
-          </Link>
+              <div className="divide-y divide-linen">{ideaNotes}</div>
             </Everything>
+            )}
           </div>
         </section>
       </div>

@@ -481,6 +481,11 @@ begin
     (w, 'music', 'Band to learn ''Harvest Moon'' for the first dance', null, now() - interval '9 days'),
     (w, 'food', 'Late-night cheese board instead of a second dessert?', null, now() - interval '12 days'),
     (w, null, 'Honeymoon: Puglia or the Amalfi coast?', null, now() - interval '3 hours');
+
+  -- Key facts are notes now (21 Oct 2026): each area's facts become its oldest note.
+  insert into notes (wedding_id, area_key, body, created_at)
+  select wedding_id, key, details, now() - interval '40 days' from areas where wedding_id = w and nullif(trim(details), '') is not null;
+  update areas set details = null where wedding_id = w;
 end
 $$;
 

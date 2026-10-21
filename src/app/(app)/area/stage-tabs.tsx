@@ -26,7 +26,7 @@ export default function StageTabs({
 }) {
   const [open, setOpen] = useState(initial);
 
-  // A link to `#ideas`, `#quotes`… (the "Edit key facts" links) opens that stage.
+  // A link to `#ideas`, `#quotes`… (a note's Edit and Cancel links) opens that stage.
   useEffect(() => {
     const fromHash = () => {
       const i = stages.findIndex((st) => st.id === window.location.hash.slice(1));

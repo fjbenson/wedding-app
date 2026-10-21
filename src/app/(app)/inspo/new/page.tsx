@@ -6,7 +6,7 @@ import { getCurrentWedding } from "@/lib/db/weddings";
 import { saveInspoAction } from "../actions";
 import SaveForm from "../save-form";
 
-export const metadata = { title: "Save an idea — Wedding App" };
+export const metadata = { title: "Add inspo — Wedding App" };
 
 export default async function NewInspoPage({
   searchParams,
@@ -20,7 +20,7 @@ export default async function NewInspoPage({
   const back = from && from.startsWith("/") && !from.startsWith("//") ? from : "/inspo";
 
   return (
-    <FormPage backHref={back} backLabel="Back" title="Save an idea" error={error} detail={detail}>
+    <FormPage backHref={back} backLabel="Back" title="Add inspo" error={error} detail={detail}>
       <SaveForm
         action={saveInspoAction}
         weddingId={wedding.id}

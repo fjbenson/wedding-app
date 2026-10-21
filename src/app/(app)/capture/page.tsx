@@ -38,7 +38,7 @@ export default async function CapturePage({
           Save a picture instead
         </Link>
         <Link href="/inbox" className="text-stone underline underline-offset-4 hover:text-ink">
-          See the inbox
+          See your notes
         </Link>
       </div>
     </FormPage>

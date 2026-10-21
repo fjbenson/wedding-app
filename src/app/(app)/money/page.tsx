@@ -114,6 +114,10 @@ export default async function MoneyPage({
       areas={areas}
       area={filter}
       scope={filter === null ? null : filter === "none" ? "Other" : (picked?.label ?? filter)}
+      // Deposits typed on a supplier's card count as paid (owner, 20 Oct 2026: show them in the Paid list too).
+      deposits={shownSuppliers
+        .filter((s) => s.supplier_details?.status !== "cancelled" && amount(s.supplier_details?.deposit_paid) > 0)
+        .map((s) => ({ supplierId: s.id, name: name(s), amount: amount(s.supplier_details?.deposit_paid) }))}
       balances={unscheduledBalances(shownSuppliers, payments).map((b) => ({
         supplierId: b.supplier.id,
         name: name(b.supplier),

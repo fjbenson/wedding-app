@@ -11,6 +11,8 @@ development: keep the report short and in plain words.
    - Leftover test pages or scratch files (e.g. a `src/app/zz-*` preview, a
      temporary edit to `src/middleware.ts`) are removed or reverted, not
      committed.
+   - For real work that changed a screen and wasn't checked yet, run `/check`
+     on those screens first (`.claude/skills/check/SKILL.md`).
    - For real work: `npm run typecheck` and `npm run build` must pass, then
      commit with a clear message and push it live with
      `git push origin HEAD:main` (and to this chat's own branch). If either

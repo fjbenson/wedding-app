@@ -25,6 +25,7 @@ export default async function NewAreaPage({
     <main className="page">
       <AreaSteps
         hidden={areas.filter((a) => !a.show_on_hub || !a.enabled).map((a) => a.label)}
+        taken={areas.filter((a) => a.show_on_hub && a.enabled).map((a) => a.label)}
         stillFree={wedding.budget != null ? Math.max(0, wedding.budget - shared) : null}
         error={error}
       />

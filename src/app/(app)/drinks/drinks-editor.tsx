@@ -112,7 +112,7 @@ export default function DrinksEditor({ drinks, areaHref, areaLabel }: { drinks: 
       </Link>
 
       <div className="mt-3 flex items-center justify-between gap-3">
-        <h1 className="font-display text-[32px] font-light leading-tight tracking-[-0.02em] text-ink">Drinks</h1>
+        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">Drinks</h1>
         <AddButton label="Add a drink" onClick={() => setEditing("new")} />
       </div>
 

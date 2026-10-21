@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { listAppointments } from "@/lib/db/appointments";
@@ -16,7 +15,6 @@ import HubTiles from "@/components/hub-tiles";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
 import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
-import AtAGlance from "@/components/at-a-glance";
 import { involvedNames } from "@/lib/db/involved";
 import { RowPeopleProvider } from "@/components/row-people";
 
@@ -62,19 +60,13 @@ export default async function HomePage() {
     .join(" · ");
 
   // Phone: the names and ring, then those under them.
-  // Laptop (canvas 3 "Laptop · Round 2", 3 with the names on the left, owner's
-  // pick 18 Oct 2026): the names on the left with the assistant's pill under
-  // them and the ring large on the right; then This week beside the notes and
-  // Inspo tiles; then "At a glance", a card per tab.
+  // Laptop (canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026): one
+  // calm screen beside the sidebar — the names and ring centred, Your notes
+  // and This week in a column on the right. Ask Juno is in the sidebar.
   return (
-    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:max-w-[1328px] lg:px-14 lg:pb-16 lg:pt-4">
-      <Cover
-        name={wedding.name}
-        weddingDate={wedding.wedding_date}
-        areas={onHub}
-        aside={unfiled && <AssistantSheet variant="hub" subtitle={subtitle} />}
-      />
-      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-4 lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start lg:gap-5">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1190px] lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-10 lg:px-12 lg:pb-12 lg:pt-10">
+      <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
+      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:flex-col lg:gap-4 lg:[&>*:last-child]:order-first">
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
           <div className="mb-6 flex justify-center lg:hidden">
@@ -102,11 +94,6 @@ export default async function HomePage() {
           ideas={ideas}
         />
       </div>
-      <div className="hidden lg:block">
-        <Suspense fallback={null}>
-          <AtAGlance wedding={wedding} />
-        </Suspense>
-      </div>
       {email && <SignedIn email={email} />}
     </main>
   );
@@ -115,7 +102,7 @@ export default async function HomePage() {
 /** Who's signed in, and the way out — quietly, at the foot of the page. */
 function SignedIn({ email }: { email: string }) {
   return (
-    <form action="/auth/sign-out" method="post" className="relative mt-10 text-center text-xs text-stone">
+    <form action="/auth/sign-out" method="post" className="relative mt-10 text-center text-xs text-stone lg:hidden">
       {email} ·{" "}
       <button type="submit" className="underline underline-offset-4 hover:text-ink">
         Sign out

@@ -26,6 +26,7 @@ const IDEAS = ["Decor", "Accommodation", "Honeymoon", "Favours", "Lighting", "Ch
  */
 export default function AreaSteps({
   hidden,
+  taken = [],
   stillFree,
   error,
   sheet,
@@ -33,6 +34,8 @@ export default function AreaSteps({
   sheet?: { onAdded: (area: { key: string; label: string; icon: string | null }) => void; onClose: () => void };
   /** Areas taken off the ring or switched off: offered first on step 1. */
   hidden: string[];
+  /** Areas already on the ring, so an idea isn't one they have ("Decor" when there's a Decor). */
+  taken?: string[];
   /** The whole budget less what's shared out, if there's a budget. */
   stillFree: number | null;
   error?: string;
@@ -65,7 +68,7 @@ export default function AreaSteps({
     setStep(2);
   };
   const Picked = iconByName(icon) ?? iconByName("Sparkles")!;
-  const suggestions = [...hidden, ...IDEAS.filter((i) => !hidden.some((h) => h.toLowerCase() === i.toLowerCase()))];
+  const suggestions = [...hidden, ...IDEAS.filter((i) => ![...hidden, ...taken].some((h) => h.toLowerCase() === i.toLowerCase()))];
 
   const body = (
     <>
@@ -147,7 +150,7 @@ export default function AreaSteps({
                 setIcon(null);
               }}
               className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-                name === s ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+                name === s ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
               }`}
             >
               {s}

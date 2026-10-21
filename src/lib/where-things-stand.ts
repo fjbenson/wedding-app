@@ -103,8 +103,7 @@ export function whereThingsStand(data: {
   const declined = guests.filter((g) => status(g) === "declined").length;
   const waiting = guests.filter((g) => status(g) === "pending").length;
   const toInvite = guests.filter((g) => status(g) === "to_invite").length;
-  const replied = coming.length + declined;
-  const noMeal = coming.filter((g) => !own(g)?.meal_choice?.trim()).length;
+  const expected = guests.length - declined;
   const withGuests = data.households.filter((h) => guests.some((g) => g.household_id === h.id));
   const noAddress = withGuests.filter((h) => !(h.address_line1 || h.postcode)).length;
   const party = guests.filter((g) => rolesOf(g).length > 0);
@@ -114,7 +113,8 @@ export function whereThingsStand(data: {
     title: "People",
     link: { label: "In People", href: "/people" },
     progress: guests.length
-      ? { figure: String(replied), words: `of ${guests.length} have replied`, share: share(replied, guests.length) }
+      ? // Everyone still expected, as the guest list counts them (owner, 20 Oct 2026): can't-comes aren't in it.
+        { figure: String(coming.length), words: `of ${expected} coming`, share: share(coming.length, expected) }
       : { figure: "0", words: "guests on the list", share: null },
     needs: [],
     done: [],
@@ -122,13 +122,11 @@ export function whereThingsStand(data: {
   if (guests.length === 0) people.needs.push({ text: "Add your guests", href: "/people/new?from=people" });
   if (toInvite) people.needs.push({ figure: String(toInvite), text: "still to invite", href: "/people?show=to_invite" });
   if (waiting) people.needs.push({ figure: String(waiting), text: waiting === 1 ? "hasn't replied" : "haven't replied", href: "/people?show=pending" });
-  if (noMeal) people.needs.push({ figure: String(noMeal), text: "coming with no meal picked", href: "/people?show=attending" });
   if (noAddress) people.needs.push({ figure: String(noAddress), text: noAddress === 1 ? "household with no address" : "households with no address", href: "/people?f=noaddress" });
-  if (coming.length) people.done.push({ figure: String(coming.length), text: "coming", href: "/people?show=attending" });
+  if (declined) people.done.push({ figure: String(declined), text: "can't come", href: "/people?show=declined" });
   if (guests.length && !toInvite) people.done.push({ text: "Everyone invited", href: "/people" });
   if (party.length && party.every((g) => status(g) === "attending")) people.done.push({ text: "Bridal party all coming", href: "/people?f=party" });
   if (withGuests.length && !noAddress) people.done.push({ text: "Every household has an address", href: "/people?view=households" });
-  if (coming.length && !noMeal) people.done.push({ text: "Everyone coming has picked a meal", href: "/people?show=attending" });
 
   // ── Money ─────────────────────────────────────────────────────────────
   const whole = moneyFor(undefined, suppliers, payments, data.budget);

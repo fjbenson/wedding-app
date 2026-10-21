@@ -74,7 +74,7 @@ export default function MenuEditor({
       </Link>
 
       <div className="mt-3 flex items-center justify-between gap-3 print:hidden">
-        <h1 className="font-display text-[32px] font-light leading-tight tracking-[-0.02em] text-ink">The menu</h1>
+        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">The menu</h1>
         <AddButton label="Add a course" onClick={() => setEditing({ kind: "new-course" })} />
       </div>
 

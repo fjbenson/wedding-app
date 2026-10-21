@@ -120,7 +120,7 @@ export default function PlanCalendar({
     <section className="mt-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
       {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
           calendar on the left, the month's list beside it. */}
-      <div className="lg:sticky lg:top-[100px]">
+      <div className="lg:sticky lg:top-6">
       {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
           flat" — everything printed straight on the background). ‹ the
           month › centred; the round + moved out to the key's row (owner,

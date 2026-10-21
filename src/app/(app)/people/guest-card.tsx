@@ -19,7 +19,7 @@ import { GuestTravelSection, type TravelInfo } from "./guest-travel";
 import { GuestPlanSection } from "./guest-plan";
 import Timeline from "@/components/timeline";
 import MealPicker from "@/components/meal-picker";
-import { mealKindOf, noAlcoholOf } from "@/lib/meals";
+import { MEAL_KINDS, mealKindOf, noAlcoholOf } from "@/lib/meals";
 import SentToThem from "@/components/sent-to-them";
 import { setGuestTableAction } from "../day/actions";
 import type { GuestSeating } from "@/lib/db/day";
@@ -179,7 +179,6 @@ export default function GuestCard({
           {seating && seating.tables.length > 0 && <TableRow guest={guest} seating={seating} />}
           {own && (
             <>
-              <TextRow id="guest-meal" label="Meal" value={own.meal_choice} onSave={(v) => saveMealAction(own.id, v, own.dietary_notes ?? "")} />
               <DietaryRow rsvp={own} own={ownNeeds} />
             </>
           )}
@@ -272,17 +271,11 @@ function Profile({
           )}
         </div>
         <div className="px-1">
-          {own ? (
-            <button type="button" onClick={() => jumpTo("guest-meal")} className={figure}>
-              <span className={`block truncate font-display text-lg ${own.meal_choice ? "text-ink" : "text-stone"}`}>{own.meal_choice || "—"}</span>
-              <span className="mt-0.5 block text-xs text-stone">Meal</span>
-            </button>
-          ) : (
-            <div className="py-1">
-              <p className="font-display text-lg text-stone">—</p>
-              <p className="mt-0.5 text-xs text-stone">Meal</p>
-            </div>
-          )}
+          {/* The meal tile's choice (owner, 20 Oct 2026: the typed dish went — one menu for everyone). */}
+          <button type="button" onClick={() => jumpTo("guest-mealkind")} className={figure}>
+            <span className="block truncate font-display text-lg text-ink">{MEAL_KINDS.find((k) => k.value === mealKindOf(guest))?.label}</span>
+            <span className="mt-0.5 block text-xs text-stone">Meal</span>
+          </button>
         </div>
       </div>
       {needsOf(own?.dietary_notes).length > 0 && (

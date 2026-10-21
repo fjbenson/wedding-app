@@ -389,7 +389,7 @@ export default function FloorPlan({
                   />
                 ))}
                 <span className="pointer-events-none flex h-full flex-col items-center justify-center px-1 leading-tight">
-                  <span className="max-w-full truncate text-xs font-medium text-ink">{t.name}</span>
+                  <span className="line-clamp-2 max-w-full break-words text-center text-xs font-medium leading-tight text-ink">{t.name}</span>
                   <span className={`text-xs ${over ? "font-medium text-champagne-600" : "text-stone"}`}>
                     {sitting}/{t.capacity}
                     {over && " over"}

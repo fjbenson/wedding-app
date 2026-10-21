@@ -2,7 +2,7 @@ import Link from "next/link";
 import CardLink from "@/components/card-link";
 import { ExternalLink } from "lucide-react";
 import AddButton from "@/components/add-button";
-import type { AreaOption } from "@/lib/areas";
+import { areaIcon, type AreaOption } from "@/lib/areas";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 
 function host(url: string) {
@@ -74,7 +74,7 @@ export default function InspoView({
   return (
     <main className="page pb-28 lg:max-w-5xl lg:pb-16">
       <div className="mt-3 flex items-center justify-between gap-3">
-        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">{total === 0 ? "Nothing saved yet." : title}</h1>
+        <h1 className="type-display text-[32px] leading-[1.1] tracking-[-0.02em]">{title}</h1>
         <AddButton href={newHref} label="Save an idea" />
       </div>
 
@@ -91,15 +91,22 @@ export default function InspoView({
       )}
 
       {total === 0 ? (
-        // Screen 33: the empty gallery, and how to make the first save.
-        <div className="glass-card mt-6 max-w-lg rounded-[22px] p-5">
-          <p className="text-[15px] leading-relaxed text-stone">
-            Dresses, flowers, table ideas, a cake someone posted — save them here as you find them. A photo from your phone,
-            or a link from Pinterest or anywhere else. File each under an area and it turns up on that area&apos;s page too.
-          </p>
-          <Link href="/inspo/new" className="type-meta mt-4 inline-block !text-champagne-600 hover:!text-ink">
-            Save your first idea ›
-          </Link>
+        // Screen 33, empty: the shape of the gallery from the wedding's own areas
+        // ("an empty screen still shows its shape"), each a faded square that saves an idea to it.
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {areas.map((a) => {
+            const Icon = areaIcon(a.key, a.icon);
+            return (
+              <Link
+                key={a.key}
+                href={`/inspo/new?folder=${encodeURIComponent(a.key)}`}
+                className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[22px] border-[1.5px] border-dashed border-champagne-400/70 bg-white/35 text-center hover:bg-white/60"
+              >
+                <Icon aria-hidden className="h-6 w-6 text-champagne-600/70" strokeWidth={1.6} />
+                <span className="font-display text-[15px] italic text-stone">{a.label}</span>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <>

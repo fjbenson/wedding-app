@@ -50,8 +50,8 @@ export default function InboxView({
       </div>
       <p className="mt-2 text-sm text-stone">
         {(notes ?? []).length === 0
-          ? "Jot something down, or make a checklist, and it waits here until you file it under an area."
-          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} to sort` : ", all sorted"}. Tap one to tick it off, file it under an area, or make it a to-do.`}
+          ? "Nothing jotted yet."
+          : `${(notes ?? []).length} ${(notes ?? []).length === 1 ? "note" : "notes"}${unfiled.length ? ` · ${unfiled.length} to sort` : " · all sorted"}`}
       </p>
 
       {error && (

@@ -24,6 +24,53 @@ From the last few chats, not yet confirmed:
 - Juno: say "Juno" into the phone's dictation (Junia came out "junior").
 - The assistant no longer jumping when the keyboard opens (fixed blind).
 
+## Phone audit, 20 Oct 2026
+
+Every phone screen checked on a private copy with the demo wedding (393px).
+Fixed the same day: Add to history (old `/timeline` redirect; now
+`/history/new`), New household's crash, the typed dish dropped, guest counts
+all "still expected", deposits in By month's Paid list, times (24-hour on the
+run sheet only), picked tiles gold not black, one + on the Decor pages,
+Settings / Where things stand / Your notes / Inspo's empty page in line,
+journey times, wrapped table names, New area's ideas. Still open:
+
+- **The floating pen covers the right edge** of a list while it's at the top
+  (the A–Z letters, a row's tick or £, the last table on the floor plan).
+  Moving or shrinking the pen is a look change: the owner's call.
+- Food & drink's "Everything for…" has 11 lines (Guests and Dietary needs
+  overlap) — could merge, owner's call.
+- The note panel (Your notes) still uses its older list of actions.
+- Settings' The wedding card still has an always-on black Save.
+- Juno still reads the old typed dishes if asked (`lookups.ts`), and its
+  lookups don't know the meal tiles yet (rule one: owner's call).
+- **Demo gaps**: no menu, drinks or extra run sheets in `demo-wedding.sql`.
+- **Not covered**: a real iPhone (keyboard, Safari's pickers), the laptop,
+  Juno's answers (needs the key).
+
+## Laptop audit, 20 Oct 2026
+
+Every main screen at 1440px on the private copy (`CHECK_WIDTH=1440`). The
+tabs (People, Plan's calendar, Money, The Day's run sheet) use the width;
+almost everything else is still the phone layout in a narrow column.
+
+- ~~**The Hub**~~ — done 20 Oct 2026: the sidebar came back as a magazine
+  contents (canvas 4, G) and the Hub is one calm screen. Not in it yet: G's
+  jot box inside the Your notes card (the notes tile shows instead).
+- **Phone-width pages (about 320px wide) in the middle of the screen:** every
+  area page (Venue, Food & drink, Stationery, Decor…), Seating (the floor plan
+  is small — the screen that most needs the width), Travel, the Decor pack
+  list, the menu, Drinks, Your notes, Where things stand, the budget page.
+- **Odd widths:** Inspo sits left of centre; Settings is a narrow column on the
+  left; Plan's List is a medium column. One rule needed: tabs 1328px, a page
+  that reads like paper (the run sheet, the menu) narrow and centred, the rest
+  two columns.
+- **Forms** (Add a guest, New to-do, New payment, Add a moment) are a narrow
+  column with the Save bar under — fine, but could be two columns (the name
+  and main choices left, details right).
+- **The Day:** the controls row spreads Print to the far right, away from
+  Filter; the three piece tiles are small on the left.
+- Not checked: cards opening from the right, Juno's panel, hover states.
+
 ## Juno (the assistant)
 
 - **Still to build:** a general "change a detail" and "add" tool, "take me
@@ -41,6 +88,24 @@ From the last few chats, not yet confirmed:
 
 ## Parked ideas
 
+- **The guest portal** (owner, 20 Oct 2026: "one thing we haven't thought
+  about yet"). The first time anyone but the couple sees the app. The database
+  is ready for it (`wedding_members.role` has `guest`; new rows and policies,
+  no rebuild). Smallest first: **1 RSVP online** — a private link per
+  household: yes/no per person, day or evening, dietary needs, landing in the
+  guest list (the owner's biggest pain point, invitations and chasing);
+  **2 information** — timings, venue, travel and stays, dress code, gifts,
+  FAQs; **3 their own bits** — their table, their coach, a group's run sheet;
+  **4 later** — photos after the day, guests messaging each other. **Rule
+  one, the owner's calls:** a guest sees only their own household (never
+  others' details, allergies or the budget); how they get in (a private link
+  is easiest but works for anyone it's forwarded to; an email code is safer
+  but needs the app's own web address, launch checklist item 1); what they
+  may change (their answer, dietary needs, contact details); the privacy
+  policy covers guests. **Suggested start:** RSVP by private link plus an
+  information page, in its own chat, mocked on canvas 3 first (what a guest
+  sees, and what the couple see as replies come in). Goes on the app's map
+  before it's built.
 - **Gifts and thank-yous** (owner: "not sure on this yet"). Canvas 3 "Gifts ·
   Round 1": A a Gifts view on the guest list, B thank-yous one household at a
   time, plus a full-screen New gift. Needs a `gifts` table (owner's OK).

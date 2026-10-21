@@ -16,7 +16,7 @@ import HouseholdSheet from "./household-view";
 import { RolePill, fullName, initials } from "./guest-table";
 import { GroupSheet, type GroupSummary } from "./guest-groups";
 import { needRank, needsOf, ownNeeds } from "@/lib/dietary";
-import { mealKindOf, noAlcoholOf } from "@/lib/meals";
+import { mealKindOf, mealWord, noAlcoholOf } from "@/lib/meals";
 import { CopyButton, type Split, type SplitKind, type TallyLine } from "./guest-summary";
 import type { TravelInfo } from "./guest-travel";
 import SendSheet from "@/components/send-sheet";
@@ -84,7 +84,7 @@ const SORTS: { key: SortBy; label: string; short: string; section: string }[] = 
   { key: "age", label: "Age group", short: "by age group", section: "Group by" },
   { key: "table", label: "Table", short: "by table", section: "Group by" },
   { key: "staying", label: "Staying", short: "by where they're staying", section: "Group by" },
-  { key: "meal", label: "Meal choice", short: "by meal", section: "Group by" },
+  { key: "meal", label: "Meal", short: "by meal", section: "Group by" },
   { key: "role", label: "Bridal party", short: "by bridal party", section: "Show only" },
   { key: "diet", label: "Dietary needs", short: "by dietary needs", section: "Show only" },
   // Who's been sent what (canvas 3 "Sent · Round 1", B): households not sent it yet, then sent.
@@ -290,7 +290,8 @@ export default function GuestBrowser({
   const ownEvent = (g: Contact) => events.find((e) => statusFor(g, e));
   const dietOf = (g: Contact) => data.answers.get(g.id)?.find((r) => r.dietary_notes)?.dietary_notes ?? null;
   const ownRsvp = (g: Contact) => data.answers.get(g.id)?.find((r) => r.event_id === ownEvent(g)?.id);
-  const mealOf = (g: Contact) => ownRsvp(g)?.meal_choice?.trim() || null;
+  // A guest's meal is the Adult / Child's / No meal tile (owner, 20 Oct 2026: the typed dish went).
+  const mealOf = (g: Contact) => mealWord(g);
   const look = { dietOf, mealOf, ownEvent };
 
   const tests: Record<GuestFilter, (g: Contact) => boolean> = {
@@ -325,7 +326,6 @@ export default function GuestBrowser({
     [
       { kind: "diet" as const, title: "Dietary needs" },
       { kind: "role" as const, title: "Bridal party roles" },
-      { kind: "meal" as const, title: "Meal choice" },
     ] as const
   )
     .map((k) => ({ ...k, options: kindOptions(k.kind) }))
@@ -583,7 +583,8 @@ export default function GuestBrowser({
               on={filters}
               onToggle={toggle}
               onClear={clearAll}
-              results={filtered.length}
+              // Everyone still expected, like the numbers card (owner, 20 Oct 2026).
+              results={filtered.filter((g) => answerOf(g) !== "declined").length}
               kinds={kinds}
               picked={picks}
               onPick={togglePick}
@@ -1214,16 +1215,11 @@ function FilterMenu({
       : null,
     kindRow("role", "Role on the day", "party", "Anyone in the bridal party"),
     kindRow("diet", "Dietary needs", "dietary", "Any dietary need"),
-    kindRow("meal", "Meal choice", null, ""),
-    {
-      key: "age",
-      title: "Age",
-      options: [{ id: "children", label: "Children", count: filterCount("children"), ticked: on.includes("children"), flip: () => onToggle("children") }],
-    },
+    // One row for age, meal and drinks (owner, 20 Oct 2026: three rows about meals was too many).
     {
       key: "meal-drinks",
-      title: "Meal and drinks",
-      options: (["childmeal", "nomeal", "soft"] as const).map((k) => ({
+      title: "Children, meals and drinks",
+      options: (["children", "childmeal", "nomeal", "soft"] as const).map((k) => ({
         id: k,
         label: FILTERS.find((f) => f.key === k)!.label,
         count: filterCount(k),
@@ -1493,7 +1489,7 @@ function GuestTable({
                       {answer.word}
                     </span>
                   </td>
-                  <td className="py-2.5 pr-4 text-ink">{rsvp?.meal_choice}</td>
+                  <td className="py-2.5 pr-4 text-ink">{mealWord(g)}</td>
                   <td className="py-2.5 pr-4 text-stone">{rsvp?.dietary_notes}</td>
                   <td className="whitespace-nowrap py-2.5 pr-4 text-stone">{g.phone}</td>
                   <td className="max-w-56 truncate py-2.5 pr-4 text-stone">{g.email}</td>

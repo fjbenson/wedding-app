@@ -16,6 +16,10 @@ export const MEAL_KINDS: { value: MealKind; label: string; line: string }[] = [
   { value: "none", label: "No meal", line: "A baby, say" },
 ];
 
+/** How a guest's meal reads in a list or on their card: "Adult meal", "Child's meal", "No meal". */
+export const mealWord = (g: Pick<Contact, "is_child" | "meal_kind">): string =>
+  ({ adult: "Adult meal", child: "Child's meal", none: "No meal" })[mealKindOf(g)];
+
 export const isMealKind = (v: unknown): v is MealKind => v === "adult" || v === "child" || v === "none";
 
 /** Guests from before 0033 have no meal kind: the old Child tick stands in. */

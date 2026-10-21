@@ -90,9 +90,6 @@ export default function BudgetForm({ total, areas }: { total: number | null; are
         <div className="mt-2">
           <Pounds name="total" label="The whole wedding" value={whole} onChange={setWhole} big />
         </div>
-        <p className="mt-2 text-xs text-stone">
-          Agreed and Paid add themselves up from your suppliers and payments — nothing to type for those.
-        </p>
       </section>
 
       {areas.length > 0 && (

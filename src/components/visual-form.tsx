@@ -98,7 +98,7 @@ export function Tiles({
                 : { defaultChecked: o.value === defaultValue, onChange: () => onChange?.(o.value) })}
               className="peer sr-only"
             />
-            <span className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-linen bg-white/70 px-1.5 py-2.5 text-center text-[13px] leading-tight text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400 peer-checked:[&>svg]:text-champagne-100">
+            <span className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-linen bg-white/70 px-1.5 py-2.5 text-center text-[13px] leading-tight text-ink transition peer-checked:border-champagne-600 peer-checked:bg-champagne-100 peer-checked:text-champagne-600 peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-400">
               <Icon aria-hidden className="h-5 w-5 text-champagne-600" strokeWidth={1.6} />
               {o.label}
             </span>
@@ -367,7 +367,7 @@ export function DateCard({
               type="button"
               onClick={() => onChange(p.date)}
               className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-                value === p.date ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+                value === p.date ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
               }`}
             >
               {p.label}
@@ -389,7 +389,7 @@ export function Ideas({ ideas, value, onPick }: { ideas: string[]; value: string
           type="button"
           onClick={() => onPick(idea)}
           className={`h-9 rounded-full border px-3.5 text-[13px] transition ${
-            value === idea ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+            value === idea ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
           }`}
         >
           {idea}

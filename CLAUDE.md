@@ -50,7 +50,22 @@ Rule one still comes first.
   where it goes, how long it's kept); **any database change**; anything that
   costs money; new tabs or big changes to how the app is organised; the Hub's
   look, the brand and the name; choosing between design options (mock them on
-  canvas 3 first).
+  canvas 4 first).
+
+## How we work (owner, 20 Oct 2026, from reading three chats)
+
+- **Short replies:** about 100 words, plain words; more only when asked.
+- **Mock up first, without being asked,** for anything new or any layout
+  change (canvas 4, options to pick from). Fixes and small tweaks go straight in.
+- **Sleep on database changes.** Write the migration and explain it, but run
+  it only once the owner has seen the design working, or in a later chat —
+  not minutes after picking a mock-up (four bits went unused in two days:
+  lists, music_played, run_sheet_groups, the typed dish).
+- **One topic per chat.** A new idea mid-chat goes in `docs/backlog.md`; suggest
+  a fresh chat for it rather than building it there.
+- **`/check` before every push that changes a screen** (the private copy with
+  the demo wedding, `.claude/skills/check/SKILL.md`). **`/status`** gives the
+  owner five lines on where things stand — use it when they ask what's next.
 
 ## Shipping
 
@@ -175,7 +190,10 @@ Not legal advice. **Only item 7's Vercel half is done.**
 - Jobs the forms and Juno share live in `src/lib/jobs.ts` (plain inputs,
   return `{ ok, … }`, find the wedding themselves).
 - **Dates are worded by the app** (`src/lib/dates.ts`), never
-  `toLocaleDateString`, so phone and server agree.
+  `toLocaleDateString`, so phone and server agree. **Times** (owner, 20 Oct
+  2026): the run sheet and what's printed for suppliers (moments, the menu,
+  drinks) use the 24-hour clock (`formatClock`, "13:30"); everything else —
+  appointments, journeys, lists — reads "2pm" (`formatTime`).
 - **Amounts get commas as you type**: `MoneyInput` / `withCommas()`.
 - New non-form screens go in `showsMenuBar()` (`src/lib/nav.ts`).
 - Match the surrounding code; comments say why, often with the owner's date.
@@ -221,8 +239,9 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   "▲ Over by £…").
 - Phones: 16px side margin (`--gutter`), no text under 12px, inputs 16px+
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
-  tabs along the top (`top-bar.tsx`), pages 1328px wide, cards still open
-  from the right.
+  the menu down the left like a magazine's contents (`side-bar.tsx`, 250px;
+  canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
+  top bar), pages beside it, cards still open from the right.
 
 ## The app today (20 Oct 2026)
 
@@ -233,8 +252,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   wedding's areas, its heart the days to go, opening **Where things stand**
   `/standing`; the + adds an area in three steps), **"Ask Juno"**, **This
   week** (due by Sunday plus overdue, ticked off in place), and tiles for
-  Your notes and Inspo. The laptop Hub is a magazine spread with At a glance
-  cards. The Hub's look is the owner's call.
+  Your notes and Inspo. On a laptop it's one calm screen: the names and ring
+  centred, Your notes and This week in a column on the right (G). The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages down a gold
   line** — Ideas · Quotes · Booked · Paid · Ready (`src/lib/area-stage.ts`;
@@ -253,7 +272,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   answer icon; can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure to jump to it), Text · Call · Email, Guest of
   and RSVP sliders, roles, details (meal and drinks tiles, dietary picker,
-  table), groups, travel, in the plan, timeline. **Households** open as an
+  table), groups, travel, in the plan, timeline. A guest's meal is only the
+  Adult / Child's / No meal tile (owner, 20 Oct 2026: the typed dish was
+  dropped — one menu for everyone; old `rsvps.meal_choice` values stay in the
+  database, unshown). Every guest count is **everyone still expected**
+  (can't-comes left out), as the numbers card has it. **Households** open as an
   envelope card; **groups** as a card with Email them / Text (the couple's own
   app, everyone in Bcc). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
@@ -284,7 +307,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Send it.
 - **The timeline** on every supplier, guest and household card (folded to one
   line), area page and payment: past and to come around a Today marker; calls,
-  meetings, emails and notes are added on a full screen (`/timeline/new`);
+  meetings, emails and notes are added on a full screen (`/history/new`; not `/timeline/…`, which an old redirect sends to Plan);
   stage changes and sendings are written by the app.
 - **Juno** (the assistant; named 20 Oct 2026, owner): the Hub pill and the
   floating pen open it. Typing searches the whole wedding at once with no AI
@@ -319,9 +342,10 @@ owner sees invitations as a big pain point); weddings abroad.
 ## Design work (links)
 
 All private to the owner; open with the Artifact tool's `read` action. New
-rounds go on canvas 3.
+rounds go on canvas 4.
 
-- **Design canvas 3** (from 14 Oct 2026): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
+- **Design canvas 4** (from 20 Oct 2026; new rounds go here): https://claude.ai/artifact/FbfEj4TubVHBT2YcVmPVNu
+- **Design canvas 3** (full, 40 pages): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** (full): https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Design canvas 1** (full): https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
 - **Glass Lab**: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq

@@ -76,7 +76,7 @@ export default function PaymentForm({
       type="button"
       onClick={() => setDescription(value)}
       className={`h-9 shrink-0 rounded-full border px-3.5 text-[13px] transition ${
-        description === value ? "border-ink bg-ink text-ivory" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+        description === value ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
       }`}
     >
       {label}

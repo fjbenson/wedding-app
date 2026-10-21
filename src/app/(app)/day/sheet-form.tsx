@@ -88,10 +88,10 @@ export default function SheetForm({
                 type="button"
                 aria-pressed={start === k}
                 onClick={() => setStart(k)}
-                className={`rounded-2xl px-2 py-3 text-center text-[14px] ${start === k ? "bg-ink text-ivory" : "border border-linen bg-white text-ink"}`}
+                className={`rounded-2xl px-2 py-3 text-center text-[14px] ${start === k ? "border border-champagne-600 bg-champagne-100 text-champagne-600" : "border border-linen bg-white text-ink"}`}
               >
                 {title}
-                <span className={`mt-0.5 block text-[12px] ${start === k ? "text-ivory/80" : "text-stone"}`}>{line}</span>
+                <span className={`mt-0.5 block text-[12px] ${start === k ? "text-champagne-600/80" : "text-stone"}`}>{line}</span>
               </button>
             ))}
           </div>

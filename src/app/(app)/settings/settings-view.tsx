@@ -17,7 +17,7 @@ function Switch({ on, label, action }: { on: boolean; label: string; action: () 
         type="submit"
         aria-pressed={on}
         className={`inline-flex h-8 items-center gap-1 rounded-full border px-3 text-xs transition ${
-          on ? "border-ink bg-ink text-ivory" : "border-white/80 bg-white/50 text-stone hover:border-champagne-400"
+          on ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-white/80 bg-white/50 text-stone hover:border-champagne-400"
         }`}
       >
         {on && <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />}
@@ -65,9 +65,6 @@ export default function SettingsView({
         </p>
       )}
 
-      <YourLogin login={login} />
-      <YourWeddings weddings={weddings} openId={wedding.id} />
-
       <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
         <form action={saveWeddingAction} className="mt-5 space-y-5">
@@ -94,10 +91,6 @@ export default function SettingsView({
             Add an area
           </Link>
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-stone">
-          <span className="text-ink">Planning</span> — it shows in to-dos, suppliers and the budget.{" "}
-          <span className="text-ink">On the hub</span> — it gets a dot on the ring. The arrows set the order.
-        </p>
 
         {areas.length === 0 ? (
           <p className="mt-4 text-sm text-stone">No areas yet.</p>
@@ -164,6 +157,8 @@ export default function SettingsView({
         )}
       </section>
 
+      <YourWeddings weddings={weddings} openId={wedding.id} />
+
       <section className="glass-card mt-6 rounded-[22px] p-5">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Who has a login</h2>
         <ul className="mt-2">
@@ -174,8 +169,9 @@ export default function SettingsView({
             </li>
           ))}
         </ul>
-
       </section>
+
+      <YourLogin login={login} />
     </main>
   );
 }
@@ -219,9 +215,8 @@ function YourLogin({ login }: { login: Login | null }) {
   return (
     <section className="glass-card mt-8 rounded-[22px] p-5">
       <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your login</h2>
-      <p className="mt-4 text-sm leading-relaxed text-stone">
-        Signed in as <span className="text-ink">{login.email}</span>. To open your wedding on another phone or a laptop,
-        sign in there with this email.
+      <p className="mt-4 text-sm text-stone">
+        Signed in as <span className="text-ink">{login.email}</span>
       </p>
       <form action="/auth/sign-out" method="post" className="mt-4">
         <button type="submit" className="h-11 rounded-full border border-linen px-5 text-sm text-ink hover:bg-cream">

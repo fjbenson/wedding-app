@@ -4,7 +4,7 @@ import Timeline from "@/components/timeline";
 import QuoteCompare from "@/components/quote-compare";
 import AddMenu, { type AddChoice } from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, History, ChevronDown, ChevronLeft, ChevronRight, Clock, ImagePlus, ListChecks, Sparkles, MoreHorizontal, Music, NotebookPen, Plus, PoundSterling, Undo2, UtensilsCrossed, Users, WheatOff, Wine, type LucideIcon } from "lucide-react";
 import OpenOnHash from "./open-on-hash";
 import PaymentRow from "@/components/payment-row";
 import DateStamp from "@/components/date-stamp";
@@ -28,7 +28,7 @@ import TickableNote from "@/components/tickable-note";
 import { startSoundCheckAction } from "./actions";
 import { musicTitle, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
-import { formatClock, formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
+import { formatClock, formatDayMonth, formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatMoney } from "@/lib/money";
@@ -117,7 +117,10 @@ function AreaCover({
   photos,
   ideaCount,
   canDiy,
+  decor = false,
 }: {
+  /** The Decor area: its items are added from this + too (one black + a page). */
+  decor?: boolean;
   area: AreaRow;
   photos: InspoWithPicture[];
   ideaCount: number;
@@ -129,6 +132,7 @@ function AreaCover({
   const galleryHref = `/inspo?folder=${encodeURIComponent(area.key)}`;
   const k = encodeURIComponent(area.key);
   const addChoices: AddChoice[] = [
+    ...(decor ? [{ icon: <Sparkles />, title: "An item", line: "Something to get, borrow or hire", href: `/decor/new?back=${from}` }] : []),
     { icon: <Users />, title: "A supplier", line: "Someone to ask for a quote", href: `/people/suppliers/new?category=${k}` },
     ...planChoices({ area: area.key }),
     { icon: <PoundSterling />, title: "A payment", line: "Something to pay, or already paid", href: `/money/payments/new?area=${k}` },
@@ -398,7 +402,6 @@ function FactRow({ href, title, line, dashed = false }: { href: string; title: s
 function GuestsSection({ facts, supplier, couple, area }: { facts: AreaGuestFacts; supplier?: string; couple: string; area: AreaRow }) {
   const people = "/people";
   if (facts.kind === "food") {
-    const most = Math.max(1, ...facts.meals.map((m) => m.count), facts.notPicked);
     const names = facts.dietary.slice(0, 2).map((d) => `${d.name.split(" ")[0]} · ${d.note}`);
     return (
       <>
@@ -430,31 +433,6 @@ function GuestsSection({ facts, supplier, couple, area }: { facts: AreaGuestFact
           </ul>
         </div>
         <FoodCosts areaId={area.id} areaKey={area.key} counts={facts.counts} prices={pricesOf(area)} />
-        {facts.meals.length + facts.notPicked > 0 && (
-          <div className="border-t border-linen py-3.5">
-            <h3 className="section-label">Dishes chosen</h3>
-            <ul className="mt-2.5 grid gap-2 text-[14px]">
-              {facts.meals.map((m) => (
-                <li key={m.name} className="flex items-center gap-3">
-                  <span className="w-[5.5rem] shrink-0 truncate">{m.name}</span>
-                  <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-linen">
-                    <span className="block h-1.5 rounded-full bg-champagne-600" style={{ width: `${(m.count / most) * 100}%` }} />
-                  </span>
-                  <span className="type-figure w-7 shrink-0 text-right text-base">{m.count}</span>
-                </li>
-              ))}
-              {facts.notPicked > 0 && (
-                <li>
-                  <Link href={`${people}?show=attending`} className="flex items-center gap-3 text-champagne-600">
-                    <span className="w-[5.5rem] shrink-0">Not picked</span>
-                    <span aria-hidden className="h-1 flex-1 rounded-full border border-dashed border-champagne-400" />
-                    <span className="type-figure w-7 shrink-0 text-right text-base !text-champagne-600">{facts.notPicked}</span>
-                  </Link>
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
         {facts.dietary.length > 0 ? (
           <FactRow
             href={`${people}?f=dietary&view=diet`}
@@ -812,7 +790,7 @@ export default function AreaView({
   const then = soon
     ? soon.kind === "todo"
       ? `${soon.m.title}${soon.date ? ` · ${formatDayMonth(soon.date)}` : ""}`
-      : `${soon.a.title} · ${formatWeekdayDayMonth(soon.a.on_date)}${soon.a.at_time ? `, ${formatClock(soon.a.at_time)}` : ""}`
+      : `${soon.a.title} · ${formatWeekdayDayMonth(soon.a.on_date)}${soon.a.at_time ? `, ${formatTime(soon.a.at_time)}` : ""}`
     : null;
 
   // One line per stage when it's closed, and what it holds when open.
@@ -1037,7 +1015,7 @@ export default function AreaView({
   return (
     <SupplierCards suppliers={suppliers} areas={areas} payments={payments}>
     <main className="page relative pb-40 lg:pb-16">
-      <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} />
+      <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} decor={!!decor} />
 
       <div className="relative mt-5 flex flex-col gap-3.5">
         <OpenOnHash />

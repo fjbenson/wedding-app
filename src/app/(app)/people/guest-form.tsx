@@ -165,9 +165,6 @@ export default function GuestForm({
           {/* Only with a day or evening to hang them on — they're kept on that answer. */}
           {events.length > 0 && (
             <>
-              <Row label="Meal">
-                <input name="meal_choice" aria-label="Meal" placeholder="Add meal" className="w-full bg-transparent py-1.5 text-[15px] text-ink placeholder:text-stone/70 focus:outline-none" />
-              </Row>
               <Row label="Dietary">
                 <input type="hidden" name="dietary_notes" value={joinNeeds(needs) ?? ""} />
                 <div className="-my-2">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CalendarDays, Check, ChevronDown, FileText, History, Mail, MessageCircle, NotebookPen, Phone, Send, Users } from "lucide-react";
 import CardLink from "@/components/card-link";
-import { removeEntryAction, timelineAction } from "@/app/(app)/timeline/actions";
+import { removeEntryAction, timelineAction } from "@/app/(app)/history/actions";
 import { formatDayMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import type { TimelineGroup, TimelineItem } from "@/lib/timeline";
@@ -77,7 +77,7 @@ export default function Timeline({
   const coming = shown.filter((i) => i.upcoming);
   const before = shown.filter((i) => !i.upcoming);
   const groups = GROUPS.filter((g) => g.value === "all" || (items ?? []).some((i) => i.group === g.value));
-  const addHref = `/timeline/new?with=${encodeURIComponent(scope)}&back=${encodeURIComponent(here)}`;
+  const addHref = `/history/new?with=${encodeURIComponent(scope)}&back=${encodeURIComponent(here)}`;
 
   const remove = async (id: string) => {
     const r = await removeEntryAction(id).catch(() => ({ error: "That didn't come off." }));

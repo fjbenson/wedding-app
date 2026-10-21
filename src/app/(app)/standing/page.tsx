@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, Check, ChevronDown, CircleDot, Clock, PoundSterling, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronRight, CircleDot, Clock, PoundSterling, Users, type LucideIcon } from "lucide-react";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { daysUntil } from "@/lib/dates";
 import { loadStanding } from "@/lib/standing-data";
@@ -73,13 +73,12 @@ function SectionCard({ section }: { section: Section }) {
   const { progress } = section;
   return (
     <section className="glass-card overflow-hidden rounded-[22px] [--row-bleed:0px]">
-      <div className="flex items-center gap-2.5 px-4 pb-1 pt-3.5">
+      {/* The heading itself opens the tab, as on area pages ("In People ›" went, audit 20 Oct 2026). */}
+      <Link href={section.link.href} aria-label={section.link.label} className="flex items-center gap-2.5 px-4 pb-1 pt-3.5">
         <Icon className="h-5 w-5 text-champagne-600" strokeWidth={1.6} aria-hidden />
-        <h2 className="flex-1 font-display text-xl text-ink">{section.title}</h2>
-        <Link href={section.link.href} className="text-[13px] text-champagne-600">
-          {section.link.label} ›
-        </Link>
-      </div>
+        <h2 className="font-display text-xl text-ink">{section.title}</h2>
+        <ChevronRight className="h-4 w-4 text-stone/70" strokeWidth={1.8} aria-hidden />
+      </Link>
 
       <div className="px-4 pb-3.5 pt-1">
         <p className="flex items-baseline gap-1.5">

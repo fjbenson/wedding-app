@@ -72,7 +72,9 @@ const FILTERS: { key: GuestFilter; label: string }[] = [
  * The View button (owner, 17 Oct 2026; was Sort): one pick says how the rows
  * are grouped and, for two of them, who is shown — Bridal party switches the
  * Bridal party filter on, Dietary needs the Dietary needs one. The filter
- * shows as a pill and can be taken off or joined by others.
+ * shows as a pill and can be taken off or joined by others. Age group went
+ * (owner, 21 Oct 2026): Meal already splits adult, child and no meal; the two
+ * that filter now sit in Group by, as they group by role and need.
  */
 const SORTS: { key: SortBy; label: string; short: string; section: string }[] = [
   { key: "first", label: "First name, A–Z", short: "by first name", section: "Order" },
@@ -81,12 +83,11 @@ const SORTS: { key: SortBy; label: string; short: string; section: string }[] = 
   { key: "group", label: "Group", short: "by group", section: "Group by" },
   { key: "type", label: "Event", short: "by event", section: "Group by" },
   { key: "rsvp", label: "RSVP", short: "by RSVP", section: "Group by" },
-  { key: "age", label: "Age group", short: "by age group", section: "Group by" },
   { key: "table", label: "Table", short: "by table", section: "Group by" },
   { key: "staying", label: "Staying", short: "by where they're staying", section: "Group by" },
   { key: "meal", label: "Meal", short: "by meal", section: "Group by" },
-  { key: "role", label: "Bridal party", short: "by bridal party", section: "Show only" },
-  { key: "diet", label: "Dietary needs", short: "by dietary needs", section: "Show only" },
+  { key: "role", label: "Bridal party", short: "by bridal party", section: "Group by" },
+  { key: "diet", label: "Dietary needs", short: "by dietary needs", section: "Group by" },
   // Who's been sent what (canvas 3 "Sent · Round 1", B): households not sent it yet, then sent.
   ...SENDINGS.map((s) => ({ key: s.kind, label: s.label, short: `by ${s.label.toLowerCase()}`, section: "Sent" })),
 ];

@@ -259,7 +259,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   centred, Your notes and This week in a column on the right (G). The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`): a photo cover with the
   page's one + (`AddMenu`), a **Next up** card, the **five stages down a gold
-  line** — Ideas · Quotes · Booked · Paid · Ready (`src/lib/area-stage.ts`;
+  line** — Ideas · Quotes · Booking · Payment · Ready (`src/lib/area-stage.ts`;
   each can step back) — then **"Everything for [area]"**, one line each for
   suppliers, plan, money, the day, notes and the timeline. Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,

@@ -180,11 +180,7 @@ Each would be an added column, not a rebuild:
 
 ## Tech loose ends
 
-- Run sheets: the area page's "In The Day ›" opens the main sheet only, so a
-  moment on another sheet isn't in it (Attire shows two moments but "Nothing on
-  the day" — mocked on canvas 4 "The Day · Round 1", waiting on the owner's
-  pick of A1, A2 or A3). The old group tags on moments
-  (`run_sheet_groups`, 0034) are left unused.
+- Run sheets: the old group tags on moments (`run_sheet_groups`, 0034) are left unused.
 
 - Replace the hand-written types in `src/types/db.ts` with `npm run db:types`.
 - Vercel no longer reports deploys back to GitHub (since Pro): the owner has

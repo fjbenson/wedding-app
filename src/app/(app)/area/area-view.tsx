@@ -793,6 +793,11 @@ export default function AreaView({
           ) : undefined,
         }
       : next;
+  // "In The Day ›" opens the run sheet these moments are on (owner, 21 Oct 2026):
+  // the main one if it has any, else the first sheet that does — never an empty page.
+  const momentSheets = moments.map((m) => m.sheet_id ?? null);
+  const daySheet = momentSheets.includes(null) ? null : (momentSheets[0] ?? null);
+  const dayHref = `/day?area=${encodeURIComponent(area.key)}${daySheet ? `&sheet=${daySheet}` : ""}`;
   const soon = planNow[0];
   // A small picture of what kind of thing it is (owner, 21 Oct 2026: one item
   // at the top, quick to read): an idea, a supplier, money, or all in hand.
@@ -1315,7 +1320,7 @@ export default function AreaView({
               icon={Clock}
               title={guestFacts?.kind === "food" ? "Through the day" : "The Day"}
               line={dayLine}
-              see={{ href: `/day?area=${encodeURIComponent(area.key)}`, label: "In The Day" }}
+              see={{ href: dayHref, label: "In The Day" }}
               add={{ href: `/day/run-sheet/new?area=${key}&from=area`, label: "Add a moment" }}
             >
               <DaySection moments={moments} facts={guestFacts} musicFor={music ? couple : null} food={foodMoments} />

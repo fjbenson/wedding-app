@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Plus, X } from "lucide-react";
-import BudgetBar from "@/components/budget-bar";
+import BudgetBar, { PAID_BAR } from "@/components/budget-bar";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import type { Money } from "@/lib/budget";
@@ -11,10 +11,11 @@ import { formatMoney } from "@/lib/money";
 import type { mealCost } from "@/lib/meals";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment, SupplierStatus } from "@/types/db";
-import PaymentRow from "@/components/payment-row";
+import CardLink from "@/components/card-link";
+import TickForm from "@/components/tick-form";
+import { Check } from "lucide-react";
 import { markPaidAction } from "./actions";
-import { todayISO } from "@/lib/dates";
-import { StageIcon } from "../people/supplier-list";
+import { formatDayMonth, todayISO } from "@/lib/dates";
 import MoneyFigures from "./money-figures";
 import QuoteCompare from "@/components/quote-compare";
 
@@ -207,9 +208,11 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
   // Two or more quotes and no one booked: they're compared in the chart, so not listed again under it.
   const quoted = live.filter((s) => s.status === "quoted" && s.quote > 0);
   const comparing = area.key && !live.some((s) => s.status === "booked") && quoted.length >= 2 ? quoted : [];
-  const listed = live.filter((s) => !comparing.includes(s));
+  const booked = live.filter((s) => s.status === "booked");
+  const others = live.filter((s) => s.status !== "booked" && !comparing.includes(s));
+  // Payments no booked supplier card holds: tied to an area, or to someone not booked.
+  const loose = [...toPay, ...paid].filter((p) => !booked.some((s) => s.id === p.contact_id));
   const today = todayISO();
-  const who = (p: Payment) => suppliers.find((x) => x.id === p.contact_id)?.name ?? null;
   const addPayment = area.key ? `/money/payments/new?area=${encodeURIComponent(area.key)}` : "/money/payments/new";
 
   return (
@@ -252,7 +255,7 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           </div>
 
           <div className="mt-3">
-            <MoneyFigures money={area} size={36} />
+            <AreaBudgetPanel area={area} />
           </div>
           <NextStep area={area} />
           {area.detail.perHead && (
@@ -294,7 +297,19 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
           {live.length > 0 && (
             <section className="mt-7">
               <h3 className="section-label">Suppliers</h3>
-              {/* Two or more quotes and no one booked: compare them; a tap opens their card on the area page, where you decide. */}
+              {/* A card each for who's booked, with their payments inside (owner, 22 Oct 2026, canvas 4 "Money · Round 6"). */}
+              <div className="mt-2 flex flex-col gap-2.5">
+                {booked.map((s) => (
+                  <SupplierMoney
+                    key={s.id}
+                    supplier={s}
+                    payments={[...toPay, ...paid].filter((p) => p.contact_id === s.id)}
+                    balance={balances.find((b) => b.supplierId === s.id)?.balance ?? 0}
+                    today={today}
+                  />
+                ))}
+              </div>
+              {/* Quotes aren't counted above; two or more with no one booked are compared, a tap opens their card on the area page. */}
               {comparing.length > 0 && (
                 <QuoteCompare
                   quotes={comparing.map((s) => ({ id: s.id, name: s.name, quote: s.quote }))}
@@ -306,67 +321,44 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
                   )}
                 />
               )}
-              <ul className="mt-1">
-                {listed.map((s) => (
-                  <li key={s.id} className="row-press border-b border-linen last:border-b-0">
-                    <Link href={`/people/${s.id}`} className="flex items-center gap-3 py-3">
-                      <StageIcon status={s.status} small />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[15px] text-ink">{s.name}</span>
-                        {s.deposit > 0 && (
-                          <span className="block text-xs text-stone">{formatMoney(s.deposit)} deposit paid</span>
-                        )}
-                      </span>
-                      <span className={`type-figure shrink-0 text-lg !font-light ${s.status === "booked" ? "" : "!text-stone"}`}>
-                        {s.quote > 0 ? formatMoney(s.quote) : "—"}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              {others.length > 0 && (
+                <ul className="mt-2.5 flex flex-col gap-2.5">
+                  {others.map((s) => (
+                    <li key={s.id}>
+                      <Link
+                        href={`/people/${s.id}`}
+                        className="row-press flex items-center gap-3 rounded-[22px] border border-dashed border-champagne-400/60 px-4 py-3.5"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-display text-[17px] text-stone">{s.name}</span>
+                          <span className="mt-0.5 block text-[13px] text-stone">
+                            {s.quote > 0 ? "Quote · not chosen, not counted" : "Not booked yet"}
+                          </span>
+                        </span>
+                        {s.quote > 0 && <span className="type-figure shrink-0 text-xl !font-light !text-stone">{formatMoney(s.quote)}</span>}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )}
 
-          {/* The same rows as Money's By month, on a card (owner, 17 Oct 2026: these were flat). */}
-          <section className="mt-7">
-            <h3 className="section-label">To pay</h3>
-            {(toPay.length > 0 || balances.length > 0) && (
-              <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
-                {toPay.map((p) => (
-                  <PaymentRow key={p.id} payment={p} today={today} who={who(p)} />
-                ))}
-                {balances.map((b) => (
-                  <li key={b.supplierId} className="row-press border-b border-ink/[0.12] last:border-b-0">
-                    <Link href={`/money/payments/new?supplier=${b.supplierId}&amount=${b.balance}`} className="flex items-center gap-3.5 py-3">
-                      <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-dashed border-champagne-400 text-champagne-600">
-                        <Plus className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="type-item block truncate italic !text-stone">{b.name}</span>
-                        <span className="type-meta mt-1 block">Balance · pick a date</span>
-                      </span>
-                      <span className="type-figure shrink-0 text-lg !font-light !text-stone">{formatMoney(b.balance)}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link href={addPayment} className="mt-2 inline-flex items-center gap-1.5 py-2 text-sm text-champagne-600 hover:text-ink">
-              <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              Add a payment
-            </Link>
-          </section>
-
-          {paid.length > 0 && (
+          {loose.length > 0 && (
             <section className="mt-5">
-              <h3 className="section-label">Paid</h3>
+              <h3 className="section-label">Other payments</h3>
               <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
-                {paid.map((p) => (
-                  <PaymentRow key={p.id} payment={p} today={today} who={who(p)} />
+                {loose.map((p) => (
+                  <PayLine key={p.id} payment={p} today={today} />
                 ))}
               </ul>
             </section>
           )}
+
+          <Link href={addPayment} className="mt-3 inline-flex items-center gap-1.5 py-2 text-sm text-champagne-600 hover:text-ink">
+            <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            Add a payment
+          </Link>
 
           <div className="mt-7 flex flex-col gap-1">
             {area.key && area.key !== "other" && (
@@ -386,3 +378,154 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
   );
 }
 
+const OVER_STRIPES = { background: "repeating-linear-gradient(135deg,#B5523B 0 3px,#E8B4A6 3px 6px)" };
+
+/**
+ * The top of an area's money card (owner, 22 Oct 2026, canvas 4 "Money ·
+ * Round 6", 2): the area against its budget as three bars on one scale —
+ * Budget, Booked, Paid — so they compare by length. Quotes aren't counted.
+ * Before anything's booked it's the plain figures.
+ */
+function AreaBudgetPanel({ area }: { area: AreaCard }) {
+  if (area.committed <= 0 && area.paid <= 0) return <MoneyFigures money={area} size={36} />;
+  const { budget, committed, paid } = area;
+  const free = budget !== null ? budget - committed : null;
+  const scale = Math.max(budget ?? 0, committed, paid, 1);
+  const w = (x: number) => `${Math.min((x / scale) * 100, 100)}%`;
+  const over = budget !== null && committed > budget;
+  const bar = (label: string, value: number, fill: string, extra?: React.ReactNode) => (
+    <div className="mt-2.5">
+      <p className="flex items-baseline justify-between text-[13px] text-stone">
+        <span>{label}</span>
+        <span className="font-medium text-ink">{formatMoney(value)}</span>
+      </p>
+      <span aria-hidden className="relative mt-1.5 block h-2 overflow-hidden rounded-full bg-white ring-[0.5px] ring-ink/10">
+        <span className={`absolute inset-y-0 left-0 ${fill}`} style={{ width: w(value) }} />
+        {extra}
+      </span>
+    </div>
+  );
+  return (
+    <section
+      aria-label="Against your budget"
+      className="mt-3.5 rounded-[22px] bg-champagne-100/70 p-4 ring-[0.5px] ring-champagne-600/25"
+    >
+      <p className="flex items-baseline justify-between gap-3">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-champagne-600">
+          {budget !== null ? "Against your budget" : "Booked and paid"}
+        </span>
+        {free !== null && (
+          <span className={`text-[13px] ${over ? "text-[#9A3F2B]" : "text-ink"}`}>
+            <b className="font-semibold">{over ? `▲ Over by ${formatMoney(-free)}` : formatMoney(free)}</b>
+            {over ? "" : " left"}
+          </span>
+        )}
+      </p>
+      {budget !== null && bar("Budget", budget, "bg-champagne-400/45")}
+      {bar(
+        "Booked",
+        committed,
+        "bg-champagne-400",
+        over && <span className="absolute inset-y-0 rounded-r-full" style={{ left: w(budget), width: w(committed - budget), ...OVER_STRIPES }} />,
+      )}
+      {bar("Paid", paid, PAID_BAR)}
+    </section>
+  );
+}
+
+/** A booked supplier: what's agreed and how much is paid, then each of its payments (deposit last). */
+function SupplierMoney({
+  supplier: s,
+  payments,
+  balance,
+  today,
+}: {
+  supplier: AreaDetail["suppliers"][number];
+  payments: Payment[];
+  balance: number;
+  today: string;
+}) {
+  const paidIn = payments.filter((p) => p.paid_on);
+  const open = payments.filter((p) => !p.paid_on);
+  const paid = s.deposit + paidIn.reduce((sum, p) => sum + p.amount, 0);
+  const toGo = Math.max(s.quote - paid, 0);
+  return (
+    <div className="glass-card rounded-[22px] p-4">
+      <Link href={`/people/${s.id}`} className="flex items-center justify-between gap-3">
+        <span className="min-w-0 truncate font-display text-xl text-ink">{s.name}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${PILL.Booked}`}>Booked</span>
+      </Link>
+      <p className="mt-2.5 flex flex-wrap items-baseline gap-x-2">
+        <span className="type-figure text-[28px] leading-none !font-light">{formatMoney(s.quote)}</span>
+        <span className="text-[13px] text-stone">{toGo <= 0 ? "All paid" : `${formatMoney(paid)} paid · ${formatMoney(toGo)} to go`}</span>
+      </p>
+      <div className="mt-2.5 h-1.5">
+        <BudgetBar money={{ budget: null, committed: s.quote, paid }} />
+      </div>
+      <ul className="mt-1.5 [--row-bleed:0px]">
+        {open.map((p) => (
+          <PayLine key={p.id} payment={p} today={today} />
+        ))}
+        {balance > 0 && (
+          <li className="row-press border-b border-linen last:border-b-0">
+            <Link href={`/money/payments/new?supplier=${s.id}&amount=${balance}`} className="flex items-center gap-3 py-2.5">
+              <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-dashed border-champagne-400 text-champagne-600">
+                <Plus className="h-3 w-3" strokeWidth={1.8} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[15px] italic text-stone">
+                Balance<span className="text-[13px] not-italic"> · pick a date</span>
+              </span>
+              <span className="type-figure shrink-0 text-lg !font-light !text-stone">{formatMoney(balance)}</span>
+            </Link>
+          </li>
+        )}
+        {paidIn.map((p) => (
+          <PayLine key={p.id} payment={p} today={today} />
+        ))}
+        {s.deposit > 0 && (
+          <li className="flex items-center gap-3 py-2.5">
+            <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-champagne-600 text-white">
+              <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[15px] text-stone">
+              Deposit<span className="text-[13px]"> · paid</span>
+            </span>
+            <span className="type-figure shrink-0 text-lg !font-light !text-stone">{formatMoney(s.deposit)}</span>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+/** One payment as a line inside a card: what, when (paid date once paid), the amount and the £ to mark it paid. */
+function PayLine({ payment: p, today }: { payment: Payment; today: string }) {
+  const paid = !!p.paid_on;
+  const late = !paid && !!p.due_date && p.due_date < today;
+  const when = paid ? `paid ${formatDayMonth(p.paid_on!)}` : p.due_date ? `${late ? "overdue · " : "due "}${formatDayMonth(p.due_date)}` : null;
+  return (
+    <li className="row-press flex items-center gap-3 border-b border-linen last:border-b-0">
+      <TickForm
+        action={markPaidAction.bind(null, p.id, !paid)}
+        undo={markPaidAction.bind(null, p.id, paid)}
+        ticking={!paid}
+        label="Marked paid"
+        ariaLabel={paid ? `Mark "${p.description}" as not paid` : `Mark "${p.description}" as paid`}
+        className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full transition ${
+          paid
+            ? "bg-champagne-600 text-white"
+            : "border-[1.5px] border-champagne-400 bg-white font-display text-[12px] text-champagne-600 hover:bg-champagne-100"
+        }`}
+      >
+        {paid ? <Check className="h-3 w-3" strokeWidth={2.4} aria-hidden /> : "£"}
+      </TickForm>
+      <CardLink href={`/money/payments/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2.5">
+        <span className={`min-w-0 flex-1 truncate text-[15px] ${paid ? "text-stone" : "text-ink"}`}>
+          {p.description}
+          {when && <span className="text-[13px] text-stone"> · {when}</span>}
+        </span>
+        <span className={`type-figure shrink-0 text-lg !font-light ${paid ? "!text-stone" : ""}`}>{formatMoney(p.amount)}</span>
+      </CardLink>
+    </li>
+  );
+}

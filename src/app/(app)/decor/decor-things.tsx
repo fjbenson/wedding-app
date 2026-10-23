@@ -479,7 +479,8 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
           )}
         </div>
 
-        {dateRow("Collect", item.collect_on, "collect_on")}
+        {/* Dates are for what's borrowed or hired: you collect it, then give it back. Own, bought and made have none (a date already saved still shows). */}
+        {(goesBack(item) || item.collect_on) && dateRow("Collect", item.collect_on, "collect_on")}
         {goesBack(item) && dateRow("Give back", item.return_on, "return_on")}
       </div>
 

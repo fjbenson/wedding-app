@@ -220,6 +220,10 @@ almost everything else is still the phone layout in a narrow column.
   on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
   everything folded; D/E (tap a stage, its part opens, as on area pages; a
   button inside moves the supplier on). Do after the audit so it follows the rules.
+- **Guest card RSVP slider (owner, 23 Oct 2026):** split it like the laptop
+  guest numbers: To invite › Yet to respond › Coming together, then a gap and
+  Can't come on its own, since it's not a step in the invited-to-coming flow.
+  Mock up on canvas 4 first. Fresh chat.
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

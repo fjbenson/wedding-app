@@ -69,7 +69,12 @@ for the owner before building: which actions are undoable (stage changes,
 marked-paid; not a sent email), what happens to side effects (the deposit made
 when booking), and whether the row goes or stays as "Undone". Anything that
 logs more of people's details is rule one. Mock up first; `UndoToast` is the
-existing precedent.
+existing precedent. **Owner's answers, same day:** always a pop-up asking
+before anything is removed or undone (an app-wide rule); undoing Booked
+leaves any deposit payment alone (a paid one can't be undone); an undone row
+stays, faded; "Undo" for what the app logged (stage changes), "Delete" for
+what the owner added by hand (a meeting, email or note). Still open: whether
+guest actions (RSVPs, dietary) are logged at all — rule one.
 
 ## Phone audit, 20 Oct 2026
 

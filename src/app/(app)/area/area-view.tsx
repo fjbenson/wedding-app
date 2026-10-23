@@ -1137,7 +1137,7 @@ export default function AreaView({
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}
         <section aria-label={`Everything for ${area.label}`} className="mt-3">
-          <h2 className="type-meta px-1">Everything for {area.label}</h2>
+          <h2 className="section-label px-1">Everything for {area.label}</h2>
           <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             <Everything
               id="suppliers"
@@ -1305,7 +1305,7 @@ export default function AreaView({
             "Area page · Round 4", A: "Everything for" follows the tabs along the bottom). */}
         {food && (
           <section aria-label={`Only for ${area.label}`} className="mt-3">
-            <h2 className="type-meta px-1">Only for {area.label}</h2>
+            <h2 className="section-label px-1">Only for {area.label}</h2>
             <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
 
                 <Everything
@@ -1366,7 +1366,7 @@ export default function AreaView({
             Both tiles open the Ideas stage, where they live; Decor and Stationery have no
             stages, so their notes fold sits under the tiles. */}
         <section aria-label="Notes and story so far" className="mt-3">
-          <h2 className="type-meta px-1">Notes and story so far</h2>
+          <h2 className="section-label px-1">Notes and story so far</h2>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5">
             <JumpLink to="ideas" className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
               <FootIcon icon={NotebookPen} />

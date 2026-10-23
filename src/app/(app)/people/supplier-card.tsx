@@ -490,9 +490,17 @@ function SupplierStages({
 
         {open === 1 && (
           <div className={card}>
-            <div className="flex items-end justify-between gap-4 border-b border-linen py-3.5">
-              <Figure label="Quote" value={quote} onSave={(v) => saveMoney("quoted_cost", v)} />
-              {area?.budget != null && <span className="pb-1 text-right text-[13px] text-stone">{area.label} budget {formatMoney(area.budget)}</span>}
+            <div className="border-b border-linen py-3.5">
+              <div className="flex items-end justify-between gap-4">
+                <Figure label="Quote" value={quote} onSave={(v) => saveMoney("quoted_cost", v)} />
+                {area?.budget != null && (
+                  <span className="pb-0.5 text-right">
+                    <span className="type-meta block">{area.label} budget</span>
+                    <span className="mt-0.5 block font-display text-[20px] font-light leading-tight text-stone">{formatMoney(area.budget)}</span>
+                  </span>
+                )}
+              </div>
+              {quote != null && quote > 0 && area?.budget != null && area.budget > 0 && <QuoteVsBudget quote={quote} budget={area.budget} />}
             </div>
             {files(["quote", "other"], "Add a quote")}
           </div>
@@ -568,6 +576,36 @@ function SupplierStages({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * The quote against the area's budget on one bar (owner's pick 23 Oct 2026,
+ * canvas 5 "Supplier card · Round 20", viz A): the budget is the track, the
+ * quote fills it, a fine ink line marks the budget. Over budget the extra is
+ * rose stripes past the line, with the words as well (never colour alone).
+ */
+function QuoteVsBudget({ quote, budget }: { quote: number; budget: number }) {
+  const over = quote > budget;
+  const top = Math.max(quote, budget);
+  const budgetAt = (budget / top) * 100;
+  const quoteAt = (Math.min(quote, budget) / top) * 100;
+  return (
+    <div className="mt-4">
+      <div aria-hidden className="relative h-3 rounded-full bg-champagne-100">
+        <span className="absolute inset-y-0 left-0 rounded-full bg-champagne-600" style={{ width: `${quoteAt}%` }} />
+        {over && (
+          <span
+            className="absolute inset-y-0 rounded-r-full"
+            style={{ left: `${budgetAt}%`, width: `${100 - budgetAt}%`, background: "repeating-linear-gradient(135deg, #9A3F2B 0 3px, #F4DCD5 3px 7px)" }}
+          />
+        )}
+        <span className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: `calc(${budgetAt}% - 1px)` }} />
+      </div>
+      <p className={`mt-2.5 text-sm ${over ? "text-[#9A3F2B]" : "text-champagne-600"}`}>
+        {over ? `▲ Over by ${formatMoney(quote - budget)}` : quote === budget ? "Right on budget" : `${formatMoney(budget - quote)} under budget`}
+      </p>
+    </div>
   );
 }
 

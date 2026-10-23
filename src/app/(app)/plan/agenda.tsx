@@ -18,11 +18,16 @@ type Entry =
 /** Same day: appointments first (they happen at a time), then to-dos. */
 const KIND_ORDER = { appointment: 0, todo: 1 };
 
+const timeOf = (e: Entry) => (e.kind === "todo" ? e.milestone.due_time : e.appointment.at_time) ?? null;
+
+// On one day, things with a time run in time order (to-dos and appointments
+// together), then the ones without, appointments first (owner, 23 Oct 2026).
 const byDate = (a: Entry, b: Entry) => {
   if (a.date !== b.date) return !a.date ? 1 : !b.date ? -1 : a.date.localeCompare(b.date);
-  if (a.kind === "appointment" && b.kind === "appointment") {
-    return (a.appointment.at_time ?? "").localeCompare(b.appointment.at_time ?? "");
-  }
+  const ta = timeOf(a);
+  const tb = timeOf(b);
+  if (ta && tb && ta !== tb) return ta.localeCompare(tb);
+  if (!!ta !== !!tb) return ta ? -1 : 1;
   return KIND_ORDER[a.kind] - KIND_ORDER[b.kind];
 };
 

@@ -79,7 +79,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
 
   return (
     <>
-      <ul className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:grid-cols-4 lg:gap-3.5">
+      <ul className="mt-3 grid grid-cols-2 gap-3 room-md:mt-5 room-md:grid-cols-4 room-md:gap-3.5">
         {areas.map((a) => {
           const { stage, figure } = standing(a);
           const Icon = areaIcon(a.key || "other", a.icon);

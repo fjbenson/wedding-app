@@ -293,9 +293,9 @@ export default function SupplierList({
               <span>Stage</span>
               <span className="text-right">Quote</span>
               <span className="text-right">Paid</span>
-              <span className="hidden xl:block">Phone</span>
-              <span className="hidden xl:block">Email</span>
-              <span className="xl:hidden" />
+              <span className="hidden room-xl:block">Phone</span>
+              <span className="hidden room-xl:block">Email</span>
+              <span className="room-xl:hidden" />
             </div>
           )}
           {groups.map((g) => {
@@ -699,8 +699,8 @@ const initials = (name: string) =>
  * tap away on the card. A missing number or email shows greyed out, and
  * tapping it opens the card ready to type it in.
  */
-/** The laptop's columns: name, stage, quote, paid, then phone and email as words (round buttons below 1280px). */
-const COLS = "lg:grid lg:grid-cols-[minmax(0,1fr)_104px_96px_96px_auto] lg:items-center lg:gap-x-5 xl:grid-cols-[minmax(0,1fr)_104px_96px_96px_150px_minmax(0,230px)]";
+/** The laptop's columns: name, stage, quote, paid, then phone and email as words (round buttons below 1280px). With a card open beside the list they wait for 440px more screen (`room-*:`, tailwind.config.ts). */
+const COLS = "room-lg:grid room-lg:grid-cols-[minmax(0,1fr)_104px_96px_96px_auto] room-lg:items-center room-lg:gap-x-5 room-xl:grid-cols-[minmax(0,1fr)_104px_96px_96px_150px_minmax(0,230px)]";
 
 function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: number; onOpen: (field?: "phone" | "email") => void }) {
   const st = stage(supplier);
@@ -726,16 +726,16 @@ function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: num
         </span>
       </button>
       {/* Laptop columns. */}
-      <span className="hidden text-[14px] text-ink lg:block">{supplierStatusLabel(st)}</span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums lg:block">{supplier.supplier_details?.quoted_cost ? formatMoney(supplier.supplier_details.quoted_cost) : <span className="text-stone/50">—</span>}</span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums lg:block">{paid > 0 ? formatMoney(paid) : <span className="text-stone/50">—</span>}</span>
-      <span className="hidden min-w-0 xl:block">
+      <span className="hidden text-[14px] text-ink room-lg:block">{supplierStatusLabel(st)}</span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{supplier.supplier_details?.quoted_cost ? formatMoney(supplier.supplier_details.quoted_cost) : <span className="text-stone/50">—</span>}</span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{paid > 0 ? formatMoney(paid) : <span className="text-stone/50">—</span>}</span>
+      <span className="hidden min-w-0 room-xl:block">
         {supplier.phone ? <a href={`tel:${phone}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.phone}</a> : <button type="button" onClick={() => onOpen("phone")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}
       </span>
-      <span className="hidden min-w-0 xl:block">
+      <span className="hidden min-w-0 room-xl:block">
         {supplier.email ? <a href={`mailto:${supplier.email}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.email}</a> : <button type="button" onClick={() => onOpen("email")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}
       </span>
-      <span className="flex items-center gap-2 xl:hidden">
+      <span className="flex items-center gap-2 room-xl:hidden">
       {phone ? (
         <a href={`tel:${phone}`} aria-label={`Call ${name}`} className={action}>
           <Phone className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />

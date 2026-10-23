@@ -180,10 +180,24 @@ export default function PlanList({
   const monthN = allOpen.filter((m) => !late(m) && planDate(m)?.slice(0, 7) === thisMonth).length;
   const visitsN = appointments.filter((a) => a.on_date >= today).length;
 
+  // Laptops: where the plan stands. Beside the list on a wide screen, above it on a narrower
+  // one (`room-*:` waits for 440px more screen while a card is open beside the list).
+  const numbers = (
+    <NumbersCard
+      big={{ label: "To do", value: allOpen.length, sub: `${visitsN} ${visitsN === 1 ? "appointment" : "appointments"} to come` }}
+      rows={[
+        { value: overdueN, label: "Overdue", href: "/plan?view=list&when=overdue" },
+        { value: monthN, label: "This month", href: "/plan?view=list&when=month" },
+        { value: allOpen.filter((m) => !planDate(m)).length, label: "No date yet", href: "/plan?view=list&when=none" },
+      ]}
+    />
+  );
+
   return (
     <FoldGroup initiallyOpen={[]}>
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-x-10">
+      <div className="room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10">
       <div className="min-w-0">
+      <div className="mt-5 hidden max-w-md room-lg:block room-xl:hidden">{numbers}</div>
       {/* Find or add, like the guest list: the + at the end of the search. */}
       <div className="mt-5 flex items-center gap-3">
         <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -257,15 +271,8 @@ export default function PlanList({
         </Fold>
       )}
       </div>
-      <aside aria-label="Where the plan stands" className="hidden lg:sticky lg:top-6 lg:block">
-        <NumbersCard
-          big={{ label: "To do", value: allOpen.length, sub: `${visitsN} ${visitsN === 1 ? "appointment" : "appointments"} to come` }}
-          rows={[
-            { value: overdueN, label: "Overdue", href: "/plan?view=list&when=overdue" },
-            { value: monthN, label: "This month", href: "/plan?view=list&when=month" },
-            { value: allOpen.filter((m) => !planDate(m)).length, label: "No date yet", href: "/plan?view=list&when=none" },
-          ]}
-        />
+      <aside aria-label="Where the plan stands" className="hidden room-xl:sticky room-xl:top-6 room-xl:block">
+        {numbers}
       </aside>
       </div>
     </FoldGroup>

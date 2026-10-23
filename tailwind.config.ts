@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 /**
  * An ivory wedding magazine. See docs/DESIGN.md for the reasoning.
@@ -42,5 +43,25 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // `room-lg:` / `room-xl:` — the laptop (1024px) and wide-laptop (1280px) layouts,
+    // but counted from the room the page really has: while a card sits beside the list
+    // (`html[data-card-beside]`, 440px) the list needs 440px more screen before it
+    // can use its columns, so it keeps the phone layout until then.
+    plugin(({ addVariant }) => {
+      // The guest table: it only needs about 700px, so it keeps its columns beside a card from 1400px.
+      addVariant("room-md", [
+        "@media (min-width: 1024px) { html:not([data-card-beside]) & }",
+        "@media (min-width: 1400px) { html[data-card-beside] & }",
+      ]);
+      addVariant("room-lg", [
+        "@media (min-width: 1024px) { html:not([data-card-beside]) & }",
+        "@media (min-width: 1464px) { html[data-card-beside] & }",
+      ]);
+      addVariant("room-xl", [
+        "@media (min-width: 1280px) { html:not([data-card-beside]) & }",
+        "@media (min-width: 1720px) { html[data-card-beside] & }",
+      ]);
+    }),
+  ],
 } satisfies Config;

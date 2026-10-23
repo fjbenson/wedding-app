@@ -91,7 +91,7 @@ export default function MoneyView({
   // (owner, 17 Oct 2026): search with the round black + at its end, then Filter.
   const filter = (
     // Laptops: search and Filter on one row (canvas 3 "Laptop · Round 3", C).
-    <div className="lg:mt-6 lg:flex lg:items-center lg:gap-5 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
+    <div className="room-md:mt-6 room-md:flex room-md:items-center room-md:gap-5 room-md:[&>*:first-child]:w-[520px] room-md:[&>*]:mt-0">
       <UrlSearch
         key={view}
         initial={query}
@@ -202,7 +202,7 @@ function ByArea({
     <>
       {/* Laptops (canvas 3 "Laptop · Round 3 · A tab that uses the width", C,
           owner's pick 18 Oct 2026): the budget and when it's due side by side. */}
-      <div className="mt-6 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4">
+      <div className="mt-6 room-md:grid room-md:grid-cols-2 room-md:items-stretch room-md:gap-4">
       <Link
         href="/money/budget"
         aria-label={`${scope ?? "All areas"} — change the budget`}
@@ -237,7 +237,7 @@ function ByArea({
           </div>
         )}
       </Link>
-      <section aria-label="When it's due" className="glass-card hidden rounded-[26px] px-5 pb-4 pt-5 lg:flex lg:flex-col">
+      <section aria-label="When it's due" className="glass-card hidden rounded-[26px] px-5 pb-4 pt-5 room-md:flex room-md:flex-col">
         <p className="flex items-baseline justify-between gap-3">
           <span className="type-meta">When it&apos;s due</span>
           <Link href="/money?view=month" className="type-meta flex items-center !text-champagne-600">
@@ -342,8 +342,8 @@ function ByMonth({
       {/* Canvas 2 "Money · Round 6", option D (owner's pick 12 Oct 2026): the
           chart on a glass card, then a glass card per month listing its payments. */}
       {/* Laptops: the chart and search on the left, the payments beside them. */}
-      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
-      <div className="lg:sticky lg:top-6">
+      <div className="room-md:clear-both room-md:grid room-md:grid-cols-2 room-md:items-start room-md:gap-6">
+      <div className="room-md:sticky room-md:top-6">
       <section className="card-white mt-6 rounded-[26px] px-4 pb-4 pt-5" aria-label="Month by month">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -375,7 +375,7 @@ function ByMonth({
         </Link>
       )}
       </div>
-      <div className="lg:pt-3">
+      <div className="room-md:pt-3">
 
       {chosen === "paid" &&
         (paid.length > 0 ? (

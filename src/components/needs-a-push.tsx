@@ -11,8 +11,8 @@ export default function NeedsAPush({ items }: { items: HubPush[] }) {
   return (
     <section className="glass-card hidden rounded-[22px] px-5 pb-2 pt-4 lg:block">
       <div className="flex items-baseline justify-between gap-3 border-b border-champagne-400 pb-2.5">
-        <h2 className="section-label">Needs a push</h2>
-        <Link href="/standing" className="type-meta !text-champagne-600 hover:!text-ink">
+        <h2 className="section-label whitespace-nowrap">Needs a push</h2>
+        <Link href="/standing" className="type-meta whitespace-nowrap !text-champagne-600 hover:!text-ink">
           Where things stand ›
         </Link>
       </div>

@@ -76,10 +76,11 @@ export default async function HomePage() {
   // on the right that fills the screen — Needs a push, then This week.
   // Your notes and Inspo are in the sidebar there. Ask Juno too. The page
   // and the ring grow with the screen, the ring as tall as the window allows.
+  // Under 1280px there's no room for the column beside the ring, so it goes under it, in two.
   return (
-    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:grid lg:max-w-[1640px] lg:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,480px)] lg:gap-7 lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10">
+    <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:max-w-[1640px] lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10 xl:grid xl:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,480px)] xl:gap-7">
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
-      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:flex-col lg:gap-[18px]">
+      <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-6 lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-[18px] xl:mt-0 xl:flex xl:flex-col xl:items-stretch">
         <NeedsAPush items={pushes} />
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (

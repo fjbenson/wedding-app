@@ -548,7 +548,7 @@ export default function GuestBrowser({
       {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the numbers
           card and "Who's coming" side by side, then search, View and Filter on
           one row, then the table across the width. */}
-      <div className="mt-6 lg:mt-5">
+      <div className="mt-6 room-md:mt-5">
         {/* Laptops: one slim row of numbers (canvas 4 "Laptop · Round 9", 1b, 21 Oct 2026). */}
         {events.length > 0 && (
           <AnswersStrip
@@ -566,7 +566,7 @@ export default function GuestBrowser({
         )}
         {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
         {events.length > 0 && (
-          <div className="lg:hidden">
+          <div className="room-lg:hidden">
             <AnswersCard
               total={filtered.filter((g) => answerOf(g) !== "declined").length}
               homes={new Set(filtered.filter((g) => answerOf(g) !== "declined").map((g) => g.household_id).filter(Boolean)).size}
@@ -583,13 +583,13 @@ export default function GuestBrowser({
           </div>
         )}
         {caterer && (
-          <div className="hidden lg:block lg:max-w-xs">
+          <div className="hidden room-lg:block room-lg:max-w-xs">
             <CopyButton text={caterer} label="Copy the list for the caterer" />
           </div>
         )}
 
-        <div className="mt-5 lg:mt-5 lg:flex lg:flex-wrap lg:items-center lg:gap-x-6">
-          <div className="flex items-center gap-2 lg:order-2 lg:ml-auto lg:w-[460px]">
+        <div className="mt-5 room-md:mt-5 room-md:flex room-md:flex-wrap room-md:items-center room-md:gap-x-6">
+          <div className="flex items-center gap-2 room-md:order-2 room-md:ml-auto room-md:w-[460px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a guest</span>
@@ -615,10 +615,10 @@ export default function GuestBrowser({
           </div>
 
           {/* Find or add on the row above; how the list is shown here: View left, Filter right (owner, 17 Oct 2026: View is the bigger choice; was Filter left, Sort right). */}
-          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 lg:order-1 lg:mt-0 lg:justify-start lg:gap-5">
+          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 room-md:order-1 room-md:mt-0 room-md:justify-start room-md:gap-5">
             <SortMenu sort={sort} onSort={chooseView} column={colSort} />
             {/* On a laptop View and Filter sit together on the left, search and + on the right (owner, 21 Oct 2026). */}
-            <span aria-hidden className="hidden h-5 w-px bg-champagne-400/60 lg:block" />
+            <span aria-hidden className="hidden h-5 w-px bg-champagne-400/60 room-md:block" />
             <FilterMenu
               guestOf={ofCounted}
               ofOn={guestOf}
@@ -638,7 +638,7 @@ export default function GuestBrowser({
             />
           </div>
           {filters.length + guestOf.length + picks.length + (group ? 1 : 0) > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 lg:order-3 lg:mt-3 lg:w-full">
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 room-md:order-3 room-md:mt-3 room-md:w-full">
               {group && (
                 <button
                   type="button"
@@ -710,7 +710,7 @@ export default function GuestBrowser({
       ) : (
         <>
           {/* Phones and tablets: compact rows, tap for the card. */}
-          <div className="flex lg:hidden">
+          <div className="flex room-md:hidden">
             <div className="min-w-0 flex-1">
               {groups.map((group) => (
                 <section key={group.key}>
@@ -909,7 +909,7 @@ function AnswersStrip({
   const lifted = "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]";
   const cant = showing === "declined";
   return (
-    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 lg:flex">
+    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 room-lg:flex">
       <div className="glass-card flex min-w-0 flex-1 items-stretch rounded-[22px] p-2">
         <button
           type="button"
@@ -1596,7 +1596,7 @@ function GuestTable({
   };
 
   return (
-    <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] lg:block">
+    <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] room-md:block">
       {/* Narrow laptop windows scroll sideways rather than squeezing the name under the next column. */}
       <div className="overflow-x-auto">
       <table className="w-full min-w-[56rem] table-fixed border-collapse text-left text-sm">

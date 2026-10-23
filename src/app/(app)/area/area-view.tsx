@@ -1136,7 +1136,7 @@ export default function AreaView({
         {/* Everything for this area, one line each, opening in place (A's cards). */}
         <section aria-label={`Everything for ${area.label}`} className="mt-3">
           <h2 className="section-label px-1">Everything for {area.label}</h2>
-          <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
+          <div data-accordion className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             <Everything
               id="suppliers"
               icon={Users}

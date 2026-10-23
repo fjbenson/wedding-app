@@ -3,6 +3,7 @@ import AppShell from "@/components/app-shell";
 import PlanCards from "./plan/plan-cards";
 import UndoToast from "@/components/undo-toast";
 import ViewMemory from "@/components/view-memory";
+import FoldAccordion from "@/components/fold-accordion";
 import { listNotes } from "@/lib/db/notes";
 import { toSort } from "@/lib/notes";
 import { getCurrentWedding, listWeddings } from "@/lib/db/weddings";
@@ -36,6 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {children}
       <UndoToast />
       <ViewMemory />
+      <FoldAccordion />
       {/* A to-do or appointment tapped anywhere opens here, over the page (?todo= / ?appointment=). */}
       <Suspense>
         <PlanCards />

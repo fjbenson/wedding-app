@@ -226,6 +226,8 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   three steps, `AreaSteps`).
 - **An empty screen still shows its shape:** faded ghost rows from the
   wedding's real areas, never made-up data.
+- **One fold open at a time** inside a card or the area page's "Everything
+for…" (`FoldAccordion`, anything marked `data-accordion`; owner, 23 Oct 2026).
 - **Search boxes show a small x at the end once something's typed**
   (`SearchClear`; owner, 23 Oct 2026).
 - **Say less:** no explanatory sentences; an empty section is just its add.

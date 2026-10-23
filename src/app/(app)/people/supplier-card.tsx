@@ -99,6 +99,8 @@ export default function SupplierCard({
   const openStage = (i: number) => {
     setOpen(i);
     if (i === 0) requestAnimationFrame(() => jumpTo("supplier-details"));
+    // Any other stage tucks Details away again.
+    else (document.getElementById("supplier-details")?.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open");
   };
   // Stepping to another supplier opens that one at where they are.
   useEffect(() => {

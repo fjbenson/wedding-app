@@ -73,6 +73,7 @@ export default function CardSheet({
         <div
           {...swipe.bind}
           style={{ transform: swipe.offset ? `translateX(${swipe.offset}px)` : undefined, transition: swipe.dragging ? "none" : "transform 160ms ease-out", touchAction: cycle ? "pan-y" : undefined }}
+          data-accordion
           className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8"
         >
           <div onPointerDown={drag.start} className="flex touch-none items-center gap-3 lg:touch-auto">

@@ -37,7 +37,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   rows (a note icon, the first line, "Note · date"; tap to edit, no Edit
   button; 21 Oct 2026, Round 2's A) and "+ Add an
   idea" (A note · Inspo, both full screens; a note's is `/area/[key]/note`,
-  Bullet and Tick-box on top) at the foot; key facts
+  Bullet and Tick-box on top of every note; the Hub note's taped paper slip plus a link box, 23 Oct 2026) at the foot; key facts
   became notes (`areas.details` kept, unshown); "Save an idea" is now "Add
   inspo". **No title or count row above a stage's contents** (23 Oct 2026: the
   bold circle name says it; Pay has no "Paid £X of £Y" either, Money below

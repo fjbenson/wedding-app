@@ -64,11 +64,11 @@ export default function NoteEditor({
     want.current = { index: i, at: lines[i].text.length };
   };
 
-  // The toolbar: the line you're on becomes a bullet or a tick-box. On a
-  // full-screen note it sits on top, where the phone's keyboard can't cover
-  // it (owner, 21 Oct 2026).
+  // The toolbar: the line you're on becomes a bullet or a tick-box. It sits
+  // on top, where the phone's keyboard can't cover it (owner, 21 Oct 2026;
+  // every note, 23 Oct 2026).
   const toolbar = (
-      <div className={fill ? "mb-3 flex gap-2 border-b border-ink/10 pb-3" : "mt-4 flex gap-2 border-t border-ink/10 pt-3"}>
+      <div className="mb-3 flex gap-2 border-b border-ink/10 pb-3">
         {(
           [
             ["bullet", "Bullet", "M9 7h11M9 12h11M9 17h11"],
@@ -113,7 +113,7 @@ export default function NoteEditor({
   return (
     <div className={fill ? "flex flex-1 flex-col" : undefined}>
       <input type="hidden" name={name} value={body} />
-      {fill && toolbar}
+      {toolbar}
       <div
         className={fill ? "flex-1 cursor-text space-y-1" : "space-y-1"}
         // A tap in the empty space below the lines carries on the last one.
@@ -188,7 +188,6 @@ export default function NoteEditor({
           </div>
         ))}
       </div>
-      {!fill && toolbar}
     </div>
   );
 }

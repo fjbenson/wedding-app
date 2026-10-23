@@ -195,9 +195,9 @@ export async function addAreaNoteAction(key: string, formData: FormData) {
  * captured with words *and* a link (`keepUrl`) only has its words edited
  * here, and keeps the link.
  */
-export async function saveAreaNoteAction(key: string, noteId: string, keepUrl: string | null, formData: FormData) {
-  const text = String(formData.get("body") ?? "").trim();
-  const fields = keepUrl ? { body: text || null, url: keepUrl } : noteFields(formData);
+export async function saveAreaNoteAction(key: string, noteId: string, formData: FormData) {
+  // The link box carries a note's link, so editing it here changes it (23 Oct 2026).
+  const fields = noteFields(formData);
   try {
     if (fields) await updateNote(noteId, fields);
     else await deleteNote(noteId);
@@ -221,8 +221,11 @@ export async function deleteAreaNoteAction(key: string, noteId: string) {
 /** The typed text as a note: a lone web address is kept as a link. Null if empty. */
 function noteFields(formData: FormData): { body: string | null; url: string | null } | null {
   const text = String(formData.get("body") ?? "").trim();
-  if (!text) return null;
+  const pasted = String(formData.get("url") ?? "").trim();
+  if (!text && !pasted) return null;
   const isLink = /^https?:\/\/\S+$/i.test(text);
+  // A pasted link box wins; otherwise a lone web address typed as the note is the link.
+  if (pasted) return { body: text && !isLink ? text : null, url: pasted };
   return { body: isLink ? null : text, url: isLink ? text : null };
 }
 

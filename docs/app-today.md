@@ -12,8 +12,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Your notes and Inspo. On a laptop (canvas 4 "Laptop · Round 8", C, 21 Oct
   2026): a bigger ring (it grows with the screen) whose buttons sit on the edge of
   a faint circle (pulled up a little so it doesn't sit low), finer icon lines,
-  each with its name in small grey capitals and **no stage marks**: a ready
-  area's button turns a soft champagne, hover says the stage (owner, 23 Oct
+  each with its name in small grey capitals and **no stage marks**: a booked
+  area's button turns a soft champagne, a ready one adds a small gold tick,
+  hover says the stage (owner, 23 Oct
   2026: dots and lines felt like a tech pipeline — "this is a wedding"; also
   tried and dropped: spokes, filling bubbles, three soft states, canvas 4
   Rounds 14–15; `src/lib/hub-stages.ts`),

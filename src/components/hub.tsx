@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 import { daysUntil } from "@/lib/dates";
@@ -22,9 +22,12 @@ const RING_RADIUS = 0.39;
 /**
  * What's been reached, in the past tense (owner, 21 Oct 2026: nouns suit the
  * area page, where you're inside a stage; here it's what's done). Said on
- * hover and to screen readers; a ready area's button turns champagne. By stages done.
+ * hover and to screen readers; a booked area's button turns champagne. By stages done.
  */
 const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
+
+/** Stages done once an area is booked (Ideas, Quote, Book). */
+const BOOKED = 3;
 
 function nodePosition(index: number, total: number) {
   // Start at the top and go clockwise.
@@ -109,13 +112,20 @@ export default function Hub({
         const Icon = areaIcon(area.key, area.icon);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
-            {/* Ready areas turn a soft champagne on a laptop — the only stage mark on
-                the ring (owner, 23 Oct 2026: dots and lines felt like a tech
-                pipeline, "this is a wedding"). Hover still says the stage. */}
+            {/* On a laptop a booked area's button turns a soft champagne, and a
+                ready one gets a small gold tick — the only stage marks on the ring
+                (owner, 23 Oct 2026: dots and lines felt like a tech pipeline, "this
+                is a wedding"; booked, as ready only comes weeks before). Hover
+                still says the stage. */}
             <span className={`relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md ${
-              area.stage === STAGES.length ? "lg:border-champagne-400/35 lg:bg-[#F3E8D4]" : ""
+              (area.stage ?? 0) >= BOOKED ? "lg:border-champagne-400/35 lg:bg-[#F3E8D4]" : ""
             }`}>
               <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1]" strokeWidth={1.5} aria-hidden />
+              {area.stage === STAGES.length && (
+                <span aria-hidden className="absolute -right-0.5 -top-0.5 hidden h-4 w-4 items-center justify-center rounded-full bg-champagne-400 shadow-[0_0_0_2px_#FBF6EE] lg:flex">
+                  <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                </span>
+              )}
             </span>
           </Node>
         );

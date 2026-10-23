@@ -3,17 +3,21 @@
 const http = require("http");
 const { execSync } = require("child_process");
 const routes = [
-  ["/rest-admin/v1", "supabase_rest_local", 3001, "/"],
-  ["/rest/v1", "supabase_rest_local", 3000, "/"],
-  ["/auth/v1", "supabase_auth_local", 9999, "/"],
-  ["/storage/v1", "supabase_storage_local", 5000, "/"],
+  ["/rest-admin/v1", "supabase_rest_", 3001, "/"],
+  ["/rest/v1", "supabase_rest_", 3000, "/"],
+  ["/auth/v1", "supabase_auth_", 9999, "/"],
+  ["/storage/v1", "supabase_storage_", 5000, "/"],
 ];
 const ips = {};
-function ip(name) {
-  if (!ips[name]) {
-    try { ips[name] = execSync(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}`).toString().trim(); } catch { return null; }
+// The containers are named after the folder the copy lives in (supabase_rest_<folder>), so find them by their prefix.
+function ip(prefix) {
+  if (!ips[prefix]) {
+    try {
+      const name = execSync(`docker ps --filter name=${prefix} --format '{{.Names}}'`).toString().trim().split("\n")[0];
+      ips[prefix] = execSync(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}`).toString().trim();
+    } catch { return null; }
   }
-  return ips[name];
+  return ips[prefix];
 }
 http.createServer((req, res) => {
   const r = routes.find(([p]) => req.url.startsWith(p));

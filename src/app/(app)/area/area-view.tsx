@@ -25,6 +25,7 @@ import { DecorThings } from "../decor/decor-things";
 import { howsLine, stationeryNextUp, type sendingCounts } from "@/lib/stationery";
 import { host } from "@/components/note-text";
 import JumpLink from "./jump-link";
+import NotesReveal from "./notes-reveal";
 import { startSoundCheckAction } from "./actions";
 import { musicTitle, SOUND_CHECK } from "@/lib/music";
 import { unscheduledBalances, type Money } from "@/lib/budget";
@@ -1362,12 +1363,10 @@ export default function AreaView({
 
         {/* A foot like the Hub's: notes and inspo, then the timeline folded to one line (A).
             Both tiles open the Ideas stage, where they live; Decor and Stationery have no
-            stages, so they have no Notes tile (it would repeat the notes fold under it, owner,
-            23 Oct 2026) and Inspo sits across the width. */}
+            stages, so their notes fold stays hidden until the Notes tile is tapped (owner, 23 Oct 2026). */}
         <section aria-label="Notes and story so far" className="mt-3">
           <h2 className="section-label px-1">Notes and story so far</h2>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-            {!(decor || stationery) && (
             <JumpLink to="ideas" className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
               <FootIcon icon={NotebookPen} />
               <span>
@@ -1375,9 +1374,8 @@ export default function AreaView({
                 <span className="mt-0.5 block text-[13px] text-stone">{notesLine}</span>
               </span>
             </JumpLink>
-            )}
             {decor || stationery ? (
-              <Link href={`/inspo?folder=${key}`} className="glass-card row-press col-span-2 flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
+              <Link href={`/inspo?folder=${key}`} className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
                 <FootIcon icon={ImagePlus} />
                 <span>
                   <span className="type-item block">Inspo</span>
@@ -1395,6 +1393,7 @@ export default function AreaView({
             )}
           </div>
           {(decor || stationery) && (
+            <NotesReveal>
             <div className="glass-card mt-2.5 overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
               <Everything
                 id="ideas"
@@ -1406,6 +1405,7 @@ export default function AreaView({
                 <div className="divide-y divide-linen">{ideaNotes}</div>
               </Everything>
             </div>
+            </NotesReveal>
           )}
           {/* Everything with this area's suppliers and the area itself, past and to
               come (canvas 3 "History · Round 2", 5 and "Timeline · Round 3"). */}

@@ -55,7 +55,7 @@ function ChipLine({ chip, faded = false, wrap = false }: { chip: Chip; faded?: b
       ? "bg-champagne-100 text-[#5E4518]"
       : "bg-white text-ink shadow-[inset_0_0_0_0.5px_#E6E0D6]";
   return (
-    <span className={`flex min-w-0 ${wrap ? "items-start" : "items-center"} gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] transition-opacity ${tone} ${faded ? "opacity-25" : ""}`}>
+    <span className={`flex min-w-0 ${wrap ? "items-start" : "items-center"} gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs ${wrap ? "leading-[1.25]" : "leading-[1.35]"} transition-opacity ${tone} ${faded ? "opacity-25" : ""}`}>
       {chip.kind === "appointment" ? (
         <Calendar className={`h-3 w-3 shrink-0 ${wrap ? "mt-[2px]" : ""}`} strokeWidth={2} aria-hidden />
       ) : (
@@ -470,8 +470,8 @@ export default function PlanCalendar({
             // Days from the months either side, faded and not tappable.
             if (n < 1 || n > length) {
               return (
-                <span key={`o${i}`} aria-hidden className={`h-[124px] border-t-[0.5px] border-linen px-2 pt-2 ${edge}`}>
-                  <span className="flex h-7 items-center font-display text-[15px] text-stone/35">
+                <span key={`o${i}`} aria-hidden className={`h-[112px] border-t-[0.5px] border-linen px-2 pt-1.5 ${edge}`}>
+                  <span className="flex h-6 items-center font-display text-[15px] text-stone/35">
                     {n < 1 ? lastMonthLength + n : n - length}
                   </span>
                 </span>
@@ -492,12 +492,12 @@ export default function PlanCalendar({
                 aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                   things.length ? `, ${things.length} ${things.length === 1 ? "item" : "items"}` : ""
                 }`}
-                className={`flex h-[124px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1.5 pt-2 text-left transition hover:bg-white/70 ${edge} ${
+                className={`flex h-[112px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1 pt-1.5 text-left transition hover:bg-white/70 ${edge} ${
                   date === selected ? "bg-white" : isToday ? "bg-champagne-100/40" : ""
                 }`}
               >
                 <span
-                  className={`flex h-7 min-w-[28px] items-center justify-center self-start rounded-full px-1 font-display text-[15px] ${
+                  className={`flex h-6 min-w-[24px] items-center justify-center self-start rounded-full px-1 font-display text-[15px] ${
                     isToday
                       ? "bg-champagne-600 text-white"
                       : isWedding

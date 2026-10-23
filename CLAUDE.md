@@ -264,7 +264,8 @@ Five tabs — **Hub · People · Plan · Money · The Day** — plus area pages,
 **Laptop (23 Oct 2026):** every screen has been laid out for laptops and
 photographed on the private copy at 1440px and 1024px, with and without a card
 open beside the list — what changed is in `docs/laptop-pass.md`. The owner
-hasn't looked yet; fix what they say is off first. Use `room-md:` / `room-lg:` /
+went over the Hub and the side menu on 23 Oct 2026 (`docs/app-today.md`);
+the other screens are still to look over — fix what they say is off first. Use `room-md:` / `room-lg:` /
 `room-xl:` (tailwind.config.ts) instead of `lg:` / `xl:` for anything set out in
 columns where a card can open beside it: a card takes 440px, and these count from
 the room the page really has.

@@ -62,7 +62,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   (21 Oct 2026; Age group went). Opening a guest, household or group closes the
   card already open. Can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
   has a profile top (tap a figure and its row below opens), Text · Call · Email,
-  the **RSVP slider always on view** (it changes most), then **folded rows with
+  the **RSVP always on view** (it changes most) as **one question at a time**
+  (owner, 23 Oct 2026, canvas 5 "Guest card · Round 3", C; no step circles): not
+  invited → "Have they had their invitation?" (Yes, it's gone); invited → "What did
+  they say?" (Coming / Can't come, "Not invited yet" to undo); answered → one line,
+  "They replied: Coming" with Change. Then **folded rows with
   a line of what's set** (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):
   FOOD & DRINK (meal and drinks tiles, dietary) · SEATING & TRAVEL · ROLE &
   GROUPS · HISTORY · DETAILS (Guest of, household, phone, email, notes), then in

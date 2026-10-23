@@ -233,19 +233,13 @@ almost everything else is still the phone layout in a narrow column.
   on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
   everything folded; D/E (tap a stage, its part opens, as on area pages; a
   button inside moves the supplier on). Do after the audit so it follows the rules.
-- **Guest card RSVP slider (owner, 23 Oct 2026):** split it like the laptop
-  guest numbers: To invite › Yet to respond › Coming together, then a gap and
-  Can't come on its own, since it's not a step in the invited-to-coming flow.
-  Mock up on canvas 4 first. Fresh chat. **Option (same day):** show it as
-  steps like a supplier's Progress (To invite › Invited › Coming, ticks as
-  reached, tap a step to move on) with Can't come as a small separate link;
-  it would replace the slider. RSVPs are per event, so it shows the guest's own.
-  **Tried and taken back out (23 Oct 2026):** To invite › Invited › Responded as
-  tappable steps felt wrong on the phone: a third row of three circles (after the
-  figures and Text · Call · Email), and no clear next action (tapping a step
-  could untick it). Rethink from the couple's journey first: one clear next action
-  at each moment (Mark as invited → Coming / Can't come → the answer with Change),
-  maybe inside the RSVP figure at the top. Mock-ups on canvas 5.
+- **Guest RSVP, later:** "Yes, it's gone" could happen by itself when the
+  household's invitation is logged as sent. The card's RSVP was rebuilt as one
+  question at a time on 23 Oct 2026 (steps with circles were tried and taken out:
+  a third row of three, and no clear next action).
+- **Guest card as a profile page (owner, 23 Oct 2026):** like a social profile —
+  the key details and Text · Call · Email together at the top, the RSVP question
+  below. Mock up first (canvas 5).
 - **A time on a to-do (owner, 23 Oct 2026):** an optional `+ Time` on the
   stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
   (timestamptz) may hold it with no database change; check first. Any database

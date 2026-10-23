@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
-import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
+import { Check, ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
 import { rolesOf } from "@/lib/guest-roles";
@@ -693,14 +693,6 @@ function MealRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) 
   );
 }
 
-const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
-  // All picked the same way, like "Guest of" above (owner's call).
-  { status: "to_invite", label: "To invite", on: "bg-white text-ink" },
-  { status: "pending", label: "Yet to respond", on: "bg-white text-ink" },
-  { status: "attending", label: "Coming", on: "bg-white text-ink" },
-  { status: "declined", label: "Can't come", on: "bg-white text-ink" },
-];
-
 /**
  * Day or evening guest, and their one answer — the same two things their
  * row in the list shows. A day guest's evening follows along, so there's
@@ -746,30 +738,91 @@ function GuestOfAndAnswer({ guest, events, own, only }: { guest: Contact; events
       )}
 
       {own && only !== "of" && (
-        <div id="guest-rsvp" className="rounded-xl">
-          <h3 className="section-label">RSVP</h3>
-          <div role="group" aria-label="RSVP" className={track}>
-            {ANSWERS.map((a) => (
-              <button
-                key={a.status}
-                type="button"
-                aria-pressed={answer === a.status}
-                onClick={() =>
-                  startTransition(async () => {
-                    setAnswer(a.status);
-                    setError((await safely(() => setGuestAnswerAction(guest.id, a.status))).error);
-                  })
-                }
-                className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <RsvpAsk
+          answer={answer}
+          onPick={(status) =>
+            startTransition(async () => {
+              setAnswer(status);
+              setError((await safely(() => setGuestAnswerAction(guest.id, status))).error);
+            })
+          }
+        />
       )}
       {error && <p role="alert" className="text-sm text-ink">{error}</p>}
     </section>
+  );
+}
+
+/**
+ * The RSVP as the couple meets it: one question at a time (owner, 23 Oct 2026,
+ * canvas 5 "Guest card · Round 3", C). Not invited yet → "Have they had their
+ * invitation?"; invited → "What did they say?"; once they've answered, that's
+ * it — one line with the answer and Change.
+ */
+function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status: Rsvp["status"]) => void }) {
+  const [changing, setChanging] = useState(false);
+  const answered = answer === "attending" || answer === "declined";
+  const pick = (status: Rsvp["status"]) => {
+    setChanging(false);
+    onPick(status);
+  };
+  const button = "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-[15px] text-ink shadow-[0_1px_4px_rgb(60_50_40/0.08)]";
+
+  if (answered && !changing) {
+    return (
+      <div id="guest-rsvp" className="flex items-center justify-between gap-3 rounded-xl text-[15px] text-ink">
+        <span className="flex items-center gap-2">
+          <span className={`flex h-[18px] w-[18px] items-center justify-center rounded-full text-white ${answer === "attending" ? "bg-champagne-600" : "bg-stone"}`}>
+            {answer === "attending" ? <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden /> : <X className="h-3 w-3" strokeWidth={2.6} aria-hidden />}
+          </span>
+          They replied: {answer === "attending" ? "Coming" : "Can't come"}
+        </span>
+        <button type="button" onClick={() => setChanging(true)} className="py-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
+          Change
+        </button>
+      </div>
+    );
+  }
+
+  const invited = answer !== "to_invite";
+  return (
+    <div id="guest-rsvp" className="rounded-[20px] border border-linen bg-white/75 p-4">
+      <p className="font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Have they had their invitation?"}</p>
+      <div className="mt-3 flex gap-2">
+        {invited ? (
+          <>
+            <button type="button" onClick={() => pick("attending")} aria-pressed={answer === "attending"} className={`${button} border border-linen`}>
+              <Check className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
+              Coming
+            </button>
+            <button type="button" onClick={() => pick("declined")} aria-pressed={answer === "declined"} className={`${button} border border-linen`}>
+              <X className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
+              Can&apos;t come
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => pick("pending")} className={`${button} border border-[#D8BE8A]`}>
+            <Check className="h-4 w-4 text-champagne-600" strokeWidth={2.2} aria-hidden />
+            Yes, it&apos;s gone
+          </button>
+        )}
+      </div>
+      {/* A way back for a slipped tap, or a changed mind. */}
+      {(invited || changing) && (
+        <div className="mt-2 flex justify-end gap-4 text-sm text-stone">
+          {changing && (
+            <button type="button" onClick={() => setChanging(false)} className="py-1.5 underline underline-offset-4 hover:text-ink">
+              Keep the answer
+            </button>
+          )}
+          {invited && (
+            <button type="button" onClick={() => pick("to_invite")} className="py-1.5 underline underline-offset-4 hover:text-ink">
+              Not invited yet
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

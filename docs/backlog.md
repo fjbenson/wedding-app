@@ -60,6 +60,17 @@ From the last few chats, not yet confirmed:
   Details). The "looks plain" question was answered 23 Oct 2026: every fold now
   has a gold icon like History (canvas 5 "Guest card · Round 5", B).
 
+## Idea: undo from History (owner, 23 Oct 2026)
+
+Log more of what's done in the app in History, with an ✕ on the rows that can
+be undone — e.g. ✕ on "Booked" puts the supplier back to Quote in. Today History
+holds only meetings, emails, notes, stage changes and sendings. Questions
+for the owner before building: which actions are undoable (stage changes,
+marked-paid; not a sent email), what happens to side effects (the deposit made
+when booking), and whether the row goes or stays as "Undone". Anything that
+logs more of people's details is rule one. Mock up first; `UndoToast` is the
+existing precedent.
+
 ## Phone audit, 20 Oct 2026
 
 Every phone screen checked on a private copy with the demo wedding (393px).

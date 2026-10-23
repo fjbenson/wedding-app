@@ -5,6 +5,8 @@ import Link from "next/link";
 import { decorFromAction } from "@/app/(app)/decor/actions";
 import { formatDayMonth } from "@/lib/dates";
 import { statusLabel, withQuantity } from "@/lib/decor";
+import { Sparkles } from "lucide-react";
+import { Fold } from "@/app/(app)/people/guest-card";
 import type { DecorItem } from "@/types/db";
 
 /**
@@ -27,9 +29,8 @@ export default function SupplierDecor({ supplierId }: { supplierId: string }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-7">
-      <h2 className="section-label font-body">Decor from them</h2>
-      <ul className="mt-1">
+    <Fold title="Decor from them" icon={Sparkles} summary={items.map((i) => withQuantity(i)).join(" · ")}>
+      <ul>
         {items.map((item) => (
           <li key={item.id} className="border-b border-linen">
             <Link href={`/day/decor?thing=${item.id}`} className="flex items-baseline justify-between gap-3 py-3">
@@ -45,6 +46,6 @@ export default function SupplierDecor({ supplierId }: { supplierId: string }) {
           </li>
         ))}
       </ul>
-    </section>
+    </Fold>
   );
 }

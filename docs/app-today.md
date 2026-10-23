@@ -101,7 +101,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
   grouped by area, the stage as a badge; the **supplier card** is a business
   card with Progress (In touch → Quote in → Booked → Paid; steps tick once reached, Paid from Money), Money, Documents (private
-  `files` bucket), Contact, Decor from them, timeline.
+  `files` bucket), then folds: timeline, Decor from them (only when they lend something), Details (Contact, phone, email, website). Call · Email · Website are always there, dashed when missing (23 Oct 2026).
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only
   (payments live in Money). Calendar month on a glass card, a day card on
   tap, the month's list, Undated and Done folds. The List works like the guest

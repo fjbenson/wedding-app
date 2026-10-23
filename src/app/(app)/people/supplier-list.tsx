@@ -220,7 +220,8 @@ export default function SupplierList({
       </PageTitle>
 
         <div>
-          <div className="lg:max-w-3xl">
+          <SupplierTiles total={counted.length} counts={counts} show={show} onShow={onShow} />
+          <div className="room-xl:hidden lg:max-w-3xl">
           <CountCard
             total={counted.length}
             areasWith={areas.filter((a) => counted.some((s) => cat(s) === a.key)).length}
@@ -231,7 +232,8 @@ export default function SupplierList({
           />
           </div>
 
-          <div className="mt-5 flex items-center gap-2">
+          <div className="mt-5 room-md:flex room-md:flex-wrap room-md:items-center room-md:gap-x-6">
+          <div className="flex items-center gap-2 room-md:order-3 room-md:ml-auto room-md:w-[460px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a supplier</span>
@@ -247,12 +249,14 @@ export default function SupplierList({
             <AddButton href="/people/suppliers/new" label="Add a supplier" />
           </div>
 
-          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1">
+          {/* On a laptop View and Filter sit together on the left, search and + on the right, picked filters between: the guest list's row (owner, 23 Oct 2026). */}
+          <div className="mt-3 flex min-h-9 items-center justify-between gap-3 px-1 room-md:order-1 room-md:mt-0 room-md:justify-start room-md:gap-5">
             <SortMenu sort={sort} onSort={setSort} />
+            <span aria-hidden className="hidden h-5 w-px bg-champagne-400/60 room-md:block" />
             <FilterMenu rows={filterRows} on={filters} onToggle={toggle} onClear={() => setFilters([])} results={shown.length} />
           </div>
           {filters.length > 0 && (
-            <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
+            <div className="mt-1 flex flex-wrap items-center gap-2 px-1 room-md:order-2 room-md:-ml-1 room-md:mt-0 room-md:min-w-0 room-md:flex-1">
               {filters.map((key) => (
                 <button
                   key={key}
@@ -270,6 +274,7 @@ export default function SupplierList({
               </button>
             </div>
           )}
+          </div>
 
           {groups.length === 0 && (
             <p className="mt-6 px-1 text-sm text-stone">
@@ -289,9 +294,10 @@ export default function SupplierList({
             </p>
           )}
           {/* On a laptop the list has columns, like the guest table (owner, 23 Oct 2026): who, how far along, what it costs, what's paid, how to reach them. */}
+          <div className="room-md:mt-6 room-md:rounded-[22px] room-md:border-[0.5px] room-md:border-white/70 room-md:bg-white/55 room-md:px-5 room-md:pb-3 room-md:pt-3 room-md:shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)]">
           {groups.length > 0 && (
-            <div aria-hidden className={`mt-6 hidden pr-1 ${COLS} type-meta !text-[11px]`}>
-              <span className="pl-[52px]">Supplier</span>
+            <div aria-hidden className={`mt-6 hidden pr-1 room-md:mt-0 room-lg:border-b room-lg:border-champagne-400 room-lg:pb-3 room-lg:pt-1 ${COLS} text-xs font-medium uppercase tracking-[0.16em] text-champagne-600`}>
+              <span>Supplier</span>
               <span>Stage</span>
               <span className="text-right">Quote</span>
               <span className="text-right">Paid</span>
@@ -305,7 +311,7 @@ export default function SupplierList({
             return (
               <section key={g.key || "none"} aria-label={g.label || "A to Z"}>
                 {g.label ? (
-                  <div className="mt-6 flex items-center justify-between gap-3 border-b border-champagne-400 pb-1">
+                  <div className="mt-6 flex items-center justify-between gap-3 border-b border-champagne-400 pb-1 room-md:mt-0 room-md:border-b-0 room-md:bg-champagne-100/40 room-md:px-2 room-md:pb-2 room-md:pt-3">
                     {/* An area's heading opens its page: where the choosing happens. */}
                     {g.href ? (
                       <Link href={g.href} className="label hover:text-ink">
@@ -332,7 +338,7 @@ export default function SupplierList({
                     </span>
                   </div>
                 ) : (
-                  <div aria-hidden className="mt-4 border-b border-champagne-400" />
+                  <div aria-hidden className="mt-4 border-b border-champagne-400 room-md:hidden" />
                 )}
                 <ul>
                   {g.rows.length === 0 && (
@@ -364,6 +370,8 @@ export default function SupplierList({
             );
           })}
 
+          </div>
+
           <Key />
         </div>
 
@@ -379,6 +387,52 @@ export default function SupplierList({
         />
       )}
     </>
+  );
+}
+
+/**
+ * Laptops: the numbers as separate tiles in one row, like the guest list's (owner,
+ * 23 Oct 2026). All in champagne, the stages in white glass; the picked one turns
+ * champagne. Each stage carries its small icon, the same ones the rows use.
+ */
+function SupplierTiles({
+  total,
+  counts,
+  show,
+  onShow,
+}: {
+  total: number;
+  counts: Record<"booked" | "quoted" | "enquired", number>;
+  show: Show | null;
+  onShow: (show: Show) => void;
+}) {
+  const tile = "flex flex-col justify-between rounded-[20px] border-[0.5px] px-5 py-4 text-left transition";
+  const idle = "border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white";
+  const picked = "border-[#E3D3B3] bg-[#F1E7D4]";
+  const parts: { status: Exclude<Show, "all">; label: string }[] = [
+    { status: "booked", label: "Booked" },
+    { status: "quoted", label: "Quote in" },
+    { status: "enquired", label: "In touch" },
+  ];
+  return (
+    <section aria-label="Where you're up to" className="mt-6 hidden grid-cols-[1.25fr_1fr_1fr_1fr] gap-3 room-xl:grid">
+      <button type="button" aria-pressed={show === "all"} onClick={() => onShow("all")} className={`${tile} ${show === "all" ? picked : idle}`}>
+        <span className={`type-figure text-[44px] leading-none ${show === "all" ? "text-[#6E5120]" : "text-ink"}`}>{total}</span>
+        <span className="type-meta mt-3 !text-ink/80">Suppliers</span>
+      </button>
+      {parts.map((t) => {
+        const on = show === t.status;
+        return (
+          <button key={t.status} type="button" aria-pressed={on} onClick={() => onShow(on ? "all" : t.status)} className={`${tile} ${on ? picked : idle}`}>
+            <span className={`type-figure text-[44px] leading-none ${on ? "text-[#6E5120]" : "text-ink"}`}>{counts[t.status]}</span>
+            <span className="mt-3 flex items-center gap-2">
+              <StageIcon status={t.status} small />
+              <span className="type-meta min-w-0 truncate">{t.label}</span>
+            </span>
+          </button>
+        );
+      })}
+    </section>
   );
 }
 

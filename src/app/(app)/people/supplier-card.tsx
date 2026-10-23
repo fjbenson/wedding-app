@@ -76,10 +76,10 @@ export default function SupplierCard({
   const site = websiteHref(d?.website ?? null);
   // Which Contact box to open ready to type: from the list's dashed buttons
   // (editField) or the card's own (addField). `n` redraws the row to open it.
-  const [adding, setAdding] = useState<{ field?: "phone" | "email"; n: number }>({ field: editField, n: 0 });
-  const addField = (field: "phone" | "email") => {
+  const [adding, setAdding] = useState<{ field?: "phone" | "email" | "website"; n: number }>({ field: editField, n: 0 });
+  const addField = (field: "phone" | "email" | "website") => {
     // Details is a fold: it opens first, then the box takes the cursor.
-    jumpTo(field === "phone" ? "supplier-phone" : "supplier-email");
+    jumpTo(`supplier-${field}`);
     window.setTimeout(() => setAdding((a) => ({ field, n: a.n + 1 })), 80);
   };
   useEffect(() => {
@@ -110,24 +110,25 @@ export default function SupplierCard({
       {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
       <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
 
-      {/* What they lend or hire out, from Decor (owner, 19 Oct 2026). */}
-      <SupplierDecor supplierId={supplier.id} />
-
       {/* History, then Details (the typed facts), always last (owner, 23 Oct 2026). */}
       <div className="-mx-[22px] mt-6 border-y border-linen">
         <section className="px-[22px]">
           <Timeline scope={`supplier:${supplier.id}`} folded />
         </section>
+        {/* What they lend or hire out, from Decor (owner, 19 Oct 2026; in a fold 23 Oct 2026). Nothing shows when they lend nothing. */}
+        <SupplierDecor supplierId={supplier.id} />
         <Fold title="Details" icon={MapPin} summary={detailsLine}>
           <dl>
-            <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
+            <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
             <div id="supplier-phone">
               <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
             </div>
             <div id="supplier-email">
               <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
             </div>
-            <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
+            <div id="supplier-website">
+              <TextRow key={`website-${adding.n}`} label="Website" value={d?.website ?? null} startEditing={adding.field === "website"} onSave={(v) => save({ field: "website", value: v })} />
+            </div>
             {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
             <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
           </dl>
@@ -248,7 +249,7 @@ function BusinessCard({
   site: string | null;
   onError: (message?: string) => void;
   /** A missing phone or email was tapped: open its box in Contact. */
-  onAdd: (field: "phone" | "email") => void;
+  onAdd: (field: "phone" | "email" | "website") => void;
 }) {
   const d = supplier.supplier_details;
   const name = supplierName(supplier);
@@ -270,8 +271,8 @@ function BusinessCard({
   const buttons = [
     phone ? { href: `tel:${phone}`, label: "Call", Icon: Phone } : { add: "phone" as const, label: "Call", Icon: Phone },
     supplier.email ? { href: `mailto:${supplier.email}`, label: "Email", Icon: Mail } : { add: "email" as const, label: "Email", Icon: Mail },
-    site && { href: site, label: "Website", Icon: Globe, out: true },
-  ].filter(Boolean) as { href?: string; add?: "phone" | "email"; label: string; Icon: typeof Phone; out?: boolean }[];
+    site ? { href: site, label: "Website", Icon: Globe, out: true } : { add: "website" as const, label: "Website", Icon: Globe },
+  ] as { href?: string; add?: "phone" | "email" | "website"; label: string; Icon: typeof Phone; out?: boolean }[];
   const dark = buttons.findIndex((b) => b.href);
 
   return (
@@ -332,7 +333,7 @@ function BusinessCard({
                   key={b.label}
                   type="button"
                   onClick={() => onAdd(b.add!)}
-                  aria-label={b.add === "phone" ? "Add their phone number" : "Add their email"}
+                  aria-label={b.add === "phone" ? "Add their phone number" : b.add === "email" ? "Add their email" : "Add their website"}
                   className="flex flex-col items-center gap-1.5 text-[13px] text-stone/60"
                 >
                   <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 import { daysUntil } from "@/lib/dates";
@@ -10,8 +10,8 @@ export interface HubArea {
   label: string;
   icon?: string | null;
   /**
-   * How many of the five stages are done (0–5), for the laptop's gold line
-   * round each button; undefined for areas without stages (Decor, Stationery).
+   * How many of the five stages are done (0–5), for how the laptop's button
+   * looks; undefined for areas without stages (Decor, Stationery).
    */
   stage?: number;
 }
@@ -22,7 +22,7 @@ const RING_RADIUS = 0.39;
 /**
  * What's been reached, in the past tense (owner, 21 Oct 2026: nouns suit the
  * area page, where you're inside a stage; here it's what's done). Said on
- * hover and to screen readers; the five dots show it. By stages done.
+ * hover and to screen readers; the button's look shows it. By stages done.
  */
 const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
 
@@ -89,7 +89,7 @@ export default function Hub({
     <div className="relative aspect-square w-full [--disc:46px] lg:[--disc:clamp(46px,8.5cqw,66px)] lg:[container-type:inline-size]">
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md lg:w-[78%] lg:bg-[#E6D5BA]/35 lg:shadow-none"
+        className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md lg:w-[78%] lg:border lg:border-champagne-400/40 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none"
       />
 
       {/* The heart of the ring opens Where things stand (owner, 13 Oct 2026). */}
@@ -106,8 +106,9 @@ export default function Hub({
         const Icon = areaIcon(area.key, area.icon);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
-            <span className="relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
-              <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)]" strokeWidth={1.5} aria-hidden />
+            <span className={`relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md lg:shadow-none lg:backdrop-blur-none ${laptopDisc(area.stage)}`}>
+              <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1.25]" strokeWidth={1.5} aria-hidden />
+              {area.stage === STAGES.length && <ReadyTick />}
             </span>
           </Node>
         );
@@ -149,29 +150,31 @@ function Node({
     >
       <span className="relative lg:mb-2.5">{children}</span>
       {/* Small grey capitals (21 Oct 2026: big black names made the ring heavy). */}
-      <span aria-hidden className="hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.8cqw,14px)] lg:tracking-[0.16em]">
+      <span aria-hidden className={`hidden text-center text-xs font-medium uppercase leading-tight tracking-[0.12em] text-stone md:block lg:text-[clamp(12px,1.8cqw,14px)] lg:tracking-[0.16em] ${stage === 0 ? "lg:text-stone/75" : ""}`}>
         {label}
       </span>
-      {stage !== undefined && <StageDots done={stage} />}
     </Link>
   );
 }
 
 /**
- * On a laptop, five small dots under an area's name, filled gold for each
- * stage done (canvas 4 "Laptop · Round 10", D3, owner's pick 21 Oct 2026: the
- * gold arcs round each button pointed every which way and looked heavy).
- * They match the five stage circles on the area page.
+ * On a laptop the button itself says where its area stands, in three soft
+ * steps (canvas 4 "Laptop · Round 15", E1, owner's pick 23 Oct 2026, in place
+ * of the five dots): not started a faint dashed circle, under way plain
+ * ivory, ready pale champagne with a small gold tick. The area page keeps
+ * all five stages; hover says which.
  */
-function StageDots({ done }: { done: number }) {
+function laptopDisc(stage: number | undefined) {
+  if (stage === 0) return "lg:border-dashed lg:border-champagne-400/55 lg:bg-[#FBF6EE]/60 lg:text-stone/80";
+  if (stage === STAGES.length) return "lg:border-champagne-400/35 lg:bg-[#F3E8D4] lg:text-champagne-600";
+  return "lg:border-[#CDB78E]/55 lg:bg-[#FFFDF8]";
+}
+
+/** The ready mark, on the button's top right corner (laptop only). */
+function ReadyTick() {
   return (
-    <span aria-hidden className="mt-1.5 hidden gap-1 lg:flex">
-      {STAGES.map((name, i) => (
-        <span
-          key={name}
-          className={`h-[5px] w-[5px] rounded-full ${i < done ? "bg-champagne-400" : "shadow-[inset_0_0_0_1px_#CDB78E]"}`}
-        />
-      ))}
+    <span aria-hidden className="absolute -right-0.5 -top-0.5 hidden h-[17px] w-[17px] items-center justify-center rounded-full bg-champagne-400 shadow-[0_0_0_2px_#FBF6EE] lg:flex">
+      <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
     </span>
   );
 }

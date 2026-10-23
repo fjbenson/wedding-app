@@ -108,7 +108,7 @@ export default function Hub({
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
             <span className="relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md">
-              <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1.2]" strokeWidth={1.5} aria-hidden />
+              <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1]" strokeWidth={1.5} aria-hidden />
             </span>
           </Node>
         );
@@ -116,7 +116,7 @@ export default function Hub({
 
       <Node position={nodePosition(areas.length, total)} href="/area/new" label="Add" ariaLabel="Add an area">
         <span className="flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-dashed border-champagne-400 bg-white/45 text-champagne-600 backdrop-blur-md">
-          <Plus className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1.2]" strokeWidth={1.5} aria-hidden />
+          <Plus className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1]" strokeWidth={1.5} aria-hidden />
         </span>
       </Node>
     </div>

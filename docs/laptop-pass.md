@@ -21,7 +21,9 @@ columns, summary on one side and the lists on the other.
 | The menu | The paper on the left, Copy for the caterer / Print / Who you're feeding stacked beside it (they stay in view). Also fixed the clipped "Copy for the caterer" label | |
 | Drinks | The drink groups side by side under the numbers card | |
 | Plan › List | A numbers card beside the list (open to-dos, overdue, this month, no date, appointments to come), each figure a filter; the list keeps a readable width | the card stays in view as the list scrolls |
-| Suppliers | Columns on a laptop like the guest table: stage, quote, paid, then phone and email as words (round Call / Email buttons below 1280px). The numbers card keeps its size | |
+| Suppliers | Like the guest list (23 Oct 2026, owner): four tiles, one toolbar row, columns in a glass card — Stage and Area with icons, Price (quoted/agreed), Paid \| To go, Phone, Email | |
+| Guest list | Five separate tiles (champagne total, white-glass answers, dashed Can't come); table columns near the name, no vertical lines, RSVP icon before its word, Phone and Household added; filter pills on the Filter row (23 Oct 2026, owner) | |
+| Tab pages | People, Money, Plan calendar and the run sheet are 1640px wide with 48px sides (was 1368px, no side padding) | |
 | Travel | Two columns: where people stay, and getting there and back | |
 | Add an area | The Next bar is centred on the page, not on the screen | |
 | Seating | The "dietary needs by table" list is a column per table (three, four from 1280px) |  |

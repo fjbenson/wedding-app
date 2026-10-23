@@ -122,6 +122,11 @@ almost everything else is still the phone layout in a narrow column.
 
 ## Parked ideas
 
+- **The app's logo top left of the laptop menu (owner, 23 Oct 2026):** in place
+  of "The wedding of Olivia & Theo", now the menu's foot says whose wedding it
+  is — the names show three times on the Hub. Waits for the name (Name Lab,
+  not played yet); then mock it on canvas 5.
+
 - **Seating, loose ends** (21 Oct 2026, built blind — check on the laptop): long
   and top tables' chairs don't sit on the dots (round ones do); diagonal chairs
   on a round table fall between dots; the guest search was dropped from the

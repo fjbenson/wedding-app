@@ -56,7 +56,7 @@ export default function SettingsView({
   const move = "flex h-8 w-8 items-center justify-center rounded-full text-stone hover:bg-cream disabled:opacity-30";
 
   return (
-    <main className="page pb-40 lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1180px] lg:pb-16">
       <h1 className="type-display mt-3 text-[32px] leading-[1.1] tracking-[-0.02em]">Settings</h1>
 
       {error && (
@@ -66,7 +66,9 @@ export default function SettingsView({
         </p>
       )}
 
-      <section className="glass-card mt-6 rounded-[22px] p-5">
+      {/* On a laptop two columns (owner, 23 Oct 2026): the wedding, logins and weddings down the left, the long list of areas beside them. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:items-start lg:gap-x-8">
+      <section className="glass-card mt-6 rounded-[22px] p-5 lg:col-start-1">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
         {/* Save only rises once something has changed. */}
         <ResetBoundary>
@@ -82,7 +84,7 @@ export default function SettingsView({
         </ResetBoundary>
       </section>
 
-      <section className="glass-card mt-6 rounded-[22px] p-5">
+      <section className="glass-card mt-6 rounded-[22px] p-5 lg:col-start-2 lg:row-span-4 lg:row-start-1">
         <div className="flex items-baseline justify-between border-b border-champagne-400 pb-2">
           <h2 className="text-xl text-ink">Areas</h2>
           <Link href="/area/new" className="inline-flex items-center gap-1 text-sm text-champagne-600 hover:text-ink">
@@ -94,7 +96,7 @@ export default function SettingsView({
         {areas.length === 0 ? (
           <p className="mt-4 text-sm text-stone">No areas yet.</p>
         ) : (
-          <ul className="mt-3">
+          <ul className="mt-3 lg:grid lg:grid-cols-2 lg:gap-x-8">
             {areas.map((area, index) => {
               const Icon = areaIcon(area.key, area.icon);
               return (
@@ -156,9 +158,11 @@ export default function SettingsView({
         )}
       </section>
 
-      <YourWeddings weddings={weddings} openId={wedding.id} />
+      <div className="lg:col-start-1">
+        <YourWeddings weddings={weddings} openId={wedding.id} />
+      </div>
 
-      <section className="glass-card mt-6 rounded-[22px] p-5">
+      <section className="glass-card mt-6 rounded-[22px] p-5 lg:col-start-1">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Who has a login</h2>
         <ul className="mt-2">
           {members.map((m) => (
@@ -170,7 +174,10 @@ export default function SettingsView({
         </ul>
       </section>
 
-      <YourLogin login={login} />
+      <div className="lg:col-start-1">
+        <YourLogin login={login} />
+      </div>
+      </div>
     </main>
   );
 }

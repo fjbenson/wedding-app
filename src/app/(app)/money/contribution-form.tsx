@@ -140,7 +140,7 @@ export default function ContributionForm({
         )}
       </Part>
 
-      <Part label="Towards (optional)">
+      <Part label="Area (optional)">
         {/* No area: towards the wedding as a whole. */}
         <AreaTiles name="area" areas={areas} otherValue="other" value={area} onChange={setArea} optional folded={!!contribution?.area_key} />
       </Part>

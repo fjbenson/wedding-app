@@ -46,11 +46,11 @@ export default function CaptureForm({
       </Part>
 
       {/* Open like every other area pick (owner, 23 Oct 2026). */}
-      <Part label="File it under">
+      <Part label="Area">
         <AreaTiles name="area" areas={areas} otherValue="other" value={area} onChange={setArea} />
         {area && (
           <button type="button" onClick={() => setArea("")} className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink">
-            Leave it to sort later
+            No area
           </button>
         )}
       </Part>

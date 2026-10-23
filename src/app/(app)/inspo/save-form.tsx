@@ -95,11 +95,11 @@ export default function SaveForm({
         </div>
       </Part>
 
-      <Part label="Folder">
+      <Part label="Area">
         <AreaTiles name="folder" areas={areas} otherValue="other" value={folder} onChange={setFolder} />
         {folder && (
           <button type="button" onClick={() => setFolder("")} className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink">
-            Leave it unsorted
+            No area
           </button>
         )}
       </Part>

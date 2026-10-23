@@ -222,6 +222,7 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   Save always in reach (`SubmitBar`) with Cancel on its left; when editing,
   Save only rises once something changed, and neither leaves the form. A saved
   item shows a tile choice as a pill ("Change ⌄").
+- **An area pick is labelled "Area"** (add "(optional)" only where it is), tiles open, and "No area" takes it off (owner, 23 Oct 2026: not Folder, File it under, Towards or "Leave it…"). "What they do" on suppliers is the job, a different thing.
 - **Every area picker ends with "Other"**, then "+ Add an area" (the ring's
   three steps, `AreaSteps`).
 - **An empty screen still shows its shape:** faded ghost rows from the

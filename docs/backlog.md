@@ -50,8 +50,8 @@ From the last few chats, not yet confirmed:
   column widths), the new View menu, the group and household cards (History,
   Add someone, subtitle figures, envelope without the stamp), and the **new
   guest card** (RSVP always up, folded rows by job, Accommodation / Transport,
-  Details). Open question: the guest card now looks plain — icon circles on the
-  rows and richer summary lines (the app's marks) were suggested; not mocked up.
+  Details). The "looks plain" question was answered 23 Oct 2026: every fold now
+  has a gold icon like History (canvas 5 "Guest card · Round 5", B).
 
 ## Phone audit, 20 Oct 2026
 

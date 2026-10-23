@@ -9,11 +9,12 @@ import { jumpTo } from "@/lib/jump-to";
 import type { Cycle } from "@/lib/card-cycle";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
-import { todayISO } from "@/lib/dates";
+import { formatDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import type { FileKind, Payment, SupplierStatus } from "@/types/db";
 import { Fold, SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
 import StageCircles from "@/components/stage-circles";
+import CardLink from "@/components/card-link";
 import PaymentRow from "@/components/payment-row";
 import { AreaTiles } from "@/components/visual-form";
 import { areaIcon } from "@/lib/areas";
@@ -466,6 +467,8 @@ function SupplierStages({
     onError(undefined);
     return result;
   };
+  // The deposit is a payment like any other (owner, 23 Oct 2026); the old "deposit paid" figure only shows if it was filled in.
+  const depositPayment = payments.find((p) => /deposit/i.test(p.description));
   const today = todayISO();
   const schedule = [...payments].sort((a, b) => Number(!!a.paid_on) - Number(!!b.paid_on) || (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"));
   const card = "glass-card rounded-[22px] px-4 [--row-bleed:16px]";
@@ -534,7 +537,18 @@ function SupplierStages({
             <div className={card}>
               <div className="border-b border-linen py-3.5">
                 <Figure label="Agreed" value={quote} onSave={(v) => saveMoney("quoted_cost", v)} />
-                {deposit != null && deposit > 0 && <p className="mt-1 text-[13px] text-stone">Deposit paid {formatMoney(deposit)}</p>}
+                {depositPayment ? (
+                  <CardLink href={`/money/payments/${depositPayment.id}`} className="mt-1 block text-[13px] text-stone hover:text-ink">
+                    Deposit {formatMoney(depositPayment.amount)} ·{" "}
+                    {depositPayment.paid_on ? `paid ${formatDayMonth(depositPayment.paid_on)}` : depositPayment.due_date ? `due ${formatDayMonth(depositPayment.due_date)}` : "not paid yet"}
+                  </CardLink>
+                ) : deposit != null && deposit > 0 ? (
+                  <p className="mt-1 text-[13px] text-stone">Deposit paid {formatMoney(deposit)}</p>
+                ) : (
+                  <Link href={`/money/payments/new?supplier=${supplier.id}&what=deposit`} className="mt-1 flex min-h-11 items-center text-[15px] text-champagne-600 hover:text-ink">
+                    + Add a deposit
+                  </Link>
+                )}
               </div>
               <SupplierDecor supplierId={supplier.id} />
               {files(["contract"], "Add a contract")}

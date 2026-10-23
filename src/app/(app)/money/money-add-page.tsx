@@ -12,7 +12,8 @@ import MoneyAddForm from "./money-add-form";
  * Adding to Money — `/money/payments/new` (starts on Payment) and
  * `/money/budget/new` (starts on Budget) are the same page, with the
  * no switch since 16 Oct 2026: the + asks which first (add-menu.tsx).
- * `?area=` picks the area; `?supplier=&amount=` come from "Add as a payment"
+ * `?area=` picks the area; `?supplier=&what=deposit` is a booked supplier card's
+ * "+ Add a deposit" (23 Oct 2026); `?supplier=&amount=` come from "Add as a payment"
  * on a booked supplier's unscheduled balance.
  */
 export default async function MoneyAddPage({
@@ -20,17 +21,17 @@ export default async function MoneyAddPage({
   searchParams,
 }: {
   kind: "payment" | "budget";
-  searchParams: { error?: string; detail?: string; supplier?: string; amount?: string; area?: string };
+  searchParams: { error?: string; detail?: string; supplier?: string; amount?: string; area?: string; what?: string };
 }) {
   const wedding = await getCurrentWedding();
   if (!wedding) redirect("/");
-  const { error, detail, supplier, amount, area } = searchParams;
+  const { error, detail, supplier, amount, area, what } = searchParams;
   const [{ areas, suppliers }, areaRows, guests] = await Promise.all([formOptions(wedding.id), listAreas(wedding.id), listGuests(wedding.id)]);
   const budgets = Object.fromEntries((areaRows ?? []).filter((a) => a.enabled).map((a) => [a.key, a.budget ?? null]));
 
   const from = suppliers.find((s) => s.id === supplier);
   const prefill = from
-    ? { supplier: from.id, amount: parseMoney(amount ?? null) ?? undefined, description: `${from.name} balance` }
+    ? { supplier: from.id, amount: parseMoney(amount ?? null) ?? undefined, description: `${from.name} ${what === "deposit" ? "deposit" : "balance"}` }
     : areas.some((a) => a.key === area)
       ? { area }
       : undefined;

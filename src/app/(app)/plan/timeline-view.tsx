@@ -54,7 +54,7 @@ export default function TimelineView({
 
   return (
     // Laptops: the calendar uses the width (calendar beside the month's list); the List stays a comfortable column.
-    <main className={`page pb-40 lg:pb-16 ${view === "calendar" ? "lg:max-w-[1368px]" : "lg:max-w-[1180px]"}`}>
+    <main className={`page pb-40 lg:pb-16 ${view === "calendar" ? "lg:max-w-[1640px]" : "lg:max-w-[1180px]"}`}>
       <CornerSwitch
         label="Show the plan"
         tabs={[

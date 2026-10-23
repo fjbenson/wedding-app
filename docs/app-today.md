@@ -46,8 +46,8 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   Then **"Everything for [area]"** in the tabs' order (suppliers, guests,
   plan, money, the day), then **"Only for [area]"** (Food & drink's menu and
   drinks), then a foot like the Hub: **Notes** and **Inspo** tiles (both open
-  the Ideas stage; Decor and Stationery, with no stages, keep a notes fold
-  there) and the timeline folded to one line (canvas 4 "Area page · Round 4",
+  the Ideas stage; Decor and Stationery, with no stages, have just a full-width
+  Inspo tile and a Notes fold, so the notes aren't shown twice, 23 Oct 2026) and the timeline folded to one line (canvas 4 "Area page · Round 4",
   A, 21 Oct 2026). Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,
   with every dietary need listed there, what it comes to at the caterer's prices, the menu `/menu`,

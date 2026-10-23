@@ -1362,10 +1362,12 @@ export default function AreaView({
 
         {/* A foot like the Hub's: notes and inspo, then the timeline folded to one line (A).
             Both tiles open the Ideas stage, where they live; Decor and Stationery have no
-            stages, so their notes fold sits under the tiles. */}
+            stages, so they have no Notes tile (it would repeat the notes fold under it, owner,
+            23 Oct 2026) and Inspo sits across the width. */}
         <section aria-label="Notes and story so far" className="mt-3">
           <h2 className="section-label px-1">Notes and story so far</h2>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+            {!(decor || stationery) && (
             <JumpLink to="ideas" className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
               <FootIcon icon={NotebookPen} />
               <span>
@@ -1373,8 +1375,9 @@ export default function AreaView({
                 <span className="mt-0.5 block text-[13px] text-stone">{notesLine}</span>
               </span>
             </JumpLink>
+            )}
             {decor || stationery ? (
-              <Link href={`/inspo?folder=${key}`} className="glass-card row-press flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
+              <Link href={`/inspo?folder=${key}`} className="glass-card row-press col-span-2 flex min-h-24 flex-col gap-2.5 rounded-[22px] p-3.5 [--row-bleed:0px]">
                 <FootIcon icon={ImagePlus} />
                 <span>
                   <span className="type-item block">Inspo</span>
@@ -1396,7 +1399,7 @@ export default function AreaView({
               <Everything
                 id="ideas"
                 icon={areaIcon(area.key, area.icon)}
-                title={`${area.label} notes`}
+                title="Notes"
                 line={notesLine}
                 add={{ href: `/area/${area.key}/note`, label: "Add a note" }}
               >
@@ -1426,7 +1429,7 @@ export default function AreaView({
 function WhatYouSend({ counts, weddingDate }: { counts: ReturnType<typeof sendingCounts>; weddingDate: string | null }) {
   return (
     <section aria-label="What you send" className="mt-3">
-      <h2 className="type-meta px-1">What you send</h2>
+      <h2 className="section-label px-1">What you send</h2>
       <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] [--row-bleed:16px]">
         {counts.map((c) => {
           const later = c.kind === "thank_you" && c.sent === 0 && weddingDate !== null && todayISO() <= weddingDate;

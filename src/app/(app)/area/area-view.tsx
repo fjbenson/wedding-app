@@ -1063,9 +1063,13 @@ export default function AreaView({
     planNow.length > 0
       ? `${planNow.length} to come${soon?.date ? ` · next ${formatDayMonth(soon.date)}` : ""}`
       : planDone > 0 ? `${planDone} done` : "Nothing planned";
-  const moneyLine = anyMoney
-    ? `${formatMoney(money.committed)}${money.budget !== null ? ` of ${formatMoney(money.budget)}` : ""} agreed`
-    : "No budget yet";
+  // Once something's agreed the money is about that, not the budget (owner, 23 Oct 2026, as on Money's area cards): the agreed total, and how much of it is paid.
+  const moneyLine =
+    money.committed > 0
+      ? `${formatMoney(money.committed)} agreed · ${money.paid >= money.committed ? "all paid" : `${formatMoney(money.committed - money.paid)} to pay`}`
+      : money.budget !== null
+        ? `${formatMoney(money.budget)} budget`
+        : "No budget yet";
   const transportRuns = guestFacts?.kind === "transport" ? guestFacts.runs.length : 0;
   const dayLine =
     moments.length > 0
@@ -1207,32 +1211,33 @@ export default function AreaView({
               see={{ href: `/money?view=month&area=${key}`, label: "In Money" }}
               add={{ href: `/money/payments/new?area=${key}`, label: "Add a payment" }}
             >
-          {anyMoney ? (
+          {money.committed > 0 ? (
             <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
               <span className="flex flex-wrap items-baseline gap-x-2">
                 <span className="type-figure text-[36px] leading-none !font-light">{formatMoney(money.committed)}</span>
-                <span className="text-sm text-stone">
-                  {money.budget !== null ? `of ${formatMoney(money.budget)} agreed` : "agreed · no budget set"}
-                </span>
+                <span className="text-sm text-stone">{money.paid >= money.committed ? "agreed · all paid ✓" : "agreed"}</span>
               </span>
-              <span className="mt-3 block">
-                <BudgetBar money={money} />
+              {/* Paid out of what's agreed: full when it's all paid. */}
+              <span aria-hidden className="mt-3 block h-2 overflow-hidden rounded-full bg-champagne-100">
+                <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, Math.round((money.paid / money.committed) * 100))}%` }} />
               </span>
-              <span className="mt-3 grid grid-cols-3 gap-2 text-[13px]">
+              <span className="mt-3 grid grid-cols-2 gap-2 text-[13px]">
                 <span>
                   <span className="block text-champagne-600">Paid</span>
-                  <span className="type-figure block text-lg !font-light !text-champagne-600">{formatMoney(money.paid)}</span>
+                  <span className="type-figure block text-lg !font-light !text-champagne-600">{formatMoney(Math.min(money.paid, money.committed))}</span>
                 </span>
                 <span>
                   <span className="block text-stone">To pay</span>
                   <span className="type-figure block text-lg !font-light">{formatMoney(toPay)}</span>
                 </span>
-                <span>
-                  <span className="block text-stone">{free !== null && free < 0 ? "Over" : "Still free"}</span>
-                  <span className={`type-figure block text-lg !font-light ${free !== null && free < 0 ? "!text-[#9A3F2B]" : ""}`}>
-                    {free === null ? "—" : free < 0 ? `▲ ${formatMoney(-free)}` : formatMoney(free)}
-                  </span>
-                </span>
+              </span>
+              {free !== null && free < 0 && <span className="mt-3 block text-[13px] text-[#9A3F2B]">▲ {formatMoney(-free)} over the {formatMoney(money.budget ?? 0)} budget</span>}
+            </Link>
+          ) : money.budget !== null ? (
+            <Link href="/money/budget" className="block border-b border-linen pb-3.5 pt-3.5">
+              <span className="flex flex-wrap items-baseline gap-x-2">
+                <span className="type-figure text-[36px] leading-none !font-light">{formatMoney(money.budget)}</span>
+                <span className="text-sm text-stone">budget · nothing agreed yet</span>
               </span>
             </Link>
           ) : (

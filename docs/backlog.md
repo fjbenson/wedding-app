@@ -223,7 +223,10 @@ almost everything else is still the phone layout in a narrow column.
 - **Guest card RSVP slider (owner, 23 Oct 2026):** split it like the laptop
   guest numbers: To invite › Yet to respond › Coming together, then a gap and
   Can't come on its own, since it's not a step in the invited-to-coming flow.
-  Mock up on canvas 4 first. Fresh chat.
+  Mock up on canvas 4 first. Fresh chat. **Option (same day):** show it as
+  steps like a supplier's Progress (To invite › Invited › Coming, ticks as
+  reached, tap a step to move on) with Can't come as a small separate link;
+  it would replace the slider. RSVPs are per event, so it shows the guest's own.
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

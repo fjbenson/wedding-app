@@ -93,10 +93,15 @@ export default function StageTabs({
       </div>
 
       <div role="tabpanel" id="stage-panel" aria-labelledby={`stage-tab-${st.id}`} className="mt-5 lg:mt-6 lg:border-t lg:border-linen lg:pt-6">
-        <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h3 className="font-display text-xl text-ink">{st.name}</h3>
-          <span className="text-sm text-stone">{st.line}</span>
-        </div>
+        {/* Ready is only its button, so no heading row above it (owner, 23 Oct 2026): the circles already say where you are. */}
+        {st.id === "ready" ? (
+          <h3 className="sr-only">{st.name}</h3>
+        ) : (
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h3 className="font-display text-xl text-ink">{st.name}</h3>
+            <span className="text-sm text-stone">{st.line}</span>
+          </div>
+        )}
         <div id={st.id} className="scroll-mt-6">
           {st.content}
         </div>

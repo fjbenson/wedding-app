@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -248,6 +249,7 @@ function TravelSearch({
             placeholder="Find a guest"
             className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
           />
+          <SearchClear query={query} onClear={() => setQuery("")} />
         </label>
         {end}
       </div>
@@ -441,6 +443,7 @@ function GuestSearch({
           aria-label="Search guests"
           className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] text-ink placeholder:text-stone focus:outline-none focus:ring-0"
         />
+        <SearchClear query={q} onClear={() => setQ("")} />
       </label>
       {!words && suggested.length > 0 && <p className="mt-3 text-xs text-stone">{suggestedLabel}</p>}
       {found.length > 0 ? (

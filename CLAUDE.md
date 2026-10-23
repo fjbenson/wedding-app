@@ -226,6 +226,8 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   three steps, `AreaSteps`).
 - **An empty screen still shows its shape:** faded ghost rows from the
   wedding's real areas, never made-up data.
+- **Search boxes show a small x at the end once something's typed**
+  (`SearchClear`; owner, 23 Oct 2026).
 - **Say less:** no explanatory sentences; an empty section is just its add.
 - **Never colour alone** for meaning (overspend is rose stripes plus
   "▲ Over by £…").

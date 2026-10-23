@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import { useCycle, useRegisterCycle } from "@/lib/card-cycle";
 import Link from "next/link";
 import AddButton from "@/components/add-button";
@@ -241,6 +242,7 @@ export default function SupplierList({
                 placeholder="Find a supplier"
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
+              <SearchClear query={query} onClear={() => setQuery("")} />
             </label>
             <AddButton href="/people/suppliers/new" label="Add a supplier" />
           </div>

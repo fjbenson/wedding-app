@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { AREA_ICONS, searchIcons } from "@/lib/area-icons";
@@ -26,6 +27,7 @@ export default function IconPicker({ value, onPick }: { value: string | null; on
           placeholder="Search, e.g. lights"
           className="min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-stone/60 focus:outline-none"
         />
+        <SearchClear query={query} onClear={() => setQuery("")} />
       </label>
       {query.trim() && !found.length && <p className="mt-3 text-sm text-stone">Nothing for “{query.trim()}” — here they all are.</p>}
       <div className="mt-4 grid grid-cols-6 gap-[7px]">

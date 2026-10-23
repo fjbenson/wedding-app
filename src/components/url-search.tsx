@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
@@ -43,6 +44,7 @@ export default function UrlSearch({ initial, placeholder, end }: { initial: stri
           placeholder={placeholder}
           className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
         />
+        <SearchClear query={query} onClear={() => setQuery("")} />
       </label>
       {end}
     </div>

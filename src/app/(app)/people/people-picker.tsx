@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import { useRef, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
 import { CARD } from "@/components/visual-form";
@@ -73,6 +74,7 @@ export default function PeoplePicker({
           aria-label="Find a guest"
           className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
         />
+        <SearchClear query={query} onClear={() => setQuery("")} />
       </label>
       {note && <p className="mt-2 px-1 text-[13px] text-stone">{note}</p>}
       {words.length > 0 && (

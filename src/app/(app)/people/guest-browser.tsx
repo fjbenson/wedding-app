@@ -1,5 +1,6 @@
 "use client";
 
+import SearchClear from "@/components/search-clear";
 import type { GuestSeating } from "@/lib/db/day";
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
@@ -600,6 +601,7 @@ export default function GuestBrowser({
                 placeholder="Find a guest"
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
               />
+              <SearchClear query={query} onClear={() => setQuery("")} />
             </label>
             {/* Pick what to add first, then its own full screen (owner, 16 Oct 2026). */}
             <AddMenu

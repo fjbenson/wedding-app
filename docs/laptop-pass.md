@@ -24,3 +24,7 @@ columns, summary on one side and the lists on the other.
 | Suppliers | Columns on a laptop like the guest table: stage, quote, paid, then phone and email as words (round Call / Email buttons below 1280px). The numbers card keeps its size | |
 | Travel | Two columns: where people stay, and getting there and back | |
 | Add an area | The Next bar is centred on the page, not on the screen | |
+| Seating | The "dietary needs by table" list is a column per table (three, four from 1280px) |  |
+
+Checked at 1440px and 1024px with no sideways scroll. Settings' two area
+columns only start at 1280px; below that the areas are one column.

@@ -67,7 +67,7 @@ export default function SettingsView({
       )}
 
       {/* On a laptop two columns (owner, 23 Oct 2026): the wedding, logins and weddings down the left, the long list of areas beside them. */}
-      <div className="lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:items-start lg:gap-x-8">
+      <div className="lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:grid-rows-[auto_auto_auto_1fr] lg:items-start lg:gap-x-8">
       <section className="glass-card mt-6 rounded-[22px] p-5 lg:col-start-1">
         <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">The wedding</h2>
         {/* Save only rises once something has changed. */}
@@ -96,7 +96,7 @@ export default function SettingsView({
         {areas.length === 0 ? (
           <p className="mt-4 text-sm text-stone">No areas yet.</p>
         ) : (
-          <ul className="mt-3 lg:grid lg:grid-cols-2 lg:gap-x-8">
+          <ul className="mt-3 xl:grid xl:grid-cols-2 xl:gap-x-8">
             {areas.map((area, index) => {
               const Icon = areaIcon(area.key, area.icon);
               return (

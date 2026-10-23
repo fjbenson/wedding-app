@@ -666,6 +666,8 @@ function DietaryByTable({
         <h2 className="section-label">Dietary needs by table</h2>
         <span className="text-[13px] text-stone">{withNeeds.length === 1 ? "1 guest" : `${withNeeds.length} guests`}</span>
       </div>
+      {/* Laptop: a table to a column (owner, 23 Oct 2026). */}
+      <div className="lg:grid lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
       {blocks.map((b) => (
         <div key={b.name} className="mt-3 border-t border-ink/[0.12] pt-2.5">
           <p className="font-display text-[17px] text-ink">{b.name}</p>
@@ -679,6 +681,7 @@ function DietaryByTable({
           </ul>
         </div>
       ))}
+      </div>
       <CopyText text={text} label="Copy for the venue" className="mt-1 border-t border-ink/[0.12]" />
     </section>
   );

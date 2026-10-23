@@ -107,7 +107,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   (payments live in Money). Calendar month on a glass card, a day card on
   tap, the month's list, Undated and Done folds. On a laptop (23 Oct 2026, canvas 5 "Laptop ·
   Round 21", A): the big month — four tiles ("19 total | 2 in October"), then the month across the page
-  with each thing written in its day; No date and Done as pills; no list under it.
+  with each thing written in its day; No date and Done as pills; no list under it. Things on one day run in time order, to-dos and appointments together (23 Oct 2026). Search, Filter (To-dos/Appointments, Area) and the black + on one row above the month; what doesn't match fades (23 Oct 2026). The month runs to the bottom of the screen (owner, 23 Oct 2026: stretch, don't stay short). The day card opens beside the month, no dimming; the big month holds from 1400px with it open.
   To-dos can have a time (23 Oct 2026, `due_time`, 0037), once they have a day.
   A day's card puts times where the date was ("Any time" for the rest), or no
   column at all when nothing that day has a time. No date shows a faint "Set date". The List works like the guest

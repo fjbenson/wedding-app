@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
-import { Check, ChevronDown, Mail, MapPin, MessageSquare, Pencil, Phone, Star, X, type LucideIcon } from "lucide-react";
+import { Armchair, Check, ChevronDown, ListChecks, Mail, MapPin, MessageSquare, Pencil, Phone, Star, UtensilsCrossed, X, type LucideIcon } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
 import { rolesOf } from "@/lib/guest-roles";
@@ -193,11 +193,11 @@ export default function GuestCard({
 
       {/* Role & groups first, then Food, Seating & travel and what they're involved in; History and Details last (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–11"). */}
       <div className="-mx-[22px] mt-6 border-t border-linen border-b">
-        <Fold title={groups ? "Role & groups" : "Role"} summary={roleLine}>
+        <Fold title={groups ? "Role & groups" : "Role"} icon={Star} summary={roleLine}>
           <RolesAndGroups guest={guest} groups={groups} onShowGroup={onShowGroup} />
         </Fold>
 
-        <Fold title="Food" summary={food}>
+        <Fold title="Food" icon={UtensilsCrossed} summary={food}>
           <MealRow guest={guest} onSave={save} />
           {own && (
             <dl className="mt-3">
@@ -207,7 +207,7 @@ export default function GuestCard({
         </Fold>
 
         {(hasTables || travel) && (
-          <Fold title="Seating & travel" summary={seatingLine}>
+          <Fold title="Seating & travel" icon={Armchair} summary={seatingLine}>
             {hasTables && (
               <dl>
                 <TableRow guest={guest} seating={seating!} />
@@ -219,7 +219,7 @@ export default function GuestCard({
 
         {/* Everything they're tagged on, paying, setting up or in charge of; left out when it's nothing. */}
         {involvement && involvement.length > 0 && (
-          <Fold title="Involved in" summary={`${involvement.length} ${involvement.length === 1 ? "thing" : "things"}`}>
+          <Fold title="Involved in" icon={ListChecks} summary={`${involvement.length} ${involvement.length === 1 ? "thing" : "things"}`}>
             <InvolvedRows rows={involvement} />
           </Fold>
         )}
@@ -256,7 +256,8 @@ export default function GuestCard({
  * the right one — `jumpTo`). The body stays in the page when shut, so what
  * was half typed isn't lost. With an `icon` it's the shared card fold, like
  * History's: a gold circle, the name plain, the line in grey (Details on
- * every card; owner, 23 Oct 2026, canvas 4 "Cards · Every card").
+ * every card, and every fold of the guest card; owner, 23 Oct 2026, canvas 5
+ * "Guest card · Round 5", B).
  */
 export function Fold({ title, summary, icon: Icon, children }: { title: string; summary: ReactNode; icon?: LucideIcon; children: ReactNode }) {
   return (

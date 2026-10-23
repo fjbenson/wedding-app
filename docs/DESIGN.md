@@ -262,6 +262,9 @@ Moment, Inspo idea, Decor item, Note. What each has today:
    changed Run sheet and Area also fold. Both look the same: a gold icon circle
    (History's clock, Details' pin), the name plain, a grey line under it
    (built on the guest, household, supplier and Money area cards, 23 Oct 2026).
+   The guest card keeps a fold per job (Role & groups, Food, Seating & travel,
+   Involved in) above them, each drawn the same way with its own icon: any fold
+   looks like History (owner, 23 Oct 2026, canvas 5 "Guest card · Round 5", B).
 6. **If the card belongs to an area:** an outlined pill, "Open the [area]
    page ›", then a quiet underlined **Remove** (and any "undo the choice"
    link beside it, like "We didn't go with them") at the very foot.

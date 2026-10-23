@@ -73,7 +73,7 @@ export default function AccountButton({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className={`-mx-2 flex w-[calc(100%+16px)] items-center gap-3 rounded-[14px] p-2 text-left transition hover:bg-champagne-100/60 ${
+        className={`-mx-4 flex w-[calc(100%+32px)] items-center gap-3 rounded-[14px] p-2 text-left transition hover:bg-champagne-100/60 ${
           open || pathname === "/settings" ? "bg-champagne-100/60" : ""
         }`}
       >

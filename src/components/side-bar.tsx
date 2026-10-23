@@ -33,7 +33,7 @@ export default function SideBar({
   const tabs = NAV.filter((t) => t.href);
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-[250px] flex-col border-r border-champagne-400/45 bg-[#FFFDF8]/55 px-[30px] pb-8 pt-10 print:!hidden lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-[280px] flex-col border-r border-champagne-400/45 bg-[#FFFDF8]/55 px-[30px] pb-8 pt-10 print:!hidden lg:flex">
       <Link href="/" className="block">
         <span className="label">The wedding of</span>
         <span className="mt-2 block font-display text-[28px] font-light italic leading-[1.1] tracking-[-0.01em] text-ink">{coupleName(name)}</span>

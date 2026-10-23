@@ -197,7 +197,7 @@ export default function AreaSteps({
         )}
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-lg bg-gradient-to-t from-ground from-60% to-ground/0 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 md:max-w-2xl lg:left-[250px] lg:w-auto">
+      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-lg bg-gradient-to-t from-ground from-60% to-ground/0 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 md:max-w-2xl lg:left-[280px] lg:w-auto">
         {step < 3 ? (
           <button
             type="button"

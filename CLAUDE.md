@@ -245,7 +245,7 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   "▲ Over by £…").
 - Phones: 16px side margin (`--gutter`), no text under 12px, inputs 16px+
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
-  the menu down the left like a magazine's contents (`side-bar.tsx`, 250px;
+  the menu down the left like a magazine's contents (`side-bar.tsx`, 280px since 23 Oct 2026 so an email fits at its foot;
   canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
   top bar; at its foot the couple's monogram, names and the login's email open
   Settings, Your weddings and Sign out, canvas 5 "Round 16", A, 23 Oct 2026),

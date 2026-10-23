@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check } from "lucide-react";
 import CardSheet from "@/components/card-sheet";
 import { replaceQuery } from "@/lib/url-state";
 import { toggleMilestoneAction } from "./actions";
@@ -114,12 +113,16 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
             </p>
           )}
 
-          {data.kind === "todo" && (
-            <DoneButton done={data.milestone.status !== "todo" && data.milestone.status !== "in_progress"} pending={pending} onToggle={toggle} />
-          )}
-
           {data.kind === "todo" ? (
-            <TodoBody milestone={data.milestone} areas={data.areas} weddingDate={data.weddingDate} involved={data.involved} />
+            <TodoBody
+              milestone={data.milestone}
+              areas={data.areas}
+              weddingDate={data.weddingDate}
+              involved={data.involved}
+              done={data.milestone.status !== "todo" && data.milestone.status !== "in_progress"}
+              pending={pending}
+              onToggle={toggle}
+            />
           ) : data.kind === "appointment" ? (
             <AppointmentBody appointment={data.appointment} areas={data.areas} suppliers={data.suppliers} weddingDate={data.weddingDate} involved={data.involved} />
           ) : data.kind === "moment" ? (
@@ -144,29 +147,5 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
       )}
 
     </CardSheet>
-  );
-}
-
-/** Tick it off from the card: the same circle as the row's, with its word. */
-function DoneButton({ done, pending, onToggle }: { done: boolean; pending: boolean; onToggle: (done: boolean) => void }) {
-  return (
-    <button
-      type="button"
-      disabled={pending}
-      onClick={() => onToggle(!done)}
-      aria-pressed={done}
-      className={`mb-4 flex h-11 items-center gap-2.5 rounded-full pl-1.5 pr-4 text-[15px] transition disabled:opacity-60 ${
-        done ? "bg-champagne-100 text-champagne-600" : "border border-linen bg-white text-ink hover:border-champagne-400"
-      }`}
-    >
-      <span
-        className={`flex h-[30px] w-[30px] items-center justify-center rounded-full ${
-          done ? "bg-champagne-600 text-white" : "border-[1.5px] border-stone/50 bg-white"
-        }`}
-      >
-        {done && <Check className="h-4 w-4" strokeWidth={2.4} aria-hidden />}
-      </span>
-      {done ? "Done" : "Mark as done"}
-    </button>
   );
 }

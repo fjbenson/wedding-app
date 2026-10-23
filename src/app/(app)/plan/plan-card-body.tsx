@@ -21,6 +21,7 @@ import { DetailLabel } from "../people/guest-table";
 import { moveMomentAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
 import { addCourseForMomentAction, setMomentFoodAction } from "../menu/actions";
 import { InvolvedPart } from "./involved";
+import { AreaPageLink, ItemAction, ItemSignature } from "./item-parts";
 
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
@@ -44,14 +45,21 @@ export function TodoBody({
   areas,
   weddingDate,
   involved,
+  done,
+  pending,
+  onToggle,
 }: {
   milestone: Milestone;
   areas: AreaOption[];
   weddingDate: string | null;
   involved: Involved;
+  done: boolean;
+  pending: boolean;
+  onToggle: (done: boolean) => void;
 }) {
   const save = useSave("todo", m.id);
   const [date, setDate] = useState(m.due_date ?? m.remind_at?.slice(0, 10) ?? "");
+  const [area, setArea] = useState(m.category ?? "");
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
 
@@ -61,33 +69,36 @@ export function TodoBody({
 
   return (
     <>
-      <TitleEditor value={m.title} onSave={(v) => save({ title: v })} />
+      <ItemSignature
+        titleEditor={<TitleEditor value={m.title} onSave={(v) => save({ title: v })} />}
+        date={date}
+        dateName="when"
+        onDate={(v) => {
+          setDate(v);
+          change({ due_date: v || null });
+        }}
+        weddingDate={weddingDate}
+        area={area}
+        areaOptions={options}
+        otherValue=""
+        onArea={(v) => {
+          setArea(v);
+          change({ category: v || null });
+        }}
+      />
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      <Part label="When">
-        <DateCard
-          name="when"
-          value={date}
-          onChange={(v) => {
-            setDate(v);
-            change({ due_date: v || null });
-          }}
-          weddingDate={weddingDate}
-        />
-      </Part>
-
-      <Part label="Area">
-        <AreaTiles name="category" areas={options} otherValue="" defaultValue={current ?? ""} onChange={(v) => change({ category: v || null })} folded />
-      </Part>
+      <ItemAction label="Mark as done" doneLabel="Done" done={done} pending={pending} onClick={() => onToggle(!done)} />
 
       <InvolvedPart kind="todo" id={m.id} involved={involved} />
 
       <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
+        <dl>
           <TextRow label="Notes" value={m.description} multiline onSave={(v) => save({ description: v })} />
         </dl>
       </section>
+
+      <AreaPageLink areaKey={area} areas={areas} />
     </>
   );
 }
@@ -265,92 +276,57 @@ export function PaymentBody({
 
   return (
     <>
-      <button
-        type="button"
+      <ItemSignature
+        titleEditor={<TitleEditor value={p.description} onSave={(v) => save({ description: v })} />}
+        date={paid ? paidOn : due}
+        dateName={paid ? "paid_on" : "due_date"}
+        dateNote={paid ? "Paid " : "Due "}
+        onDate={(v) => {
+          if (paid) {
+            // A paid payment always has the day it was paid.
+            if (!v) return;
+            setPaidOn(v);
+            change({ paid_on: v });
+          } else {
+            setDue(v);
+            change({ due_date: v || null });
+          }
+        }}
+        weddingDate={weddingDate}
+        quick={!paid}
+        clearable={!paid}
+        area={area}
+        areaOptions={options}
+        areaRound={round}
+        onArea={(v) => {
+          setArea(v);
+          setFollowsSupplier(false);
+          change({ area_key: v || null });
+        }}
+      />
+      <AmountEditor value={p.amount} onSave={(v) => save({ amount: v })} />
+      {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
+
+      <ItemAction
+        label="Mark as paid"
+        doneLabel={paid ? `Paid ${formatLongDate(paidOn).replace(/^\w+, /, "")}` : ""}
+        mark="£"
+        done={paid}
         onClick={() => {
           const next = paid ? "" : todayISO();
           setPaidOn(next);
           change({ paid_on: next || null });
         }}
-        aria-pressed={paid}
-        className={`mb-4 flex h-11 items-center gap-2.5 rounded-full pl-1.5 pr-4 text-[15px] transition ${
-          paid ? "bg-champagne-100 text-champagne-600" : "border border-linen bg-white text-ink hover:border-champagne-400"
-        }`}
-      >
-        <span
-          className={`flex h-[30px] w-[30px] items-center justify-center rounded-full font-display text-[15px] ${
-            paid ? "bg-champagne-600 text-white" : "border-[1.5px] border-champagne-400 bg-white text-champagne-600"
-          }`}
-        >
-          {paid ? <Check className="h-4 w-4" strokeWidth={2.4} aria-hidden /> : "£"}
-        </span>
-        {paid ? `Paid ${formatLongDate(paidOn).replace(/^\w+, /, "")}` : "Mark as paid"}
-      </button>
-
-      <TitleEditor value={p.description} onSave={(v) => save({ description: v })} />
-      <AmountEditor value={p.amount} onSave={(v) => save({ amount: v })} />
-      {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
-
-      <Part label={paid ? "Paid on" : "Due"}>
-        {paid ? (
-          <DateCard
-            name="paid_on"
-            value={paidOn}
-            quick={false}
-            clearable={false}
-            onChange={(v) => {
-              if (!v) return;
-              setPaidOn(v);
-              change({ paid_on: v });
-            }}
-          />
-        ) : (
-          <DateCard
-            name="due_date"
-            value={due}
-            onChange={(v) => {
-              setDue(v);
-              change({ due_date: v || null });
-            }}
-            weddingDate={weddingDate}
-          />
-        )}
-      </Part>
-
-      <Part label="Area">
-        <AreaTiles
-          key={round}
-          name="area"
-          areas={options}
-          otherValue="other"
-          value={area}
-          onChange={(v) => {
-            setArea(v);
-            setFollowsSupplier(false);
-            change({ area_key: v || null });
-          }}
-          folded={!!area}
-        />
-      </Part>
+      />
 
       {/* Family paying a bill themselves (owner, 17 Oct 2026). Nobody tagged = the couple. */}
       <InvolvedPart kind="payment" id={p.id} involved={involved} label="Who's paying" nobody="Us" />
 
-      {/* Every payment to the same supplier, paid and to come (canvas 3 "Timeline · Round 3", 2). */}
-      {p.contact_id && (
-        <Timeline
-          scope={`supplier:${p.contact_id}`}
-          only="money"
-          label={`All payments to ${suppliers.find((x) => x.id === p.contact_id)?.name ?? "them"}`}
-        />
-      )}
-
       <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
+        <dl>
           <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
             <dt className="type-meta py-3.5">
-              <DetailLabel label="To" />
+              <DetailLabel label="With" />
             </dt>
             <dd className="min-w-0 py-2">
               <select
@@ -384,9 +360,25 @@ export function PaymentBody({
               </select>
             </dd>
           </div>
+        </dl>
+      </section>
+
+      {/* Every payment to the same supplier, paid and to come (canvas 3 "Timeline · Round 3", 2). */}
+      {p.contact_id && (
+        <Timeline
+          scope={`supplier:${p.contact_id}`}
+          only="money"
+          label={`All payments to ${suppliers.find((x) => x.id === p.contact_id)?.name ?? "them"}`}
+        />
+      )}
+
+      <section className="mt-7">
+        <dl>
           <TextRow label="Notes" value={p.notes} multiline onSave={(v) => save({ notes: v })} />
         </dl>
       </section>
+
+      <AreaPageLink areaKey={area} areas={areas} />
     </>
   );
 }

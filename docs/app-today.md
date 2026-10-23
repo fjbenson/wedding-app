@@ -72,8 +72,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   the **RSVP always on view** (it changes most) as **one question at a time**
   (owner, 23 Oct 2026, canvas 5 "Guest card · Round 3", C; no step circles): not
   invited → "Have they had their invitation?" (Yes, it's gone); invited → "What did
-  they say?" (Coming / Can't come, "Not invited yet" to undo); answered → one line,
-  "They replied: Coming" with Change. Then **folded rows, each with a gold icon and
+  they say?" (Coming / Can't come, "Not invited yet" to undo); answered → the question goes;
+  a badge on the picture says it (gold tick or grey cross) and tapping the RSVP box asks
+  again (canvas 5 "Guest card · Round 6", D). Then **folded rows, each with a gold icon and
   a line of what's set** (all drawn like History; canvas 5 "Guest card · Round 5", B) (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):
   FOOD & DRINK (meal and drinks tiles, dietary) · SEATING & TRAVEL · ROLE &
   GROUPS · HISTORY · DETAILS (Guest of, household, phone, email, notes), then in

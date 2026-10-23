@@ -186,7 +186,8 @@ export default function GuestCard({
       */}
       {/* The answer is what changes most, so it stays on view; day or evening hardly ever changes, so it's in Details (owner, 21 Oct 2026). Until they have one, it's the thing to set. */}
       {events.length > 0 && (
-        <div className="mt-6">
+        // Once answered there's nothing here, so no gap either.
+        <div className="mt-6 has-[>section:empty]:hidden">
           <GuestOfAndAnswer guest={guest} events={events} own={own} only={own ? "answer" : "of"} />
         </div>
       )}
@@ -329,11 +330,25 @@ function Profile({
   return (
     <div className="mt-1">
       <div className="flex items-center gap-[18px]">
-        <span
-          aria-hidden
-          className="flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-full bg-champagne-100 font-display text-[30px] text-champagne-600 shadow-[0_0_0_3px_#FFFFFF,0_0_0_4px_#D8C7A4]"
-        >
-          {initials(guest)}
+        {/* Once they've answered, a badge on the picture says so, like a profile's (owner, 23 Oct 2026, canvas 5 "Guest card · Round 6", D). */}
+        <span className="relative shrink-0">
+          <span
+            aria-hidden
+            className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-champagne-100 font-display text-[30px] text-champagne-600 shadow-[0_0_0_3px_#FFFFFF,0_0_0_4px_#D8C7A4]"
+          >
+            {initials(guest)}
+          </span>
+          {(own?.status === "attending" || own?.status === "declined") && (
+            <span
+              role="img"
+              aria-label={own.status === "attending" ? "Coming" : "Can't come"}
+              className={`absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-[0_0_0_3px_#FBF9F5] ${
+                own.status === "attending" ? "bg-champagne-600" : "bg-stone"
+              }`}
+            >
+              {own.status === "attending" ? <Check className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden /> : <X className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden />}
+            </span>
+          )}
         </span>
         <div className="min-w-0 flex-1">
           <NameEditor guest={guest} onSave={onSave} left />
@@ -355,7 +370,15 @@ function Profile({
 
       <div className="mt-5 grid grid-cols-3 gap-2 text-center">
         <div className="min-w-0">
-          <button type="button" onClick={() => jumpTo(own ? "guest-rsvp" : "guest-of")} className={figure}>
+          <button
+            type="button"
+            onClick={() => {
+              // Once answered the question is put away; tapping the answer brings it back.
+              if (own) window.dispatchEvent(new Event(CHANGE_RSVP));
+              requestAnimationFrame(() => jumpTo(own ? "guest-rsvp" : "guest-of"));
+            }}
+            className={figure}
+          >
             <span className={`block font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
               {own ? answer[own.status] : "Day or evening?"}
             </span>
@@ -772,11 +795,15 @@ function GuestOfAndAnswer({ guest, events, own, only }: { guest: Contact; events
   );
 }
 
+/** Tapping the RSVP box at the top asks the question again once it's answered. */
+const CHANGE_RSVP = "guest-card:change-rsvp";
+
 /**
  * The RSVP as the couple meets it: one question at a time (owner, 23 Oct 2026,
  * canvas 5 "Guest card · Round 3", C). Not invited yet → "Have they had their
  * invitation?"; invited → "What did they say?"; once they've answered, that's
- * it — one line with the answer and Change.
+ * it — the question goes, and the badge on the picture and the RSVP box say it
+ * (canvas 5 "Guest card · Round 6", D). Tapping the RSVP box brings it back.
  */
 function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status: Rsvp["status"]) => void }) {
   const [changing, setChanging] = useState(false);
@@ -787,21 +814,14 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
   };
   const button = "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-[15px] text-ink shadow-[0_1px_4px_rgb(60_50_40/0.08)]";
 
-  if (answered && !changing) {
-    return (
-      <div id="guest-rsvp" className="flex items-center justify-between gap-3 rounded-xl text-[15px] text-ink">
-        <span className="flex items-center gap-2">
-          <span className={`flex h-[18px] w-[18px] items-center justify-center rounded-full text-white ${answer === "attending" ? "bg-champagne-600" : "bg-stone"}`}>
-            {answer === "attending" ? <Check className="h-3 w-3" strokeWidth={2.6} aria-hidden /> : <X className="h-3 w-3" strokeWidth={2.6} aria-hidden />}
-          </span>
-          They replied: {answer === "attending" ? "Coming" : "Can't come"}
-        </span>
-        <button type="button" onClick={() => setChanging(true)} className="py-2 text-sm text-stone underline underline-offset-4 hover:text-ink">
-          Change
-        </button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const open = () => setChanging(true);
+    window.addEventListener(CHANGE_RSVP, open);
+    return () => window.removeEventListener(CHANGE_RSVP, open);
+  }, []);
+
+  // Answered: the RSVP box and the badge on the picture say it; nothing more here.
+  if (answered && !changing) return null;
 
   const invited = answer !== "to_invite";
   return (

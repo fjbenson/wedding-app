@@ -51,7 +51,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   A, 21 Oct 2026). Special areas swap
   the stages for their own part: **Food & drink** (who you're feeding,
   with every dietary need listed there, what it comes to at the caterer's prices, the menu `/menu`,
-  Drinks `/drinks`, food through the day), **Stationery** (What you send:
+  Drinks `/drinks`, food through the day), **Stationery** (a strip of three circles
+  on a line — ticked when everyone's had it, ringed for the one you're on, dashed for
+  later; canvas 5 Round 22 A, 23 Oct 2026 — then What you send:
   Save the date · Invitation · Thank-you, with Send and "Did it go?"),
   **Decor** (items by where they go; `/day/decor` is the pack list),
   **Music** (moments with songs; send a moment to whoever's in charge).

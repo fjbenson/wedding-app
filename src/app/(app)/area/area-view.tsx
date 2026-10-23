@@ -1427,7 +1427,59 @@ export default function AreaView({
  * View › that sending, Not sent then Sent, with "Send to the 12".
  */
 function WhatYouSend({ counts, weddingDate }: { counts: ReturnType<typeof sendingCounts>; weddingDate: string | null }) {
+  // Each sending's place on the strip: done once everyone's had it, "later" for thank-yous
+  // before the day, and the first of the rest is the one you're on.
+  const states = counts.map((c) => {
+    if (c.total > 0 && c.toSend === 0) return "done" as const;
+    if (c.kind === "thank_you" && c.sent === 0 && weddingDate !== null && todayISO() <= weddingDate) return "later" as const;
+    return "todo" as const;
+  });
+  const nowAt = states.indexOf("todo");
   return (
+    <>
+    <section aria-label="Where you've got to" className="mt-3">
+      <h2 className="section-label px-1">Where you&apos;ve got to</h2>
+      <div className="glass-card mt-2.5 rounded-[22px] px-3.5 pb-4 pt-[18px] [--row-bleed:14px]">
+        <ol className="relative flex">
+          <span aria-hidden className="absolute left-[16.7%] right-[16.7%] top-[17px] h-0.5 bg-linen" />
+          {counts.slice(1).map((_, i) => (
+            <span
+              key={i}
+              aria-hidden
+              className={`absolute top-[17px] h-0.5 ${states[i] === "done" ? "bg-champagne-600" : "bg-transparent"}`}
+              style={{ left: `${16.7 + i * 33.3}%`, width: "33.3%" }}
+            />
+          ))}
+          {counts.map((c, i) => {
+            const state = states[i];
+            const isNow = i === nowAt;
+            return (
+              <li key={c.kind} className="relative flex w-1/3 flex-col items-center text-center">
+                <Link href={`/people?view=${c.kind}`} className="row-press flex flex-col items-center [--row-bleed:0px]">
+                  {state === "done" ? (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-champagne-600 text-white">
+                      <Check className="h-4 w-4" strokeWidth={3} aria-hidden />
+                    </span>
+                  ) : (
+                    <span
+                      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white font-display text-[16px] ${
+                        isNow ? "border-2 border-champagne-600 text-champagne-600 shadow-[0_0_0_4px_rgb(241_231_212)]" : "border-[1.5px] border-dashed border-stone/40 text-stone/60"
+                      }`}
+                    >
+                      {i + 1}
+                    </span>
+                  )}
+                  <span className={`mt-2 text-[13px] font-medium ${isNow ? "text-ink" : "text-stone"}`}>{c.label}</span>
+                  <span className="mt-0.5 text-xs text-stone">
+                    {state === "later" ? `After ${formatDayMonth(weddingDate!)}` : c.total === 0 ? "No guests yet" : `${c.sent} of ${c.total}`}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
     <section aria-label="What you send" className="mt-3">
       <h2 className="section-label px-1">What you send</h2>
       <ul className="glass-card mt-2.5 overflow-hidden rounded-[22px] [--row-bleed:16px]">
@@ -1460,5 +1512,6 @@ function WhatYouSend({ counts, weddingDate }: { counts: ReturnType<typeof sendin
         })}
       </ul>
     </section>
+    </>
   );
 }

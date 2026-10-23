@@ -251,6 +251,12 @@ almost everything else is still the phone layout in a narrow column.
   on (by hand or by something the app sees, like a payment or an RSVP), how to
   go back, and what the card shows at each stage. Aim for one logic that
   reads the same everywhere. Related: the guest RSVP as steps (above).
+- **Tag a supplier on a to-do (owner, 23 Oct 2026):** "With" on a to-do ("ring
+  the cake place"). The involved links (`milestone_guests`) point at contacts,
+  and suppliers are contacts, so likely no new columns: widen the picker from
+  guests to suppliers too. It also puts the to-do on that supplier's History.
+  About people's details, so the owner's call before building. A Where on a
+  to-do would need a new column (not wanted yet).
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

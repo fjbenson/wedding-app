@@ -278,3 +278,18 @@ appointments "2pm" style, moments 24-hour. A to-do has no time unless added
 instead of always showing empty (idea only so far; owner called it fine, not
 drawn).
 
+**Item cards, 23 Oct 2026 (later the same day; owner):**
+- **Area is a tag at the top right** of the signature, champagne with a ⌄, tap
+  to change (a dashed "+ Area" if none), like the supplier's business card. So
+  there's no Area section in the body; the order becomes signature, black
+  action, the people rows, the card's own parts, Notes, then the foot pill
+  "Open the [area] page ›" (that one opens the page; the tag changes it) and
+  Remove.
+- **Where** is the pin row from the proposed appointment card (a rounded card,
+  gold pin circle, the place), on appointments and moments.
+- **Two kinds of person.** **With** = suppliers (a payment's supplier, an
+  appointment's who-you're-seeing, a to-do's tagged supplier). **Your side** =
+  guests, family, "us": "Who's involved" (to-do, moment), "Who's coming"
+  (appointment), "Who's paying" (payment). A moment's "In charge" stays
+  "In charge" (it can be a guest, like the best man).
+

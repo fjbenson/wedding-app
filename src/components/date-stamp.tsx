@@ -24,6 +24,14 @@ export default function DateStamp({
   const tone = done ? "text-stone" : isToday ? "text-ink" : overdue ? "text-[#9A3F2B]" : "text-champagne-600";
   // No date: a faint "Set date" where the day would be (owner, 23 Oct 2026: the
   // dash and "No date" read like a typo). The row opens its card to set one.
+  // Something done or paid with no date (a deposit) needs none: just a quiet dash.
+  if (!date && done) {
+    return (
+      <span aria-hidden className="flex w-12 shrink-0 font-display text-[30px] font-light leading-none text-stone/40">
+        –
+      </span>
+    );
+  }
   if (!date) {
     return (
       <span className="flex w-12 shrink-0 flex-col items-start text-[12px] font-semibold uppercase leading-[1.5] tracking-[0.12em] text-stone/55">

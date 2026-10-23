@@ -240,6 +240,10 @@ almost everything else is still the phone layout in a narrow column.
   steps like a supplier's Progress (To invite › Invited › Coming, ticks as
   reached, tap a step to move on) with Can't come as a small separate link;
   it would replace the slider. RSVPs are per event, so it shows the guest's own.
+- **A time on a to-do (owner, 23 Oct 2026):** an optional `+ Time` on the
+  stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
+  (timestamptz) may hold it with no database change; check first. Any database
+  change is the owner's call.
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

@@ -264,3 +264,17 @@ Moment, Inspo idea, Decor item, Note. What each has today:
 
 Taps save at once, typing gets a small Save (unchanged). Supplier's separate
 "What they do" is gone: the area tag does that job.
+
+**Item cards in one order** (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 7–9"):
+signature, black action, **Area**, **Involved**, then this card's own parts
+(With, Where, extras such as All payments, Menu, Drinks, Music, Run sheet),
+**Notes**, the area pill, Remove. The shared parts always sit in the same two
+slots; a part a card doesn't have isn't shown. Names are the same on every
+card: "With" (a payment's supplier, a moment's person in charge), "Who's
+paying" is Involved on a payment. **The stamp** is the one date; when the card
+has a time it sits in a gold band at the foot of the same tile ("Round 9", A):
+appointments "2pm" style, moments 24-hour. A to-do has no time unless added
+(a quiet "+ Time"). Optional parts offered as a row of "+" chips at the foot
+instead of always showing empty (idea only so far; owner called it fine, not
+drawn).
+

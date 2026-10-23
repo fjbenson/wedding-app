@@ -6,10 +6,10 @@ import { usePathname } from "next/navigation";
 import { ChevronUp } from "lucide-react";
 import { coupleName } from "@/lib/couple-name";
 
-/** "Olivia & Theo" → "O&T"; a single name → its first letter. */
+/** "Olivia & Theo" → "OT", in plain capitals like design A; a single name → its first letter. */
 function monogram(name: string): string {
   const parts = coupleName(name).split("&").map((p) => p.trim()).filter(Boolean);
-  return parts.map((p) => p[0]!.toUpperCase()).join("&") || "·";
+  return parts.map((p) => p[0]!.toUpperCase()).join("") || "·";
 }
 
 /**
@@ -77,7 +77,7 @@ export default function AccountButton({
           open || pathname === "/settings" ? "bg-champagne-100/60" : ""
         }`}
       >
-        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 font-display text-[14px] font-light italic tracking-[0.02em] text-champagne-600 shadow-[inset_0_0_0_1px_rgb(184_145_79/0.35)]">
+        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-[13px] font-medium tracking-[0.04em] text-champagne-600 shadow-[inset_0_0_0_1px_rgb(184_145_79/0.35)]">
           {monogram(name)}
         </span>
         <span className="min-w-0 flex-1">

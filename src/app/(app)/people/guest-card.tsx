@@ -246,7 +246,7 @@ export default function GuestCard({
  * the right one — `jumpTo`). The body stays in the page when shut, so what
  * was half typed isn't lost.
  */
-function Fold({ title, summary, children }: { title: string; summary: ReactNode; children: ReactNode }) {
+export function Fold({ title, summary, children }: { title: string; summary: ReactNode; children: ReactNode }) {
   return (
     <details className="group border-t border-linen px-[22px]">
       <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">

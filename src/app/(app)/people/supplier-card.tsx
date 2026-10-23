@@ -1,17 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
-import { Check, ChevronRight, Globe, Mail, MoreHorizontal, Phone, X } from "lucide-react";
+import { useEffect, useOptimistic, useState, useTransition } from "react";
+import { Check, ChevronDown, ChevronRight, Globe, Mail, MoreHorizontal, Phone } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
-import { useBeside } from "@/components/card-sheet";
-import { usePullToClose } from "@/components/use-pull-to-close";
+import CardSheet from "@/components/card-sheet";
+import { jumpTo } from "@/lib/jump-to";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatWeekdayDayMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import type { Payment, SupplierStatus } from "@/types/db";
-import { SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
+import { Fold, SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
 import { AreaTiles } from "@/components/visual-form";
 import { areaIcon } from "@/lib/areas";
 import { SUPPLIER_STAGES } from "@/lib/supplier-status";
@@ -63,7 +63,6 @@ export default function SupplierCard({
     d?.status === "booked" &&
     (d.quoted_cost && d.quoted_cost > 0 ? paidSoFar >= d.quoted_cost : payments.length > 0 && payments.every((p) => p.paid_on));
   const moneyHref = area ? `/money?view=month&area=${encodeURIComponent(area.key)}` : "/money?view=month";
-  const drag = usePullToClose(onClose);
   const phone = supplier.phone?.replace(/\s+/g, "");
   const [error, setError] = useState<string>();
   const save = async (edit: SupplierEdit) => {
@@ -74,120 +73,78 @@ export default function SupplierCard({
   // Which Contact box to open ready to type: from the list's dashed buttons
   // (editField) or the card's own (addField). `n` redraws the row to open it.
   const [adding, setAdding] = useState<{ field?: "phone" | "email"; n: number }>({ field: editField, n: 0 });
-  const phoneRow = useRef<HTMLDivElement>(null);
-  const emailRow = useRef<HTMLDivElement>(null);
   const addField = (field: "phone" | "email") => {
-    setAdding((a) => ({ field, n: a.n + 1 }));
-    requestAnimationFrame(() => (field === "phone" ? phoneRow : emailRow).current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    // Details is a fold: it opens first, then the box takes the cursor.
+    jumpTo(field === "phone" ? "supplier-phone" : "supplier-email");
+    window.setTimeout(() => setAdding((a) => ({ field, n: a.n + 1 })), 80);
   };
-
-  // Escape closes it, and the list behind doesn't scroll while it's open.
-  // On a laptop it sits beside the list instead (as CardSheet's `beside`).
-  const wide = useBeside(true);
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    if (wide) return () => document.removeEventListener("keydown", onKey);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-    };
-  }, [onClose, wide]);
+    if (editField) jumpTo(editField === "phone" ? "supplier-phone" : "supplier-email");
+    // Once, on opening: the list's greyed-out button sent us here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const detailsLine = [supplierContact(supplier), supplier.phone, supplier.email].filter(Boolean).join(" · ") || "Add a number or email";
 
   return (
-    <div className={`fixed inset-0 z-50 ${wide ? "left-auto w-[440px]" : ""}`} role="dialog" aria-modal={!wide} aria-label={name}>
-      {!wide && (
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
-          className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
-        />
+    // Every card has the same frame (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"): a small label left, the ✕ right.
+    <CardSheet beside label={name} onClose={onClose} top={<span className="label">Supplier</span>}>
+      {error && (
+        <p role="alert" className="mb-3 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
+          {error}
+        </p>
       )}
-      <div
-        style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-        className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none ${
-          wide ? "border-l border-champagne-400/45 lg:shadow-[-24px_0_50px_-36px_rgb(60_50_40/0.4)]" : "lg:rounded-l-[28px]"
-        } ${drag.dragging ? "" : "transition-transform duration-200 ease-out"}`}
-      >
-        <div onPointerDown={drag.start} className="flex h-7 shrink-0 touch-none items-start justify-center lg:hidden">
-          <span aria-hidden className="mt-2.5 h-[5px] w-10 rounded-full bg-linen" />
-        </div>
 
-        <div className="overflow-y-auto overscroll-contain px-[22px] pb-[max(2rem,env(safe-area-inset-bottom))] pt-0 lg:pt-8">
-          <div onPointerDown={drag.start} className="flex touch-none items-center gap-3 lg:touch-auto">
-            {/* The area is the tag on the business card now. */}
-            <div className="min-w-0 flex-1" />
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-stone hover:text-ink"
-            >
-              <X className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-            </button>
-          </div>
+      {/* Canvas 2 "Suppliers · Round 3", A (owner's pick 13 Oct 2026:
+          "business card baby you nailed it"): something to look at, each
+          part changed by tapping it — no longer the add form filled in. */}
+      <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
 
-          {error && (
-            <p role="alert" className="mb-3 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
-              {error}
-            </p>
-          )}
+      <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} paidUp={paidUp} moneyHref={moneyHref} onError={setError} />
 
-          {/* Canvas 2 "Suppliers · Round 3", A (owner's pick 13 Oct 2026:
-              "business card baby you nailed it"): something to look at, each
-              part changed by tapping it — no longer the add form filled in. */}
-          <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
+      <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
 
-          <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} paidUp={paidUp} moneyHref={moneyHref} onError={setError} />
+      {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
+      <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
 
-          <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
+      {/* What they lend or hire out, from Decor (owner, 19 Oct 2026). */}
+      <SupplierDecor supplierId={supplier.id} />
 
-          {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
-          <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
-
-          {/* What they lend or hire out, from Decor (owner, 19 Oct 2026). */}
-          <SupplierDecor supplierId={supplier.id} />
-
-          <section className="mt-7">
-            <h2 className="section-label font-body">Contact</h2>
-            <dl className="mt-1">
-              <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
-              <div ref={phoneRow}>
-                <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
-              </div>
-              <div ref={emailRow}>
-                <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
-              </div>
-              <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
-              {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
-              <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
-            </dl>
-          </section>
-
-          {/* Everything with them, past and to come (canvas 3 "Timeline · Round 3"), folded to one line after Contact (owner, 20 Oct 2026). */}
-          <section className="mt-6 -mx-[22px] border-y border-linen px-[22px]">
-            <Timeline scope={`supplier:${supplier.id}`} folded />
-          </section>
-
-          <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
-
-          {area && (
-            <Link
-              href={`/area/${encodeURIComponent(area.key)}`}
-              className="mt-6 flex h-12 items-center justify-center rounded-full border border-champagne-400 text-[15px] text-ink hover:bg-cream"
-            >
-              Open the {area.label} page ›
-            </Link>
-          )}
-
-          <RemoveSupplier id={supplier.id} name={name} />
-        </div>
+      {/* History, then Details (the typed facts), always last (owner, 23 Oct 2026). */}
+      <div className="-mx-[22px] mt-6 border-y border-linen">
+        <section className="px-[22px]">
+          <Timeline scope={`supplier:${supplier.id}`} folded />
+        </section>
+        <Fold title="Details" summary={detailsLine}>
+          <dl>
+            <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
+            <div id="supplier-phone">
+              <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+            </div>
+            <div id="supplier-email">
+              <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
+            </div>
+            <TextRow label="Website" value={d?.website ?? null} onSave={(v) => save({ field: "website", value: v })} />
+            {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
+            <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
+          </dl>
+        </Fold>
       </div>
-    </div>
+
+      {area && (
+        <Link
+          href={`/area/${encodeURIComponent(area.key)}`}
+          className="mt-6 flex h-12 items-center justify-center rounded-full border border-champagne-400 text-[15px] text-ink hover:bg-cream"
+        >
+          Open the {area.label} page ›
+        </Link>
+      )}
+
+      {/* The quiet links at the very foot, side by side. */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6">
+        <NotTaken supplierId={supplier.id} status={d?.status ?? "enquired"} quoted={d?.quoted_cost != null} />
+        <RemoveSupplier id={supplier.id} name={name} />
+      </div>
+    </CardSheet>
   );
 }
 
@@ -205,7 +162,7 @@ function NotTaken({ supplierId, status, quoted }: { supplierId: string; status: 
       setError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: next }))).error);
     });
   return (
-    <div className="mt-2">
+    <div>
       {current === "cancelled" ? (
         <p className="flex flex-wrap items-center gap-x-2 text-sm text-stone">
           You didn&apos;t go with them.
@@ -228,13 +185,13 @@ function RemoveSupplier({ id, name }: { id: string; name: string }) {
   const [asking, setAsking] = useState(false);
   if (!asking) {
     return (
-      <button type="button" onClick={() => setAsking(true)} className="mt-6 w-full py-3 text-sm text-stone underline underline-offset-4 hover:text-ink">
+      <button type="button" onClick={() => setAsking(true)} className="min-h-11 py-3 text-sm text-stone underline underline-offset-4 hover:text-ink">
         Remove this supplier
       </button>
     );
   }
   return (
-    <div className="mt-6 rounded-2xl border border-linen bg-white p-4 text-center">
+    <div className="w-full rounded-2xl border border-linen bg-white p-4 text-center">
       <p className="text-sm text-ink">Remove {name}? Their payments stay in Money.</p>
       <div className="mt-3 flex justify-center gap-2">
         <form action={deleteSupplierAction.bind(null, id)}>
@@ -324,6 +281,7 @@ function BusinessCard({
         >
           <AreaIcon aria-hidden className="h-3.5 w-3.5" strokeWidth={1.8} />
           {area?.label ?? (category === "other" ? "Other" : "Pick an area")}
+          <ChevronDown aria-hidden className={`h-3.5 w-3.5 transition ${picking ? "rotate-180" : ""}`} strokeWidth={1.8} />
         </button>
         <p className="type-meta !text-champagne-600">{STAMP[d?.status ?? "enquired"]}</p>
 

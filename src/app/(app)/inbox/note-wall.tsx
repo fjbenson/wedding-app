@@ -14,6 +14,7 @@ import { parseNote, tickCount } from "@/lib/note-lines";
 import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
+import { AreaPageLink, AreaTagRow } from "../plan/item-parts";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
 /** Soft papers: ivory, champagne, blush, sage. */
@@ -206,7 +207,6 @@ function NotePanel({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [area, setArea] = useState(note.area_key ?? "");
-  const [pickingArea, setPickingArea] = useState(false);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.body ?? "");
   // Making it a to-do asks when, like the to-do form: done by, start around, or no date yet.
@@ -222,7 +222,34 @@ function NotePanel({
     });
 
   return (
-    <CardSheet label="Note" onClose={onClose}>
+    // The same frame and order as every item card (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"): the area a tag at the top right, the note as the signature, a black main action, then the quiet Remove.
+    <CardSheet label="Note" onClose={onClose} top={<span className="label">Note</span>}>
+      <AreaTagRow
+        area={area}
+        areaOptions={areas}
+        disabled={pending}
+        onArea={(value) => {
+          setArea(value);
+          run(() => fileInboxNoteAction(note.id, value));
+        }}
+        under={
+          note.area_key && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setArea("");
+                run(() => fileInboxNoteAction(note.id, ""));
+              }}
+              className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink"
+            >
+              Set it back to Not filed
+            </button>
+          )
+        }
+      />
+
+      <div className="mt-3">
         {editing ? (
           <form
             onSubmit={(event) => {
@@ -249,129 +276,99 @@ function NotePanel({
           <TickableNote note={note} className="font-display text-[21px] italic leading-snug" />
         )}
         <p className="type-meta mt-2">{formatAgo(note.created_at, today)}</p>
+      </div>
 
-        {error && (
-          <p role="alert" className="mt-3 rounded-xl border border-champagne-400 bg-cream px-4 py-2.5 text-sm text-ink">
-            {error}
-          </p>
-        )}
+      {error && (
+        <p role="alert" className="mt-3 rounded-xl border border-champagne-400 bg-cream px-4 py-2.5 text-sm text-ink">
+          {error}
+        </p>
+      )}
 
-        {/* Filing: the area as a pill; tap it for the area tiles (with + Add an area), and a tap files it. */}
-        <div className="mt-4 border-t border-linen px-1 py-3">
-          <div className="flex min-h-11 items-center gap-2">
-            <span className="flex-1 text-base text-ink">{note.area_key ? "Filed under" : "File under"}</span>
+      {note.milestone_id ? (
+        <CardLink
+          href={`/plan/${note.milestone_id}`}
+          className="mt-4 flex h-12 items-center gap-2.5 rounded-full bg-champagne-100 px-5 text-[15px] text-champagne-600"
+        >
+          <CircleCheck className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+          <span className="flex-1">On your plan as a to-do</span>
+          <span className="flex items-center text-sm">
+            See it
+            <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          </span>
+        </CardLink>
+      ) : !asking ? (
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setAsking(true)}
+            className="flex h-12 items-center gap-2.5 rounded-full bg-ink px-5 text-[15px] text-ivory hover:bg-ink/90 disabled:opacity-60"
+          >
+            <CircleCheck className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+            Make it a to-do
+          </button>
+          {!editing && (
             <button
               type="button"
               disabled={pending}
-              onClick={() => setPickingArea((open) => !open)}
-              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-linen bg-white/80 px-3.5 text-[15px] text-ink transition hover:border-champagne-400 disabled:opacity-60"
+              onClick={() => setEditing(true)}
+              className="flex h-12 items-center gap-2 rounded-full border border-linen bg-white px-5 text-[15px] text-ink hover:border-champagne-400 disabled:opacity-60"
             >
-              {note.area_key ? areaName(note.area_key, areas) : "Choose an area"}
-              <ChevronDown className={`h-4 w-4 text-stone transition ${pickingArea ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
+              <PenLine className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+              Edit
             </button>
-          </div>
-          {pickingArea && (
-            <>
-              <AreaTiles
-                name="file_under"
-                areas={areas}
-                otherValue="other"
-                value={area || "\u0000"}
-                onChange={(value) => {
-                  setArea(value);
-                  setPickingArea(false);
-                  run(() => fileInboxNoteAction(note.id, value));
-                }}
-              />
-              {note.area_key && (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => {
-                    setArea("");
-                    setPickingArea(false);
-                    run(() => fileInboxNoteAction(note.id, ""));
-                  }}
-                  className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink"
-                >
-                  Set it back to Not filed
-                </button>
-              )}
-            </>
           )}
         </div>
-        {note.milestone_id ? (
-          <CardLink href={`/plan/${note.milestone_id}`} className={ROW}>
-            <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-            <span className="flex-1">On your plan as a to-do</span>
-            <span className="flex items-center text-sm text-champagne-600">
-              See it
-              <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            </span>
-          </CardLink>
-        ) : !asking ? (
-          <button type="button" disabled={pending} onClick={() => setAsking(true)} className={ROW}>
+      ) : (
+        <form
+          className="mt-4 rounded-2xl border border-linen bg-white p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            start(async () => {
+              const result = await safely(() => inboxNoteToTodoAction(note.id, { kind: whenDate ? "due" : "none", date: whenDate || null }));
+              setError(result.error);
+              const id = (result as { milestoneId?: string }).milestoneId;
+              if (!result.error && id) {
+                onAdded(id);
+                onClose();
+              }
+            });
+          }}
+        >
+          <p className="flex items-center gap-3 text-base text-ink">
             <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
             Make it a to-do
-          </button>
-        ) : (
-          <form
-            className="border-t border-linen px-1 py-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              start(async () => {
-                const result = await safely(() => inboxNoteToTodoAction(note.id, { kind: whenDate ? "due" : "none", date: whenDate || null }));
-                setError(result.error);
-                const id = (result as { milestoneId?: string }).milestoneId;
-                if (!result.error && id) {
-                  onAdded(id);
-                  onClose();
-                }
-              });
-            }}
-          >
-            <p className="flex items-center gap-3 text-base text-ink">
-              <CircleCheck className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-              Make it a to-do
-            </p>
-            {/* Just an optional date (owner, 12 Oct 2026: no Done by / Start around). */}
-            <label className="mt-3.5 block text-sm text-ink">
-              <span className="sr-only">Date (optional)</span>
-              <DateInput
-                value={whenDate}
-                onChange={(event) => setWhenDate(event.target.value)}
-                className="block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
-              />
-            </label>
-            <div className="mt-3 flex justify-end gap-2">
-              <button type="button" onClick={() => setAsking(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={pending}
-                className="h-11 rounded-xl bg-ink px-5 text-sm text-ivory disabled:opacity-50"
-              >
-                {pending ? "Adding…" : "Add to the plan"}
-              </button>
-            </div>
-          </form>
-        )}
-        {!editing && (
-          <button type="button" disabled={pending} onClick={() => setEditing(true)} className={ROW}>
-            <PenLine className="h-5 w-5 text-champagne-600" strokeWidth={1.8} aria-hidden />
-            Edit
-          </button>
-        )}
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => confirm("Remove this note?") && run(() => removeInboxNoteAction(note.id))}
-          className={`${ROW} text-stone`}
-        >
-          <Trash2 className="h-5 w-5" strokeWidth={1.8} aria-hidden />
-          Remove
-        </button>
+          </p>
+          {/* Just an optional date (owner, 12 Oct 2026: no Done by / Start around). */}
+          <label className="mt-3.5 block text-sm text-ink">
+            <span className="sr-only">Date (optional)</span>
+            <DateInput
+              value={whenDate}
+              onChange={(event) => setWhenDate(event.target.value)}
+              className="block h-12 w-full rounded-xl border border-linen bg-white px-4 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
+            />
+          </label>
+          <div className="mt-3 flex justify-end gap-2">
+            <button type="button" onClick={() => setAsking(false)} className="h-11 rounded-xl px-4 text-sm text-stone hover:text-ink">
+              Cancel
+            </button>
+            <button type="submit" disabled={pending} className="h-11 rounded-xl bg-ink px-5 text-sm text-ivory disabled:opacity-50">
+              {pending ? "Adding…" : "Add to the plan"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <AreaPageLink areaKey={area} areas={areas} />
+
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => confirm("Remove this note?") && run(() => removeInboxNoteAction(note.id))}
+        className="mt-4 block w-full min-h-11 py-3 text-center text-sm text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
+      >
+        Remove this note
+      </button>
     </CardSheet>
   );
 }

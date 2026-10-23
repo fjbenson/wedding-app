@@ -266,3 +266,63 @@ export function WhereRow({ value, onSave, add = "Add where", startEditing = fals
     </form>
   );
 }
+
+/**
+ * The area tag on its own, right-aligned, with the area tiles under it when
+ * tapped: for the cards whose signature isn't a date stamp (a note, an Inspo
+ * idea). Nothing picked reads "Add to an area" (owner, 23 Oct 2026).
+ */
+export function AreaTagRow({
+  area,
+  areaOptions,
+  onArea,
+  otherValue = "other",
+  empty = "Add to an area",
+  disabled,
+  under,
+}: {
+  area: string;
+  areaOptions: AreaOption[];
+  onArea: (v: string) => void;
+  otherValue?: string;
+  empty?: string;
+  disabled?: boolean;
+  /** Shown under the tiles when they're open (a note's "Set it back to Not filed"). */
+  under?: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const label = areaOptions.find((a) => a.key === area)?.label ?? (area ? "Other" : null);
+  return (
+    <div>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className={`inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold disabled:opacity-60 ${
+            label ? "bg-champagne-100 text-champagne-600" : "border border-dashed border-champagne-600/50 text-champagne-600"
+          }`}
+        >
+          <span className="truncate">{label ?? empty}</span>
+          <ChevronDown aria-hidden className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} strokeWidth={1.8} />
+        </button>
+      </div>
+      {open && (
+        <div className="mt-3">
+          <AreaTiles
+            name="area"
+            areas={areaOptions}
+            otherValue={otherValue}
+            value={area || "\u0000"}
+            onChange={(v) => {
+              setOpen(false);
+              onArea(v);
+            }}
+          />
+          {under}
+        </div>
+      )}
+    </div>
+  );
+}

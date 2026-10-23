@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Check, ChevronDown, Hash, MapPin, Palette, UserRound } from "lucide-react";
 import CardSheet from "@/components/card-sheet";
 import DateStamp from "@/components/date-stamp";
 import NumbersCard from "@/components/numbers-card";
 import { DateCard, Part } from "@/components/visual-form";
 import { byPlace, decorCounts, goesBack, nextStatus, packList, PLACES, sourceLabel, SOURCES, STATUSES, withQuantity } from "@/lib/decor";
-import { formatDayMonth, todayISO } from "@/lib/dates";
+import { formatDayMonth, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { initialsOf } from "@/lib/names";
 import { replaceQuery } from "@/lib/url-state";
 import type { DecorWithHelpers } from "@/lib/db/decor";
@@ -16,6 +17,7 @@ import type { DecorStatus } from "@/types/db";
 import { CHEVRON, safely, TextRow } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
 import { TitleEditor } from "../plan/plan-card-body";
+import { ItemAction } from "../plan/item-parts";
 import { removeDecorAction, setDecorHelpersAction, updateDecorFieldsAction } from "./actions";
 import { FromSelect, PlacePicker, SOURCE_ICONS } from "./decor-bits";
 import type { DecorPerson } from "./decor-people";
@@ -307,68 +309,128 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
       if (!result.error) router.refresh();
     });
   const showFrom = item.source !== "own" && item.source !== "made";
+  // One row open at a time, in place: what's set is the line, a tap opens the way to change it (owner, 23 Oct 2026).
+  const [openRow, setOpenRow] = useState<string | null>(null);
+  const steps = STATUSES.filter((s) => s.value !== "returned" || goesBack(item));
+  const at = steps.findIndex((s) => s.value === item.status);
+  const next = nextStatus(item);
+  const nextLabel = steps.find((s) => s.value === next)?.label.toLowerCase();
+  const fromName = people.find((p) => p.id === item.from_contact_id)?.name ?? item.from_name;
+  const fromLine = [sourceLabel(item.source), showFrom ? fromName : null].filter(Boolean).join(" · ");
+  const datesLine = [item.collect_on && `Collect ${formatWeekdayDayMonth(item.collect_on)}`, goesBack(item) && item.return_on && `Give back ${formatWeekdayDayMonth(item.return_on)}`].filter(Boolean).join(" · ");
+
+  const row = (key: string, Icon: typeof Hash, label: string, value: string | null, add: string, body: React.ReactNode) => (
+    <div key={key} className="border-b border-linen last:border-b-0">
+      <button type="button" onClick={() => setOpenRow(openRow === key ? null : key)} aria-expanded={openRow === key} className="flex min-h-[60px] w-full items-center gap-3 px-3.5 text-left">
+        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.6} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[12px] text-stone">{label}</span>
+          <span className={`block truncate text-[16px] ${value ? "text-ink" : "text-champagne-600"}`}>{value || add}</span>
+        </span>
+        <ChevronDown className={`h-[18px] w-[18px] shrink-0 text-stone transition ${openRow === key ? "rotate-180" : ""}`} strokeWidth={1.6} aria-hidden />
+      </button>
+      {openRow === key && <div className="px-3.5 pb-4">{body}</div>}
+    </div>
+  );
 
   return (
     <div className={`pt-1 ${pending ? "opacity-80" : ""}`}>
-      <TitleEditor value={item.name} onSave={(v) => save({ name: v })} />
+      <div className="flex items-center gap-3.5">
+        <span aria-hidden className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+          <Palette className="h-7 w-7" strokeWidth={1.6} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <TitleEditor value={item.name} onSave={(v) => save({ name: v })} />
+          {(item.quantity || item.source) && (
+            <p className="mt-1 text-[14px] text-stone">{[item.quantity ? String(item.quantity) : null, sourceLabel(item.source)].filter(Boolean).join(" · ")}</p>
+          )}
+        </div>
+      </div>
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      <Part label="Where it's at">
-        <div className="mt-3 flex flex-wrap gap-2">
-          {STATUSES.filter((s) => s.value !== "returned" || goesBack(item)).map((s) => (
-            <button key={s.value} type="button" aria-pressed={item.status === s.value} onClick={() => tap({ status: s.value })} className={pill(item.status === s.value)}>
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </Part>
-
-      <Part label="Where it's from">
-        <div className="mt-3 flex flex-wrap gap-2">
-          {SOURCES.map((s) => {
-            const Icon = SOURCE_ICONS[s.value];
-            const on = item.source === s.value;
-            return (
-              <button key={s.value} type="button" aria-pressed={on} onClick={() => tap({ source: on ? null : s.value })} className={`${pill(on)} flex items-center gap-1.5`}>
-                <Icon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                {s.label}
+      {/* The black action moves it to its next step; the steps below are the whole way, and a tap on one goes there. */}
+      <ItemAction
+        label={next ? `Mark as ${nextLabel}` : ""}
+        doneLabel={steps[at]?.label ?? ""}
+        done={!next}
+        pending={pending}
+        onClick={() => next && tap({ status: next })}
+      />
+      <div className="mt-5 flex items-start">
+        {steps.map((s, i) => {
+          const done = i < at || (!next && i === at);
+          const here = i === at && !done;
+          return (
+            <div key={s.value} className="flex flex-1 items-start last:flex-none">
+              <button type="button" aria-pressed={i === at} onClick={() => tap({ status: s.value })} className="flex w-16 flex-col items-center gap-1.5">
+                <span
+                  className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
+                    done ? "bg-champagne-600 text-white" : here ? "border-2 border-champagne-600 bg-white" : "border-[1.5px] border-[#D8D0C4] bg-white"
+                  }`}
+                >
+                  {done && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
+                </span>
+                <span className={`text-center text-[12px] ${here ? "font-semibold text-ink" : "text-stone"}`}>{s.label}</span>
               </button>
-            );
-          })}
-        </div>
-      </Part>
-
-      <Part label="Where it goes">
-        <PlacePickerSaving value={item.place ?? ""} onSave={(v) => tap({ place: v || null })} />
-      </Part>
-
-      <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
-          <TextRow label="How many" value={item.quantity ? String(item.quantity) : null} type="number" onSave={(v) => save({ quantity: v })} />
-          {showFrom && (
-            <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-              <dt className="type-meta py-3.5"><DetailLabel label="From" /></dt>
-              <dd className="min-w-0 py-2">
-                <FromSelect
-                  people={people}
-                  value={from}
-                  onChange={(v) => {
-                    setFrom(v);
-                    if (v !== "typed") tap({ from_contact_id: v || null, from_name: null });
-                  }}
-                  className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat pr-6 text-[15px] text-ink focus:outline-none"
-                />
-              </dd>
+              {i < steps.length - 1 && <span aria-hidden className={`mt-3 h-0.5 flex-1 ${i < at ? "bg-champagne-600" : "bg-linen"}`} />}
             </div>
-          )}
-          {showFrom && from === "typed" && (
-            <TextRow label="Their name" value={item.from_name} startEditing={!item.from_name} onSave={(v) => save({ from_name: v, from_contact_id: null })} />
-          )}
-          <DateRow label="Collect" value={item.collect_on} weddingDate={weddingDate} onSave={(v) => tap({ collect_on: v })} />
-          {goesBack(item) && <DateRow label="Give back" value={item.return_on} weddingDate={weddingDate} onSave={(v) => tap({ return_on: v })} />}
-        </dl>
-      </section>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-linen bg-white/75">
+        {row("many", Hash, "How many", item.quantity ? String(item.quantity) : null, "Add how many", (
+          <dl>
+            <TextRow label="How many" value={item.quantity ? String(item.quantity) : null} type="number" onSave={(v) => save({ quantity: v })} />
+          </dl>
+        ))}
+        {row("goes", MapPin, "Where it goes", item.place, "Add where it goes", <PlacePickerSaving value={item.place ?? ""} onSave={(v) => tap({ place: v || null })} />)}
+        {row("from", UserRound, "From", fromLine || null, "Where it's from", (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {SOURCES.map((s) => {
+                const Icon = SOURCE_ICONS[s.value];
+                const on = item.source === s.value;
+                return (
+                  <button key={s.value} type="button" aria-pressed={on} onClick={() => tap({ source: on ? null : s.value })} className={`${pill(on)} flex items-center gap-1.5`}>
+                    <Icon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+            {showFrom && (
+              <dl className="mt-3">
+                <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
+                  <dt className="type-meta py-3.5"><DetailLabel label="From" /></dt>
+                  <dd className="min-w-0 py-2">
+                    <FromSelect
+                      people={people}
+                      value={from}
+                      onChange={(v) => {
+                        setFrom(v);
+                        if (v !== "typed") tap({ from_contact_id: v || null, from_name: null });
+                      }}
+                      className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat pr-6 text-[15px] text-ink focus:outline-none"
+                    />
+                  </dd>
+                </div>
+                {from === "typed" && (
+                  <TextRow label="Their name" value={item.from_name} startEditing={!item.from_name} onSave={(v) => save({ from_name: v, from_contact_id: null })} />
+                )}
+              </dl>
+            )}
+          </>
+        ))}
+        {row("dates", CalendarDays, "Collect and give back", datesLine || null, "Add dates", (
+          <dl>
+            <DateRow label="Collect" value={item.collect_on} weddingDate={weddingDate} onSave={(v) => tap({ collect_on: v })} />
+            {goesBack(item) && <DateRow label="Give back" value={item.return_on} weddingDate={weddingDate} onSave={(v) => tap({ return_on: v })} />}
+          </dl>
+        ))}
+      </div>
 
       <section className="mt-7">
         <h3 className="section-label">Who sets it up</h3>
@@ -400,11 +462,20 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
         </div>
         <dl className="mt-2">
           <TextRow label="Others" value={item.setup_names} onSave={(v) => save({ setup_names: v })} />
+        </dl>
+      </section>
+
+      <section className="mt-7">
+        <dl>
           <TextRow label="Notes" value={item.notes} multiline onSave={(v) => save({ notes: v })} />
         </dl>
       </section>
 
-      <div className="mt-6 border-t border-linen pt-4 text-center">
+      <Link href="/area/decor" className="mt-6 flex h-12 items-center justify-center rounded-full border border-champagne-400 text-[15px] text-ink hover:bg-cream">
+        Open the Decor page ›
+      </Link>
+
+      <div className="mt-4 text-center">
         <button
           type="button"
           disabled={pending}
@@ -417,7 +488,7 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
               router.refresh();
             });
           }}
-          className="text-xs text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
+          className="min-h-11 py-3 text-sm text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
         >
           Remove this item
         </button>

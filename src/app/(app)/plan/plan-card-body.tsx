@@ -21,7 +21,8 @@ import { DetailLabel } from "../people/guest-table";
 import { moveMomentAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
 import { addCourseForMomentAction, setMomentFoodAction } from "../menu/actions";
 import { InvolvedPart } from "./involved";
-import { AreaPageLink, ItemAction, ItemSignature, WhereRow } from "./item-parts";
+import { AreaPageLink, AreaTagRow, ItemAction, ItemSignature, WhereRow } from "./item-parts";
+import { host } from "@/components/note-text";
 
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
@@ -788,9 +789,20 @@ export function IdeaBody({ idea, folderIds, areas }: { idea: InspoWithPicture; f
   const next = at >= 0 && at < folderIds.length - 1 ? folderIds[at + 1] : null;
   const go = (id: string) => replaceQuery({ idea: id }, { sync: true });
   const step = "flex h-11 w-11 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
+  const [area, setArea] = useState(idea.area_key ?? "");
 
   return (
     <>
+      {/* Its folder is its area: the tag at the top right, like every card (owner, 23 Oct 2026). Nothing picked is Unsorted. */}
+      <AreaTagRow
+        area={area}
+        areaOptions={areas}
+        empty="Add to an area"
+        onArea={async (v) => {
+          setArea(v);
+          setError((await save({ area_key: v || null })).error);
+        }}
+      />
       {idea.picture && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={idea.picture} alt={idea.title ?? idea.note ?? "A saved idea"} className="max-h-[55dvh] w-full rounded-2xl bg-cream object-contain" />
@@ -822,29 +834,18 @@ export function IdeaBody({ idea, folderIds, areas }: { idea: InspoWithPicture; f
       {idea.url && (
         <a href={idea.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm text-champagne-600 underline underline-offset-4 hover:text-ink">
           <ExternalLink className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Open where it came from
+          View on {host(idea.url)}
         </a>
       )}
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      <Part label="Folder">
-        {/* Nothing picked is Unsorted, as when it was saved. */}
-        <AreaTiles
-          name="folder"
-          areas={areas}
-          otherValue="other"
-          defaultValue={idea.area_key ?? ""}
-          onChange={async (v) => setError((await save({ area_key: v || null })).error)}
-          folded={!!idea.area_key}
-        />
-      </Part>
-
       <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
+        <dl>
           <TextRow label="Notes" value={idea.note} multiline onSave={(v) => save({ note: v })} />
         </dl>
       </section>
+
+      <AreaPageLink areaKey={area} areas={areas} />
     </>
   );
 }

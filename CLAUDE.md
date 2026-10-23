@@ -247,7 +247,8 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
   the menu down the left like a magazine's contents (`side-bar.tsx`, 280px since 23 Oct 2026 so an email fits at its foot;
   canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
-  top bar; at its foot the couple's monogram, names and the login's email open
+  top bar; a placeholder ring-and-Rondé logo at its top (Round 17, B); at its
+  foot the couple's monogram, names and the login's email open
   Settings, Your weddings and Sign out, canvas 5 "Round 16", A, 23 Oct 2026),
   pages beside it. **Cards sit beside the list** on a laptop
   (CardSheet's `beside`, `useBeside`; guest, household, group, supplier and

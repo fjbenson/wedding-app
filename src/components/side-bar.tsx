@@ -4,14 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
 import AccountButton from "@/components/account-button";
-import { coupleName } from "@/lib/couple-name";
 import { NAV } from "@/lib/nav";
 
 /**
  * The laptop's menu down the left (canvas 4 "Laptop · Round 7", G, owner's
  * pick 20 Oct 2026): it gives the Hub's ring a column either side, as the
  * first sidebar did, but set like a magazine's contents rather than an app's
- * menu — whose wedding, the five tabs numbered in Fraunces with no icons,
+ * menu — the logo (a placeholder for now), the five tabs numbered in Fraunces with no icons,
  * then Your notes, Inspo, Ask Juno, and Settings at the foot (behind the
  * couple's monogram since 23 Oct 2026, `AccountButton`). It replaced the
  * bar along the top (18 Oct 2026). Phones keep the floating menu bar.
@@ -34,10 +33,12 @@ export default function SideBar({
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-[280px] flex-col border-r border-champagne-400/45 bg-[#FFFDF8]/55 px-[30px] pb-8 pt-10 print:!hidden lg:flex">
-      <Link href="/" className="block">
-        <span className="label">The wedding of</span>
-        <span className="mt-2 block font-display text-[28px] font-light italic leading-[1.1] tracking-[-0.01em] text-ink">{coupleName(name)}</span>
-        <span aria-hidden className="mt-2 block h-px w-10 bg-champagne-400" />
+      {/* A placeholder logo (canvas 5 "Laptop · Round 17", B, owner's pick 23 Oct
+          2026): a little ring like the Hub's and the working name, so the
+          couple's names show once, at the foot. Swap it when the name's chosen. */}
+      <Link href="/" className="flex items-center gap-3 text-ink">
+        <RingMark />
+        <span className="font-display text-[30px] font-light italic leading-none tracking-[-0.02em]">Rondé</span>
       </Link>
 
       <nav aria-label="Main" className="mt-8 flex flex-col">
@@ -76,5 +77,19 @@ export default function SideBar({
 
       <AccountButton name={name} email={email} manyWeddings={manyWeddings} />
     </aside>
+  );
+}
+
+/** The placeholder mark: a fine gold ring with six small stops round it, like the Hub's. */
+function RingMark() {
+  const stops = Array.from({ length: 6 }, (_, i) => (i * Math.PI) / 3 - Math.PI / 2);
+  return (
+    <svg viewBox="0 0 32 32" width="34" height="34" fill="none" stroke="currentColor" strokeWidth={1.2} aria-hidden className="shrink-0 text-champagne-600">
+      <circle cx="16" cy="16" r="11" />
+      {stops.map((a) => (
+        <circle key={a} cx={(16 + 11 * Math.cos(a)).toFixed(2)} cy={(16 + 11 * Math.sin(a)).toFixed(2)} r="1.6" fill="#FFFDF8" />
+      ))}
+      <circle cx="16" cy="16" r="4.2" fill="#F1E7D4" stroke="none" />
+    </svg>
   );
 }

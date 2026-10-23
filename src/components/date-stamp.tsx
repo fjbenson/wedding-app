@@ -1,4 +1,4 @@
-import { formatDayMonth, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
+import { formatDayMonth, formatWeekdayDayMonth } from "@/lib/dates";
 
 /**
  * The date down the left of a row, large — the Hub's This week look (owner,
@@ -73,7 +73,10 @@ export function TimeStamp({ time, done = false }: { time: string | null | undefi
     );
   }
   // "11:30am" in one line squashed the title (owner, 23 Oct 2026): the time large, am/pm under, like "24 / OCT".
-  const [, clock, half] = formatTime(time).match(/^(.*?)(am|pm)$/) ?? [];
+  // Always with the minutes, "2:00" not "2", so every time has the same shape (owner, 23 Oct 2026).
+  const [h, m] = time.split(":").map(Number);
+  const clock = `${h % 12 === 0 ? 12 : h % 12}:${String(m || 0).padStart(2, "0")}`;
+  const half = h >= 12 ? "pm" : "am";
   return (
     <span className="flex w-16 shrink-0 flex-col items-start">
       <span className={`font-display text-[26px] font-light leading-none tabular-nums ${done ? "text-stone" : "text-champagne-600"}`}>{clock}</span>

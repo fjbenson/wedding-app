@@ -5,7 +5,7 @@ import { useEffect, useOptimistic, useState, useTransition, type ReactNode } fro
 import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
-import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
+import { rolesOf } from "@/lib/guest-roles";
 import { joinNeeds, needsOf } from "@/lib/dietary";
 import DietaryPicker from "@/components/dietary-picker";
 import type { Contact, Rsvp, WeddingEvent } from "@/types/db";
@@ -15,9 +15,10 @@ import { DetailLabel, fullName, initials } from "./guest-table";
 import { splitName } from "@/lib/names";
 import CardSheet from "@/components/card-sheet";
 import { RoundAction, RoundActions } from "@/components/round-actions";
-import { GuestGroupsSection, type GroupSummary } from "./guest-groups";
+import { type GroupSummary } from "./guest-groups";
 import { GuestTravelSection, type TravelInfo } from "./guest-travel";
-import { GuestPlanSection } from "./guest-plan";
+import { InvolvedRows, useGuestInvolvement } from "./guest-plan";
+import RolesAndGroups from "./role-groups";
 import Timeline from "@/components/timeline";
 import MealPicker from "@/components/meal-picker";
 import { MEAL_KINDS, mealKindOf, noAlcoholOf } from "@/lib/meals";
@@ -100,6 +101,7 @@ export default function GuestCard({
   onClose: () => void;
 }) {
   const name = fullName(guest);
+  const involvement = useGuestInvolvement(guest.id);
 
   const save = (edit: GuestEdit) => updateGuestAction(guest.id, edit);
   // Their answer for their own event — the first they're on (day before evening).
@@ -189,8 +191,13 @@ export default function GuestCard({
         </div>
       )}
 
+      {/* Role & groups first, then Food, Seating & travel and what they're involved in; History and Details last (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–11"). */}
       <div className="-mx-[22px] mt-6 border-t border-linen border-b">
-        <Fold title="Food & drink" summary={food}>
+        <Fold title={groups ? "Role & groups" : "Role"} summary={roleLine}>
+          <RolesAndGroups guest={guest} groups={groups} onShowGroup={onShowGroup} />
+        </Fold>
+
+        <Fold title="Food" summary={food}>
           <MealRow guest={guest} onSave={save} />
           {own && (
             <dl className="mt-3">
@@ -210,11 +217,12 @@ export default function GuestCard({
           </Fold>
         )}
 
-        <Fold title={groups ? "Role & groups" : "Role"} summary={roleLine}>
-          <h3 className="section-label">Role on the day</h3>
-          <Roles guest={guest} bare />
-          {groups && <GuestGroupsSection guestId={guest.id} firstName={guest.first_name} groups={groups} onShowGroup={onShowGroup} bare />}
-        </Fold>
+        {/* Everything they're tagged on, paying, setting up or in charge of; left out when it's nothing. */}
+        {involvement && involvement.length > 0 && (
+          <Fold title="Involved in" summary={`${involvement.length} ${involvement.length === 1 ? "thing" : "things"}`}>
+            <InvolvedRows rows={involvement} />
+          </Fold>
+        )}
 
         {/* What's been said and sent (canvas 3 "Timeline · Round 3"). Someone not in a household is sent things on their own: those sit at the top of their History, as on a household's. */}
         <section className="border-t border-linen px-[22px]">
@@ -237,8 +245,6 @@ export default function GuestCard({
           </dl>
         </Fold>
       </div>
-
-      <GuestPlanSection guestId={guest.id} />
 
       <RemoveGuest guest={guest} name={name} />
     </CardSheet>
@@ -663,6 +669,7 @@ function MealRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) 
   return (
     <section id="guest-mealkind" className="rounded-xl">
       <MealPicker
+        drinks="switch"
         kind={kind}
         noAlcohol={soft}
         onKind={(next) =>
@@ -789,110 +796,5 @@ function RemoveGuest({ guest, name }: { guest: Contact; name: string }) {
         </button>
       </div>
     </div>
-  );
-}
-
-/** The handful of roles shown straight away; the rest wait behind "More". */
-const COMMON_ROLES = ["Maid of honour", "Bridesmaid", "Best man", "Groomsman"];
-
-/**
- * Role on the day: their roles (ticked), the common ones to tap on, and
- * "More" to open the rest of the usual list and "Your own" — "Less" folds it
- * away again. Tap any role to put it on or take it off. Shows the change at
- * once and saves behind it.
- */
-function Roles({ guest, bare = false }: { guest: Contact; bare?: boolean }) {
-  const saved = rolesOf(guest);
-  const [roles, setRoles] = useOptimistic(saved);
-  const [, startTransition] = useTransition();
-  const [more, setMore] = useState(false);
-  const [custom, setCustom] = useState("");
-  const [failed, setFailed] = useState<string>();
-
-  // Theirs first (including any of their own), then the suggestions.
-  const theirs = roles;
-  const common = COMMON_ROLES.filter((r) => !roles.includes(r));
-  const rest = GUEST_ROLES.filter((r) => !roles.includes(r) && !COMMON_ROLES.includes(r));
-
-  function save(next: string[]) {
-    startTransition(async () => {
-      setRoles(next);
-      setFailed((await safely(() => setRolesAction(guest.id, next))).error);
-    });
-  }
-  const toggle = (role: string) => save(roles.includes(role) ? roles.filter((r) => r !== role) : [...roles, role]);
-
-  const pill = "h-9 rounded-full border px-3.5 text-[13px] transition";
-  const offPill = `${pill} border-linen bg-white text-ink hover:border-champagne-400`;
-
-  return (
-    <section className={bare ? "" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
-      {!bare && (
-        <h3 className="section-label flex items-center gap-2">
-          {/* The same gold star that marks anyone with a role in the list. */}
-          <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-champagne-400">
-            <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={1.4} />
-          </span>
-          Role on the day
-        </h3>
-      )}
-      <div className="mt-2.5 flex flex-wrap gap-2">
-        {theirs.map((role) => (
-          <button
-            key={role}
-            type="button"
-            aria-pressed="true"
-            onClick={() => toggle(role)}
-            className={`${pill} border-champagne-600 bg-champagne-100 font-medium text-champagne-600`}
-          >
-            ✓ {role}
-          </button>
-        ))}
-        {common.map((role) => (
-          <button key={role} type="button" aria-pressed="false" onClick={() => toggle(role)} className={offPill}>
-            {role}
-          </button>
-        ))}
-        {more &&
-          rest.map((role) => (
-            <button key={role} type="button" aria-pressed="false" onClick={() => toggle(role)} className={offPill}>
-              {role}
-            </button>
-          ))}
-        <button
-          type="button"
-          aria-expanded={more}
-          onClick={() => setMore((m) => !m)}
-          className={`${pill} flex items-center gap-1 border-dashed border-champagne-400 text-champagne-600 hover:bg-champagne-100`}
-        >
-          {more ? "Less" : "More"}
-          <ChevronDown className={`h-3.5 w-3.5 transition ${more ? "rotate-180" : ""}`} strokeWidth={1.8} aria-hidden />
-        </button>
-      </div>
-
-      {failed && <p role="alert" className="mt-2 text-sm text-ink">{failed}</p>}
-
-      {more && (
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (custom.trim()) save([...roles, custom.trim()]);
-            setCustom("");
-          }}
-        >
-          <input
-            value={custom}
-            onChange={(event) => setCustom(event.target.value)}
-            placeholder="Your own, e.g. Chief dog handler"
-            aria-label="Their own role"
-            className="h-11 min-w-0 flex-1 rounded-full border border-linen bg-white px-4 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
-          />
-          <button type="submit" className="h-11 rounded-full bg-ink px-5 text-sm text-ivory hover:bg-ink/90">
-            Add
-          </button>
-        </form>
-      )}
-    </section>
   );
 }

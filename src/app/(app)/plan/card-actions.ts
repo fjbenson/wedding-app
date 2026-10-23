@@ -270,7 +270,7 @@ export async function setInvolvedAction(kind: InvolvedKind, id: string, contactI
 
 /** What a guest is tagged on, for their card (row-level security keeps it to this wedding). */
 export async function guestPlanAction(contactId: string): Promise<Awaited<ReturnType<typeof listForGuest>>> {
-  if (!/^[0-9a-f-]{36}$/i.test(contactId)) return { todos: [], appointments: [] };
+  if (!/^[0-9a-f-]{36}$/i.test(contactId)) return { todos: [], appointments: [], payments: [], decor: [], moments: [] };
   return listForGuest(contactId);
 }
 

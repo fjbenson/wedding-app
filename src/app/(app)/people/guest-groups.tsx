@@ -35,7 +35,7 @@ export interface GroupSummary {
 const UNSAVED = "That didn't save — the app may have just been updated. Pull down to refresh, then try again.";
 
 /** Runs a group save, holding on to any problem to show it in place. */
-function useGroupSave() {
+export function useGroupSave() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
   const run = (save: () => Promise<{ error?: string }>, after?: () => void) =>
@@ -49,130 +49,6 @@ function useGroupSave() {
       }
     });
   return { pending, error, setError, run };
-}
-
-const IDEAS = ["Mum's side", "Plus-ones", "Need a lift", "Kids' table"];
-
-/** "Groups" on a guest's card: theirs as pills (✕ takes them out), then "+ Add to a group". */
-export function GuestGroupsSection({
-  guestId,
-  firstName,
-  groups,
-  onShowGroup,
-  bare = false,
-}: {
-  guestId: string;
-  firstName: string;
-  groups: GroupSummary[];
-  /** Inside one of the guest card's folds: no hairline above, a little less room. */
-  bare?: boolean;
-  /** Tapping a pill shows that group on the guest list (on the list itself). */
-  onShowGroup?: (id: string) => void;
-}) {
-  const [adding, setAdding] = useState(false);
-  const [name, setName] = useState("");
-  const { pending, error, run } = useGroupSave();
-  const theirs = groups.filter((g) => g.members.includes(guestId));
-  const others = groups.filter((g) => !g.members.includes(guestId));
-
-  return (
-    <section className={bare ? "mt-5" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
-      <h3 className="section-label">Groups</h3>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {theirs.map((g) => (
-          <span key={g.id} className="inline-flex h-9 items-center gap-1 rounded-full bg-champagne-100 pl-3.5 pr-1 text-sm text-[#5C4520]">
-            {onShowGroup ? (
-              <button type="button" onClick={() => onShowGroup(g.id)} className="hover:underline hover:underline-offset-4">
-                {g.name}
-              </button>
-            ) : (
-              g.name
-            )}
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => run(() => removeFromGroupAction(g.id, guestId))}
-              aria-label={`Take ${firstName} out of ${g.name}`}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-champagne-600 hover:bg-white/60 disabled:opacity-50"
-            >
-              <X className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden />
-            </button>
-          </span>
-        ))}
-        {!adding && (
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border-[1.5px] border-dashed border-champagne-400 px-3.5 text-sm text-champagne-600 hover:text-ink"
-          >
-            <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-            Add to a group
-          </button>
-        )}
-      </div>
-
-      {adding && (
-        <div className="mt-3 rounded-[20px] border border-linen bg-white px-4 py-3 shadow-[0_24px_50px_-24px_rgb(30_27_24/0.45)]">
-          <div className="flex items-baseline justify-between">
-            <span className="section-label">Add {firstName} to</span>
-            <button type="button" onClick={() => setAdding(false)} className="text-[13px] text-stone underline underline-offset-4 hover:text-ink">
-              Done
-            </button>
-          </div>
-          {others.length > 0 && (
-            <ul className="mt-1">
-              {others.map((g) => (
-                <li key={g.id} className="border-b border-linen last:border-b-0">
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => run(() => addToGroupAction(g.id, guestId))}
-                    className="flex min-h-11 w-full items-center gap-3 text-left text-[15px] text-ink hover:text-champagne-600 disabled:opacity-60"
-                  >
-                    <span className="flex-1">{g.name}</span>
-                    <span className="text-xs text-stone">{g.members.length}</span>
-                    <Plus className="h-4 w-4 text-champagne-600" strokeWidth={1.8} aria-hidden />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <form
-            className="mt-3 flex items-center gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              run(() => createGroupAction(name, guestId), () => setName(""));
-            }}
-          >
-            <label className="min-w-0 flex-1">
-              <span className="sr-only">A new group</span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="A new group, e.g. Plus-ones"
-                className="h-11 w-full rounded-xl border border-linen bg-white px-3.5 text-base text-ink placeholder:italic placeholder:text-stone/70 focus:border-champagne-400 focus:outline-none focus:ring-2 focus:ring-champagne-400/30"
-              />
-            </label>
-            <button type="submit" disabled={pending || !name.trim()} className="h-11 shrink-0 rounded-full bg-ink px-4 text-sm text-ivory disabled:opacity-40">
-              Add
-            </button>
-          </form>
-          {groups.length < 3 && (
-            <p className="mt-2 flex flex-wrap gap-x-2 text-xs text-stone">
-              Ideas:
-              {IDEAS.filter((idea) => !groups.some((g) => g.name.toLowerCase() === idea.toLowerCase())).map((idea) => (
-                <button key={idea} type="button" onClick={() => setName(idea)} className="underline underline-offset-2 hover:text-ink">
-                  {idea}
-                </button>
-              ))}
-            </p>
-          )}
-          {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
-        </div>
-      )}
-      {!adding && error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
-    </section>
-  );
 }
 
 /**

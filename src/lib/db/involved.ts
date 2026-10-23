@@ -67,19 +67,31 @@ export async function removeInvolved(kind: InvolvedKind, itemId: string, contact
   if (error) throw error;
 }
 
-/** What one guest is tagged on, for their card. */
+/**
+ * Everything one guest is on, for their card's "Involved in" (owner, 23 Oct 2026):
+ * to-dos and appointments they're tagged on, payments they're paying, Decor they
+ * set up, and moments they're in charge of. Reads only; nothing here is written.
+ */
 export async function listForGuest(contactId: string): Promise<{
   todos: { id: string; title: string; due_date: string | null; done: boolean }[];
   appointments: { id: string; title: string; on_date: string }[];
+  payments: { id: string; description: string; due_date: string | null; paid_on: string | null }[];
+  decor: { id: string; name: string; place: string | null }[];
+  moments: { id: string; title: string; at_time: string }[];
 }> {
   const supabase = await createClient();
-  const [todos, appointments] = await Promise.all([
+  const [todos, appointments, payers, helpers, moments] = await Promise.all([
     supabase.from(TABLE.todo).select("milestones (id, title, due_date, status)").eq("contact_id", contactId),
     supabase.from(TABLE.appointment).select("appointments (id, title, on_date)").eq("contact_id", contactId),
+    supabase.from(TABLE.payment).select("payments (id, description, due_date, paid_on)").eq("contact_id", contactId),
+    supabase.from("decor_helpers").select("decor_items (id, name, place)").eq("contact_id", contactId),
+    supabase.from("run_sheet_items").select("id, title, at_time").eq("contact_id", contactId).order("at_time"),
   ]);
-  for (const r of [todos, appointments]) if (r.error && !missing(r.error.code)) throw r.error;
+  for (const r of [todos, appointments, payers, helpers, moments]) if (r.error && !missing(r.error.code)) throw r.error;
   type T = { id: string; title: string; due_date: string | null; status: string };
   type A = { id: string; title: string; on_date: string };
+  type P = { id: string; description: string; due_date: string | null; paid_on: string | null };
+  type D = { id: string; name: string; place: string | null };
   const one = <X,>(v: X | X[] | null): X | null => (Array.isArray(v) ? (v[0] ?? null) : v);
   return {
     todos: (todos.error ? [] : ((todos.data ?? []) as unknown as { milestones: T | T[] | null }[]))
@@ -91,6 +103,14 @@ export async function listForGuest(contactId: string): Promise<{
       .map((r) => one(r.appointments))
       .filter((a): a is A => !!a)
       .sort((a, b) => a.on_date.localeCompare(b.on_date)),
+    payments: (payers.error ? [] : ((payers.data ?? []) as unknown as { payments: P | P[] | null }[]))
+      .map((r) => one(r.payments))
+      .filter((p): p is P => !!p)
+      .sort((a, b) => Number(!!a.paid_on) - Number(!!b.paid_on) || (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999")),
+    decor: (helpers.error ? [] : ((helpers.data ?? []) as unknown as { decor_items: D | D[] | null }[]))
+      .map((r) => one(r.decor_items))
+      .filter((d): d is D => !!d),
+    moments: moments.error ? [] : ((moments.data ?? []) as { id: string; title: string; at_time: string }[]),
   };
 }
 

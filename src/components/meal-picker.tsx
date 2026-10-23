@@ -16,11 +16,14 @@ export default function MealPicker({
   noAlcohol,
   onKind,
   onNoAlcohol,
+  drinks = "tiles",
 }: {
   kind: MealKind;
   noAlcohol: boolean;
   onKind: (kind: MealKind) => void;
   onNoAlcohol: (no: boolean) => void;
+  /** "switch": one "Soft drinks only" switch instead of the two tiles (the guest card, owner 23 Oct 2026). */
+  drinks?: "tiles" | "switch";
 }) {
   const tile = (on: boolean) =>
     `flex min-h-[72px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl border px-1.5 py-2 text-center text-[13px] leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400 ${
@@ -42,6 +45,24 @@ export default function MealPicker({
           })}
         </div>
       </div>
+      {drinks === "switch" ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[15px] text-ink">
+            <CupSoda aria-hidden className="h-5 w-5 text-champagne-600" strokeWidth={1.6} />
+            Soft drinks only
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={noAlcohol}
+            aria-label="Soft drinks only"
+            onClick={() => onNoAlcohol(!noAlcohol)}
+            className={`relative h-7 w-[50px] shrink-0 rounded-full transition ${noAlcohol ? "bg-champagne-600" : "bg-[#D8D0C4]"}`}
+          >
+            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-[0_1px_3px_rgb(0_0_0/0.25)] transition-all ${noAlcohol ? "right-0.5" : "left-0.5"}`} />
+          </button>
+        </div>
+      ) : (
       <div>
         <h3 className="section-label">Drinks</h3>
         <div role="radiogroup" aria-label="Drinks" className="mt-2 flex gap-2">
@@ -55,6 +76,7 @@ export default function MealPicker({
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { formatDayMonth, formatWeekdayDayMonth } from "@/lib/dates";
  * 16 Oct 2026: to-dos, appointments and payments all take it): the day in
  * gold with the month under it; rose when it's overdue, grey once done, ink
  * for today. `under: "weekday"` puts the weekday under instead (This week,
- * where every row is in the same few days). No date: a quiet dash.
+ * where every row is in the same few days). No date: a faint "Set date".
  */
 export default function DateStamp({
   date,
@@ -22,16 +22,24 @@ export default function DateStamp({
 }) {
   const isToday = date === today && !done;
   const tone = done ? "text-stone" : isToday ? "text-ink" : overdue ? "text-[#9A3F2B]" : "text-champagne-600";
+  // No date: a faint "Set date" where the day would be (owner, 23 Oct 2026: the
+  // dash and "No date" read like a typo). The row opens its card to set one.
+  if (!date) {
+    return (
+      <span className="flex w-12 shrink-0 flex-col items-start text-[12px] font-semibold uppercase leading-[1.5] tracking-[0.12em] text-stone/55">
+        <span>Set</span>
+        <span>date</span>
+      </span>
+    );
+  }
   return (
-    <span className="flex w-12 shrink-0 flex-col items-start" aria-hidden={!date}>
-      <span className={`font-display text-[30px] font-light leading-none tabular-nums ${date ? tone : "text-stone/40"}`}>
+    <span className="flex w-12 shrink-0 flex-col items-start">
+      <span className={`font-display text-[30px] font-light leading-none tabular-nums ${tone}`}>
         {/* Always two digits, 08 not 8 (owner, 16 Oct 2026), so the column lines up. */}
-        {date ? date.slice(8, 10) : "–"}
+        {date.slice(8, 10)}
       </span>
       <span className={`mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${isToday ? "text-ink" : "text-stone"}`}>
-        {!date
-          ? "No date"
-          : isToday
+        {isToday
             ? "Today"
             : under === "weekday" && !overdue
               ? formatWeekdayDayMonth(date).split(" ")[0]

@@ -1496,7 +1496,7 @@ function SortMenu({ sort, onSort, column }: { sort: SortBy; onSort: (s: SortBy) 
  */
 /** The table's headings that can be tapped to sort. */
 type TableColumn = "guest" | "event" | "rsvp" | "meal" | "diet" | "table";
-const COLUMN_LABEL: Record<TableColumn, string> = { guest: "Guest", event: "Guest of", rsvp: "RSVP", meal: "Meal", diet: "Dietary", table: "Table" };
+const COLUMN_LABEL: Record<TableColumn, string> = { guest: "Guest", event: "Event", rsvp: "RSVP", meal: "Meal", diet: "Dietary", table: "Table" };
 
 function GuestTable({
   groups,
@@ -1530,10 +1530,10 @@ function GuestTable({
   openId?: string;
   onOpen: (id: string) => void;
 }) {
-  // Three clusters, split by a hairline: who and their answer, what they eat, where they sit
-  // (owner, 21 Oct 2026: make the table more visual, with hierarchy).
+  // Three clusters, spaced by the columns' own widths: who and their answer, what they eat, where
+  // they sit (owner, 21 Oct 2026: more visual, with hierarchy; 23 Oct 2026: no vertical lines,
+  // columns closer to the name, "Event" not "Guest of" since there can be more than two).
   const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-champagne-600";
-  const gap = "border-l border-linen pl-5";
   const columns = 6;
 
   // Tap a heading to sort by it, again to flip it, a third time to go back to
@@ -1601,13 +1601,13 @@ function GuestTable({
       <div className="overflow-x-auto">
       <table className="w-full min-w-[56rem] table-fixed border-collapse text-left text-sm">
         <colgroup>
-          {/* Guest takes what's left; Dietary is narrow (most have none, and the tags wrap). */}
-          <col />
-          <col className="w-[6.5rem]" />
-          <col className="w-[10rem]" />
-          <col className="w-[7rem]" />
-          <col className="w-[13rem]" />
-          <col className="w-[9.5rem]" />
+          {/* Shares, so the answers stay near the name instead of drifting to the far edge. */}
+          <col className="w-[28%]" />
+          <col className="w-[12%]" />
+          <col className="w-[16%]" />
+          <col className="w-[11%]" />
+          <col className="w-[20%]" />
+          <col className="w-[13%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
@@ -1621,11 +1621,11 @@ function GuestTable({
                 "Guest"
               ),
             )}
-            {sortHead("event", "Guest of")}
+            {sortHead("event", "Event")}
             {sortHead("rsvp", "RSVP")}
-            {sortHead("meal", "Meal", gap)}
+            {sortHead("meal", "Meal")}
             {sortHead("diet", "Dietary")}
-            {sortHead("table", "Table", gap)}
+            {sortHead("table", "Table")}
           </tr>
         </thead>
         {shownGroups.map((group) => (
@@ -1691,7 +1691,7 @@ function GuestTable({
                   <td className="whitespace-nowrap py-2 pr-4">
                     <AnswerCell status={rsvp?.status} />
                   </td>
-                  <td className={`whitespace-nowrap py-2 pr-4 ${gap}`}>
+                  <td className="whitespace-nowrap py-2 pr-4">
                     {meal === "none" ? <span className="text-stone/70">No meal</span> : <span className="text-ink">{meal === "child" ? "Child" : "Adult"}</span>}
                   </td>
                   <td className="py-2 pr-4">
@@ -1710,8 +1710,11 @@ function GuestTable({
                       )}
                     </span>
                   </td>
-                  <td className={`whitespace-nowrap py-2 pr-2 ${gap}`}>
-                    {table ? <span className="block truncate font-display text-[16px] font-medium text-ink" title={table}>{table}</span> : <span className="text-stone/50">–</span>}
+                  <td className="whitespace-nowrap py-2 pr-2">
+                    {table ? (
+                      // Grouped by table, the group heading already says it: keep the cell, but faint.
+                      <span className={`block truncate font-display text-[16px] ${group.title === table ? "text-stone/50" : "font-medium text-ink"}`} title={table}>{table}</span>
+                    ) : <span className="text-stone/50">–</span>}
                   </td>
                 </tr>
               );

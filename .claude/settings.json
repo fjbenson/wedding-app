@@ -1,4 +1,6 @@
 {
+  "model": "claude-sonnet-5-5",
+  "effortLevel": "medium",
   "permissions": {
     "allow": [
       "Bash(git push origin HEAD:main)"

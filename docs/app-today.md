@@ -57,9 +57,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   staying / meal / sent…) and Filter; rows with initials, role star and an
   answer icon (on a laptop: one card with the total big and Coming · Yet to respond ·
   To invite beside it (they add up to it), each with its answer icon, and
-  Can't come set apart; then columns — Guest of (italic words: champagne Day, grey
+  Can't come set apart; then columns — Event (was "Guest of"; italic words: champagne Day, grey
   Evening), RSVP (word, then its icon at the edge, like the cards), Meal (Adult /
-  Child), Dietary tags (allergies marked, a narrow column), Table, hairlines between
+  Child), Dietary tags (allergies marked, a narrow column), Table, no vertical lines (23 Oct 2026), columns kept near the name; the Table is faint when grouped by table. Was: hairlines between
   who / food / seat; Round 9, 1b). **Tap a heading to sort** (again to flip, a
   third time to go back); the View button then says "Dietary ↑" and picking a View
   clears it; the Guest heading says what the rows are grouped by. On a laptop

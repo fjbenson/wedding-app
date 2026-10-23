@@ -55,9 +55,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   (`guest-browser.tsx`): numbers card (Guests · Coming · Invited · To invite),
   search +, View (order, group by household / group / event / RSVP / table /
   staying / meal / sent…) and Filter; rows with initials, role star and an
-  answer icon (on a laptop: one card with the total big and Coming · Yet to respond ·
-  To invite beside it (they add up to it), each with its answer icon, and
-  Can't come set apart; then columns — Event (was "Guest of"; italic words: champagne Day, grey
+  answer icon (on a laptop, from 23 Oct 2026: five separate tiles — total (champagne), Coming · Yet to respond ·
+  To invite (they add up to it; white glass, each with its answer icon), and
+  Can't come dashed and faint, canvas 5 Round 18 A; then columns — Event (was "Guest of"; italic words: champagne Day, grey
   Evening), RSVP (word, then its icon at the edge, like the cards), Meal (Adult /
   Child), Dietary tags (allergies marked, a narrow column), Table, no vertical lines (23 Oct 2026), columns kept near the name; the Table is faint when grouped by table. Was: hairlines between
   who / food / seat; Round 9, 1b). **Tap a heading to sort** (again to flip, a

@@ -878,14 +878,13 @@ function LetterIndex({ letters }: { letters: Set<string> }) {
 }
 
 /**
- * Laptops: the numbers in one slim row (canvas 4 "Laptop · Round 9", 1b, owner's
- * pick 21 Oct 2026). Set like the phone's card: one frosted card with the big
- * total on the left and the three numbers that break it down beside it —
- * Coming + Yet to respond + To invite add up to it. The picked one lifts out
- * white, its number gold. Each answer carries its small icon (✓ coming, an
- * envelope once invited, a dashed one still to invite, ✕ can't come), the same
- * ones the table below uses as its key. Can't come is set apart, not in the
- * total. (A bar showing the split was tried and dropped, owner, 21 Oct 2026.)
+ * Laptops: the numbers as five separate tiles in one row (canvas 5 "Round 18", A,
+ * owner's pick 23 Oct 2026; it was one frosted card with dividers). The total is
+ * champagne, the answers white glass, Can't come dashed and faint. Coming + Yet to
+ * respond + To invite add up to the total. A picked tile turns champagne. Each
+ * answer carries its small icon (✓ coming, an envelope once invited, a dashed one
+ * still to invite, ✕ can't come), the same ones the table below uses as its key.
+ * (A bar showing the split was tried and dropped, owner, 21 Oct 2026.)
  */
 function AnswersStrip({
   total,
@@ -905,60 +904,41 @@ function AnswersStrip({
     { status: "pending", label: "Yet to respond" },
     { status: "to_invite", label: "To invite" },
   ];
-  const at = parts.findIndex((t) => t.status === showing);
-  const lifted = "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]";
   const cant = showing === "declined";
+  // Picked = champagne (never black); unpicked = white glass.
+  const tile = "rounded-[20px] border-[0.5px] px-5 py-4 text-left transition";
+  const idle = "border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white";
+  const picked = "border-[#E3D3B3] bg-[#F1E7D4]";
   return (
-    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 room-xl:flex">
-      <div className="glass-card flex min-w-0 flex-1 items-stretch rounded-[22px] p-2">
-        <button
-          type="button"
-          aria-pressed={showing === "all"}
-          onClick={() => onShow("all")}
-          className={`flex w-[210px] shrink-0 flex-col justify-between rounded-2xl px-5 py-3.5 text-left transition ${showing === "all" ? lifted : "hover:bg-white/60"}`}
-        >
-          <span className={`type-figure text-[52px] leading-none ${showing === "all" ? "text-champagne-600" : "text-ink"}`}>{total}</span>
-          <span className="type-meta mt-3">
-            Guests · {homes} {homes === 1 ? "home" : "homes"}
-          </span>
-        </button>
-        <span aria-hidden className="mx-1.5 my-3 w-px shrink-0 bg-linen" />
-        {parts.map((t, i) => {
-          const on = showing === t.status;
-          return (
-            <div key={t.status} className="flex min-w-0 flex-1 items-stretch">
-              <button
-                type="button"
-                aria-pressed={on}
-                onClick={() => onShow(on ? "all" : t.status)}
-                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-3 py-3.5 text-left transition 2xl:px-4 ${on ? lifted : "hover:bg-white/60"}`}
-              >
-                <span className={`type-figure text-[34px] leading-none ${on ? "text-champagne-600" : "text-ink"}`}>{counts[t.status]}</span>
-                <span className="mt-3 flex items-center gap-1.5">
-                  <AnswerIcon status={t.status} small />
-                  <span className={`type-meta min-w-0 truncate ${on ? "!text-ink" : ""}`}>{t.label}</span>
-                </span>
-              </button>
-              {i < parts.length - 1 && <span aria-hidden className={`my-3 w-px shrink-0 ${on || i + 1 === at ? "bg-transparent" : "bg-linen"}`} />}
-            </div>
-          );
-        })}
-      </div>
+    <section aria-label="RSVPs" className="hidden grid-cols-[1.25fr_1fr_1fr_1fr_1fr] gap-3 room-xl:grid">
+      <button type="button" aria-pressed={showing === "all"} onClick={() => onShow("all")} className={`flex flex-col justify-between ${tile} ${showing === "all" ? picked : idle}`}>
+        <span className={`type-figure text-[44px] leading-none ${showing === "all" ? "text-[#6E5120]" : "text-ink"}`}>{total}</span>
+        <span className="type-meta mt-3 !text-ink/80">
+          Guests · {homes} {homes === 1 ? "home" : "homes"}
+        </span>
+      </button>
+      {parts.map((t) => {
+        const on = showing === t.status;
+        return (
+          <button key={t.status} type="button" aria-pressed={on} onClick={() => onShow(on ? "all" : t.status)} className={`flex flex-col justify-between ${tile} ${on ? picked : idle}`}>
+            <span className={`type-figure text-[44px] leading-none ${on ? "text-[#6E5120]" : "text-ink"}`}>{counts[t.status]}</span>
+            <span className="mt-3 flex items-center gap-2">
+              <AnswerIcon status={t.status} small />
+              <span className="type-meta min-w-0 truncate">{t.label}</span>
+            </span>
+          </button>
+        );
+      })}
       <button
         type="button"
         aria-pressed={cant}
         onClick={() => onShow(cant ? "all" : "declined")}
-        className={`flex w-[176px] shrink-0 flex-col justify-between rounded-[22px] px-4 py-3.5 text-left transition ${
-          cant ? `${lifted} ring-1 ring-linen` : "border-[1.5px] border-dashed border-[#D6CDBF] hover:bg-white/50"
-        }`}
+        className={`flex flex-col justify-between ${tile} ${cant ? picked : "border-[1.5px] border-dashed border-[#D8C7A4] bg-white/25 hover:bg-white/50"}`}
       >
-        <span className={`type-figure text-[34px] leading-none ${cant ? "text-champagne-600" : "text-stone"}`}>{counts.declined}</span>
-        <span>
-          <span className="flex items-center gap-1.5">
-            <AnswerIcon status="declined" small />
-            <span className={`type-meta whitespace-nowrap ${cant ? "!text-ink" : ""}`}>Can&apos;t come</span>
-          </span>
-          <span className="mt-1 block text-xs text-stone">not in the {total}</span>
+        <span className={`type-figure text-[44px] leading-none ${cant ? "text-[#6E5120]" : "text-stone"}`}>{counts.declined}</span>
+        <span className="mt-3 flex items-center gap-2">
+          <AnswerIcon status="declined" small />
+          <span className="type-meta whitespace-nowrap">Can&apos;t come</span>
         </span>
       </button>
     </section>

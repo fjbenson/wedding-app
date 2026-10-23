@@ -216,6 +216,19 @@ almost everything else is still the phone layout in a narrow column.
   main action sits, how it closes, phone vs laptop. Output: a one-page set of
   rules in `docs/DESIGN.md`, then the odd ones out brought into line. Run it
   in a fresh chat.
+  **Where it stands (23 Oct 2026, canvas 4 "Cards · Rounds 1–6"; checklist in
+  `docs/card-inventory.md`; nothing built):** Profile cards (Supplier, Guest,
+  Household, Group, Money area) and Item cards (To-do, Appointment, Payment,
+  Moment, Inspo idea, Decor item, Note). Every card: same shell; label left,
+  ✕ right; its own signature piece stays (business card, profile, envelope,
+  date stamp, picture); the main action is a black pill under it; what you
+  tap often stays out as tiles and pills, only History and Details fold
+  (Details always last; no fold for one small fact); an area pill "Open the
+  [area] page ›" then a quiet Remove at the foot. Cycling: `‹ 2 of 9 ›` in the
+  top row, plus swipe with a one-time nudge, through the list you came from.
+  Still to settle: drop the supplier's "What they do" (the area tag does it)?
+  Fold Travel and Groups on the guest card? Then write the rules into
+  `docs/DESIGN.md` and build To-do and Payment first.
 - **Supplier card (canvas 4 "Supplier card · Round 1", 23 Oct 2026), waiting
   on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
   everything folded; D/E (tap a stage, its part opens, as on area pages; a

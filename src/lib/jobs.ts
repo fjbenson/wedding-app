@@ -185,6 +185,8 @@ export interface NewTodo {
   title: string;
   /** yyyy-mm-dd, or none. */
   dueDate?: string | null;
+  /** "14:30", or none (only kept with a date). */
+  dueTime?: string | null;
   /** An area's key ("photos"), "other", or none. */
   area?: string | null;
   notes?: string | null;
@@ -204,6 +206,7 @@ export async function addTodo(input: NewTodo): Promise<JobResult<{ id: string }>
       wedding_id: wedding.id,
       title,
       due_date: dueDate,
+      due_time: dueDate ? tidy(input.dueTime) : null,
       remind_at: null,
       category: tidy(input.area),
       description: tidy(input.notes),

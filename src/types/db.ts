@@ -186,6 +186,8 @@ export interface Milestone {
   description: string | null;
   category: string | null;
   due_date: string | null;
+  /** "14:30:00", or null for any time that day (0037_todo_time.sql). */
+  due_time?: string | null;
   remind_at: string | null;
   status: MilestoneStatus;
   assigned_to: string | null;

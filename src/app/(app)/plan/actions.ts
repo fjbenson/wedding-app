@@ -43,6 +43,8 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
   const fields = {
     title,
     due_date: due,
+    // A time only means something with a day.
+    due_time: due ? text(formData, "due_time") : null,
     remind_at: null,
     category: text(formData, "category"),
     description: text(formData, "description"),
@@ -59,7 +61,7 @@ export async function saveMilestoneAction(milestoneId: string | null, formData: 
       detail = describe(e);
     }
   } else {
-    const result = await addTodo({ title, dueDate: due, area: fields.category, notes: fields.description });
+    const result = await addTodo({ title, dueDate: due, dueTime: fields.due_time, area: fields.category, notes: fields.description });
     if (!result.ok) ({ error, detail = "" } = result);
     else await tagGuests(wedding.id, "todo", result.id, formData);
   }

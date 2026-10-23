@@ -14,7 +14,8 @@ type Action = (formData: FormData) => void | Promise<void>;
 /**
  * Adding to the plan: a to-do or an appointment, picked from the + first.
  * The name, the date (with quick picks — where suggestions help most), the
- * area, then for an appointment the time and where and who, then notes.
+ * area, then for an appointment where and who, then notes. Both can have a
+ * time (to-dos since 23 Oct 2026, owner: "they should").
  * Since 16 Oct 2026 (owner): no name or time suggestions — free text and the
  * phone's own time picker — and the area comes before "With", so the
  * supplier list is that area's.
@@ -77,11 +78,11 @@ export default function PlanAddForm({
 
       <Part label="When">
         <DateCard name={appt ? "on_date" : "when"} value={date} onChange={setDate} weddingDate={weddingDate} required={appt} />
-        {appt && (
+        {(appt || date) && (
           <div className={CARD}>
             <Line icon={Clock} label="Time">
               <input
-                name="at_time"
+                name={appt ? "at_time" : "due_time"}
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}

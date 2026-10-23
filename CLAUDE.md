@@ -109,7 +109,7 @@ and Supabase sit in the same region; if one moves, move the other.
 
 ## Data and the database
 
-- Schema in `supabase/migrations/0001_init.sql` … `0036_floor_plan_wider.sql`,
+- Schema in `supabase/migrations/0001_init.sql` … `0037_todo_time.sql`,
   **all run** on the live project (**wedding-app**, `hfyuvtrglkdpqvtkzohb`).
 - The Supabase connector is set up, so Claude can run migrations — but
   **always says in plain words what a change does and waits for the owner's

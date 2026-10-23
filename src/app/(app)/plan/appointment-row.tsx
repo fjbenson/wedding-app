@@ -3,7 +3,7 @@ import RowLine from "@/components/row-line";
 import RowPeople from "@/components/row-people";
 import { Calendar, Check } from "lucide-react";
 import { formatTime, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
-import DateStamp from "@/components/date-stamp";
+import DateStamp, { TimeStamp } from "@/components/date-stamp";
 import type { Appointment } from "@/types/db";
 
 /**
@@ -27,7 +27,8 @@ export function AppointmentRow({
   been: boolean;
   supplier?: string;
   area?: string | null;
-  inDay?: boolean;
+  /** In a day's card: "times" puts the time where the date was; "plain" (no times that day) leaves the column out. */
+  inDay?: "times" | "plain" | false;
 }) {
   const weekday = formatWeekdayDayMonth(a.on_date).split(" ")[0];
   // Day and time, then who it's with — else where, else the area (RowLine).
@@ -37,13 +38,7 @@ export function AppointmentRow({
   return (
     <li className={`row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0 ${been ? "opacity-60" : ""}`}>
       <CardLink href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
-        {inDay ? (
-          <span className={`w-12 shrink-0 font-display text-[22px] font-light leading-none ${been ? "text-stone" : "text-champagne-600"}`}>
-            {a.at_time ? formatTime(a.at_time) : ""}
-          </span>
-        ) : (
-          <DateStamp date={a.on_date} today={todayISO()} done={been} />
-        )}
+        {inDay === "times" ? <TimeStamp time={a.at_time} done={been} /> : !inDay && <DateStamp date={a.on_date} today={todayISO()} done={been} />}
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
           <RowLine status={been ? "Been" : null} details={details} />

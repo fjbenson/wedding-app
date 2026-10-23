@@ -86,7 +86,7 @@ export default function Agenda({
 
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name;
 
-  const row = (entry: Entry, inDay = false) => {
+  const row = (entry: Entry, inDay: "times" | "plain" | false = false) => {
     const faded = isDone(entry);
     if (entry.kind === "todo") {
       const m = entry.milestone;
@@ -144,12 +144,14 @@ export default function Agenda({
     (dots[e.date] ??= []).push(e.kind);
     (chips[e.date] ??= []).push(
       e.kind === "todo"
-        ? { kind: "todo", title: e.milestone.title, time: null, overdue: !!e.milestone.due_date && e.milestone.due_date < today }
+        ? { kind: "todo", title: e.milestone.title, time: e.milestone.due_time ? formatTime(e.milestone.due_time) : null, overdue: !!e.milestone.due_date && e.milestone.due_date < today }
         : { kind: "appointment", title: e.appointment.title, time: e.appointment.at_time ? formatTime(e.appointment.at_time) : null, overdue: false },
     );
   }
+  // A day's card shows times where the date was, only when something that day has one.
+  const hasTime = (e: Entry) => (e.kind === "todo" ? !!e.milestone.due_time : !!e.appointment.at_time);
   const dayPanels = Object.fromEntries(
-    Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e, true))}</ul>]),
+    Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e, entries.some(hasTime) ? "times" : "plain"))}</ul>]),
   );
   // The list under the grid: everything with a date in the month, in date
   // order, no day headings (owner, 11 Oct 2026): each row carries its own

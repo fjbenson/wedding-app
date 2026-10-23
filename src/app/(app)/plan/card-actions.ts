@@ -167,7 +167,7 @@ function refreshAll() {
   revalidatePath("/standing");
 }
 
-type TodoFields = Partial<Pick<Milestone, "title" | "due_date" | "category" | "description">>;
+type TodoFields = Partial<Pick<Milestone, "title" | "due_date" | "due_time" | "category" | "description">>;
 type AppointmentFields = Partial<Pick<Appointment, "title" | "on_date" | "at_time" | "location" | "contact_id" | "area_key" | "notes">>;
 
 /**
@@ -181,7 +181,7 @@ export async function updatePlanFieldsAction(
   fields: TodoFields | AppointmentFields | Record<string, string | null>,
 ): Promise<{ error?: string }> {
   const allowed = {
-    todo: ["title", "due_date", "category", "description"],
+    todo: ["title", "due_date", "due_time", "category", "description"],
     appointment: ["title", "on_date", "at_time", "location", "contact_id", "area_key", "notes"],
     payment: ["description", "amount", "due_date", "paid_on", "contact_id", "area_key", "notes"],
     moment: ["title", "at_time", "location", "who", "notes", "area_key", "music", "music_url", "music_kind", "contact_id"],

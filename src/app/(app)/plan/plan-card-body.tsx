@@ -60,6 +60,7 @@ export function TodoBody({
 }) {
   const save = useSave("todo", m.id);
   const [date, setDate] = useState(m.due_date ?? m.remind_at?.slice(0, 10) ?? "");
+  const [time, setTime] = useState(m.due_time?.slice(0, 5) ?? "");
   const [area, setArea] = useState(m.category ?? "");
   const [error, setError] = useState<string>();
   const change = async (fields: Record<string, string | null>) => setError((await save(fields)).error);
@@ -76,9 +77,17 @@ export function TodoBody({
         dateName="when"
         onDate={(v) => {
           setDate(v);
-          change({ due_date: v || null });
+          // No day, no time: a time only means something with a date.
+          if (!v) setTime("");
+          change(v ? { due_date: v } : { due_date: null, due_time: null });
         }}
         weddingDate={weddingDate}
+        // A time on a to-do (owner, 23 Oct 2026), once it has a day.
+        time={date ? time : undefined}
+        onTime={(t) => {
+          setTime(t);
+          change({ due_time: t || null });
+        }}
         area={area}
         areaOptions={options}
         otherValue=""

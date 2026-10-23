@@ -269,10 +269,6 @@ almost everything else is still the phone layout in a narrow column.
 - **Invitations prompt (owner, 23 Oct 2026):** once invitations are sent from
   the app, ask "Move Maya and Sam to Yet to respond?" (canvas 5 "Guest card ·
   Round 4", D3). With it, the owner may want the four-way RSVP slider back.
-- **A time on a to-do (owner, 23 Oct 2026):** an optional `+ Time` on the
-  stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
-  (timestamptz) may hold it with no database change; check first. Any database
-  change is the owner's call.
 - **Journeys: stages across the app (owner, 23 Oct 2026, to think about
   later):** areas (Ideas › Quote › Book › Pay › Ready), suppliers (In touch ›
   Quote in › Booked › Paid), guests (To invite › Invited › Coming, Can't come

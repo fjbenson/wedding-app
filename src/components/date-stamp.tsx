@@ -1,4 +1,4 @@
-import { formatDayMonth, formatWeekdayDayMonth } from "@/lib/dates";
+import { formatDayMonth, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 
 /**
  * The date down the left of a row, large — the Hub's This week look (owner,
@@ -53,6 +53,28 @@ export default function DateStamp({
               ? formatWeekdayDayMonth(date).split(" ")[0]
               : formatDayMonth(date).split(" ")[1]}
       </span>
+    </span>
+  );
+}
+
+/**
+ * In a day's card the date is the card's title, so rows show the time where
+ * the date would be ("2pm", "10:30am": wider than the date, so 64px), and a faint "Any time" for things
+ * with none, so titles line up (owner, 23 Oct 2026). A day with no times at
+ * all leaves the column out (`DateStamp`'s callers pass `inDay="plain"`).
+ */
+export function TimeStamp({ time, done = false }: { time: string | null | undefined; done?: boolean }) {
+  if (!time) {
+    return (
+      <span className="flex w-16 shrink-0 flex-col items-start text-[12px] font-semibold uppercase leading-[1.5] tracking-[0.12em] text-stone/55">
+        <span>Any</span>
+        <span>time</span>
+      </span>
+    );
+  }
+  return (
+    <span className={`w-16 shrink-0 whitespace-nowrap font-display text-[20px] font-light leading-none ${done ? "text-stone" : "text-champagne-600"}`}>
+      {formatTime(time)}
     </span>
   );
 }

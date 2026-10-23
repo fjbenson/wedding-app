@@ -47,14 +47,14 @@ function Mark({ kind }: { kind: Dot }) {
  * appointment on champagne with its time, an overdue to-do in rose with a "!"
  * (never colour alone).
  */
-function ChipLine({ chip }: { chip: Chip }) {
+function ChipLine({ chip, faded = false }: { chip: Chip; faded?: boolean }) {
   const tone = chip.overdue
     ? "bg-[#FBEDEA] text-[#9A3F2B] shadow-[inset_0_0_0_0.5px_#E8C2B9]"
     : chip.kind === "appointment"
       ? "bg-champagne-100 text-[#5E4518]"
       : "bg-white text-ink shadow-[inset_0_0_0_0.5px_#E6E0D6]";
   return (
-    <span className={`flex min-w-0 items-center gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] ${tone}`}>
+    <span className={`flex min-w-0 items-center gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] transition-opacity ${tone} ${faded ? "opacity-25" : ""}`}>
       {chip.kind === "appointment" ? (
         <Calendar className="h-3 w-3 shrink-0" strokeWidth={2} aria-hidden />
       ) : (
@@ -153,6 +153,21 @@ export default function PlanCalendar({
     const next = shiftMonth(month, by);
     setMonth(next);
     setSelected(null);
+  };
+
+  // "In October": what's still to do in the month in view (overdue is its own tile).
+  const monthCount = Object.entries(chips)
+    .filter(([date]) => date.startsWith(month))
+    .reduce((n, [, cs]) => n + cs.filter((c) => !c.overdue).length, 0);
+  // Picking Overdue when this month has none jumps to the first month that does.
+  const choose = (p: Pick) => {
+    if (pick === p) return setPick(null);
+    setPick(p);
+    const overdueDays = Object.keys(chips).filter((d) => chips[d].some((c) => c.overdue)).sort();
+    if (p === "overdue" && overdueDays.length && !overdueDays.some((d) => d.startsWith(month))) {
+      setMonth(overdueDays[0].slice(0, 7));
+      setSelected(null);
+    }
   };
 
   const longDate = (date: string) => {
@@ -320,6 +335,59 @@ export default function PlanCalendar({
           23 Oct 2026). The month fills the page and each day says what's on
           it; tap a day for its card. No list under it: No date and Done are
           pills by the month's name. */}
+      {/* Where the plan stands: the whole plan's figures, but "In October"
+          follows the month in view (owner, 23 Oct 2026). Tapping one lights
+          up its things on the month, like the Suppliers tiles; again to clear.
+          No date opens its card, as those have no day. */}
+      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-5 gap-3 room-lg:grid">
+        {(
+          [
+            { pick: "overdue", value: totals.overdue, label: "Overdue" },
+            { pick: "todos", value: totals.todos, label: "To-dos open" },
+            { pick: "appointments", value: totals.appointments, label: "Appointments" },
+            { pick: null, value: monthCount, label: `In ${name}` },
+            { pick: "undated", value: undatedCount, label: "No date" },
+          ] as const
+        ).map((t) => {
+          const on = t.pick !== null && t.pick === pick;
+          const late = t.pick === "overdue" && t.value > 0;
+          const tone = on
+            ? "border-[0.5px] border-[#E3D3B3] bg-[#F1E7D4]"
+            : late
+              ? "border-[0.5px] border-[#E8C2B9] bg-[#FBEDEA] hover:bg-[#F8E3DE]"
+              : t.pick === "undated"
+                ? "border border-dashed border-[#D8C7A4] bg-white/30 hover:bg-white/60"
+                : "border-[0.5px] border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white";
+          const inner = (
+            <>
+              <span className={`type-figure text-[34px] leading-none ${late ? "text-[#9A3F2B]" : t.pick === "undated" ? "text-stone" : on ? "text-[#6E5120]" : "text-ink"}`}>
+                {t.value}
+              </span>
+              {/* Overdue carries a ▲ as well as the rose, never colour alone. */}
+              <span className={`type-meta min-w-0 truncate ${late ? "!text-[#9A3F2B]" : ""}`}>
+                {late && "▲ "}
+                {t.label}
+              </span>
+            </>
+          );
+          const box = `flex items-baseline gap-3 rounded-[18px] px-[18px] py-3 text-left transition disabled:cursor-default disabled:hover:bg-white/70 ${tone}`;
+          // The month's figure is just a figure: everything in view is already "in October".
+          if (t.pick === null) return <div key={t.label} className={box}>{inner}</div>;
+          return (
+            <button
+              key={t.label}
+              type="button"
+              disabled={t.value === 0}
+              aria-pressed={t.pick === "undated" ? undefined : on}
+              onClick={() => (t.pick === "undated" ? setSelected("undated") : choose(t.pick))}
+              className={box}
+            >
+              {inner}
+            </button>
+          );
+        })}
+      </section>
+
       <div className="glass-card hidden rounded-[26px] px-4 pt-4 room-lg:block">
         <div className="flex items-center gap-2 px-1.5 pb-3">
           <h2 className="font-display text-[26px] font-light text-ink" aria-live="polite">
@@ -436,7 +504,7 @@ export default function PlanCalendar({
                   </span>
                 )}
                 {shown.map((c, j) => (
-                  <ChipLine key={j} chip={c} />
+                  <ChipLine key={j} chip={c} faded={!!pick && !fits(c, pick)} />
                 ))}
                 {things.length > 3 && <span className="px-1.5 text-xs text-stone">+{things.length - 2} more</span>}
               </button>

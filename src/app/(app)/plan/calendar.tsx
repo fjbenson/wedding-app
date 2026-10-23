@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
@@ -163,6 +163,25 @@ export default function PlanCalendar({
     replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected, show: pick, q: query.trim() || null });
   }, [month, selected, today, pick, query]);
   const close = useCallback(() => setSelected(null), []);
+
+  // The big month's card is as tall as the screen has left under it.
+  const fill = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const size = () => {
+      const el = fill.current;
+      if (!el || el.offsetParent === null) return;
+      el.style.minHeight = "0px";
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      el.style.minHeight = `${Math.max(0, window.innerHeight - top - 48)}px`;
+    };
+    size();
+    window.addEventListener("resize", size);
+    const t = setTimeout(size, 300);
+    return () => {
+      window.removeEventListener("resize", size);
+      clearTimeout(t);
+    };
+  }, [month, selected, filtered]);
 
 
   const [year, monthNumber] = month.split("-").map(Number);
@@ -434,33 +453,33 @@ export default function PlanCalendar({
         })}
       </section>
 
-      {/* Find or add, then Filter on the right: the same bones as the other tabs. */}
-      <div className="mb-4 hidden room-md:block">
-        <div className="flex items-center gap-3">
-          <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
-            <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Find a to-do or appointment"
-              aria-label="Find a to-do or appointment"
-              className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
-            />
-            {query && (
-              <button type="button" onClick={() => setQuery("")} aria-label="Clear the search" className="-mr-1 flex h-8 w-8 items-center justify-center text-stone hover:text-ink">
-                <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-              </button>
-            )}
-          </label>
-          {toggle}
-        </div>
+      {/* One row, like the other tabs: search, Filter, then the round black + (owner, 23 Oct 2026). */}
+      <div className="mb-4 hidden room-md:block [&>div]:mt-0">
         <FilterMenu
           base={filterBase}
           groups={[
             { param: "only", title: "Show", current: only, rows: [{ key: "todos", label: "To-dos" }, { key: "appointments", label: "Appointments" }] },
             { param: "area", title: "Area", current: area, rows: areaRows },
           ]}
+          start={
+            <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+              <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find a to-do or appointment"
+                aria-label="Find a to-do or appointment"
+                className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+              />
+              {query && (
+                <button type="button" onClick={() => setQuery("")} aria-label="Clear the search" className="-mr-1 flex h-8 w-8 items-center justify-center text-stone hover:text-ink">
+                  <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+                </button>
+              )}
+            </label>
+          }
+          end={toggle}
           expandable={{ results: matchesInMonth, noun: "item" }}
         />
         {filtered && (
@@ -470,7 +489,8 @@ export default function PlanCalendar({
         )}
       </div>
 
-      <div className="glass-card hidden rounded-[26px] px-4 pt-4 room-md:block">
+      {/* The month runs to the bottom of the screen (owner, 23 Oct 2026): the card is as tall as what's left, and the weeks share it. */}
+      <div ref={fill} className="glass-card hidden flex-col rounded-[26px] px-4 pt-4 room-md:flex">
         <div className="flex items-center gap-2 px-1.5 pb-3">
           <h2 className="font-display text-[26px] font-light text-ink" aria-live="polite">
             {name} <span className="italic text-champagne-600">{year}</span>
@@ -533,14 +553,14 @@ export default function PlanCalendar({
             </span>
           ))}
         </div>
-        <div className="grid grid-cols-7">
+        <div className="grid flex-1 grid-cols-7 auto-rows-[minmax(112px,1fr)]">
           {Array.from({ length: weeks * 7 }, (_, i) => {
             const n = i - blanks + 1;
             const edge = i % 7 === 0 ? "" : "border-l-[0.5px]";
             // Days from the months either side, faded and not tappable.
             if (n < 1 || n > length) {
               return (
-                <span key={`o${i}`} aria-hidden className={`h-[112px] border-t-[0.5px] border-linen px-2 pt-1.5 ${edge}`}>
+                <span key={`o${i}`} aria-hidden className={`min-h-[112px] border-t-[0.5px] border-linen px-2 pt-1.5 ${edge}`}>
                   <span className="flex h-6 items-center font-display text-[15px] text-stone/35">
                     {n < 1 ? lastMonthLength + n : n - length}
                   </span>
@@ -562,7 +582,7 @@ export default function PlanCalendar({
                 aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                   things.length ? `, ${things.length} ${things.length === 1 ? "item" : "items"}` : ""
                 }`}
-                className={`flex h-[112px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1 pt-1.5 text-left transition hover:bg-white/70 ${edge} ${
+                className={`flex min-h-[112px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1 pt-1.5 text-left transition hover:bg-white/70 ${edge} ${
                   date === selected ? "bg-white" : isToday ? "bg-champagne-100/40" : ""
                 }`}
               >

@@ -340,9 +340,12 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   else the lowest quote, else the budget), a **Budgeted / Quoted / Booked
   pill**, and always a bar and a line under it (empty bar until booked; no
   "of budget" or over-budget on the card). Each opens its money from the
-  bottom, headed by a **Next step** card (set a budget → add a quote →
-  choose or book → mark paid / add the balance); quotes compared against the
-  budget line; the month columns and payments by month; the budget page with
+  bottom (22 Oct 2026, canvas 4 "Money · Round 6", 2): a **Budget / Booked /
+  Paid** panel of three bars on one scale (quotes never counted), a **Next
+  step** card (set a budget → add a quote → choose or book → mark paid / add
+  the balance), then **a card per booked supplier** with its payments inside
+  (deposit last; quotes as dashed "not counted" rows, or compared); the month
+  columns and payments by month; the budget page with
   "Share it out for us"; money towards it and bills family are paying.
 - **The Day** (`/day`): the **run sheet** as an order of service, with three
   piece tiles — **Seating** (floor plan on a dot grid, round / long / top

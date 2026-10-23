@@ -325,7 +325,8 @@ function RunSheet({
         </nav>
       <div className="relative lg:mt-5 lg:[overflow-x:clip]">
         <SheetPeek side="before" sheet={before} items={before ? momentsOf(before.id) : []} href={before ? sheetHref(before.id) : ""} />
-        <div className="relative z-10 min-w-0 lg:mx-auto lg:max-w-xl">
+        {/* z-10 only on a laptop: on a phone it floated over the menu bar (owner, 23 Oct 2026). */}
+        <div className="relative min-w-0 lg:z-10 lg:mx-auto lg:max-w-xl">
           {/* Laptops: Filter, Print and the + by the sheet, not in a row of their own. */}
           <div className="hidden items-center justify-end gap-1 pb-3 lg:flex print:hidden">
             <FilterMenu

@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, LayoutList, Mail, Phone, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import PageTitle from "@/components/page-title";
 import { usePullToClose } from "@/components/use-pull-to-close";
-import { areaName, type AreaOption } from "@/lib/areas";
+import { areaIcon, areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { supplierStatusLabel, SUPPLIER_STATUSES } from "@/lib/supplier-status";
 import { formatMoney } from "@/lib/money";
@@ -299,8 +299,10 @@ export default function SupplierList({
             <div aria-hidden className={`mt-6 hidden pr-1 room-md:mt-0 room-lg:border-b room-lg:border-champagne-400 room-lg:pb-3 room-lg:pt-1 ${COLS} text-xs font-medium uppercase tracking-[0.16em] text-champagne-600`}>
               <span>Supplier</span>
               <span>Stage</span>
-              <span className="text-right">Quote</span>
+              <span className="hidden room-xl:block">Area</span>
+              <span className="text-right">Price</span>
               <span className="text-right">Paid</span>
+              <span className="border-l border-champagne-400/50 pl-3 text-right">To go</span>
               <span className="hidden room-xl:block">Phone</span>
               <span className="hidden room-xl:block">Email</span>
               <span className="room-xl:hidden" />
@@ -356,6 +358,7 @@ export default function SupplierList({
                     <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
                       <SupplierRow
                         supplier={s}
+                        areas={areas}
                         paid={(s.supplier_details?.deposit_paid ?? 0) + payments.filter((p) => p.contact_id === s.id && p.paid_on).reduce((sum, p) => sum + p.amount, 0)}
                         onOpen={(field) => {
                           setEditField(field);
@@ -755,14 +758,20 @@ const initials = (name: string) =>
  * tap away on the card. A missing number or email shows greyed out, and
  * tapping it opens the card ready to type it in.
  */
-/** The laptop's columns: name, stage, quote, paid, then phone and email as words (round buttons below 1280px). With a card open beside the list they wait for 440px more screen (`room-*:`, tailwind.config.ts). */
-const COLS = "room-lg:grid room-lg:grid-cols-[minmax(0,1fr)_104px_96px_96px_auto] room-lg:items-center room-lg:gap-x-5 room-xl:grid-cols-[minmax(0,1fr)_104px_96px_96px_150px_minmax(0,230px)]";
+/** The laptop's columns (23 Oct 2026): name, stage with its icon, area with its icon, the price (a quote, or the agreed total once booked), then Paid | To go as a joined pair, then phone and email as words (round buttons below 1280px). With a card open beside the list they wait for 440px more screen (`room-*:`, tailwind.config.ts). */
+const COLS = "room-lg:grid room-lg:grid-cols-[minmax(0,1fr)_128px_88px_88px_88px_auto] room-lg:items-center room-lg:gap-x-4 room-xl:grid-cols-[minmax(0,1.3fr)_128px_150px_88px_88px_88px_136px_minmax(0,1fr)]";
 
-function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: number; onOpen: (field?: "phone" | "email") => void }) {
+function SupplierRow({ supplier, areas, paid, onOpen }: { supplier: Supplier; areas: AreaOption[]; paid: number; onOpen: (field?: "phone" | "email") => void }) {
   const st = stage(supplier);
   const name = supplierName(supplier);
   const phone = supplier.phone?.replace(/\s+/g, "");
   const notTaken = st === "cancelled";
+  const price = supplier.supplier_details?.quoted_cost ?? 0;
+  // To go only means something once it's booked: the agreed total less what's been paid.
+  const toGo = st === "booked" && price > 0 ? Math.max(0, price - paid) : null;
+  const key = cat(supplier);
+  const AreaGlyph = key === "other" ? null : areaIcon(key, areas.find((a) => a.key === key)?.icon);
+  const dash = <span className="text-stone/50">—</span>;
   const action = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-linen bg-white text-ink hover:border-champagne-400";
   // Not added yet: greyed out with a dashed edge; a tap opens the card ready to fill it in.
   const missing = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40 hover:border-champagne-400 hover:text-champagne-600";
@@ -771,7 +780,7 @@ function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: num
       <button type="button" onClick={() => onOpen()} className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left">
         <span aria-hidden className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
           {initials(name)}
-          <span className="absolute -bottom-1 -right-1.5">
+          <span className="absolute -bottom-1 -right-1.5 room-lg:hidden">
             <StageIcon status={st} badge />
           </span>
         </span>
@@ -782,9 +791,19 @@ function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: num
         </span>
       </button>
       {/* Laptop columns. */}
-      <span className="hidden text-[14px] text-ink room-lg:block">{supplierStatusLabel(st)}</span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{supplier.supplier_details?.quoted_cost ? formatMoney(supplier.supplier_details.quoted_cost) : <span className="text-stone/50">—</span>}</span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{paid > 0 ? formatMoney(paid) : <span className="text-stone/50">—</span>}</span>
+      <span className="hidden items-center gap-2 text-[14px] text-ink room-lg:flex">
+        <StageIcon status={st} small />
+        {supplierStatusLabel(st)}
+      </span>
+      <span className="hidden min-w-0 items-center gap-2 text-[14px] text-stone room-xl:flex">
+        {AreaGlyph && <AreaGlyph aria-hidden className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.7} />}
+        <span className="truncate">{areaName(supplier.supplier_details?.category ?? null, areas) ?? "Other"}</span>
+      </span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{price ? formatMoney(price) : dash}</span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{paid > 0 ? formatMoney(paid) : dash}</span>
+      <span className="type-figure hidden border-l border-linen pl-3 text-right text-[17px] !font-light tabular-nums room-lg:block">
+        {toGo === null ? dash : toGo > 0.005 ? formatMoney(toGo) : <span className="text-[13px] text-champagne-600">Paid</span>}
+      </span>
       <span className="hidden min-w-0 room-xl:block">
         {supplier.phone ? <a href={`tel:${phone}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.phone}</a> : <button type="button" onClick={() => onOpen("phone")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}
       </span>

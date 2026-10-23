@@ -41,6 +41,7 @@ From the last few chats, not yet confirmed:
   stage) — look at them on the phone. **Come back to** the Notes and Inspo
   tiles at the foot. Walk still to do: Juno button, supplier card Progress,
   Notes/Inspo rows, stationery, run sheets, seating, food and meals.
+- 23 Oct 2026, **open decision — what makes a stage move** (canvas 5 "Supplier card · Round 20"): A = the supplier's circles become tabs you can look at without moving them (Contact in In touch, the quote in Quote in, the Book button in Booked, payments in Paid); B = keep one long card, circles as a picture plus a Next up card. The rules table covers areas, suppliers, guests, decor, stationery. Guest stages are a new idea.
 - 21 Oct 2026, laptop (built blind — the private copy couldn't start, Docker's
   downloads were refused): the Hub ring (five dots under each name, fainter
   circle) and Needs a push; an area page (a big stage card left, a slim Next

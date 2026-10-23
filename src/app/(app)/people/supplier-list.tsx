@@ -802,7 +802,11 @@ function SupplierRow({ supplier, areas, paid, onOpen }: { supplier: Supplier; ar
         {AreaGlyph && <AreaGlyph aria-hidden className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.7} />}
         <span className="truncate">{areaName(supplier.supplier_details?.category ?? null, areas) ?? "Other"}</span>
       </span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{price ? formatMoney(price) : dash}</span>
+      {/* The one figure is a quote until it's booked, then the agreed total: the word says which (owner, 23 Oct 2026). */}
+      <span className="hidden flex-col items-end room-lg:flex">
+        <span className="type-figure text-[17px] !font-light tabular-nums">{price ? formatMoney(price) : dash}</span>
+        {price > 0 && <span className="text-xs text-stone">{st === "booked" ? "agreed" : "quoted"}</span>}
+      </span>
       {/* Paid | To go: one column, the bar down the middle on every row. */}
       <span className="type-figure hidden grid-cols-[1fr_auto_1fr] items-center gap-3 text-[17px] !font-light tabular-nums room-lg:grid">
         <span className="text-right">{paid > 0 ? formatMoney(paid) : dash}</span>

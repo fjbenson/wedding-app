@@ -11,6 +11,7 @@ import { usePullToClose } from "@/components/use-pull-to-close";
 import { areaName, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { supplierStatusLabel, SUPPLIER_STATUSES } from "@/lib/supplier-status";
+import { formatMoney } from "@/lib/money";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment, SupplierStatus } from "@/types/db";
 import SupplierCard, { supplierContact, supplierName } from "./supplier-card";
@@ -217,7 +218,8 @@ export default function SupplierList({
         Suppliers
       </PageTitle>
 
-        <div className="lg:max-w-3xl">
+        <div>
+          <div className="lg:max-w-3xl">
           <CountCard
             total={counted.length}
             areasWith={areas.filter((a) => counted.some((s) => cat(s) === a.key)).length}
@@ -226,6 +228,7 @@ export default function SupplierList({
             show={show}
             onShow={onShow}
           />
+          </div>
 
           <div className="mt-5 flex items-center gap-2">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -283,6 +286,18 @@ export default function SupplierList({
               )}
             </p>
           )}
+          {/* On a laptop the list has columns, like the guest table (owner, 23 Oct 2026): who, how far along, what it costs, what's paid, how to reach them. */}
+          {groups.length > 0 && (
+            <div aria-hidden className={`mt-6 hidden pr-1 ${COLS} type-meta !text-[11px]`}>
+              <span className="pl-[52px]">Supplier</span>
+              <span>Stage</span>
+              <span className="text-right">Quote</span>
+              <span className="text-right">Paid</span>
+              <span className="hidden xl:block">Phone</span>
+              <span className="hidden xl:block">Email</span>
+              <span className="xl:hidden" />
+            </div>
+          )}
           {groups.map((g) => {
             const isFolded = folded.has(g.key);
             return (
@@ -333,6 +348,7 @@ export default function SupplierList({
                     <li key={s.id} className="row-press border-b-[0.5px] border-champagne-400">
                       <SupplierRow
                         supplier={s}
+                        paid={(s.supplier_details?.deposit_paid ?? 0) + payments.filter((p) => p.contact_id === s.id && p.paid_on).reduce((sum, p) => sum + p.amount, 0)}
                         onOpen={(field) => {
                           setEditField(field);
                           // Tapping the open supplier again closes their card (owner, 21 Oct 2026).
@@ -683,7 +699,10 @@ const initials = (name: string) =>
  * tap away on the card. A missing number or email shows greyed out, and
  * tapping it opens the card ready to type it in.
  */
-function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?: "phone" | "email") => void }) {
+/** The laptop's columns: name, stage, quote, paid, then phone and email as words (round buttons below 1280px). */
+const COLS = "lg:grid lg:grid-cols-[minmax(0,1fr)_104px_96px_96px_auto] lg:items-center lg:gap-x-5 xl:grid-cols-[minmax(0,1fr)_104px_96px_96px_150px_minmax(0,230px)]";
+
+function SupplierRow({ supplier, paid, onOpen }: { supplier: Supplier; paid: number; onOpen: (field?: "phone" | "email") => void }) {
   const st = stage(supplier);
   const name = supplierName(supplier);
   const phone = supplier.phone?.replace(/\s+/g, "");
@@ -692,7 +711,7 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?
   // Not added yet: greyed out with a dashed edge; a tap opens the card ready to fill it in.
   const missing = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone/30 text-stone/40 hover:border-champagne-400 hover:text-champagne-600";
   return (
-    <div className="flex min-h-[62px] items-center gap-2">
+    <div className={`flex min-h-[62px] items-center gap-2 ${COLS}`}>
       <button type="button" onClick={() => onOpen()} className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left">
         <span aria-hidden className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-linen bg-white font-display text-sm text-champagne-600 max-[359px]:hidden">
           {initials(name)}
@@ -706,6 +725,17 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?
           <span className="sr-only">, {supplierStatusLabel(st)}</span>
         </span>
       </button>
+      {/* Laptop columns. */}
+      <span className="hidden text-[14px] text-ink lg:block">{supplierStatusLabel(st)}</span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums lg:block">{supplier.supplier_details?.quoted_cost ? formatMoney(supplier.supplier_details.quoted_cost) : <span className="text-stone/50">—</span>}</span>
+      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums lg:block">{paid > 0 ? formatMoney(paid) : <span className="text-stone/50">—</span>}</span>
+      <span className="hidden min-w-0 xl:block">
+        {supplier.phone ? <a href={`tel:${phone}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.phone}</a> : <button type="button" onClick={() => onOpen("phone")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}
+      </span>
+      <span className="hidden min-w-0 xl:block">
+        {supplier.email ? <a href={`mailto:${supplier.email}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.email}</a> : <button type="button" onClick={() => onOpen("email")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}
+      </span>
+      <span className="flex items-center gap-2 xl:hidden">
       {phone ? (
         <a href={`tel:${phone}`} aria-label={`Call ${name}`} className={action}>
           <Phone className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
@@ -724,6 +754,7 @@ function SupplierRow({ supplier, onOpen }: { supplier: Supplier; onOpen: (field?
           <Mail className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
         </button>
       )}
+      </span>
     </div>
   );
 }

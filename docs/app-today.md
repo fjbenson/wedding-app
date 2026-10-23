@@ -62,7 +62,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   answer icon (on a laptop, from 23 Oct 2026: five separate tiles — total (champagne), Coming · Yet to respond ·
   To invite (they add up to it; white glass, each with its answer icon), and
   Can't come dashed and faint, canvas 5 Round 18 A; then columns — Event (was "Guest of"; italic words: champagne Day, grey
-  Evening), RSVP (its icon, then the word; 23 Oct 2026, so it isn't read as Meal's), Meal (Adult /
+  Evening), RSVP (its icon, then the word; 23 Oct 2026, so it isn't read as Meal's), Phone and Household (23 Oct 2026, to use the width; canvas 5 Round 19), Meal (Adult /
   Child), Dietary tags (allergies marked, a narrow column), Table, no vertical lines (23 Oct 2026), columns kept near the name; the Table is faint when grouped by table. Was: hairlines between
   who / food / seat; Round 9, 1b). **Tap a heading to sort** (again to flip, a
   third time to go back); the View button then says "Dietary ↑" and picking a View

@@ -738,6 +738,7 @@ export default function GuestBrowser({
             events={events}
             ownEvent={ownEvent}
             tables={tables}
+            householdOf={(g) => (g.household_id ? data.household.get(g.household_id)?.name ?? null : null)}
             dietOf={dietOf}
             openId={openId}
             sortCol={colSort}
@@ -1475,8 +1476,8 @@ function SortMenu({ sort, onSort, column }: { sort: SortBy; onSort: (s: SortBy) 
  * diet and how to reach them.
  */
 /** The table's headings that can be tapped to sort. */
-type TableColumn = "guest" | "event" | "rsvp" | "meal" | "diet" | "table";
-const COLUMN_LABEL: Record<TableColumn, string> = { guest: "Guest", event: "Event", rsvp: "RSVP", meal: "Meal", diet: "Dietary", table: "Table" };
+type TableColumn = "guest" | "event" | "rsvp" | "phone" | "household" | "meal" | "diet" | "table";
+const COLUMN_LABEL: Record<TableColumn, string> = { guest: "Guest", event: "Event", rsvp: "RSVP", phone: "Phone", household: "Household", meal: "Meal", diet: "Dietary", table: "Table" };
 
 function GuestTable({
   groups,
@@ -1486,6 +1487,7 @@ function GuestTable({
   events,
   ownEvent,
   tables,
+  householdOf,
   dietOf,
   openId,
   onOpen,
@@ -1505,6 +1507,8 @@ function GuestTable({
   /** The one event a guest is a guest of (day or evening), and so the answer shown. */
   ownEvent: (g: Contact) => WeddingEvent | undefined;
   tables: Record<string, string>;
+  /** Their household's name, if they have one. */
+  householdOf: (g: Contact) => string | null;
   dietOf: (g: Contact) => string | null;
   /** The guest whose card is open beside the list, marked in it. */
   openId?: string;
@@ -1514,7 +1518,7 @@ function GuestTable({
   // they sit (owner, 21 Oct 2026: more visual, with hierarchy; 23 Oct 2026: no vertical lines,
   // columns closer to the name, "Event" not "Guest of" since there can be more than two).
   const head = "whitespace-nowrap pb-3 pr-4 pt-1 text-xs font-medium uppercase tracking-[0.16em] text-champagne-600";
-  const columns = 6;
+  const columns = 8;
 
   // Tap a heading to sort by it, again to flip it, a third time to go back to
   // the View's own order (owner, 21 Oct 2026). A sorted table is one run, so
@@ -1535,6 +1539,10 @@ function GuestTable({
           const status = event ? answers.get(g.id)?.find((r) => r.event_id === event.id)?.status : undefined;
           return status ? ["attending", "pending", "to_invite", "declined"].indexOf(status) : null;
         }
+        case "phone":
+          return g.phone?.replace(/\s/g, "") || null;
+        case "household":
+          return householdOf(g);
         case "meal":
           return ["adult", "child", "none"].indexOf(mealKindOf(g));
         case "diet": {
@@ -1557,7 +1565,7 @@ function GuestTable({
     });
     if (sortCol.col === "guest" && sortCol.desc) sorted.reverse();
     return [{ key: "sorted", guests: sorted }] as Group[];
-  }, [sortCol, groups, ownEvent, events, answers, dietOf, tables]);
+  }, [sortCol, groups, ownEvent, events, answers, dietOf, householdOf, tables]);
 
   const sortHead = (col: TableColumn, label: ReactNode, extra = "") => {
     const on = sortCol?.col === col;
@@ -1579,15 +1587,17 @@ function GuestTable({
     <div className="mt-6 hidden rounded-[22px] border-[0.5px] border-white/70 bg-white/55 px-5 pb-3 pt-3 shadow-[0_14px_34px_-22px_rgb(60_50_40/0.4)] room-md:block">
       {/* Narrow laptop windows scroll sideways rather than squeezing the name under the next column. */}
       <div className="overflow-x-auto">
-      <table className="w-full min-w-[56rem] table-fixed border-collapse text-left text-sm">
+      <table className="w-full min-w-[64rem] table-fixed border-collapse text-left text-sm">
         <colgroup>
           {/* Shares, so the answers stay near the name instead of drifting to the far edge. */}
-          <col className="w-[28%]" />
+          <col className="w-[22%]" />
+          <col className="w-[8%]" />
+          <col className="w-[14%]" />
           <col className="w-[12%]" />
-          <col className="w-[16%]" />
-          <col className="w-[11%]" />
-          <col className="w-[20%]" />
-          <col className="w-[13%]" />
+          <col className="w-[12%]" />
+          <col className="w-[8%]" />
+          <col className="w-[14%]" />
+          <col className="w-[10%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-champagne-400">
@@ -1603,6 +1613,8 @@ function GuestTable({
             )}
             {sortHead("event", "Event")}
             {sortHead("rsvp", "RSVP")}
+            {sortHead("phone", "Phone")}
+            {sortHead("household", "Household")}
             {sortHead("meal", "Meal")}
             {sortHead("diet", "Dietary")}
             {sortHead("table", "Table")}
@@ -1670,6 +1682,12 @@ function GuestTable({
                   </td>
                   <td className="whitespace-nowrap py-2 pr-4">
                     <AnswerCell status={rsvp?.status} />
+                  </td>
+                  <td className="py-2 pr-4">
+                    {g.phone ? <span className="block truncate text-[13px] text-stone">{g.phone}</span> : <span className="text-stone/50">–</span>}
+                  </td>
+                  <td className="py-2 pr-4">
+                    {householdOf(g) ? <span className="block truncate text-[13px] text-stone">{householdOf(g)}</span> : <span className="text-stone/50">–</span>}
                   </td>
                   <td className="whitespace-nowrap py-2 pr-4">
                     {meal === "none" ? <span className="text-stone/70">No meal</span> : <span className="text-ink">{meal === "child" ? "Child" : "Adult"}</span>}

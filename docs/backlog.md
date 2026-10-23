@@ -298,3 +298,13 @@ Each would be an added column, not a rebuild:
 - Vercel no longer reports deploys back to GitHub (since Pro): the owner has
   to confirm a change is live.
 - Notion is hand-kept and behind; offer to update it, never edit unasked.
+- **A practice copy that runs on the Mac** (23 Oct 2026, parked: owner
+  chose pushing to main and checking on their phone while there are no
+  users). `/check` (`scripts/check/up.sh`) was written for the cloud: its
+  stand-in gateway (`gateway.js`) reaches the database services by their
+  Docker addresses, which a Mac can't see, so it hangs at "waiting for
+  sign-in". Two ways when it's wanted (before real couples test): make the
+  gateway work on a Mac, or a second small Supabase project filled with the
+  demo wedding (check the plan and cost first; never use the live keys
+  locally). On the Mac the start-of-chat hook doesn't run either (it only
+  runs in cloud chats), so check the copy is up to date with `main` by hand.

@@ -180,7 +180,7 @@ function StageBadge({ stage }: { stage?: number }) {
     <span
       aria-hidden
       className={`absolute -bottom-0.5 -right-0.5 hidden h-[calc(var(--disc)*0.34)] w-[calc(var(--disc)*0.34)] items-center justify-center rounded-full shadow-[0_0_0_2.5px_#FBF9F5] lg:flex ${
-        quoted ? "border border-champagne-400/60 bg-champagne-100 text-champagne-600" : "bg-champagne-600 text-white"
+        quoted ? "border border-champagne-400/60 bg-champagne-100 text-champagne-600" : "bg-champagne-400 text-white"
       }`}
     >
       {quoted ? (

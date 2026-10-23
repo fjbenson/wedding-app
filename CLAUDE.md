@@ -53,13 +53,13 @@ Rule one still comes first. The line is whether the owner would *see* it.
   where it goes, how long it's kept); **any database change**; anything that
   costs money; new tabs or big changes to how the app is organised; the Hub's
   look, the brand and the name; choosing between design options (mock them on
-  canvas 4 first).
+  canvas 5 first).
 
 ## How we work (owner, 20 Oct 2026, from reading three chats)
 
 - **Short replies:** about 100 words, plain words; more only when asked.
 - **Mock up first, without being asked,** for anything new or any layout
-  change (canvas 4, options to pick from). Fixes and small tweaks go straight in.
+  change (canvas 5, options to pick from). Fixes and small tweaks go straight in.
 - **Sleep on database changes.** Write the migration and explain it, but run
   it only once the owner has seen the design working, or in a later chat —
   not minutes after picking a mock-up (four bits went unused in two days:
@@ -282,9 +282,11 @@ owner sees invitations as a big pain point); weddings abroad.
 ## Design work (links)
 
 All private to the owner; open with the Artifact tool's `read` action. New
-rounds go on canvas 4.
+rounds go on canvas 5. A canvas holds 40 pages at most: when one is full,
+start the next.
 
-- **Design canvas 4** (from 20 Oct 2026; new rounds go here): https://claude.ai/artifact/FbfEj4TubVHBT2YcVmPVNu
+- **Design canvas 5** (from 23 Oct 2026; new rounds go here): https://claude.ai/artifact/W994vwmvDYocB3XsxBcqDS
+- **Design canvas 4** (full, 40 pages): https://claude.ai/artifact/FbfEj4TubVHBT2YcVmPVNu
 - **Design canvas 3** (full, 40 pages): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
 - **Design canvas 2** (full): https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
 - **Design canvas 1** (full): https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw

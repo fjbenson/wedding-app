@@ -36,6 +36,7 @@ export function ItemSignature({
   dateNote = "",
   time,
   onTime,
+  stamp,
 }: {
   /** The name, large, tap to rename (`TitleEditor`; passed in so this file doesn't import the bodies). */
   titleEditor: ReactNode;
@@ -59,11 +60,14 @@ export function ItemSignature({
   /** "14:00" or "": an appointment's time sits in a gold band at the foot of the stamp (owner, 23 Oct 2026, Round 9, A). Left out, the card has no time. */
   time?: string;
   onTime?: (v: string) => void;
+  /** A card that has no date of its own (a moment: its time, on the day) says what the stamp shows and what opens under it. */
+  stamp?: { big: string; small: string; sub?: string; panel: ReactNode };
 }) {
   const [picking, setPicking] = useState<"date" | "area" | null>(null);
   const toggle = (which: "date" | "area") => setPicking((p) => (p === which ? null : which));
   const areaLabel = areaOptions.find((a) => a.key === area)?.label ?? (area ? "Other" : null);
-  const [day, month] = date ? formatDayMonth(date).split(" ") : ["", ""];
+  const [day, month] = stamp ? [stamp.big, stamp.small] : date ? formatDayMonth(date).split(" ") : ["", ""];
+  const hasStamp = stamp ? true : !!date;
 
   return (
     <>
@@ -72,14 +76,14 @@ export function ItemSignature({
           type="button"
           onClick={() => toggle("date")}
           aria-expanded={picking === "date"}
-          aria-label={date ? `Change the date, ${formatLongDate(date)}${time ? ` at ${formatTime(time)}` : ""}` : "Add a date"}
+          aria-label={stamp ? `Change the time, ${stamp.big}` : date ? `Change the date, ${formatLongDate(date)}${time ? ` at ${formatTime(time)}` : ""}` : "Add a date"}
           className={`flex w-16 shrink-0 flex-col items-center overflow-hidden rounded-[14px] ${
-            date ? "bg-champagne-100" : "border border-dashed border-champagne-600/50"
+            hasStamp ? "bg-champagne-100" : "border border-dashed border-champagne-600/50"
           }`}
         >
           <span className="flex flex-col items-center py-2">
-            <span className={`font-display text-[32px] font-light leading-none tabular-nums ${date ? "text-ink" : "text-champagne-600"}`}>{date ? day : "+"}</span>
-            <span className="mt-0.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">{date ? month : "Date"}</span>
+            <span className={`font-display font-light leading-none tabular-nums ${day.length > 2 ? "text-[23px]" : "text-[32px]"} ${hasStamp ? "text-ink" : "text-champagne-600"}`}>{hasStamp ? day : "+"}</span>
+            <span className="mt-0.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">{hasStamp ? month : "Date"}</span>
           </span>
           {date && time && <span className="w-full bg-champagne-600 py-1 text-center text-[13px] font-semibold text-white">{formatTime(time)}</span>}
         </button>
@@ -101,11 +105,16 @@ export function ItemSignature({
           <div className="mt-1">
             {titleEditor}
           </div>
-          {date && <p className="mt-1 text-[14px] text-stone">{dateNote}{formatLongDate(date).split(",")[0]}</p>}
+          {stamp ? (
+            stamp.sub && <p className="mt-1 text-[14px] text-stone">{stamp.sub}</p>
+          ) : (
+            date && <p className="mt-1 text-[14px] text-stone">{dateNote}{formatLongDate(date).split(",")[0]}</p>
+          )}
         </div>
       </div>
 
-      {picking === "date" && (
+      {picking === "date" && stamp && <div className="mt-3">{stamp.panel}</div>}
+      {picking === "date" && !stamp && (
         <div className="mt-3">
           <DateCard name={dateName} value={date} onChange={onDate} weddingDate={weddingDate} quick={quick} clearable={clearable} />
           {onTime && (
@@ -208,9 +217,9 @@ export function AreaPageLink({ areaKey, areas }: { areaKey: string; areas: AreaO
  * style on every card that has a place (owner, 23 Oct 2026, canvas 4 "Cards ·
  * Round 4"). Tap to change; typing gets a small Save.
  */
-export function WhereRow({ value, onSave, add = "Add where" }: { value: string | null; onSave: (v: string) => Promise<{ error?: string }>; add?: string }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
+export function WhereRow({ value, onSave, add = "Add where", startEditing = false }: { value: string | null; onSave: (v: string) => Promise<{ error?: string }>; add?: string; startEditing?: boolean }) {
+  const [editing, setEditing] = useState(startEditing);
+  const [draft, setDraft] = useState(value ?? "");
   const { pending, error, setError, run } = useSaver();
   const submit = () => run(() => onSave(draft), () => setEditing(false));
   const pin = (

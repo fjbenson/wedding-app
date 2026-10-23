@@ -490,53 +490,45 @@ export function MomentBody({
   const [pick, setPick] = useState(m.contact_id ?? (m.who ? "typed" : ""));
   const areaLabel = original ? (areaName(original, options) ?? original) : null;
   const music = musicTitle(m);
+  const [area, setArea] = useState(m.area_key ?? "");
+  // What's been added shows as its own part; what hasn't is offered as a "+" chip at the foot, so nothing is forced (owner, 23 Oct 2026).
+  const [shown, setShown] = useState<string[]>([]);
+  const has: Record<string, boolean> = { where: !!m.location, charge: !!inCharge, menu: servedCourses.length > 0, drinks: servedDrinks.length > 0, music: !!music, notes: !!m.notes };
+  const on = (key: string) => has[key] || shown.includes(key);
+  const offered = [
+    ["where", "Where"],
+    ["charge", "In charge"],
+    ...(isFoodMoment
+      ? [
+          ["menu", "Menu"],
+          ["drinks", "Drinks"],
+        ]
+      : []),
+    ["music", "Music"],
+    ["notes", "Notes"],
+  ].filter(([key]) => !on(key));
 
   return (
     <>
-      {/* The cue card: the whole moment at a glance (B). */}
-      <div className="relative rounded-[20px] bg-[#FFFDF8] p-[18px] shadow-[0_0_0_1px_#E3D3AE,0_18px_40px_-24px_rgb(60_50_40/0.35)]">
-        {areaLabel && (
-          <span className="absolute right-3.5 top-3.5 rounded-full bg-champagne-100 px-2.5 py-0.5 text-[11.5px] font-medium text-champagne-600">{areaLabel}</span>
-        )}
-        <p className="font-display text-[40px] font-light leading-none text-champagne-600">{formatClock(m.at_time)}</p>
-        <div className="mt-1.5 pr-16">
-          <TitleEditor value={m.title} onSave={(v) => save({ title: v })} />
-        </div>
-        {(m.location || inCharge) && (
-          <p className="mt-1 font-display text-[15px] italic text-stone">{[m.location, inCharge].filter(Boolean).join(" · ")}</p>
-        )}
-        {music && (
-          <a
-            href={m.music_url ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => !m.music_url && e.preventDefault()}
-            className="mt-3 flex items-center gap-2.5 rounded-[14px] bg-cream px-3 py-2.5"
-          >
-            <span aria-hidden className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-ink text-ivory">
-              <MusicIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[14.5px] text-ink">{m.music}</span>
-              <span className="block text-[12px] text-stone">
-                {m.music_kind === "playlist" ? "Playlist" : "Song"}
-                {m.music_url ? ` · Play on ${musicSource(m.music_url)}` : ""}
-              </span>
-            </span>
-          </a>
-        )}
-      </div>
+      <ItemSignature
+        titleEditor={<TitleEditor value={m.title} onSave={(v) => save({ title: v })} />}
+        date=""
+        dateName="at_time"
+        onDate={() => {}}
+        stamp={{ big: formatClock(m.at_time), small: "Day", sub: sheetLabel, panel: <TimeCard value={m.at_time.slice(0, 5)} onSave={(v) => change({ at_time: v })} required /> }}
+        area={area}
+        areaOptions={options}
+        onArea={(v) => {
+          setArea(v);
+          change({ area_key: v || null });
+        }}
+      />
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      {/* One line each, opening in place (C). */}
-      <div className="glass-card mt-5 overflow-hidden rounded-[22px] px-4">
-        <Fold icon={Clock} title="When" value={formatClock(m.at_time)}>
-          <TimeCard value={m.at_time.slice(0, 5)} onSave={(v) => change({ at_time: v })} required />
-        </Fold>
-        <Fold icon={MapPin} title="Where" value={m.location} add="Add where">
-          <dl><TextRow label="Where" value={m.location} onSave={(v) => save({ location: v })} /></dl>
-        </Fold>
-        <Fold icon={UserRound} title="In charge" value={inCharge} add="Add who's in charge">
+      <SendMoment moment={m} inCharge={inCharge} email={inChargeEmail} weddingDate={weddingDate} />
+
+      {on("charge") && (
+        <Part label="In charge">
           <FromSelect
             label="Who's in charge"
             people={people}
@@ -552,22 +544,127 @@ export function MomentBody({
               <TextRow label="Their name" value={m.who} startEditing={!m.who} onSave={(v) => save({ who: v, contact_id: null })} />
             </dl>
           )}
-        </Fold>
-        {/* Which run sheet it is on (canvas 3 "Run sheets · Round 1"): move it, or copy it so it shows on two. */}
-        {sheets.length > 0 && (
+        </Part>
+      )}
+
+      {on("where") && (
+        <Part label="Where">
+          <WhereRow value={m.location} startEditing={!m.location && shown.includes("where")} onSave={(v) => save({ location: v })} />
+        </Part>
+      )}
+
+      {/* Food and drink through the day (canvas 3 "Food & drink · Round 2", A): the courses and drinks served at this moment. */}
+      {isFoodMoment && on("menu") && (
+        <Part label="Menu served here">
+          {servedCourses.map((c) => (
+            <p key={c.id} className="mb-1.5 text-[13px] text-stone">
+              <span className="text-[14px] text-ink">{c.name}</span> · {c.dishes.length ? c.dishes.join(" · ") : "no dishes yet"}
+            </p>
+          ))}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {food.courses.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={courseIds.includes(c.id)}
+                onClick={() => setServed(toggled(courseIds, c.id), drinkIds)}
+                className={`h-9 rounded-full border px-3.5 text-[13px] ${courseIds.includes(c.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+              >
+                {c.name}
+                {c.elsewhere && !courseIds.includes(c.id) && <span className="text-stone"> · moves here</span>}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={async () => {
+                const r = await safely(() => addCourseForMomentAction(m.id, m.title, m.at_time, false));
+                if (r.error) setError(r.error);
+                else router.refresh();
+              }}
+              className="h-9 rounded-full border border-dashed border-champagne-400 px-3.5 text-[13px] text-champagne-600"
+            >
+              + A course for {m.title}
+            </button>
+          </div>
+          <a href="/menu" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The menu ›</a>
+        </Part>
+      )}
+      {isFoodMoment && on("drinks") && (
+        <Part label="Drinks served here">
+          {servedDrinks.map((d) => (
+            <p key={d.id} className="mb-1 text-[14px] text-ink">
+              {d.name}
+              {d.line && <span className="text-stone"> · {d.line}</span>}
+            </p>
+          ))}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {food.drinks.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                aria-pressed={drinkIds.includes(d.id)}
+                onClick={() => setServed(courseIds, toggled(drinkIds, d.id))}
+                className={`h-9 rounded-full border px-3.5 text-[13px] ${drinkIds.includes(d.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+              >
+                {d.name}
+                {d.elsewhere && !drinkIds.includes(d.id) && <span className="text-stone"> · moves here</span>}
+              </button>
+            ))}
+            {food.drinks.length === 0 && <span className="text-[13px] text-stone">No drinks yet.</span>}
+          </div>
+          <a href="/drinks" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The drinks ›</a>
+        </Part>
+      )}
+
+      {on("music") && (
+        <Part label="Music">
+          <div className="flex rounded-full bg-cream p-[3px]">
+            {(["song", "playlist"] as const).map((k) => {
+              const picked = (m.music_kind ?? "song") === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={picked}
+                  onClick={() => change({ music_kind: k })}
+                  className={`h-9 flex-1 rounded-full text-[13.5px] transition ${picked ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone"}`}
+                >
+                  {k === "song" ? "A song" : "A playlist"}
+                </button>
+              );
+            })}
+          </div>
+          <dl className="mt-1">
+            <TextRow label={m.music_kind === "playlist" ? "Playlist" : "Song"} value={m.music ?? null} startEditing={!m.music && shown.includes("music")} onSave={(v) => save({ music: v })} />
+            <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
+          </dl>
+        </Part>
+      )}
+
+      {on("notes") && (
+        <section className="mt-7">
+          <dl>
+            <TextRow label="Notes" value={m.notes} multiline startEditing={!m.notes && shown.includes("notes")} onSave={(v) => save({ notes: v })} />
+          </dl>
+        </section>
+      )}
+
+      {/* Which run sheet it is on (canvas 3 "Run sheets · Round 1"): move it, or copy it so it shows on two. */}
+      {sheets.length > 0 && (
+        <div className="glass-card mt-7 overflow-hidden rounded-[22px] px-4">
           <Fold icon={Users} title="Run sheet" value={sheetLabel}>
             <p className="text-[13px] text-stone">Move it to another run sheet, or copy it so it is on two (a copy is its own moment).</p>
             <p className="type-meta mt-3">Move to</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {choices.map((c) => {
-                const on = c.id === sheetId;
+                const here = c.id === sheetId;
                 return (
                   <button
                     key={c.id ?? "main"}
                     type="button"
-                    aria-pressed={on}
-                    onClick={() => !on && toSheet(c.id, false)}
-                    className={`h-9 rounded-full border px-3.5 text-[13px] ${on ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
+                    aria-pressed={here}
+                    onClick={() => !here && toSheet(c.id, false)}
+                    className={`h-9 rounded-full border px-3.5 text-[13px] ${here ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
                   >
                     {c.name}
                   </button>
@@ -590,100 +687,25 @@ export function MomentBody({
                 ))}
             </div>
           </Fold>
-        )}
-        {/* Food and drink through the day (canvas 3 "Food & drink · Round 2", A): the courses and drinks served at this moment. */}
-        {isFoodMoment && (
-          <>
-            <Fold icon={Utensils} title="Menu" value={servedCourses.map((c) => c.name).join(" · ")} add="Add the course served here">
-              {servedCourses.map((c) => (
-                <p key={c.id} className="mb-1.5 text-[13px] text-stone">
-                  <span className="text-[14px] text-ink">{c.name}</span> · {c.dishes.length ? c.dishes.join(" · ") : "no dishes yet"}
-                </p>
-              ))}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {food.courses.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    aria-pressed={courseIds.includes(c.id)}
-                    onClick={() => setServed(toggled(courseIds, c.id), drinkIds)}
-                    className={`h-9 rounded-full border px-3.5 text-[13px] ${courseIds.includes(c.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
-                  >
-                    {c.name}
-                    {c.elsewhere && !courseIds.includes(c.id) && <span className="text-stone"> · moves here</span>}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const r = await safely(() => addCourseForMomentAction(m.id, m.title, m.at_time, false));
-                    if (r.error) setError(r.error);
-                    else router.refresh();
-                  }}
-                  className="h-9 rounded-full border border-dashed border-champagne-400 px-3.5 text-[13px] text-champagne-600"
-                >
-                  + A course for {m.title}
-                </button>
-              </div>
-              <a href="/menu" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The menu ›</a>
-            </Fold>
-            <Fold icon={GlassWater} title="Drinks" value={servedDrinks.map((d) => d.name).join(" · ")} add="Add the drinks served here">
-              {servedDrinks.map((d) => (
-                <p key={d.id} className="mb-1 text-[14px] text-ink">
-                  {d.name}
-                  {d.line && <span className="text-stone"> · {d.line}</span>}
-                </p>
-              ))}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {food.drinks.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    aria-pressed={drinkIds.includes(d.id)}
-                    onClick={() => setServed(courseIds, toggled(drinkIds, d.id))}
-                    className={`h-9 rounded-full border px-3.5 text-[13px] ${drinkIds.includes(d.id) ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white text-ink"}`}
-                  >
-                    {d.name}
-                    {d.elsewhere && !drinkIds.includes(d.id) && <span className="text-stone"> · moves here</span>}
-                  </button>
-                ))}
-                {food.drinks.length === 0 && <span className="text-[13px] text-stone">No drinks yet.</span>}
-              </div>
-              <a href="/drinks" className="mt-2 inline-block text-[13px] text-champagne-600 underline underline-offset-4">The drinks ›</a>
-            </Fold>
-          </>
-        )}
-        <Fold icon={MusicIcon} title="Music" value={music} add="Add a song or playlist">
-          <div className="flex rounded-full bg-cream p-[3px]">
-            {(["song", "playlist"] as const).map((k) => {
-              const on = (m.music_kind ?? "song") === k;
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => change({ music_kind: k })}
-                  className={`h-9 flex-1 rounded-full text-[13.5px] transition ${on ? "bg-white text-ink shadow-[0_1px_4px_rgb(60_50_40/0.12)]" : "text-stone"}`}
-                >
-                  {k === "song" ? "A song" : "A playlist"}
-                </button>
-              );
-            })}
-          </div>
-          <dl className="mt-1">
-            <TextRow label={m.music_kind === "playlist" ? "Playlist" : "Song"} value={m.music ?? null} onSave={(v) => save({ music: v })} />
-            <MusicLinkRow url={m.music_url ?? null} onSave={(v) => save({ music_url: v })} />
-          </dl>
-        </Fold>
-        <Fold icon={NotebookPen} title="Notes" value={m.notes} add="Add notes">
-          <dl><TextRow label="Notes" value={m.notes} multiline onSave={(v) => save({ notes: v })} /></dl>
-        </Fold>
-        <Fold icon={Sparkles} title="Area" value={areaLabel} add="Add an area">
-          <AreaTiles name="area" areas={options} otherValue="other" defaultValue={original ?? ""} onChange={(v) => change({ area_key: v || null })} folded optional />
-        </Fold>
-      </div>
+        </div>
+      )}
 
-      <SendMoment moment={m} inCharge={inCharge} email={inChargeEmail} weddingDate={weddingDate} />
+      {offered.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2" aria-label="Add to this moment">
+          {offered.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setShown((list) => [...list, key])}
+              className="h-9 rounded-full border border-dashed border-champagne-400 px-3.5 text-[13px] text-champagne-600 hover:bg-cream"
+            >
+              + {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <AreaPageLink areaKey={area} areas={areas} />
     </>
   );
 }
@@ -709,33 +731,28 @@ function SendMoment({ moment: m, inCharge, email, weddingDate }: { moment: RunSh
     .join("\n");
   const subject = `${m.title} · ${formatClock(m.at_time)}`;
   const href = `mailto:${email ? encodeURIComponent(email) : ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  // Under the name, as the card's main action (owner, 23 Oct 2026): black "Email [name]", with Copy it beside it.
   return (
-    <section className="mt-6">
-      <h3 className="section-label">Send it</h3>
-      <div className="mt-2.5 flex gap-2.5">
-        <a href={href} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-ink px-4 text-[15px] text-ivory hover:bg-ink/90">
-          {email && inCharge ? `Email ${inCharge}` : "Email it"}
-        </a>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(body);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2500);
-            } catch {
-              setCopied(false);
-            }
-          }}
-          className="h-11 rounded-full border border-linen bg-white px-4 text-[15px] text-ink hover:border-champagne-400"
-        >
-          {copied ? "Copied" : "Copy it"}
-        </button>
-      </div>
-      <p className="mt-2 px-1 text-[12.5px] text-stone">
-        {email ? "Opens your email with the time, place, song and notes written in." : inCharge ? `No email for ${inCharge} yet, so you'll pick who it goes to.` : "Opens your email with the time, place, song and notes written in."}
-      </p>
-    </section>
+    <div className="mt-4 flex flex-wrap gap-2.5">
+      <a href={href} className="flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-5 text-[15px] text-ivory hover:bg-ink/90">
+        {email && inCharge ? `Email ${inCharge}` : "Email it"}
+      </a>
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(body);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+          } catch {
+            setCopied(false);
+          }
+        }}
+        className="h-12 rounded-full border border-linen bg-white px-5 text-[15px] text-ink hover:border-champagne-400"
+      >
+        {copied ? "Copied" : "Copy it"}
+      </button>
+    </div>
   );
 }
 

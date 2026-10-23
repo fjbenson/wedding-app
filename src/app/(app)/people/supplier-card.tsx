@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Check, ChevronDown, Globe, Mail, MoreHorizontal, Phone } from "lucide-react";
+import { Check, ChevronDown, Globe, Mail, MapPin, MoreHorizontal, Phone } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
@@ -12,7 +12,7 @@ import type { Supplier } from "@/lib/db/suppliers";
 import { todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 import type { FileKind, Payment, SupplierStatus } from "@/types/db";
-import { SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
+import { Fold, SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
 import StageCircles from "@/components/stage-circles";
 import PaymentRow from "@/components/payment-row";
 import { AreaTiles } from "@/components/visual-form";
@@ -93,6 +93,13 @@ export default function SupplierCard({
     // Once, on opening: the list's greyed-out button sent us here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const detailsLine = [supplierContact(supplier), supplier.phone, supplier.email].filter(Boolean).join(" · ") || "Add a number or email";
+  // In touch has no panel of its own: its circle opens the Details fold at the foot (owner, 23 Oct 2026),
+  // which is there whatever stage they're at, like History.
+  const openStage = (i: number) => {
+    setOpen(i);
+    if (i === 0) requestAnimationFrame(() => jumpTo("supplier-details"));
+  };
   // Stepping to another supplier opens that one at where they are.
   useEffect(() => {
     setOpen(stageState(d?.status ?? "enquired", paidUp).open);
@@ -119,17 +126,32 @@ export default function SupplierCard({
         payments={payments}
         paidUp={paidUp}
         open={open}
-        onOpen={setOpen}
-        adding={adding}
+        onOpen={openStage}
         save={save}
         onError={setError}
       />
 
-      {/* Their story so far, always last (owner, 23 Oct 2026). */}
+      {/* History, then Details (the typed facts), always last (owner, 23 Oct 2026). */}
       <div className="-mx-[22px] mt-6 border-y border-linen">
         <section className="px-[22px]">
           <Timeline scope={`supplier:${supplier.id}`} folded />
         </section>
+        <Fold title="Details" icon={MapPin} summary={detailsLine}>
+          <dl id="supplier-details">
+            <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
+            <div id="supplier-phone">
+              <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+            </div>
+            <div id="supplier-email">
+              <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
+            </div>
+            <div id="supplier-website">
+              <TextRow key={`website-${adding.n}`} label="Website" value={d?.website ?? null} startEditing={adding.field === "website"} onSave={(v) => save({ field: "website", value: v })} />
+            </div>
+            {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
+            <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
+          </dl>
+        </Fold>
       </div>
 
       {area && (
@@ -402,7 +424,7 @@ const STAGE_NAMES = [
  * them: a quote typed in is Quote in, and every payment paid is Paid — both
  * tick themselves. Booked is the one button (Mark as booked), because it's a
  * decision; "Not booked after all" steps back. Each stage ends in its own
- * quiet "+ Add a …". The old Details fold is In touch.
+ * quiet "+ Add a …". In touch has no panel: its circle opens the Details fold.
  */
 function SupplierStages({
   supplier,
@@ -411,7 +433,6 @@ function SupplierStages({
   paidUp,
   open,
   onOpen,
-  adding,
   save,
   onError,
 }: {
@@ -421,7 +442,6 @@ function SupplierStages({
   paidUp: boolean;
   open: number;
   onOpen: (i: number) => void;
-  adding: { field?: "phone" | "email" | "website"; n: number };
   save: (edit: SupplierEdit) => Promise<{ error?: string }>;
   onError: (message?: string) => void;
 }) {
@@ -464,27 +484,9 @@ function SupplierStages({
     <section className="mt-6" aria-label="Stages">
       <StageCircles stages={STAGE_NAMES} done={done} current={here} open={open} onOpen={onOpen} panelId="supplier-stage-panel" />
 
-      <div role="tabpanel" id="supplier-stage-panel" aria-labelledby={`stage-tab-${STAGE_NAMES[open].id}`} className="mt-5">
+      {/* In touch (0) has nothing here: it opens the Details fold below. */}
+      <div role="tabpanel" id="supplier-stage-panel" aria-labelledby={`stage-tab-${STAGE_NAMES[open].id}`} hidden={open === 0} className="mt-5">
         <h3 className="sr-only">{STAGE_NAMES[open].name}</h3>
-
-        {open === 0 && (
-          <div className={card}>
-            <dl className="[&>*:last-child]:border-b-0">
-              <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
-              <div id="supplier-phone">
-                <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
-              </div>
-              <div id="supplier-email">
-                <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
-              </div>
-              <div id="supplier-website">
-                <TextRow key={`website-${adding.n}`} label="Website" value={d?.website ?? null} startEditing={adding.field === "website"} onSave={(v) => save({ field: "website", value: v })} />
-              </div>
-              {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
-              <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
-            </dl>
-          </div>
-        )}
 
         {open === 1 && (
           <div className={card}>
@@ -520,9 +522,9 @@ function SupplierStages({
         {open === 2 && current === "booked" && (
           <>
             <div className={card}>
-              <div className="flex items-end justify-between gap-4 border-b border-linen py-3.5">
-                <Figure label="Deposit paid" value={deposit} onSave={(v) => saveMoney("deposit_paid", v)} />
-                {quote != null && quote > 0 && <span className="pb-1 text-right text-[13px] text-stone">{formatMoney(quote)} agreed</span>}
+              <div className="border-b border-linen py-3.5">
+                <Figure label="Agreed" value={quote} onSave={(v) => saveMoney("quoted_cost", v)} />
+                {deposit != null && deposit > 0 && <p className="mt-1 text-[13px] text-stone">Deposit paid {formatMoney(deposit)}</p>}
               </div>
               <SupplierDecor supplierId={supplier.id} />
               {files(["contract"], "Add a contract")}
@@ -538,7 +540,10 @@ function SupplierStages({
             {quote != null && quote > 0 && (
               <div className="border-b border-linen py-3.5">
                 <p className="flex justify-between text-[13px] text-stone">
-                  <span>Paid {formatMoney(Math.min(paid, quote))}</span>
+                  <span>
+                    Paid {formatMoney(Math.min(paid, quote))}
+                    {paid < quote && <> · {formatMoney(quote - paid)} to go</>}
+                  </span>
                   <span>of {formatMoney(quote)}</span>
                 </p>
                 <span aria-hidden className="mt-1.5 block h-2 overflow-hidden rounded-full bg-champagne-100">

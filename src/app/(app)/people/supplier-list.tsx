@@ -811,7 +811,7 @@ function SupplierRow({ supplier, areas, paid, onOpen }: { supplier: Supplier; ar
       <span className="type-figure hidden grid-cols-[1fr_auto_1fr] items-center gap-3 text-[17px] !font-light tabular-nums room-lg:grid">
         <span className="text-right">{paid > 0 ? formatMoney(paid) : dash}</span>
         <span aria-hidden className="h-6 w-px bg-linen" />
-        <span>{toGo === null ? dash : toGo > 0.005 ? formatMoney(toGo) : <span className="text-[13px] text-champagne-600">Paid</span>}</span>
+        <span>{toGo === null ? dash : formatMoney(toGo)}</span>
       </span>
       <span className="hidden min-w-0 room-xl:block">
         {supplier.phone ? <a href={`tel:${phone}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.phone}</a> : <button type="button" onClick={() => onOpen("phone")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}

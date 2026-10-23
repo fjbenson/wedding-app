@@ -99,7 +99,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   group's is its emails and texts plus calls and notes — `timeline_entries.group_id`
   already existed, no migration). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
-  grouped by area, the stage as a badge (on a laptop, 23 Oct 2026, laid out like the guest list: four tiles — All, Booked, Quote in, In touch — one toolbar row with View · Filter, picked filters, search and +, and the columns in one glass card: Stage with its icon, Area with its icon, Price (a quote, or the agreed total once booked), Paid | To go as a joined pair, Phone, Email); the **supplier card** is a business
+  grouped by area, the stage as a badge (on a laptop, 23 Oct 2026, laid out like the guest list: four tiles — All, Booked, Quote in, In touch — one toolbar row with View · Filter, picked filters, search and +, and the columns in one glass card: Stage with its icon, Area with its icon, Price (a quote, or the agreed total once booked), Paid | To go as a joined pair (£0 when settled), Phone, Email); the **supplier card** is a business
   card with Progress (In touch → Quote in → Booked → Paid; steps tick once reached, Paid from Money), Money, Documents (private
   `files` bucket), then folds: timeline, Decor from them (only when they lend something), Details (Contact, phone, email, website). Call · Email · Website are always there, dashed when missing (23 Oct 2026).
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only

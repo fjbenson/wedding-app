@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
-import GuestCard from "./guest-card";
+import GuestCard, { Fold } from "./guest-card";
 import CardSheet from "@/components/card-sheet";
 import { AnswerIcon } from "./guest-browser";
 import { Avatar, fullName } from "./guest-table";
@@ -126,14 +126,17 @@ export default function HouseholdSheet({
         householdName={(id) => households.find((h) => h.id === id)?.name}
       />
 
-      {/* One History (owner, 21 Oct 2026): the save the date, invitation and thank-you
-          (canvas 3 "Sent · On the household card") sit at the top of it, then what's been said and done. */}
-      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
-        <Timeline scope={`household:${household.id}`} label="History" folded skipSent lead={<SentToThem unit={`h:${household.id}`} bare />} />
-      </section>
+      {/* The save the date, invitation and thank-you as a row of three (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"). */}
+      <SentToThem unit={`h:${household.id}`} tiles />
 
-      <div id="household-details">
-        <HouseholdDetails household={household} />
+      {/* History, then Details (name and address), always last. */}
+      <div className="-mx-[22px] mt-6 border-y border-linen">
+        <section className="px-[22px]">
+          <Timeline scope={`household:${household.id}`} label="History" folded skipSent />
+        </section>
+        <Fold title="Details" summary={[household.name, household.address_line1, household.city].filter(Boolean).join(" · ")}>
+          <HouseholdDetails household={household} />
+        </Fold>
       </div>
 
       <RemoveHousehold household={household} onRemoved={onClose} />

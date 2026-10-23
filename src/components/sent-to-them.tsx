@@ -11,9 +11,10 @@ import { afterTheDay, HOWS, SENDINGS, sentLine, type SendingKind, type SentRecor
  * household (canvas 3 "Sent · On the household card"): the save the date,
  * invitation and thank-you, each a gold tick with how and when once it's
  * gone, dashed until then. Tap a dashed one to say how it went (today);
- * tap a ticked one to take it off.
+ * tap a ticked one to take it off. `tiles`: the household card's own row of three
+ * (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"), the panel opening under it.
  */
-export default function SentToThem({ unit, bare = false }: { unit: string; bare?: boolean }) {
+export default function SentToThem({ unit, bare = false, tiles = false }: { unit: string; bare?: boolean; tiles?: boolean }) {
   const [records, setRecords] = useState<SentRecord[] | null>(null);
   const [weddingDate, setWeddingDate] = useState<string | null>(null);
   const [error, setError] = useState<string>();
@@ -56,6 +57,79 @@ export default function SentToThem({ unit, bare = false }: { unit: string; bare?
   if (records === null && !error) return null;
   const first = (kind: SendingKind) => (records ?? []).find((r) => r.kind === kind);
 
+  // What opens under a sending when it's tapped: take it off, or say how it went.
+  const panel = (kind: SendingKind, sent: SentRecord | undefined, inset: string) =>
+    open === kind &&
+    (sent ? (
+      <div className={`flex items-center justify-between gap-3 pb-3 ${inset}`}>
+        <span className="text-[13px] text-stone">Not sent after all?</span>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => run(() => unmarkSentAction(kind, unit))}
+          className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink"
+        >
+          {pending ? "Taking off…" : "Take it off"}
+        </button>
+      </div>
+    ) : (
+      <div className={`pb-3 ${inset}`}>
+        <p className="text-[13px] text-stone">How did it go? (today)</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {HOWS.map((h) => (
+            <button
+              key={h.value}
+              type="button"
+              disabled={pending}
+              onClick={() => run(() => markSentAction({ kind, how: h.value, units: [unit] }))}
+              className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink hover:border-champagne-400 disabled:opacity-60"
+            >
+              {h.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    ));
+
+  if (tiles) {
+    const opened = SENDINGS.find((s) => s.kind === open);
+    return (
+      <section aria-label="Sent to them" className="mt-6">
+        <h2 className="section-label">Sent</h2>
+        {error && (
+          <p role="alert" className="mt-2 text-sm text-ink">
+            {error}
+          </p>
+        )}
+        <div className="mt-2.5 flex gap-2">
+          {SENDINGS.map((s) => {
+            const sent = first(s.kind);
+            const later = s.kind === "thank_you" && !sent && !afterTheDay(weddingDate);
+            return (
+              <button
+                key={s.kind}
+                type="button"
+                disabled={pending}
+                aria-expanded={open === s.kind}
+                onClick={() => setOpen((o) => (o === s.kind ? null : s.kind))}
+                className={`flex min-h-[64px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-2 text-center ${
+                  sent ? "bg-white shadow-[0_0_0_1px_#E6E0D6]" : "border border-dashed border-champagne-600/60 bg-white/50"
+                } ${open === s.kind ? "ring-2 ring-champagne-400" : ""} ${later ? "opacity-60" : ""}`}
+              >
+                <span className="text-[12px] leading-tight text-stone">{s.label}</span>
+                <span className={`flex items-center gap-1 text-[13px] leading-tight ${sent ? "text-ink" : "text-champagne-600"}`}>
+                  {sent && <Check className="h-3.5 w-3.5 shrink-0 text-champagne-600" strokeWidth={2.4} aria-hidden />}
+                  {sent ? sentLine(sent) : later ? "After the day" : "Not yet"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {opened && <div className="mt-2">{panel(opened.kind, first(opened.kind), "")}</div>}
+      </section>
+    );
+  }
+
   return (
     <section aria-label="Sent to them" className={bare ? "mb-3 border-b border-linen pb-1" : "mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6"}>
       {!bare && <h2 className="label">Sent to them</h2>}
@@ -90,37 +164,7 @@ export default function SentToThem({ unit, bare = false }: { unit: string; bare?
                   </span>
                 </span>
               </button>
-              {open === s.kind &&
-                (sent ? (
-                  <div className="flex items-center justify-between gap-3 pb-3 pl-9">
-                    <span className="text-[13px] text-stone">Not sent after all?</span>
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => run(() => unmarkSentAction(s.kind, unit))}
-                      className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink"
-                    >
-                      {pending ? "Taking off…" : "Take it off"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="pb-3 pl-9">
-                    <p className="text-[13px] text-stone">How did it go? (today)</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {HOWS.map((h) => (
-                        <button
-                          key={h.value}
-                          type="button"
-                          disabled={pending}
-                          onClick={() => run(() => markSentAction({ kind: s.kind, how: h.value, units: [unit] }))}
-                          className="h-9 rounded-full border border-linen bg-white px-3.5 text-[13px] text-ink hover:border-champagne-400 disabled:opacity-60"
-                        >
-                          {h.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              {panel(s.kind, sent, "pl-9")}
             </li>
           );
         })}

@@ -98,14 +98,12 @@ function Front({ name, lines }: { name: string; lines: string[] }) {
  * to change it.
  */
 export function HouseholdDetails({ household }: { household: Household }) {
+  // Inside the Details fold (owner, 23 Oct 2026); the envelope's tap jumps to `household-details`, opening it first.
   return (
-    <section className="mt-6 -mx-[22px] border-t border-linen px-[22px] pt-6">
-      <h3 className="label">Details</h3>
-      <dl className="mt-1">
-        <TextRow label="Name" value={household.name} onSave={(v) => safely(() => renameHouseholdAction(household.id, v))} />
-        <AddressRow household={household} />
-      </dl>
-    </section>
+    <dl id="household-details">
+      <TextRow label="Name" value={household.name} onSave={(v) => safely(() => renameHouseholdAction(household.id, v))} />
+      <AddressRow household={household} />
+    </dl>
   );
 }
 

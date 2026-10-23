@@ -75,7 +75,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   invited → "Have they had their invitation?" (Yes, it's gone); invited → "What did
   they say?" (Coming / Can't come, "Not invited yet" to undo); answered → the question goes;
   a badge on the picture says it (gold tick or grey cross) and tapping the RSVP box asks
-  again (canvas 5 "Guest card · Round 6", D). Then **folded rows, each with a gold icon and
+  again, their answer picked in champagne, a ✕ to close (canvas 5 "Guest card · Round 6", D). Then **folded rows, each with a gold icon and
   a line of what's set** (all drawn like History; canvas 5 "Guest card · Round 5", B) (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):
   FOOD & DRINK (meal and drinks tiles, dietary) · SEATING & TRAVEL · ROLE &
   GROUPS · HISTORY · DETAILS (Guest of, household, phone, email, notes), then in

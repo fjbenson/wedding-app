@@ -824,18 +824,31 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
   if (answered && !changing) return null;
 
   const invited = answer !== "to_invite";
+  // Their answer shows picked (champagne, like any picked tile) when it's asked again (owner, 23 Oct 2026).
+  const choice = (on: boolean) =>
+    `${button} ${on ? "border border-champagne-600 bg-champagne-100 font-semibold" : "border border-linen"}`;
   return (
-    <div id="guest-rsvp" className="mt-6 rounded-[20px] border border-linen bg-white/75 p-4">
-      <p className="font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Have they had their invitation?"}</p>
+    <div id="guest-rsvp" className="relative mt-6 rounded-[20px] border border-linen bg-white/75 p-4">
+      {changing && (
+        <button
+          type="button"
+          onClick={() => setChanging(false)}
+          aria-label="Close"
+          className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center rounded-full text-stone hover:text-ink"
+        >
+          <X className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+        </button>
+      )}
+      <p className="pr-8 font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Have they had their invitation?"}</p>
       <div className="mt-3 flex gap-2">
         {invited ? (
           <>
-            <button type="button" onClick={() => pick("attending")} aria-pressed={answer === "attending"} className={`${button} border border-linen`}>
-              <Check className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
+            <button type="button" onClick={() => pick("attending")} aria-pressed={answer === "attending"} className={choice(answer === "attending")}>
+              <Check className={`h-4 w-4 ${answer === "attending" ? "text-champagne-600" : "text-stone"}`} strokeWidth={2.2} aria-hidden />
               Coming
             </button>
-            <button type="button" onClick={() => pick("declined")} aria-pressed={answer === "declined"} className={`${button} border border-linen`}>
-              <X className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
+            <button type="button" onClick={() => pick("declined")} aria-pressed={answer === "declined"} className={choice(answer === "declined")}>
+              <X className={`h-4 w-4 ${answer === "declined" ? "text-champagne-600" : "text-stone"}`} strokeWidth={2.2} aria-hidden />
               Can&apos;t come
             </button>
           </>
@@ -846,19 +859,12 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
           </button>
         )}
       </div>
-      {/* A way back for a slipped tap, or a changed mind. */}
-      {(invited || changing) && (
-        <div className="mt-2 flex justify-end gap-4 text-sm text-stone">
-          {changing && (
-            <button type="button" onClick={() => setChanging(false)} className="py-1.5 underline underline-offset-4 hover:text-ink">
-              Keep the answer
-            </button>
-          )}
-          {invited && (
-            <button type="button" onClick={() => pick("to_invite")} className="py-1.5 underline underline-offset-4 hover:text-ink">
-              Not invited yet
-            </button>
-          )}
+      {/* A way back for a slipped tap. */}
+      {invited && (
+        <div className="mt-2 flex justify-end text-sm text-stone">
+          <button type="button" onClick={() => pick("to_invite")} className="py-1.5 underline underline-offset-4 hover:text-ink">
+            Not invited yet
+          </button>
         </div>
       )}
     </div>

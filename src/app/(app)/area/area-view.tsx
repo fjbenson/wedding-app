@@ -1087,9 +1087,9 @@ export default function AreaView({
     <main className="page relative pb-40 lg:max-w-[1280px] lg:px-10 lg:pb-16">
       <AreaCover area={area} photos={photos} ideaCount={ideaCount} canDiy={booked.length === 0 && !area.diy} decor={!!decor} />
 
-      <div className="relative mt-5 flex flex-col gap-3.5 lg:mt-7 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-7">
+      <div className="relative mt-5 flex flex-col gap-3.5 lg:mt-7 room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_400px] room-xl:items-start room-xl:gap-7">
         {/* The pt lines Next up up with the card under "Everything for" on the right. */}
-        <div className="flex min-w-0 flex-col gap-3.5 lg:pt-[26px]">
+        <div className="flex min-w-0 flex-col gap-3.5 room-xl:pt-[26px]">
         <OpenOnHash />
         {error && (
           <p role="alert" className="rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
@@ -1133,7 +1133,7 @@ export default function AreaView({
         )}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-3.5 lg:[&>section:first-child]:mt-0">
+        <div className="flex min-w-0 flex-col gap-3.5 room-xl:[&>section:first-child]:mt-0">
 
         {/* Everything for this area, one line each, opening in place (A's cards). */}
         <section aria-label={`Everything for ${area.label}`} className="mt-3">

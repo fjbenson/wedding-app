@@ -27,6 +27,11 @@ columns, summary on one side and the lists on the other.
 | Seating | The "dietary needs by table" list is a column per table (three, four from 1280px) |  |
 | Hub | Under 1280px the two cards (Needs a push, This week) go under the ring instead of squeezing it; the ring was a few hundred pixels wide and its names overlapped | the Hub's look is unchanged from 1280px up |
 | Money · By month | The month columns were squeezed beside the title switch; they now start below it | |
+| Area pages | The two columns (next up + stages, and everything for the area) start at 1280px; below that, and with a card open, one column. At 1024px the left column was 270px wide and its words overlapped | |
+| The Day · run sheet | The peeking sheets either side are clipped to the page (they ran under the menu) and left out while a card is open | |
+| Guest list | The numbers strip keeps full words at 1280px (narrower total and Can't come boxes); the toolbar follows the table | |
+| Money · By month | The search and Filter wrap in the left column instead of running over the payments | |
+| Plan · Calendar | Calendar and month list stack when a card is open at 1024px | |
 | A card open beside a list | New `room-md:` / `room-lg:` / `room-xl:` classes (tailwind.config.ts) count from the room the page really has: with a card open (440px) lists keep their phone layout until the screen is 440px wider. Fixes squashed names in Suppliers, the Plan numbers card, the guest table and its numbers card, and Money's two cards and four-across areas | open any card at 1024px and at 1440px |
 
 Checked at 1440px and 1024px (and with a card open beside the list) with no sideways scroll. Settings' two area

@@ -91,7 +91,7 @@ export default function MoneyView({
   // (owner, 17 Oct 2026): search with the round black + at its end, then Filter.
   const filter = (
     // Laptops: search and Filter on one row (canvas 3 "Laptop · Round 3", C).
-    <div className="room-md:mt-6 room-md:flex room-md:items-center room-md:gap-5 room-md:[&>*:first-child]:w-[520px] room-md:[&>*]:mt-0">
+    <div className="room-md:mt-6 room-md:flex room-md:flex-wrap room-md:items-center room-md:gap-x-5 room-md:gap-y-3 room-md:[&>*:first-child]:w-[520px] room-md:[&>*:first-child]:max-w-full room-md:[&>*]:mt-0">
       <UrlSearch
         key={view}
         initial={query}

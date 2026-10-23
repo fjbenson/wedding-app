@@ -323,7 +323,7 @@ function RunSheet({
             + New run sheet
           </Link>
         </nav>
-      <div className="relative lg:mt-5">
+      <div className="relative lg:mt-5 lg:[overflow-x:clip]">
         <SheetPeek side="before" sheet={before} items={before ? momentsOf(before.id) : []} href={before ? sheetHref(before.id) : ""} />
         <div className="relative z-10 min-w-0 lg:mx-auto lg:max-w-xl">
           {/* Laptops: Filter, Print and the + by the sheet, not in a row of their own. */}
@@ -455,7 +455,7 @@ function SheetPeek({
     <Link
       href={href}
       aria-label={`${side === "before" ? "Previous" : "Next"} run sheet: ${sheet.name}`}
-      className={`absolute top-10 hidden h-[34rem] w-[24rem] overflow-hidden rounded-[20px] bg-white/70 py-7 opacity-60 shadow-[0_14px_34px_rgb(60_45_20/0.08)] transition [mask-image:linear-gradient(to_bottom,black_55%,transparent)] hover:opacity-90 lg:block print:!hidden ${
+      className={`absolute top-10 hidden h-[34rem] w-[24rem] overflow-hidden rounded-[20px] bg-white/70 py-7 opacity-60 shadow-[0_14px_34px_rgb(60_45_20/0.08)] transition [mask-image:linear-gradient(to_bottom,black_55%,transparent)] hover:opacity-90 lg:block [html[data-card-beside]_&]:max-[1719px]:!hidden print:!hidden ${
         side === "before" ? "right-[calc(50%+8rem)] pl-7 pr-[11rem]" : "left-[calc(50%+8rem)] pl-[11rem] pr-7"
       }`}
     >

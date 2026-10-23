@@ -566,7 +566,7 @@ export default function GuestBrowser({
         )}
         {/* The same card whatever's on (owner, 17 Oct 2026): filters only change its numbers. */}
         {events.length > 0 && (
-          <div className="room-lg:hidden">
+          <div className="room-xl:hidden">
             <AnswersCard
               total={filtered.filter((g) => answerOf(g) !== "declined").length}
               homes={new Set(filtered.filter((g) => answerOf(g) !== "declined").map((g) => g.household_id).filter(Boolean)).size}
@@ -583,7 +583,7 @@ export default function GuestBrowser({
           </div>
         )}
         {caterer && (
-          <div className="hidden room-lg:block room-lg:max-w-xs">
+          <div className="hidden room-xl:block room-xl:max-w-xs">
             <CopyButton text={caterer} label="Copy the list for the caterer" />
           </div>
         )}
@@ -909,7 +909,7 @@ function AnswersStrip({
   const lifted = "bg-white shadow-[0_1px_4px_rgb(60_50_40/0.16),0_8px_18px_-12px_rgb(60_50_40/0.3)]";
   const cant = showing === "declined";
   return (
-    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 room-lg:flex">
+    <section aria-label="RSVPs" className="hidden items-stretch gap-3.5 room-xl:flex">
       <div className="glass-card flex min-w-0 flex-1 items-stretch rounded-[22px] p-2">
         <button
           type="button"
@@ -931,7 +931,7 @@ function AnswersStrip({
                 type="button"
                 aria-pressed={on}
                 onClick={() => onShow(on ? "all" : t.status)}
-                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-4 py-3.5 text-left transition ${on ? lifted : "hover:bg-white/60"}`}
+                className={`flex min-w-0 flex-1 flex-col justify-between rounded-2xl px-3 py-3.5 text-left transition 2xl:px-4 ${on ? lifted : "hover:bg-white/60"}`}
               >
                 <span className={`type-figure text-[34px] leading-none ${on ? "text-champagne-600" : "text-ink"}`}>{counts[t.status]}</span>
                 <span className="mt-3 flex items-center gap-1.5">
@@ -948,7 +948,7 @@ function AnswersStrip({
         type="button"
         aria-pressed={cant}
         onClick={() => onShow(cant ? "all" : "declined")}
-        className={`flex w-[170px] shrink-0 flex-col justify-between rounded-[22px] px-5 py-3.5 text-left transition ${
+        className={`flex w-[176px] shrink-0 flex-col justify-between rounded-[22px] px-4 py-3.5 text-left transition ${
           cant ? `${lifted} ring-1 ring-linen` : "border-[1.5px] border-dashed border-[#D6CDBF] hover:bg-white/50"
         }`}
       >
@@ -956,7 +956,7 @@ function AnswersStrip({
         <span>
           <span className="flex items-center gap-1.5">
             <AnswerIcon status="declined" small />
-            <span className={`type-meta ${cant ? "!text-ink" : ""}`}>Can&apos;t come</span>
+            <span className={`type-meta whitespace-nowrap ${cant ? "!text-ink" : ""}`}>Can&apos;t come</span>
           </span>
           <span className="mt-1 block text-xs text-stone">not in the {total}</span>
         </span>

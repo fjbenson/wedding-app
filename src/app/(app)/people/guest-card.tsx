@@ -839,7 +839,7 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
           <X className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
         </button>
       )}
-      <p className="pr-8 font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Have they had their invitation?"}</p>
+      <p className="pr-8 font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Has their invitation been sent?"}</p>
       <div className="mt-3 flex gap-2">
         {invited ? (
           <>

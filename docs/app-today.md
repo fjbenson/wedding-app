@@ -72,7 +72,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   figure and its row below opens), Text · Call · Email,
   the **RSVP always on view** (it changes most) as **one question at a time**
   (owner, 23 Oct 2026, canvas 5 "Guest card · Round 3", C; no step circles): not
-  invited → "Have they had their invitation?" (Yes, it's gone); invited → "What did
+  invited → "Has their invitation been sent?" (Yes, it's gone); invited → "What did
   they say?" (Coming / Can't come, "Not invited yet" to undo); answered → the question goes;
   a badge on the picture says it (gold tick or grey cross) and tapping the RSVP box asks
   again, their answer picked in champagne, a ✕ to close (canvas 5 "Guest card · Round 6", D). Then **folded rows, each with a gold icon and

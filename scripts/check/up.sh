@@ -26,7 +26,7 @@ fi
 mkdir -p "$WORK/supabase/migrations"
 [ -f "$WORK/supabase/config.toml" ] || (cd "$WORK" && npx -y supabase@2 init --force >/dev/null 2>&1)
 cp "$REPO"/supabase/migrations/*.sql "$WORK/supabase/migrations/"
-(cd "$WORK" && npx -y supabase@2 start -x kong,studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta,realtime,mailpit,inbucket >/dev/null 2>&1) || true
+(cd "$WORK" && npx -y supabase@2 start --ignore-health-check -x kong,studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta,realtime,mailpit,inbucket >/dev/null 2>&1) || true
 for _ in $(seq 60); do curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/auth/v1/health | grep -q 200 && break; sleep 2; done
 # Migrations added since the copy was first made.
 (cd "$WORK" && npx -y supabase@2 migration up --local >/dev/null 2>&1) || true

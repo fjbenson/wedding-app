@@ -27,7 +27,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 - **Area pages** (`/area/[key]`, `area-view.tsx`; on a laptop a wide cover then
   two columns — a slim Next up row and the stages together in one big card left, Everything for / Only for / the
   foot right; canvas 4 "Laptop · Round 9", 2): a photo cover with the
-  page's one + (`AddMenu`), a **Next up** card, the **five stages as a row of
+  page's one + (`AddMenu`), a **Next up** card (the whole card is the tap, with a
+  chevron in a circle on its right instead of "Open it ›"; owner, 23 Oct 2026),
+  the **five stages as a row of
   circles on a gold line, the open one's contents below** (`stage-tabs.tsx`;
   canvas 4 "Area page · Round 1" C2, 21 Oct 2026) — Ideas · Quote · Book · Pay · Ready (`src/lib/area-stage.ts`;
   each can step back). **Ideas are notes or inspo** (21 Oct 2026, canvas 4
@@ -35,9 +37,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   rows (a note icon, the first line, "Note · date"; tap to edit, no Edit
   button; 21 Oct 2026, Round 2's A) and "+ Add an
   idea" (A note · Inspo, both full screens; a note's is `/area/[key]/note`,
-  Bullet and Tick-box on top) at the foot, counted as "N ideas"; key facts
+  Bullet and Tick-box on top) at the foot; key facts
   became notes (`areas.details` kept, unshown); "Save an idea" is now "Add
-  inspo". Pay starts "Paid £X of £Y" with a bar. On the laptop Hub's ring, hovering a
+  inspo". **No title or count row above a stage's contents** (23 Oct 2026: the
+  bold circle name says it; Pay has no "Paid £X of £Y" either, Money below
+  already shows it). On the laptop Hub's ring, hovering a
   button says what's done: Not started · Ideas · Quoted · Booked · Paid · Ready.
   Then **"Everything for [area]"** in the tabs' order (suppliers, guests,
   plan, money, the day), then **"Only for [area]"** (Food & drink's menu and

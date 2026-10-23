@@ -8,8 +8,8 @@ import { Check } from "lucide-react";
  * contents underneath (owner, 21 Oct 2026, canvas 4 "Area page · Round 1",
  * C2: it replaced the stages stacked down the page, and matches the supplier
  * card's Progress). A ticked circle is a stage that's done, the ringed number
- * is the one you're at, and the bold name is the one open. The count heads
- * the open stage, not the row, so five names fit on a 320px phone.
+ * is the one you're at, and the bold name is the one open. The names are
+ * small so five fit on a 320px phone.
  */
 export default function StageTabs({
   stages,
@@ -17,7 +17,7 @@ export default function StageTabs({
   current,
   initial,
 }: {
-  stages: { name: string; id: string; line: string; content: React.ReactNode }[];
+  stages: { name: string; id: string; content: React.ReactNode }[];
   done: boolean[];
   /** The first stage not yet done (the ringed one). */
   current: number;
@@ -93,15 +93,8 @@ export default function StageTabs({
       </div>
 
       <div role="tabpanel" id="stage-panel" aria-labelledby={`stage-tab-${st.id}`} className="mt-5 lg:mt-6 lg:border-t lg:border-linen lg:pt-6">
-        {/* Ready is only its button, so no heading row above it (owner, 23 Oct 2026): the circles already say where you are. */}
-        {st.id === "ready" ? (
-          <h3 className="sr-only">{st.name}</h3>
-        ) : (
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h3 className="font-display text-xl text-ink">{st.name}</h3>
-            <span className="text-sm text-stone">{st.line}</span>
-          </div>
-        )}
+        {/* No heading row with a count above the contents (owner, 23 Oct 2026, first Ready then every stage): the open circle's name is already bold, and the rows are the count. */}
+        <h3 className="sr-only">{st.name}</h3>
         <div id={st.id} className="scroll-mt-6">
           {st.content}
         </div>

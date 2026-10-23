@@ -35,6 +35,12 @@ From the last few chats, not yet confirmed:
   Notes and Inspo tiles opening Ideas, the note rows (icon, first line,
   "Note · date", tap to edit). Tick lists are now ticked inside the note,
   not on the area page.
+- 23 Oct 2026, phone walk-through (screen 1 of 8, the area page, looks great):
+  the owner's three fixes are built (Next up as a chevron circle with the whole
+  card tappable; no extra "Paid of" row on Pay; no title/count row above any
+  stage) — look at them on the phone. **Come back to** the Notes and Inspo
+  tiles at the foot. Walk still to do: Juno button, supplier card Progress,
+  Notes/Inspo rows, stationery, run sheets, seating, food and meals.
 - 21 Oct 2026, laptop (built blind — the private copy couldn't start, Docker's
   downloads were refused): the Hub ring (five dots under each name, fainter
   circle) and Needs a push; an area page (a big stage card left, a slim Next

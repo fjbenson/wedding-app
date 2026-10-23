@@ -29,12 +29,15 @@ export default function AddMenu({
   title,
   choices,
   textClass,
+  children,
 }: {
   label: string;
   title: string;
   choices: AddChoice[];
   /** Shown as a quiet text link in a card's foot ("+ Add an idea") instead of the round black +. */
   textClass?: string;
+  /** What the text-link button shows in place of the label (a chevron circle, say). */
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -43,7 +46,7 @@ export default function AddMenu({
     <>
       {textClass ? (
         <button type="button" onClick={() => setOpen(true)} className={textClass}>
-          {label}
+          {children ?? label}
         </button>
       ) : (
         <AddButton onClick={() => setOpen(true)} label={label} />

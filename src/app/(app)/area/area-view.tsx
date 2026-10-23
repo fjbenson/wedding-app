@@ -731,7 +731,16 @@ export default function AreaView({
   const paidList = schedule.filter((p) => p.paid_on);
   const vsBudget = (amount: number) =>
     room === null ? formatMoney(amount) : amount > room ? `${formatMoney(amount)}, ${formatMoney(amount - room)} over budget` : `${formatMoney(amount)}, ${formatMoney(room - amount)} under budget`;
-  const quietLink = "text-[15px] text-champagne-600 hover:text-ink";
+  // Next up's go-button (owner, 23 Oct 2026: "Open it ›" felt messy): a chevron in a circle, and
+  // its link stretches over the whole card, so the card itself is the tap.
+  const goLink =
+    "flex h-9 w-9 items-center justify-center rounded-full border border-champagne-400 text-champagne-600 transition-colors hover:bg-champagne-100 after:absolute after:inset-0 after:rounded-[22px]";
+  const go = (label: string) => (
+    <>
+      <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+      <span className="sr-only">{label}</span>
+    </>
+  );
 
   // What to do next: one line, worked out from the stage you're at.
   let next: { title: string; line?: string; action?: React.ReactNode };
@@ -739,7 +748,11 @@ export default function AreaView({
     next = {
       title: "Save a first idea",
       line: "A note, a picture or a link.",
-      action: <AddMenu label="Add an idea ›" title="Add an idea" choices={ideaChoices(area)} textClass={quietLink} />,
+      action: (
+        <AddMenu label="Add an idea" title="Add an idea" choices={ideaChoices(area)} textClass={goLink}>
+          {go("Add an idea")}
+        </AddMenu>
+      ),
     };
   } else if (stage.current === 1) {
     next =
@@ -747,12 +760,12 @@ export default function AreaView({
         ? {
             title: `Get a quote from ${supplierName(inTouch[0])}`,
             line: inTouch.length > 1 ? `And ${plural(inTouch.length - 1, "other")} you're in touch with.` : undefined,
-            action: <SupplierLink id={inTouch[0].id} className={quietLink}>Open their card ›</SupplierLink>,
+            action: <SupplierLink id={inTouch[0].id} className={goLink}>{go("Open their card")}</SupplierLink>,
           }
         : {
             title: `Find someone for ${area.label.toLowerCase()}`,
             line: "Add a supplier you'd like a quote from.",
-            action: <Link href={`/people/suppliers/new?category=${key}`} className={quietLink}>Add a supplier ›</Link>,
+            action: <Link href={`/people/suppliers/new?category=${key}`} className={goLink}>{go("Add a supplier")}</Link>,
           };
   } else if (stage.current === 2) {
     const q = quotes[0];
@@ -769,7 +782,7 @@ export default function AreaView({
           ? {
               title: `Book ${q.name}, or get another quote`,
               line: `${vsBudget(q.quote)}.`,
-              action: <SupplierLink id={q.id} className={quietLink}>Open their card ›</SupplierLink>,
+              action: <SupplierLink id={q.id} className={goLink}>{go("Open their card")}</SupplierLink>,
             }
           : { title: "Book a supplier", line: "Open their card and set them to Booked." };
   } else if (stage.current === 3) {
@@ -778,15 +791,15 @@ export default function AreaView({
       ? {
           title: `Pay ${p.description}`,
           line: `${formatMoney(p.amount)}${p.due_date ? ` by ${formatWeekdayDayMonth(p.due_date)}` : ""}.`,
-          action: <CardLink href={`/money/payments/${p.id}`} className={quietLink}>Open it ›</CardLink>,
+          action: <CardLink href={`/money/payments/${p.id}`} className={goLink}>{go("Open this payment")}</CardLink>,
         }
       : unscheduled[0]
         ? {
             title: `Put a date on ${supplierName(unscheduled[0].supplier)}'s balance`,
             line: `${formatMoney(unscheduled[0].balance)} still to pay.`,
             action: (
-              <Link href={`/money/payments/new?supplier=${unscheduled[0].supplier.id}&amount=${unscheduled[0].balance}`} className={quietLink}>
-                Add a due date ›
+              <Link href={`/money/payments/new?supplier=${unscheduled[0].supplier.id}&amount=${unscheduled[0].balance}`} className={goLink}>
+                {go("Add a due date")}
               </Link>
             ),
           }
@@ -806,8 +819,8 @@ export default function AreaView({
           title: stationeryNext.title,
           line: stationeryNext.line,
           action: stationeryNext.href ? (
-            <Link href={stationeryNext.href} className="text-[13px] text-champagne-600 underline underline-offset-4 hover:text-ink">
-              {stationeryNext.href.startsWith("/people/new") ? "Add a guest ›" : "Who's had it ›"}
+            <Link href={stationeryNext.href} className={goLink}>
+              {go(stationeryNext.href.startsWith("/people/new") ? "Add a guest" : "Who's had it")}
             </Link>
           ) : undefined,
         }
@@ -864,12 +877,10 @@ export default function AreaView({
   );
   // One line per stage when it's closed, and what it holds when open.
   const withQuote = live.filter((s) => (statusOf(s) === "quoted" || statusOf(s) === "booked") && (s.supplier_details?.quoted_cost ?? 0) > 0);
-  const stages: { name: string; id: string; line: string; content: React.ReactNode }[] = [
+  const stages: { name: string; id: string; content: React.ReactNode }[] = [
     {
       name: STAGES[0],
       id: "ideas",
-      // One count: notes and inspo are both ideas (owner, 21 Oct 2026).
-      line: ideaCount + notes.length > 0 ? plural(ideaCount + notes.length, "idea") : "None yet",
       // One card like Quotes: the pictures, the notes as rows, the add at the foot.
       content: (
         <div className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
@@ -904,7 +915,6 @@ export default function AreaView({
     {
       name: STAGES[1],
       id: "quotes",
-      line: area.diy ? "Doing it ourselves" : withQuote.length > 0 ? plural(withQuote.length, "quote") : inTouch.length > 0 ? `${inTouch.length} in touch` : "None yet",
       content: area.diy ? (
         <div className="glass-card rounded-[22px] px-4">
           <Empty>You&apos;re doing this yourselves.</Empty>
@@ -934,7 +944,6 @@ export default function AreaView({
     {
       name: STAGES[2],
       id: "booked",
-      line: booked.length > 0 ? `${booked.length} booked` : area.diy ? "Doing it ourselves" : "None yet",
       content:
         booked.length > 0 ? (
           <>
@@ -976,22 +985,9 @@ export default function AreaView({
     {
       name: STAGES[3],
       id: "paid",
-      line: money.committed <= 0 ? "None yet" : money.paid >= money.committed ? "All paid" : `${formatMoney(money.committed - money.paid)} to go`,
       content: (
         <>
-        {/* Paid so far against what's agreed, so the balance below isn't read as the price
-            (owner, 21 Oct 2026: a £2,200 quote showed as £1,700 here). */}
-        {money.committed > 0 && (
-          <div className="mb-3 px-1">
-            <p className="flex justify-between text-[13px] text-stone">
-              <span>Paid {formatMoney(Math.min(money.paid, money.committed))}</span>
-              <span>of {formatMoney(money.committed)}</span>
-            </p>
-            <span aria-hidden className="mt-1.5 block h-2 overflow-hidden rounded-full bg-champagne-100">
-              <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, Math.round((money.paid / money.committed) * 100))}%` }} />
-            </span>
-          </div>
-        )}
+        {/* No "Paid £X of £Y" row here (owner, 23 Oct 2026): Money, further down, already shows the agreed total, the bar, Paid and To pay. */}
         {unpaid.length + unscheduled.length > 0 ? (
           <ul className="glass-card overflow-hidden rounded-[22px] px-4 [--row-bleed:16px]">
             {unpaid.slice(0, 3).map((p) => (
@@ -1030,7 +1026,6 @@ export default function AreaView({
     {
       name: STAGES[4],
       id: "ready",
-      line: area.ready ? "Ready" : "Not yet",
       content: area.ready ? (
         <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", false)} className="px-1">
           <StepBack label="Not ready after all" />
@@ -1109,16 +1104,19 @@ export default function AreaView({
 
         {/* What to do next (canvas 3 "Area page · Round 5", B + A, owner's pick 17 Oct 2026). */}
         {/* A slim row on a laptop (canvas 4 "Laptop · Round 9", 2): the label, what to do, and its action. */}
-        <section aria-label="Next up" className="card-white rounded-[22px] p-4 lg:flex lg:items-center lg:gap-6 lg:px-6 lg:py-4">
-          <p className="type-meta flex items-center gap-1.5 !text-champagne-600 lg:shrink-0">
-            <NextIcon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-            {!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}
-          </p>
-          <div className="min-w-0 lg:flex-1">
-            <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink lg:mt-0">{shownNext.title}</p>
-            {shownNext.line && <p className="mt-1 text-sm text-stone lg:mt-0.5">{shownNext.line}</p>}
+        {/* The go-button's link stretches over the whole card (`goLink`), so it is `relative`; on a phone the words sit left and the chevron circle right. */}
+        <section aria-label="Next up" className="card-white relative flex items-center gap-3 rounded-[22px] p-4 lg:gap-6 lg:px-6 lg:py-4">
+          <div className="min-w-0 flex-1 lg:contents">
+            <p className="type-meta flex items-center gap-1.5 !text-champagne-600 lg:shrink-0">
+              <NextIcon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+              {!decor && !stationery && stage.current >= STAGES.length ? "All done" : "Next up"}
+            </p>
+            <div className="min-w-0 lg:flex-1">
+              <p className="mt-1.5 font-display text-[22px] font-light leading-tight text-ink lg:mt-0">{shownNext.title}</p>
+              {shownNext.line && <p className="mt-1 text-sm text-stone lg:mt-0.5">{shownNext.line}</p>}
+            </div>
           </div>
-          {shownNext.action && <div className="mt-2.5 lg:mt-0 lg:shrink-0">{shownNext.action}</div>}
+          {shownNext.action && <div className="shrink-0">{shownNext.action}</div>}
         </section>
 
         {/* Decor is its own special area: its things in place of the stages (canvas 3 "Decor · Round 2", owner 19 Oct 2026). */}

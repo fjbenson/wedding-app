@@ -18,28 +18,39 @@ export interface CarouselSheet {
  */
 export function SheetCarousel({ sheets, at }: { sheets: CarouselSheet[]; at: number }) {
   const n = sheets.length;
-  if (n < 2) return null;
+  if (n < 2) {
+    return (
+      <Link href="/day/sheets/new" className="mt-4 flex h-11 items-center text-[15px] text-champagne-600 hover:text-ink print:hidden lg:hidden">
+        + New run sheet
+      </Link>
+    );
+  }
   const prev = sheets[(at - 1 + n) % n];
   const next = sheets[(at + 1) % n];
-  const arrow = "flex h-11 w-11 items-center justify-center rounded-full border border-linen bg-white/80 text-stone hover:text-ink";
+  const arrow = "flex h-10 w-10 items-center justify-center rounded-full border border-linen bg-white/80 text-stone hover:text-ink";
   return (
-    <section aria-label="Run sheets" className="mt-6 print:hidden lg:hidden">
+    <section aria-label="Run sheets" className="mt-4 print:hidden lg:hidden">
       <div className="flex items-center justify-between gap-3">
         <Link href={prev.href} aria-label={`Previous sheet: ${prev.name}`} className={arrow}>
           <ChevronLeft className="h-5 w-5" strokeWidth={1.8} aria-hidden />
         </Link>
         <div className="min-w-0 text-center">
-          <p className="type-display truncate text-[22px] leading-tight">{sheets[at].name}</p>
-          <p className="mt-0.5 truncate text-[12.5px] text-stone">{sheets[at].line}</p>
+          <p className="truncate">
+            <span className="type-display text-[22px] leading-tight">{sheets[at].name}</span>
+            <span className="ml-2 text-[12.5px] text-stone">{sheets[at].line}</span>
+          </p>
         </div>
         <Link href={next.href} aria-label={`Next sheet: ${next.name}`} className={arrow}>
           <ChevronRight className="h-5 w-5" strokeWidth={1.8} aria-hidden />
         </Link>
       </div>
-      <div className="mt-3 flex justify-center gap-1.5" aria-hidden>
+      <div className="mt-1 flex items-center justify-center gap-1.5">
         {sheets.map((s, i) => (
-          <span key={s.href} className={`h-[7px] rounded-full ${i === at ? "w-[18px] bg-champagne-600" : "w-[7px] bg-linen"}`} />
+          <span key={s.href} aria-hidden className={`h-[7px] rounded-full ${i === at ? "w-[18px] bg-champagne-600" : "w-[7px] bg-linen"}`} />
         ))}
+        <Link href="/day/sheets/new" aria-label="New run sheet" className="-my-2 ml-1 flex h-8 w-8 items-center justify-center text-[18px] leading-none text-champagne-600">
+          +
+        </Link>
       </div>
     </section>
   );

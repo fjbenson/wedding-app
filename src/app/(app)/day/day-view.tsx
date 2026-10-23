@@ -29,7 +29,6 @@ import { SheetCarousel, SheetSwipe } from "./sheet-carousel";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
-import SheetPicker from "./sheet-picker";
 import SendSchedule from "./send-schedule";
 import Travel from "./travel";
 
@@ -275,7 +274,7 @@ function RunSheet({
       <div className="print:hidden lg:hidden">
       {/* No numbers card here (owner, 20 Oct 2026: the run sheet doesn't need KPIs). What's left is the doorway to the day's pieces (canvas 3 "The Day · Round 2", option 1). */}
       <PieceTiles
-        className="mt-6 lg:max-w-xl"
+        className="mt-4 lg:max-w-xl"
         facts={pieceFacts}
       />
       <SheetCarousel
@@ -300,7 +299,7 @@ function RunSheet({
       <div className="lg:flex-1">
         <FilterMenu
           base={`/day${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).length ? `?${[sheetParam, query ? `q=${encodeURIComponent(query)}` : ""].filter(Boolean).join("&")}` : ""}`}
-          start={<SheetPicker sheets={sheets} current={current?.id ?? null} counts={Object.fromEntries([["", all.filter((i) => !i.sheet_id).length], ...sheets.map((x) => [x.id, all.filter((i) => i.sheet_id === x.id).length])])} groupNames={Object.fromEntries(groups.map((g) => [g.id, g.name]))} />}
+          start={<span aria-hidden />}
           groups={[{ param: "area", title: "Area", current: area, rows: areaFilterRows(areas) }]}
           expandable={{ results: items.length, noun: "moment" }}
           end={items.length > 0 ? <PrintButton /> : undefined}

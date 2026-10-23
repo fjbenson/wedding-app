@@ -20,21 +20,21 @@ const PIECES: { key: Piece; title: string; href: string; icon: LucideIcon }[] = 
 export function PieceTiles({ facts, className = "" }: { facts: Record<Piece, string>; className?: string }) {
   return (
     <section aria-label="Pieces of the day" className={className}>
-      <h2 className="section-label">Pieces of the day</h2>
-      <div className="mt-2.5 grid grid-cols-3 gap-2 lg:gap-3">
+      <h2 className="sr-only">Pieces of the day</h2>
+      <div className="grid grid-cols-3 gap-2 lg:gap-3">
         {PIECES.map((p) => {
           const Icon = p.icon;
           return (
             <Link
               key={p.key}
               href={p.href}
-              className="card-white row-press flex min-w-0 flex-col rounded-[18px] p-3 [--row-bleed:0px] lg:p-4"
+              className="card-white row-press flex min-w-0 flex-col rounded-[16px] px-3 py-2.5 [--row-bleed:0px] lg:p-4"
             >
-              <span aria-hidden className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-                <Icon className="h-4 w-4" strokeWidth={1.6} />
+              <span className="flex items-center gap-1.5 text-[15px] font-medium text-ink">
+                <Icon aria-hidden className="h-4 w-4 shrink-0 text-champagne-600" strokeWidth={1.6} />
+                {p.title}
               </span>
-              <span className="mt-2.5 text-[15px] font-medium text-ink">{p.title}</span>
-              <span className="mt-0.5 text-[12px] leading-snug text-stone">{facts[p.key]}</span>
+              <span className="mt-0.5 truncate text-[12px] leading-snug text-stone">{facts[p.key]}</span>
             </Link>
           );
         })}

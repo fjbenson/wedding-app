@@ -108,7 +108,7 @@ export default function MoneyView({
   const needle = query.toLowerCase();
   const has = (...texts: (string | null | undefined)[]) => !needle || texts.some((t) => t?.toLowerCase().includes(needle));
   return (
-    <main className="page pb-40 lg:max-w-[1640px] lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1640px] lg:px-12 lg:pb-16">
       <CornerSwitch
         label="Show the money"
         tabs={[

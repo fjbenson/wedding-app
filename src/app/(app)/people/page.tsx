@@ -58,7 +58,7 @@ export default async function PeoplePage({
   const areas = areaOptions(areaRows).map((a) => ({ ...a, budget: areaRows?.find((r) => r.key === a.key)?.budget ?? null }));
 
   return (
-    <main className="page pb-28 lg:max-w-[1640px] lg:pb-16">
+    <main className="page pb-28 lg:max-w-[1640px] lg:px-12 lg:pb-16">
       <PeopleTabs current={current} />
       {current === "suppliers" ? (
         <SupplierList suppliers={suppliers} areas={areas} payments={payments} />

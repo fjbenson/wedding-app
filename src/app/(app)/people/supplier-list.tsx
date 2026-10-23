@@ -301,8 +301,11 @@ export default function SupplierList({
               <span>Stage</span>
               <span className="hidden room-xl:block">Area</span>
               <span className="text-right">Price</span>
-              <span className="text-right">Paid</span>
-              <span className="border-l border-champagne-400/50 pl-3 text-right">To go</span>
+              <span className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <span className="text-right">Paid</span>
+                <span aria-hidden className="h-4 w-px bg-champagne-400/60" />
+                <span>To go</span>
+              </span>
               <span className="hidden room-xl:block">Phone</span>
               <span className="hidden room-xl:block">Email</span>
               <span className="room-xl:hidden" />
@@ -759,7 +762,7 @@ const initials = (name: string) =>
  * tapping it opens the card ready to type it in.
  */
 /** The laptop's columns (23 Oct 2026): name, stage with its icon, area with its icon, the price (a quote, or the agreed total once booked), then Paid | To go as a joined pair, then phone and email as words (round buttons below 1280px). With a card open beside the list they wait for 440px more screen (`room-*:`, tailwind.config.ts). */
-const COLS = "room-lg:grid room-lg:grid-cols-[minmax(0,1fr)_128px_88px_88px_88px_auto] room-lg:items-center room-lg:gap-x-4 room-xl:grid-cols-[minmax(0,1.3fr)_128px_150px_88px_88px_88px_136px_minmax(0,1fr)]";
+const COLS = "room-lg:grid room-lg:grid-cols-[minmax(0,1fr)_128px_96px_210px_auto] room-lg:items-center room-lg:gap-x-4 room-xl:grid-cols-[minmax(0,1.3fr)_128px_150px_96px_210px_136px_minmax(0,1fr)]";
 
 function SupplierRow({ supplier, areas, paid, onOpen }: { supplier: Supplier; areas: AreaOption[]; paid: number; onOpen: (field?: "phone" | "email") => void }) {
   const st = stage(supplier);
@@ -800,9 +803,11 @@ function SupplierRow({ supplier, areas, paid, onOpen }: { supplier: Supplier; ar
         <span className="truncate">{areaName(supplier.supplier_details?.category ?? null, areas) ?? "Other"}</span>
       </span>
       <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{price ? formatMoney(price) : dash}</span>
-      <span className="type-figure hidden text-right text-[17px] !font-light tabular-nums room-lg:block">{paid > 0 ? formatMoney(paid) : dash}</span>
-      <span className="type-figure hidden border-l border-linen pl-3 text-right text-[17px] !font-light tabular-nums room-lg:block">
-        {toGo === null ? dash : toGo > 0.005 ? formatMoney(toGo) : <span className="text-[13px] text-champagne-600">Paid</span>}
+      {/* Paid | To go: one column, the bar down the middle on every row. */}
+      <span className="type-figure hidden grid-cols-[1fr_auto_1fr] items-center gap-3 text-[17px] !font-light tabular-nums room-lg:grid">
+        <span className="text-right">{paid > 0 ? formatMoney(paid) : dash}</span>
+        <span aria-hidden className="h-6 w-px bg-linen" />
+        <span>{toGo === null ? dash : toGo > 0.005 ? formatMoney(toGo) : <span className="text-[13px] text-champagne-600">Paid</span>}</span>
       </span>
       <span className="hidden min-w-0 room-xl:block">
         {supplier.phone ? <a href={`tel:${phone}`} className="block truncate text-[14px] text-ink hover:text-champagne-600">{supplier.phone}</a> : <button type="button" onClick={() => onOpen("phone")} className="text-[13px] text-stone/60 hover:text-champagne-600">+ Add</button>}

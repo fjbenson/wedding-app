@@ -47,20 +47,21 @@ function Mark({ kind }: { kind: Dot }) {
  * appointment on champagne with its time, an overdue to-do in rose with a "!"
  * (never colour alone).
  */
-function ChipLine({ chip, faded = false }: { chip: Chip; faded?: boolean }) {
+/* One or two things on a day run onto a second line; three or more keep to one each so they fit (owner, 23 Oct 2026). */
+function ChipLine({ chip, faded = false, wrap = false }: { chip: Chip; faded?: boolean; wrap?: boolean }) {
   const tone = chip.overdue
     ? "bg-[#FBEDEA] text-[#9A3F2B] shadow-[inset_0_0_0_0.5px_#E8C2B9]"
     : chip.kind === "appointment"
       ? "bg-champagne-100 text-[#5E4518]"
       : "bg-white text-ink shadow-[inset_0_0_0_0.5px_#E6E0D6]";
   return (
-    <span className={`flex min-w-0 items-center gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] transition-opacity ${tone} ${faded ? "opacity-25" : ""}`}>
+    <span className={`flex min-w-0 ${wrap ? "items-start" : "items-center"} gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] transition-opacity ${tone} ${faded ? "opacity-25" : ""}`}>
       {chip.kind === "appointment" ? (
-        <Calendar className="h-3 w-3 shrink-0" strokeWidth={2} aria-hidden />
+        <Calendar className={`h-3 w-3 shrink-0 ${wrap ? "mt-[2px]" : ""}`} strokeWidth={2} aria-hidden />
       ) : (
-        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border-[1.2px] border-current" />
+        <span aria-hidden className={`h-2.5 w-2.5 shrink-0 rounded-full border-[1.2px] border-current ${wrap ? "mt-[3px]" : ""}`} />
       )}
-      <span className="truncate">
+      <span className={wrap ? "line-clamp-2" : "truncate"}>
         {chip.overdue && "! "}
         {chip.time && `${chip.time} `}
         {chip.title}
@@ -469,7 +470,7 @@ export default function PlanCalendar({
             // Days from the months either side, faded and not tappable.
             if (n < 1 || n > length) {
               return (
-                <span key={`o${i}`} aria-hidden className={`h-[112px] border-t-[0.5px] border-linen px-2 pt-2 ${edge}`}>
+                <span key={`o${i}`} aria-hidden className={`h-[124px] border-t-[0.5px] border-linen px-2 pt-2 ${edge}`}>
                   <span className="flex h-7 items-center font-display text-[15px] text-stone/35">
                     {n < 1 ? lastMonthLength + n : n - length}
                   </span>
@@ -491,7 +492,7 @@ export default function PlanCalendar({
                 aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                   things.length ? `, ${things.length} ${things.length === 1 ? "item" : "items"}` : ""
                 }`}
-                className={`flex h-[112px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1.5 pt-2 text-left transition hover:bg-white/70 ${edge} ${
+                className={`flex h-[124px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1.5 pt-2 text-left transition hover:bg-white/70 ${edge} ${
                   date === selected ? "bg-white" : isToday ? "bg-champagne-100/40" : ""
                 }`}
               >
@@ -514,7 +515,7 @@ export default function PlanCalendar({
                   </span>
                 )}
                 {shown.map((c, j) => (
-                  <ChipLine key={j} chip={c} faded={!!pick && !fits(c, pick)} />
+                  <ChipLine key={j} chip={c} faded={!!pick && !fits(c, pick)} wrap={things.length <= 2} />
                 ))}
                 {things.length > 3 && <span className="px-1.5 text-xs text-stone">+{things.length - 2} more</span>}
               </button>

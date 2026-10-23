@@ -391,10 +391,13 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 
 ## Next up
 
-**Laptop (21 Oct 2026):** the Hub, area page, People and The Day were laid out
-for laptops this chat, from canvas 4 Rounds 8–10 — built without being seen
-(`/check` couldn't start; see the backlog). The owner is looking live and
-will say what's off; fix those first.
+**Laptop (23 Oct 2026):** every screen has been laid out for laptops and
+photographed on the private copy at 1440px and 1024px, with and without a card
+open beside the list — what changed is in `docs/laptop-pass.md`. The owner
+hasn't looked yet; fix what they say is off first. Use `room-md:` / `room-lg:` /
+`room-xl:` (tailwind.config.ts) instead of `lg:` / `xl:` for anything set out in
+columns where a card can open beside it: a card takes 440px, and these count from
+the room the page really has.
 
 From the audit of 20 Oct 2026 (agreed with the owner: notes tidied first):
 

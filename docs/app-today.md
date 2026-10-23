@@ -103,7 +103,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   card with **stages you can look at** (In touch → Quote in → Booked → Paid; tapping a circle only shows that stage, canvas 5 "Supplier card · Round 20" A, 23 Oct 2026): In touch holds Contact, phone, email, website, notes; Quote in the quote and its files (+ Add a quote; a quote typed in ticks Quote in itself); Booked a black "Mark as booked" pill, then deposit, decor from them and the contract; Paid the payments (ticks itself). Then History as a fold. Call · Email · Website are always there, dashed when missing (23 Oct 2026).
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only
   (payments live in Money). Calendar month on a glass card, a day card on
-  tap, the month's list, Undated and Done folds. The List works like the guest
+  tap, the month's list, Undated and Done folds. On a laptop (23 Oct 2026, canvas 5 "Laptop ·
+  Round 21", A): the big month — number tiles, then the month across the page
+  with each thing written in its day; No date and Done as pills; no list under it. The List works like the guest
   list. Guests can be tagged "involved"; appointments can go to the phone's
   own calendar (.ics, Google, Outlook).
 - **Money** (`/money`), **By area | By month**: Budget → Agreed → Paid. The

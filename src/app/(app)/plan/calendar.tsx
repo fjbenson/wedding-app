@@ -10,6 +10,9 @@ import { Fold } from "./fold";
 
 export type Dot = "todo" | "appointment";
 
+/** One thing written in its day on the laptop's big month: "2pm Meeting with Sarah". */
+export type Chip = { kind: Dot; title: string; time: string | null; overdue: boolean };
+
 /** "2026-10" → "2026-11" (or back, with -1). */
 function shiftMonth(key: string, by: 1 | -1): string {
   const [year, month] = key.split("-").map(Number);
@@ -36,6 +39,33 @@ function Mark({ kind }: { kind: Dot }) {
 }
 
 /**
+ * One thing in a day of the big month: a to-do on white with its circle, an
+ * appointment on champagne with its time, an overdue to-do in rose with a "!"
+ * (never colour alone).
+ */
+function ChipLine({ chip }: { chip: Chip }) {
+  const tone = chip.overdue
+    ? "bg-[#FBEDEA] text-[#9A3F2B] shadow-[inset_0_0_0_0.5px_#E8C2B9]"
+    : chip.kind === "appointment"
+      ? "bg-champagne-100 text-[#5E4518]"
+      : "bg-white text-ink shadow-[inset_0_0_0_0.5px_#E6E0D6]";
+  return (
+    <span className={`flex min-w-0 items-center gap-1.5 rounded-[7px] px-1.5 py-[3px] text-xs leading-[1.35] ${tone}`}>
+      {chip.kind === "appointment" ? (
+        <Calendar className="h-3 w-3 shrink-0" strokeWidth={2} aria-hidden />
+      ) : (
+        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border-[1.2px] border-current" />
+      )}
+      <span className="truncate">
+        {chip.overdue && "! "}
+        {chip.time && `${chip.time} `}
+        {chip.title}
+      </span>
+    </span>
+  );
+}
+
+/**
  * The plan as a month calendar — what Plan opens on. ‹ › move between
  * months; each day shows a mark per thing on it (up to two, then "+1"). Under
  * the grid, everything in the month in view, one list in date order with the
@@ -51,6 +81,8 @@ export default function PlanCalendar({
   firstMonth,
   lastMonth,
   dots,
+  chips,
+  doneLists,
   dayPanels,
   monthLists,
   monthTops,
@@ -64,6 +96,9 @@ export default function PlanCalendar({
   firstMonth: string;
   lastMonth: string;
   dots: Record<string, Dot[]>;
+  chips: Record<string, Chip[]>;
+  /** Each month's done things, for the big month's Done pill. */
+  doneLists: Record<string, { count: number; panel: ReactNode }>;
   dayPanels: Record<string, ReactNode>;
   /** Everything in each month, for the list under the grid. */
   monthLists: Record<string, ReactNode>;
@@ -85,7 +120,7 @@ export default function PlanCalendar({
   );
   const askedDay = params.get("day");
   const [selected, setSelected] = useState<string | null>(
-    askedDay === "undated" || (askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)) ? askedDay : null,
+    askedDay === "undated" || askedDay === "done" || (askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)) ? askedDay : null,
   );
   useEffect(() => {
     replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected });
@@ -97,6 +132,8 @@ export default function PlanCalendar({
   const first = new Date(Date.UTC(year, monthNumber - 1, 1));
   const blanks = (first.getUTCDay() + 6) % 7; // weeks start on Monday
   const length = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  const lastMonthLength = new Date(Date.UTC(year, monthNumber - 1, 0)).getUTCDate();
+  const weeks = Math.ceil((blanks + length) / 7);
   const name = first.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
 
 
@@ -117,10 +154,10 @@ export default function PlanCalendar({
   };
 
   return (
-    <section className="mt-6 room-md:grid room-md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] room-md:items-start room-md:gap-8">
-      {/* Laptops (canvas 3 "Laptop · Round 4", owner's go 18 Oct 2026): the
-          calendar on the left, the month's list beside it. */}
-      <div className="room-md:sticky room-md:top-6">
+    <section className="mt-6">
+      {/* Phones (and a laptop with a card open beside, until there's room). */}
+      <div className="room-lg:hidden">
+      <div>
       {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
           flat" — everything printed straight on the background). ‹ the
           month › centred; the round + moved out to the key's row (owner,
@@ -186,7 +223,7 @@ export default function PlanCalendar({
               aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
                 marks.length ? `, ${marks.length} ${marks.length === 1 ? "item" : "items"}` : ""
               }`}
-              className="flex h-[48px] flex-col items-center gap-[3px] pt-0.5 room-md:h-[64px] room-md:pt-1.5"
+              className="flex h-[48px] flex-col items-center gap-[3px] pt-0.5"
             >
               <span className={`flex h-8 w-8 items-center justify-center rounded-full font-display text-base ${circle}`}>
                 {i + 1}
@@ -236,7 +273,7 @@ export default function PlanCalendar({
           cards the same weight competed): the calendar card is the hero. */}
       {/* Dividers within the page's margins (full width was tried and taken
           back, owner, 16 Oct 2026), one above the first row too. */}
-      <div className="mt-5 room-md:mt-0 [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
+      <div className="mt-5 [&_ul>li:first-child]:border-t [&_ul>li:first-child]:border-ink/[0.12]">
         {monthLists[month] ?? (
           <p className="py-3.5 text-[15px] text-stone">
             Nothing planned yet.{" "}
@@ -265,7 +302,136 @@ export default function PlanCalendar({
         </Fold>
       )}
       </div>
+      </div>
 
+      {/* Laptops: the big month (canvas 5 "Laptop · Round 21", A, owner's pick
+          23 Oct 2026). The month fills the page and each day says what's on
+          it; tap a day for its card. No list under it: No date and Done are
+          pills by the month's name. */}
+      <div className="glass-card hidden rounded-[26px] px-4 pt-4 room-lg:block">
+        <div className="flex items-center gap-2 px-1.5 pb-3">
+          <h2 className="font-display text-[26px] font-light text-ink" aria-live="polite">
+            {name} <span className="italic text-champagne-600">{year}</span>
+          </h2>
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            disabled={month <= firstMonth}
+            aria-label="Previous month"
+            className="ml-2 flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+          >
+            <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(1)}
+            disabled={month >= lastMonth}
+            aria-label="Next month"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-cream disabled:opacity-25"
+          >
+            <ChevronRight className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />
+          </button>
+          {month !== today.slice(0, 7) && (
+            <button
+              type="button"
+              onClick={() => {
+                setMonth(today.slice(0, 7));
+                setSelected(null);
+              }}
+              className="ml-1 h-9 rounded-full border-[0.5px] border-linen bg-white/70 px-4 text-[13px] text-ink hover:bg-white"
+            >
+              Today
+            </button>
+          )}
+          <span className="flex-1" />
+          {undatedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelected("undated")}
+              className="flex h-9 items-center gap-2 rounded-full border-[0.5px] border-linen bg-white/70 px-4 text-[13px] text-ink hover:bg-white"
+            >
+              No date <span className="font-medium text-champagne-600">{undatedCount}</span>
+            </button>
+          )}
+          {doneLists[month] && (
+            <button
+              type="button"
+              onClick={() => setSelected("done")}
+              className="flex h-9 items-center gap-2 rounded-full border-[0.5px] border-linen bg-white/70 px-4 text-[13px] text-ink hover:bg-white"
+            >
+              Done <span className="font-medium text-champagne-600">{doneLists[month].count}</span>
+            </button>
+          )}
+          <span className="ml-2">{toggle}</span>
+        </div>
+
+        <div className="grid grid-cols-7" aria-hidden>
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+            <span key={d} className="px-2.5 pb-2 text-xs uppercase tracking-[0.2em] text-stone">
+              {d}
+            </span>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
+          {Array.from({ length: weeks * 7 }, (_, i) => {
+            const n = i - blanks + 1;
+            const edge = i % 7 === 0 ? "" : "border-l-[0.5px]";
+            // Days from the months either side, faded and not tappable.
+            if (n < 1 || n > length) {
+              return (
+                <span key={`o${i}`} aria-hidden className={`h-[112px] border-t-[0.5px] border-linen px-2 pt-2 ${edge}`}>
+                  <span className="flex h-7 items-center font-display text-[15px] text-stone/35">
+                    {n < 1 ? lastMonthLength + n : n - length}
+                  </span>
+                </span>
+              );
+            }
+            const date = `${month}-${pad(n)}`;
+            const things = chips[date] ?? [];
+            const isWedding = date === weddingDate;
+            const isToday = date === today;
+            // Three fit; past that, two and "+N more".
+            const shown = things.length > 3 ? things.slice(0, 2) : things;
+            return (
+              <button
+                key={date}
+                type="button"
+                onClick={() => setSelected(date)}
+                aria-pressed={date === selected}
+                aria-label={`${longDate(date)}${isWedding ? ", the wedding" : ""}${
+                  things.length ? `, ${things.length} ${things.length === 1 ? "item" : "items"}` : ""
+                }`}
+                className={`flex h-[112px] min-w-0 flex-col gap-1 border-t-[0.5px] border-linen px-2 pb-1.5 pt-2 text-left transition hover:bg-white/70 ${edge} ${
+                  date === selected ? "bg-white" : isToday ? "bg-champagne-100/40" : ""
+                }`}
+              >
+                <span
+                  className={`flex h-7 min-w-[28px] items-center justify-center self-start rounded-full px-1 font-display text-[15px] ${
+                    isToday
+                      ? "bg-champagne-600 text-white"
+                      : isWedding
+                        ? "font-semibold text-ink shadow-[inset_0_0_0_2px_#B8914F]"
+                        : date < today
+                          ? "text-stone/55"
+                          : "text-ink"
+                  }`}
+                >
+                  {n}
+                </span>
+                {isWedding && (
+                  <span className="truncate rounded-[7px] px-1.5 py-[3px] text-xs font-medium text-champagne-600 shadow-[inset_0_0_0_1px_#B8914F]">
+                    The wedding
+                  </span>
+                )}
+                {shown.map((c, j) => (
+                  <ChipLine key={j} chip={c} />
+                ))}
+                {things.length > 3 && <span className="px-1.5 text-xs text-stone">+{things.length - 2} more</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {selected === "undated" && (
         <DayCard date={null} title="No date yet" isToday={false} onClose={close}>
@@ -273,7 +439,13 @@ export default function PlanCalendar({
         </DayCard>
       )}
 
-      {selected && selected !== "undated" && (
+      {selected === "done" && (
+        <DayCard date={null} title={`Done in ${name}`} label={`${name} ${year}`} heading="Done" canAdd={false} isToday={false} onClose={close}>
+          {doneLists[month]?.panel ?? <p className="py-4 text-[15px] text-stone">Nothing done this month yet.</p>}
+        </DayCard>
+      )}
+
+      {selected && selected !== "undated" && selected !== "done" && (
         <DayCard
           date={selected}
           title={longDate(selected)}
@@ -302,12 +474,20 @@ function DayCard({
   isToday,
   onClose,
   children,
+  label = "To-dos",
+  heading = "Undated",
+  canAdd = true,
 }: {
   date: string | null;
   title: string;
   isToday: boolean;
   onClose: () => void;
   children: ReactNode;
+  /** With no date: the small line and the big word at the top ("To-dos" over "Undated"). */
+  label?: string;
+  heading?: string;
+  /** False for a month's Done card: nothing to add there. */
+  canAdd?: boolean;
 }) {
   // Escape closes it, and the page behind doesn't scroll while it's open.
   useEffect(() => {
@@ -354,7 +534,7 @@ function DayCard({
                     {weekday}
                   </>
                 ) : (
-                  "To-dos"
+                  label
                 )}
               </p>
               <h2 className="mt-1 font-display text-[32px] font-light leading-[1.05] tracking-[-0.02em] text-ink">
@@ -363,7 +543,7 @@ function DayCard({
                     {day} <span className="italic">{month.join(" ")}</span>
                   </>
                 ) : (
-                  <span className="italic">Undated</span>
+                  <span className="italic">{heading}</span>
                 )}
               </h2>
             </div>
@@ -379,8 +559,8 @@ function DayCard({
 
           <div className="mt-3 border-t border-linen [--row-bleed:22px]">{children}</div>
 
-          <p className="section-label mt-6">{date ? "Add on this day" : "Add"}</p>
-          <div className="mt-2.5 flex gap-2.5">
+          {canAdd && <p className="section-label mt-6">{date ? "Add on this day" : "Add"}</p>}
+          {canAdd && <div className="mt-2.5 flex gap-2.5">
             {(date
               ? [
                   ["A to-do", `/plan/new?date=${date}`],
@@ -397,7 +577,7 @@ function DayCard({
                 {label}
               </Link>
             ))}
-          </div>
+          </div>}
         </div>
       </div>
     </div>

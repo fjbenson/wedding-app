@@ -1,12 +1,13 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import { areaName, type AreaOption } from "@/lib/areas";
-import { formatMonthYear } from "@/lib/dates";
+import { formatMonthYear, formatTime } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone } from "@/types/db";
 import { AppointmentRow } from "./appointment-row";
-import PlanCalendar, { type Dot } from "./calendar";
+import PlanCalendar, { type Chip, type Dot } from "./calendar";
 import { Fold, FoldAll, FoldGroup } from "./fold";
 import { MilestoneRow, isOpen } from "./milestone-row";
 
@@ -130,13 +131,21 @@ export default function Agenda({
   // the grid was tried and put in the backlog (owner, 11 Oct 2026).
   const nudge = (e: Entry) => e.kind === "todo" && isNudge(e.milestone);
   const dots: Record<string, Dot[]> = {};
+  // The laptop's big month writes each thing in its day (canvas 5 "Laptop · Round 21", A, owner's pick 23 Oct 2026).
+  const chips: Record<string, Chip[]> = {};
   const byDay: Record<string, Entry[]> = {};
   for (const e of all) {
     if (!e.date) continue;
     if (nudge(e)) continue;
     (byDay[e.date] ??= []).push(e);
     // Done things stay in the day's card and the list, but get no mark.
-    if (!isDone(e)) (dots[e.date] ??= []).push(e.kind);
+    if (isDone(e)) continue;
+    (dots[e.date] ??= []).push(e.kind);
+    (chips[e.date] ??= []).push(
+      e.kind === "todo"
+        ? { kind: "todo", title: e.milestone.title, time: null, overdue: !!e.milestone.due_date && e.milestone.due_date < today }
+        : { kind: "appointment", title: e.appointment.title, time: e.appointment.at_time ? formatTime(e.appointment.at_time) : null, overdue: false },
+    );
   }
   const dayPanels = Object.fromEntries(
     Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
@@ -147,6 +156,12 @@ export default function Agenda({
   // Oct 2026: crossed out in place was jarring; ticking slides it away).
   const byMonth: Record<string, Entry[]> = {};
   for (const e of all) if (e.date) (byMonth[monthOf(e)!] ??= []).push(e);
+  // The big month has no list under it, so a month's Done opens in a card from the pill by the month's name.
+  const doneLists: Record<string, { count: number; panel: ReactNode }> = {};
+  for (const [key, entries] of Object.entries(byMonth)) {
+    const done = entries.filter(isDone);
+    if (done.length) doneLists[key] = { count: done.length, panel: <ul className="mt-1">{done.map((e) => row(e))}</ul> };
+  }
   const monthLists = Object.fromEntries(
     Object.entries(byMonth).map(([key, entries]) => {
       const open = entries.filter((e) => !isDone(e));
@@ -185,14 +200,51 @@ export default function Agenda({
   const firstMonth = [thisMonth, ...dated].sort()[0];
   const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
 
+  // Laptops: where the plan stands, as tiles over the month, counted like the List's numbers card; each opens the List narrowed.
+  const openTodos = milestones.filter(isOpen);
+  const late = (m: Milestone) => !isNudge(m) && !!m.due_date && m.due_date < today;
+  const tiles = [
+    { value: openTodos.filter(late).length, label: "Overdue", href: "/plan?view=list&when=overdue", late: true },
+    { value: openTodos.length, label: "To-dos open", href: "/plan?view=list&show=todos" },
+    { value: (appointments ?? []).filter((a) => a.on_date >= today).length, label: "Appointments", href: "/plan?view=list&show=appointments" },
+    { value: openTodos.filter((m) => !late(m) && planDate(m)?.slice(0, 7) === thisMonth).length, label: "This month", href: "/plan?view=list&when=month" },
+    { value: undated.length, label: "No date", href: "/plan?view=list&when=none", faint: true },
+  ];
+
   return (
     <FoldGroup initiallyOpen={[]}>
+      <section aria-label="Where the plan stands" className="mt-6 hidden grid-cols-5 gap-3 room-lg:grid">
+        {tiles.map((t) => (
+          <Link
+            key={t.label}
+            href={t.href}
+            className={`flex items-baseline gap-3 rounded-[18px] px-[18px] py-3 transition ${
+              t.late && t.value > 0
+                ? "border-[0.5px] border-[#E8C2B9] bg-[#FBEDEA] hover:bg-[#F8E3DE]"
+                : t.faint
+                  ? "border border-dashed border-[#D8C7A4] bg-white/30 hover:bg-white/60"
+                  : "border-[0.5px] border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white"
+            }`}
+          >
+            <span className={`type-figure text-[34px] leading-none ${t.late && t.value > 0 ? "text-[#9A3F2B]" : t.faint ? "text-stone" : "text-ink"}`}>
+              {t.value}
+            </span>
+            {/* Overdue carries a ▲ as well as the rose, never colour alone. */}
+            <span className={`type-meta min-w-0 truncate ${t.late && t.value > 0 ? "!text-[#9A3F2B]" : ""}`}>
+              {t.late && t.value > 0 && "▲ "}
+              {t.label}
+            </span>
+          </Link>
+        ))}
+      </section>
       <PlanCalendar
         today={today}
         weddingDate={weddingDate}
         firstMonth={firstMonth}
         lastMonth={lastMonth}
         dots={dots}
+        chips={chips}
+        doneLists={doneLists}
         dayPanels={dayPanels}
         monthLists={monthLists}
         monthTops={monthTops}

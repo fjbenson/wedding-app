@@ -59,7 +59,7 @@ export default function DateStamp({
 
 /**
  * In a day's card the date is the card's title, so rows show the time where
- * the date would be ("2pm", "10:30am": wider than the date, so 64px), and a faint "Any time" for things
+ * the date would be ("11:30" over "AM", like the date over its month; 64px for "11:30"), and a faint "Any time" for things
  * with none, so titles line up (owner, 23 Oct 2026). A day with no times at
  * all leaves the column out (`DateStamp`'s callers pass `inDay="plain"`).
  */
@@ -72,9 +72,12 @@ export function TimeStamp({ time, done = false }: { time: string | null | undefi
       </span>
     );
   }
+  // "11:30am" in one line squashed the title (owner, 23 Oct 2026): the time large, am/pm under, like "24 / OCT".
+  const [, clock, half] = formatTime(time).match(/^(.*?)(am|pm)$/) ?? [];
   return (
-    <span className={`w-16 shrink-0 whitespace-nowrap font-display text-[20px] font-light leading-none ${done ? "text-stone" : "text-champagne-600"}`}>
-      {formatTime(time)}
+    <span className="flex w-16 shrink-0 flex-col items-start">
+      <span className={`font-display text-[26px] font-light leading-none tabular-nums ${done ? "text-stone" : "text-champagne-600"}`}>{clock}</span>
+      <span className="mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-stone">{half}</span>
     </span>
   );
 }

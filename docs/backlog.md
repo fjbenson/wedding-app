@@ -333,3 +333,7 @@ Each would be an added column, not a rebuild:
   demo wedding (check the plan and cost first; never use the live keys
   locally). On the Mac the start-of-chat hook doesn't run either (it only
   runs in cloud chats), so check the copy is up to date with `main` by hand.
+- **Our own date and time pickers (owner, 23 Oct 2026):** the browser's time
+  box (blue squares) looks out of place. A small month grid in our look and a
+  time list or quick picks, on laptops at least (phones may keep the wheel).
+  Mock first; with the laptop pass of the forms, after the tabs.

@@ -139,7 +139,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   journeys there and back) and **Decor** (pack list). **More than one run
   sheet** (20 Oct 2026, `run_sheets`, 0035): "The day" is the main one, others
   (Bridesmaids, Groomsmen, the photographer's list) are picked at the top
-  (`sheet-picker.tsx`; on a laptop the pieces are slim pills by the title,
+  (`sheet-picker.tsx`; **on a phone** a carousel under the piece tiles — the sheet's name
+  between ‹ › with dots, swipe the sheet to go round, `sheet-carousel.tsx`, canvas 5
+  Round 23 B, 23 Oct 2026; on a laptop the pieces are slim pills by the title,
   the sheets' names run along the top and the sheet you're on sits in the
   middle with the ones either side tucked behind it and ‹ › to flip, going
   round — Round 9, 3b; Filter, Print and + sit by the sheet, no search there), made and edited on full screens (`/day/sheets/…`), and

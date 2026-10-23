@@ -25,6 +25,7 @@ import { arrangeSeats, defaultSpot } from "@/lib/seating";
 import DietLine from "@/components/diet-line";
 import CopyText from "@/components/copy-text";
 import { needsOf } from "@/lib/dietary";
+import { SheetCarousel, SheetSwipe } from "./sheet-carousel";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import PrintButton from "./print-button";
@@ -277,6 +278,14 @@ function RunSheet({
         className="mt-6 lg:max-w-xl"
         facts={pieceFacts}
       />
+      <SheetCarousel
+        at={at}
+        sheets={order.map((x) => ({
+          href: sheetHref(x.id),
+          name: x.name,
+          line: `${momentsOf(x.id).length} ${momentsOf(x.id).length === 1 ? "moment" : "moments"}${x.id === null ? " · everyone's" : ""}`,
+        }))}
+      />
       <div className="lg:mt-6 lg:flex lg:items-center lg:gap-6 lg:[&>*:first-child]:w-[520px] lg:[&>*]:mt-0">
       <UrlSearch
         initial={query}
@@ -323,6 +332,7 @@ function RunSheet({
             + New run sheet
           </Link>
         </nav>
+      <SheetSwipe prev={n >= 2 ? sheetHref(order[(at - 1 + n) % n].id) : undefined} next={n >= 2 ? sheetHref(order[(at + 1) % n].id) : undefined}>
       <div className="relative lg:mt-5 lg:[overflow-x:clip]">
         <SheetPeek side="before" sheet={before} items={before ? momentsOf(before.id) : []} href={before ? sheetHref(before.id) : ""} />
         {/* z-10 only on a laptop: on a phone it floated over the menu bar (owner, 23 Oct 2026). */}
@@ -417,6 +427,7 @@ function RunSheet({
         {before && <SheetArrow side="before" name={before.name} href={sheetHref(before.id)} />}
         {after && <SheetArrow side="after" name={after.name} href={sheetHref(after.id)} />}
       </div>
+      </SheetSwipe>
       {theGroup && items.length > 0 && (
         <div className="mx-auto mt-4 max-w-xl print:hidden">
           <SendSchedule group={theGroup.name} subject={`${sheetName}: the order of the day`} text={groupText} emails={groupEmails} />

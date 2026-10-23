@@ -233,9 +233,19 @@ almost everything else is still the phone layout in a narrow column.
   on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
   everything folded; D/E (tap a stage, its part opens, as on area pages; a
   button inside moves the supplier on). Do after the audit so it follows the rules.
-- **Guest RSVP steps, later:** Invited could tick itself when the household's
-  invitation is logged as sent (like Paid from Money). Built as steps on 23 Oct
-  2026; this link isn't made yet.
+- **Guest card RSVP slider (owner, 23 Oct 2026):** split it like the laptop
+  guest numbers: To invite › Yet to respond › Coming together, then a gap and
+  Can't come on its own, since it's not a step in the invited-to-coming flow.
+  Mock up on canvas 4 first. Fresh chat. **Option (same day):** show it as
+  steps like a supplier's Progress (To invite › Invited › Coming, ticks as
+  reached, tap a step to move on) with Can't come as a small separate link;
+  it would replace the slider. RSVPs are per event, so it shows the guest's own.
+  **Tried and taken back out (23 Oct 2026):** To invite › Invited › Responded as
+  tappable steps felt wrong on the phone: a third row of three circles (after the
+  figures and Text · Call · Email), and no clear next action (tapping a step
+  could untick it). Rethink from the couple's journey first: one clear next action
+  at each moment (Mark as invited → Coming / Can't come → the answer with Change),
+  maybe inside the RSVP figure at the top. Mock-ups on canvas 5.
 - **A time on a to-do (owner, 23 Oct 2026):** an optional `+ Time` on the
   stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
   (timestamptz) may hold it with no database change; check first. Any database
@@ -246,7 +256,7 @@ almost everything else is still the phone layout in a narrow column.
   apart) and any others. For each: what each stage means, what action moves it
   on (by hand or by something the app sees, like a payment or an RSVP), how to
   go back, and what the card shows at each stage. Aim for one logic that
-  reads the same everywhere. The guest card's RSVP is built as steps (To invite › Invited › Responded).
+  reads the same everywhere. Related: the guest RSVP as steps (above).
 - **Tag a supplier on a to-do (owner, 23 Oct 2026):** "With" on a to-do ("ring
   the cake place"). The involved links (`milestone_guests`) point at contacts,
   and suppliers are contacts, so likely no new columns: widen the picker from

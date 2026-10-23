@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
-import { Check, ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
+import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
 import { rolesOf } from "@/lib/guest-roles";
@@ -693,6 +693,14 @@ function MealRow({ guest, onSave }: { guest: Contact; onSave: (edit: GuestEdit) 
   );
 }
 
+const ANSWERS: { status: Rsvp["status"]; label: string; on: string }[] = [
+  // All picked the same way, like "Guest of" above (owner's call).
+  { status: "to_invite", label: "To invite", on: "bg-white text-ink" },
+  { status: "pending", label: "Yet to respond", on: "bg-white text-ink" },
+  { status: "attending", label: "Coming", on: "bg-white text-ink" },
+  { status: "declined", label: "Can't come", on: "bg-white text-ink" },
+];
+
 /**
  * Day or evening guest, and their one answer — the same two things their
  * row in the list shows. A day guest's evening follows along, so there's
@@ -738,96 +746,30 @@ function GuestOfAndAnswer({ guest, events, own, only }: { guest: Contact; events
       )}
 
       {own && only !== "of" && (
-        <RsvpSteps
-          answer={answer}
-          onPick={(status) =>
-            startTransition(async () => {
-              setAnswer(status);
-              setError((await safely(() => setGuestAnswerAction(guest.id, status))).error);
-            })
-          }
-        />
-      )}
-      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-    </section>
-  );
-}
-
-/**
- * To invite → Invited → Responded, as steps like a supplier's Progress
- * (owner, 23 Oct 2026, canvas 4 "Guest card · Round 2", 2b). Responded and
- * the answer are different things: tapping it asks what they said, and the
- * last step then shows the answer — a tick for Coming, a cross for Can't come.
- */
-function RsvpSteps({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status: Rsvp["status"]) => void }) {
-  const [asking, setAsking] = useState(false);
-  const at = answer === "to_invite" ? 0 : answer === "pending" ? 1 : 2;
-  const last = answer === "attending" ? "Coming" : answer === "declined" ? "Can't come" : "Responded";
-  const steps = [
-    { label: "To invite", tap: () => onPick("to_invite") },
-    { label: "Invited", tap: () => onPick("pending") },
-    { label: last, tap: () => setAsking((open) => !open) },
-  ];
-  const pick = (status: Rsvp["status"]) => {
-    setAsking(false);
-    onPick(status);
-  };
-  // A step is reached once they're past it; the first one not reached is where they are.
-  const done = (i: number) => (i < 2 ? i < at : at === 2);
-  const here = [0, 1, 2].find((i) => !done(i)) ?? -1;
-  const choice = "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink shadow-[0_1px_4px_rgb(60_50_40/0.08)]";
-
-  return (
-    <div id="guest-rsvp" className="rounded-xl">
-      <h3 className="section-label">RSVP</h3>
-      <div className="mt-3 flex items-start">
-        {steps.map((step, i) => (
-          <div key={i} className="flex flex-1 items-start last:flex-none">
-            <button
-              type="button"
-              onClick={() => {
-                if (i < 2) setAsking(false);
-                step.tap();
-              }}
-              aria-pressed={done(i)}
-              aria-expanded={i === 2 ? asking : undefined}
-              className="flex w-[72px] flex-col items-center gap-1.5"
-            >
-              <span
-                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
-                  done(i)
-                    ? answer === "declined" && i === 2
-                      ? "bg-stone text-white"
-                      : "bg-champagne-600 text-white"
-                    : i === here
-                      ? "border-2 border-champagne-600 bg-white"
-                      : "border-[1.5px] border-[#D8D0C4] bg-white"
-                }`}
+        <div id="guest-rsvp" className="rounded-xl">
+          <h3 className="section-label">RSVP</h3>
+          <div role="group" aria-label="RSVP" className={track}>
+            {ANSWERS.map((a) => (
+              <button
+                key={a.status}
+                type="button"
+                aria-pressed={answer === a.status}
+                onClick={() =>
+                  startTransition(async () => {
+                    setAnswer(a.status);
+                    setError((await safely(() => setGuestAnswerAction(guest.id, a.status))).error);
+                  })
+                }
+                className={`${cell} ${answer === a.status ? `${a.on} ${lifted}` : off}`}
               >
-                {done(i) && (answer === "declined" && i === 2 ? <X className="h-3.5 w-3.5" strokeWidth={2.6} aria-hidden /> : <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />)}
-              </span>
-              <span className={`text-[12px] ${i === here || (i === 2 && at === 2) ? "font-semibold text-ink" : "text-stone"}`}>{step.label}</span>
-            </button>
-            {i < steps.length - 1 && <span aria-hidden className={`mt-3 h-0.5 flex-1 ${done(i + 1) ? "bg-champagne-600" : "bg-linen"}`} />}
-          </div>
-        ))}
-      </div>
-      {asking && (
-        <div className="mt-3.5 rounded-[18px] bg-cream p-3">
-          <p className="text-center text-sm text-stone">What did they say?</p>
-          <div className="mt-2.5 flex gap-2">
-            <button type="button" onClick={() => pick("attending")} aria-pressed={answer === "attending"} className={choice}>
-              <Check className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
-              Coming
-            </button>
-            <button type="button" onClick={() => pick("declined")} aria-pressed={answer === "declined"} className={choice}>
-              <X className="h-4 w-4 text-stone" strokeWidth={2.2} aria-hidden />
-              Can&apos;t come
-            </button>
+                {a.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
-    </div>
+      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
+    </section>
   );
 }
 

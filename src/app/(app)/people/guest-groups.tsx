@@ -235,7 +235,7 @@ export function GroupSheet({
       </div>
 
       {editing ? (
-        <EditGroup group={group} onDone={() => setEditing(false)} onRemoved={onClose} />
+        <EditGroup group={group} onDone={() => setEditing(false)} />
       ) : (
         <RoundActions>
           <RoundAction label="Email" icon={Mail} dark disabled={people.length === 0} onClick={() => setSheet("email")} />
@@ -275,9 +275,11 @@ export function GroupSheet({
       <AddToGroup group={group} others={others} />
 
       {/* What's been sent to them and said: emails and texts noted from here, calls and notes added to it. */}
-      <section className="mt-6 -mx-[22px] border-t border-linen px-[22px]">
+      <section className="mt-6 -mx-[22px] border-y border-linen px-[22px]">
         <Timeline key={logged} scope={`group:${group.id}`} folded />
       </section>
+
+      <RemoveGroup group={group} onRemoved={onClose} />
 
       {sheet && (
         <MessageSheet
@@ -366,8 +368,8 @@ function AddToGroup({ group, others }: { group: GroupSummary; others: Contact[] 
   );
 }
 
-/** Rename the group, or remove it (its people stay on the guest list). */
-function EditGroup({ group, onDone, onRemoved }: { group: GroupSummary; onDone: () => void; onRemoved: () => void }) {
+/** Rename the group. */
+function EditGroup({ group, onDone }: { group: GroupSummary; onDone: () => void }) {
   const [name, setName] = useState(group.name);
   const { pending, error, run } = useGroupSave();
   return (
@@ -388,17 +390,7 @@ function EditGroup({ group, onDone, onRemoved }: { group: GroupSummary; onDone: 
         />
       </label>
       {error && <p role="alert" className="text-sm text-ink">{error}</p>}
-      <span className="flex items-center justify-between gap-2 pt-1">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => {
-            if (confirm(`Remove the group "${group.name}"? The people in it stay on the guest list.`)) run(() => deleteGroupAction(group.id), onRemoved);
-          }}
-          className="h-9 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink"
-        >
-          Remove this group
-        </button>
+      <span className="flex items-center justify-end gap-2 pt-1">
         <span className="flex gap-2">
           <button type="button" onClick={onDone} className="h-9 rounded-full border border-linen bg-white px-4 text-[13px] text-ink">
             Cancel
@@ -409,6 +401,26 @@ function EditGroup({ group, onDone, onRemoved }: { group: GroupSummary; onDone: 
         </span>
       </span>
     </form>
+  );
+}
+
+/** Taking the group off: at the foot of the card like every card's Remove; its people stay on the guest list (owner, 23 Oct 2026). */
+function RemoveGroup({ group, onRemoved }: { group: GroupSummary; onRemoved: () => void }) {
+  const { pending, error, run } = useGroupSave();
+  return (
+    <div className="mt-4 text-center">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => {
+          if (confirm(`Remove the group "${group.name}"? The people in it stay on the guest list.`)) run(() => deleteGroupAction(group.id), onRemoved);
+        }}
+        className="min-h-11 py-3 text-sm text-stone underline underline-offset-4 hover:text-ink disabled:opacity-60"
+      >
+        Remove this group
+      </button>
+      {error && <p role="alert" className="text-sm text-ink">{error}</p>}
+    </div>
   );
 }
 

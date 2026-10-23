@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronRight, Heart, Plus } from "lucide-react";
 import { areaIcon } from "@/lib/areas";
 
 import { daysUntil } from "@/lib/dates";
@@ -22,11 +22,12 @@ const RING_RADIUS = 0.39;
 /**
  * What's been reached, in the past tense (owner, 21 Oct 2026: nouns suit the
  * area page, where you're inside a stage; here it's what's done). Said on
- * hover and to screen readers; a booked area's button wears a gold tick. By stages done.
+ * hover and to screen readers; the button's badge shows it. By stages done.
  */
 const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
 
-/** Stages done once an area is booked (Ideas, Quote, Book). */
+/** Stages done once an area is quoted (Ideas, Quote) and booked (… Book). */
+const QUOTED = 2;
 const BOOKED = 3;
 
 function nodePosition(index: number, total: number) {
@@ -112,20 +113,16 @@ export default function Hub({
         const Icon = areaIcon(area.key, area.icon);
         return (
           <Node key={area.key} position={nodePosition(index, total)} href={`/area/${encodeURIComponent(area.key)}`} label={area.label} stage={area.stage}>
-            {/* On a laptop a booked area gets a gold tick badge, like a guest's
-                "Coming", and a ready one turns soft champagne too — the only stage
-                marks on the ring (owner, 23 Oct 2026: dots and lines felt like a
-                tech pipeline, "this is a wedding"; booked, as ready only comes
-                weeks before). Hover still says the stage. */}
+            {/* On a laptop a badge on the button's corner, like a guest's "Coming"
+                (owner, 23 Oct 2026: dots and lines felt like a tech pipeline, "this
+                is a wedding"): quoted a pale £, booked a gold tick, ready a gold
+                heart on a champagne button. Ideas and Paid get none. Hover still
+                says the stage. */}
             <span className={`relative flex h-[var(--disc)] w-[var(--disc)] items-center justify-center rounded-full border border-white/90 bg-white/65 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_4px_12px_-4px_rgb(60_50_40/0.2)] backdrop-blur-md ${
               area.stage === STAGES.length ? "lg:border-champagne-400/35 lg:bg-[#F3E8D4]" : ""
             }`}>
               <Icon className="h-[calc(var(--disc)*0.41)] w-[calc(var(--disc)*0.41)] lg:stroke-[1]" strokeWidth={1.5} aria-hidden />
-              {(area.stage ?? 0) >= BOOKED && (
-                <span aria-hidden className="absolute -bottom-0.5 -right-0.5 hidden h-[calc(var(--disc)*0.34)] w-[calc(var(--disc)*0.34)] items-center justify-center rounded-full bg-champagne-600 text-white shadow-[0_0_0_2.5px_#FBF9F5] lg:flex">
-                  <Check className="h-[55%] w-[55%]" strokeWidth={2.6} />
-                </span>
-              )}
+              <StageBadge stage={area.stage} />
             </span>
           </Node>
         );
@@ -171,5 +168,28 @@ function Node({
         {label}
       </span>
     </Link>
+  );
+}
+
+/** The laptop ring's corner badge: a pale £ once quoted, a gold tick once booked, a gold heart when ready. */
+function StageBadge({ stage }: { stage?: number }) {
+  if (stage === undefined || stage < QUOTED) return null;
+  const ready = stage === STAGES.length;
+  const quoted = stage < BOOKED;
+  return (
+    <span
+      aria-hidden
+      className={`absolute -bottom-0.5 -right-0.5 hidden h-[calc(var(--disc)*0.34)] w-[calc(var(--disc)*0.34)] items-center justify-center rounded-full shadow-[0_0_0_2.5px_#FBF9F5] lg:flex ${
+        quoted ? "border border-champagne-400/60 bg-champagne-100 text-champagne-600" : "bg-champagne-600 text-white"
+      }`}
+    >
+      {quoted ? (
+        <span className="font-display text-[calc(var(--disc)*0.2)] leading-none">£</span>
+      ) : ready ? (
+        <Heart className="h-[50%] w-[50%] fill-current" strokeWidth={2} />
+      ) : (
+        <Check className="h-[55%] w-[55%]" strokeWidth={2.6} />
+      )}
+    </span>
   );
 }

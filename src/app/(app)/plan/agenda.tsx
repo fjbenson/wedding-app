@@ -86,7 +86,7 @@ export default function Agenda({
 
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name;
 
-  const row = (entry: Entry) => {
+  const row = (entry: Entry, inDay = false) => {
     const faded = isDone(entry);
     if (entry.kind === "todo") {
       const m = entry.milestone;
@@ -96,12 +96,13 @@ export default function Agenda({
           milestone={m}
           overdue={isOpen(m) && !!m.due_date && m.due_date < today}
           area={areaName(m.category, areas)}
+          inDay={inDay}
         />
       );
     }
     const a = entry.appointment;
     const areaKey = a.area_key ?? suppliers.find((s) => s.id === a.contact_id)?.area ?? null;
-    return <AppointmentRow key={`a-${a.id}`} appointment={a} been={faded} supplier={supplierName(a.contact_id)} area={areaName(areaKey, areas)} />;
+    return <AppointmentRow key={`a-${a.id}`} appointment={a} been={faded} supplier={supplierName(a.contact_id)} area={areaName(areaKey, areas)} inDay={inDay} />;
   };
 
   const earlierMonth = fromEarlier[0]?.date?.slice(0, 7);
@@ -148,7 +149,7 @@ export default function Agenda({
     );
   }
   const dayPanels = Object.fromEntries(
-    Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e))}</ul>]),
+    Object.entries(byDay).map(([date, entries]) => [date, <ul key={date} className="mt-1">{inOrder(entries).map((e) => row(e, true))}</ul>]),
   );
   // The list under the grid: everything with a date in the month, in date
   // order, no day headings (owner, 11 Oct 2026): each row carries its own

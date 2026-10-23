@@ -23,10 +23,13 @@ export function MilestoneRow({
   milestone: m,
   overdue,
   area,
+  inDay = false,
 }: {
   milestone: Milestone;
   overdue: boolean;
   area?: string | null;
+  /** In a day's card the date is the card's title: the date column stays empty so titles line up with appointments' times. */
+  inDay?: boolean;
   /** Kept for callers; the date column now says "No date" itself. */
   showNoDate?: boolean;
 }) {
@@ -44,7 +47,11 @@ export function MilestoneRow({
   return (
     <li className="row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0">
       <CardLink href={`/plan/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
-        <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} />
+        {inDay ? (
+          <span aria-hidden className="w-12 shrink-0" />
+        ) : (
+          <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} />
+        )}
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>{m.title}</span>
           <RowLine status={done ? "Done" : nudgeWhen} details={[area]} overdue={late} />

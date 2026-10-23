@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Link2 } from "lucide-react";
 import { SubmitBar } from "@/components/form-bits";
-import { AreaTiles, BARE, CARD, Folded, Line, Part } from "@/components/visual-form";
+import { AreaTiles, BARE, CARD, Line, Part } from "@/components/visual-form";
 import type { AreaOption } from "@/lib/areas";
 import NoteEditor from "@/components/note-editor";
 
@@ -45,16 +45,15 @@ export default function CaptureForm({
         </div>
       </Part>
 
-      <Folded label="File it under an area" open={!!defaultArea}>
-        <Part label="File it under">
-          <AreaTiles name="area" areas={areas} otherValue="other" value={area} onChange={setArea} />
-          {area && (
-            <button type="button" onClick={() => setArea("")} className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink">
-              Leave it to sort later
-            </button>
-          )}
-        </Part>
-      </Folded>
+      {/* Open like every other area pick (owner, 23 Oct 2026). */}
+      <Part label="File it under">
+        <AreaTiles name="area" areas={areas} otherValue="other" value={area} onChange={setArea} />
+        {area && (
+          <button type="button" onClick={() => setArea("")} className="mt-2 h-10 text-sm text-stone underline underline-offset-4 hover:text-ink">
+            Leave it to sort later
+          </button>
+        )}
+      </Part>
 
       <SubmitBar label="Save the note" />
     </form>

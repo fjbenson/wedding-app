@@ -589,7 +589,7 @@ export default function GuestBrowser({
         )}
 
         <div className="mt-5 room-md:mt-5 room-md:flex room-md:flex-wrap room-md:items-center room-md:gap-x-6">
-          <div className="flex items-center gap-2 room-md:order-2 room-md:ml-auto room-md:w-[460px]">
+          <div className="flex items-center gap-2 room-md:order-3 room-md:ml-auto room-md:w-[460px]">
             <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
               <Search className="h-[17px] w-[17px] shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
               <span className="sr-only">Find a guest</span>
@@ -638,7 +638,7 @@ export default function GuestBrowser({
             />
           </div>
           {filters.length + guestOf.length + picks.length + (group ? 1 : 0) > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 room-md:order-3 room-md:mt-3 room-md:w-full">
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 room-md:order-2 room-md:-ml-1 room-md:mt-0 room-md:min-w-0 room-md:flex-1">
               {group && (
                 <button
                   type="button"
@@ -1725,11 +1725,11 @@ function EventWord({ event, first }: { event: WeddingEvent; first: boolean }) {
  */
 function AnswerCell({ status }: { status?: Rsvp["status"] }) {
   if (!status) return <span className="text-stone/60">–</span>;
-  // The word, then its icon at the column's edge: as on the group and household cards.
+  // The icon first, so it sits with its word and not against the Meal column (owner, 23 Oct 2026).
   return (
-    <span className="flex items-center justify-between gap-2 text-[13px] text-stone">
-      {ANSWER_WORD[status].word}
+    <span className="flex items-center gap-2 text-[13px] text-stone">
       <AnswerIcon status={status} small />
+      {ANSWER_WORD[status].word}
     </span>
   );
 }

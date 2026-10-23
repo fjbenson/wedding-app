@@ -244,6 +244,13 @@ almost everything else is still the phone layout in a narrow column.
   stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
   (timestamptz) may hold it with no database change; check first. Any database
   change is the owner's call.
+- **Journeys: stages across the app (owner, 23 Oct 2026, to think about
+  later):** areas (Ideas › Quote › Book › Pay › Ready), suppliers (In touch ›
+  Quote in › Booked › Paid), guests (To invite › Invited › Coming, Can't come
+  apart) and any others. For each: what each stage means, what action moves it
+  on (by hand or by something the app sees, like a payment or an RSVP), how to
+  go back, and what the card shows at each stage. Aim for one logic that
+  reads the same everywhere. Related: the guest RSVP as steps (above).
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

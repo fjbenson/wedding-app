@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
+import AccountButton from "@/components/account-button";
 import { coupleName } from "@/lib/couple-name";
 import { NAV } from "@/lib/nav";
 
@@ -11,7 +12,8 @@ import { NAV } from "@/lib/nav";
  * pick 20 Oct 2026): it gives the Hub's ring a column either side, as the
  * first sidebar did, but set like a magazine's contents rather than an app's
  * menu — whose wedding, the five tabs numbered in Fraunces with no icons,
- * then Your notes, Inspo, Ask Juno, and Settings at the foot. It replaced the
+ * then Your notes, Inspo, Ask Juno, and Settings at the foot (behind the
+ * couple's monogram since 23 Oct 2026, `AccountButton`). It replaced the
  * bar along the top (18 Oct 2026). Phones keep the floating menu bar.
  */
 export default function SideBar({ name, inboxCount }: { name: string; inboxCount: number }) {
@@ -62,9 +64,7 @@ export default function SideBar({ name, inboxCount }: { name: string; inboxCount
         <AssistantSheet variant="hub" />
       </div>
 
-      <Link href="/settings" aria-current={pathname === "/settings" ? "page" : undefined} className={`mt-auto ${quiet(pathname === "/settings")}`}>
-        Settings
-      </Link>
+      <AccountButton name={name} />
     </aside>
   );
 }

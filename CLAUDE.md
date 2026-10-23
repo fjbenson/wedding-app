@@ -247,7 +247,8 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
   the menu down the left like a magazine's contents (`side-bar.tsx`, 250px;
   canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
-  top bar), pages beside it. **Cards sit beside the list** on a laptop
+  top bar; at its foot the couple's monogram and "Settings" open Settings and
+  Sign out, canvas 5 "Round 16", A, 23 Oct 2026), pages beside it. **Cards sit beside the list** on a laptop
   (CardSheet's `beside`, `useBeside`; guest, household, group, supplier and
   plan cards): no dimming, the page steps aside 440px, another row swaps the
   card (canvas 4 "Laptop · Round 9", 1, 21 Oct 2026).

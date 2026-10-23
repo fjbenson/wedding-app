@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Check, ChevronDown, ChevronRight, Globe, Mail, MapPin, MoreHorizontal, Phone } from "lucide-react";
+import { Check, ChevronDown, Globe, Mail, MoreHorizontal, Phone } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
 import type { Cycle } from "@/lib/card-cycle";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
-import { formatWeekdayDayMonth } from "@/lib/dates";
+import { todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
-import type { Payment, SupplierStatus } from "@/types/db";
-import { Fold, SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
+import type { FileKind, Payment, SupplierStatus } from "@/types/db";
+import { SaveCancel, TextRow, editorKeys, safely, useSaver } from "./guest-card";
+import StageCircles from "@/components/stage-circles";
+import PaymentRow from "@/components/payment-row";
 import { AreaTiles } from "@/components/visual-form";
 import { areaIcon } from "@/lib/areas";
 import { SUPPLIER_STAGES } from "@/lib/supplier-status";
@@ -66,7 +68,6 @@ export default function SupplierCard({
   const paidUp =
     d?.status === "booked" &&
     (d.quoted_cost && d.quoted_cost > 0 ? paidSoFar >= d.quoted_cost : payments.length > 0 && payments.every((p) => p.paid_on));
-  const moneyHref = area ? `/money?view=month&area=${encodeURIComponent(area.key)}` : "/money?view=month";
   const phone = supplier.phone?.replace(/\s+/g, "");
   const [error, setError] = useState<string>();
   const save = async (edit: SupplierEdit) => {
@@ -77,17 +78,26 @@ export default function SupplierCard({
   // Which Contact box to open ready to type: from the list's dashed buttons
   // (editField) or the card's own (addField). `n` redraws the row to open it.
   const [adding, setAdding] = useState<{ field?: "phone" | "email" | "website"; n: number }>({ field: editField, n: 0 });
+  // The stage open (owner, 23 Oct 2026): where they are, or In touch when a dashed button sent us to a detail.
+  const [open, setOpen] = useState(() => (editField ? 0 : stageState(d?.status ?? "enquired", paidUp).open));
   const addField = (field: "phone" | "email" | "website") => {
-    // Details is a fold: it opens first, then the box takes the cursor.
-    jumpTo(`supplier-${field}`);
-    window.setTimeout(() => setAdding((a) => ({ field, n: a.n + 1 })), 80);
+    // The details live in In touch: open it first, then the box takes the cursor.
+    setOpen(0);
+    window.setTimeout(() => {
+      jumpTo(`supplier-${field}`);
+      setAdding((a) => ({ field, n: a.n + 1 }));
+    }, 80);
   };
   useEffect(() => {
     if (editField) jumpTo(editField === "phone" ? "supplier-phone" : "supplier-email");
     // Once, on opening: the list's greyed-out button sent us here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const detailsLine = [supplierContact(supplier), supplier.phone, supplier.email].filter(Boolean).join(" · ") || "Add a number or email";
+  // Stepping to another supplier opens that one at where they are.
+  useEffect(() => {
+    setOpen(stageState(d?.status ?? "enquired", paidUp).open);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supplier.id]);
 
   return (
     // Every card has the same frame (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"): a small label left, the ✕ right.
@@ -103,36 +113,23 @@ export default function SupplierCard({
           part changed by tapping it — no longer the add form filled in. */}
       <BusinessCard supplier={supplier} areas={areas} phone={phone} site={site} onError={setError} onAdd={addField} />
 
-      <Progress supplierId={supplier.id} status={d?.status ?? "enquired"} paidUp={paidUp} moneyHref={moneyHref} onError={setError} />
+      <SupplierStages
+        supplier={supplier}
+        area={area}
+        payments={payments}
+        paidUp={paidUp}
+        open={open}
+        onOpen={setOpen}
+        adding={adding}
+        save={save}
+        onError={setError}
+      />
 
-      <MoneyPart supplier={supplier} area={area} payments={payments} onError={setError} />
-
-      {/* Their contract, quotes and invoices (canvas 2 "Files · Round 1", A). */}
-      <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} />
-
-      {/* History, then Details (the typed facts), always last (owner, 23 Oct 2026). */}
+      {/* Their story so far, always last (owner, 23 Oct 2026). */}
       <div className="-mx-[22px] mt-6 border-y border-linen">
         <section className="px-[22px]">
           <Timeline scope={`supplier:${supplier.id}`} folded />
         </section>
-        {/* What they lend or hire out, from Decor (owner, 19 Oct 2026; in a fold 23 Oct 2026). Nothing shows when they lend nothing. */}
-        <SupplierDecor supplierId={supplier.id} />
-        <Fold title="Details" icon={MapPin} summary={detailsLine}>
-          <dl>
-            <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
-            <div id="supplier-phone">
-              <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
-            </div>
-            <div id="supplier-email">
-              <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
-            </div>
-            <div id="supplier-website">
-              <TextRow key={`website-${adding.n}`} label="Website" value={d?.website ?? null} startEditing={adding.field === "website"} onSave={(v) => save({ field: "website", value: v })} />
-            </div>
-            {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
-            <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
-          </dl>
-        </Fold>
       </div>
 
       {area && (
@@ -379,76 +376,191 @@ function BusinessCard({
 }
 
 /**
- * In touch → Quote in → Booked → Paid, as steps joined by a line that fills
- * gold. A step ticks when it's been reached, like the area page's stages
- * (owner, 21 Oct 2026); the first one not ticked is where they are. Tap one
- * of the first three to move them on (or back); Paid ticks itself from
- * Money, so it opens Money instead.
+ * Which of In touch → Quote in → Booked → Paid are done, and which one they're
+ * at (the first not done). A stage ticks once reached; Paid isn't a status, it
+ * ticks itself from their money. Not taken ticks nothing.
  */
-function Progress({
-  supplierId,
-  status,
-  paidUp,
-  moneyHref,
-  onError,
-}: {
-  supplierId: string;
-  status: SupplierStatus;
-  paidUp: boolean;
-  moneyHref: string;
-  onError: (message?: string) => void;
-}) {
-  const [current, setCurrent] = useOptimistic<SupplierStatus>(status === "researching" ? "enquired" : status);
-  const [, startTransition] = useTransition();
-  const at = SUPPLIER_STAGES.findIndex((s) => s.status === current);
-  const set = (next: SupplierStatus) =>
-    startTransition(async () => {
-      setCurrent(next);
-      onError((await safely(() => updateSupplierAction(supplierId, { field: "status", value: next }))).error);
-    });
-  const steps = [...SUPPLIER_STAGES.map((s) => ({ key: s.status as string, label: s.label })), { key: "paid", label: "Paid" }];
-  const done = steps.map((_, i) => (i < SUPPLIER_STAGES.length ? at >= 0 && i <= at : at === SUPPLIER_STAGES.length - 1 && paidUp));
+function stageState(status: SupplierStatus, paidUp: boolean) {
+  const at = SUPPLIER_STAGES.findIndex((s) => s.status === (status === "researching" ? "enquired" : status));
+  const done = [0, 1, 2, 3].map((i) => (i < SUPPLIER_STAGES.length ? at >= 0 && i <= at : at === SUPPLIER_STAGES.length - 1 && paidUp));
   for (let i = done.length - 1; i > 0; i--) if (done[i]) done[i - 1] = true;
   const here = at >= 0 ? done.indexOf(false) : -1;
+  return { done, here, open: here >= 0 ? here : at >= 0 ? done.length - 1 : 0 };
+}
+
+const STAGE_NAMES = [
+  { id: "touch", name: "In touch" },
+  { id: "quote", name: "Quote in" },
+  { id: "booked", name: "Booked" },
+  { id: "paid", name: "Paid" },
+];
+
+/**
+ * In touch → Quote in → Booked → Paid as circles you can look at (owner, 23 Oct
+ * 2026, canvas 5 "Supplier card · Round 20", A): tapping one only shows what
+ * belongs to that stage, it never moves them, like the area page. What moves
+ * them: a quote typed in is Quote in, and every payment paid is Paid — both
+ * tick themselves. Booked is the one button (Mark as booked), because it's a
+ * decision; "Not booked after all" steps back. Each stage ends in its own
+ * quiet "+ Add a …". The old Details fold is In touch.
+ */
+function SupplierStages({
+  supplier,
+  area,
+  payments,
+  paidUp,
+  open,
+  onOpen,
+  adding,
+  save,
+  onError,
+}: {
+  supplier: Supplier;
+  area: (AreaOption & { budget?: number | null }) | undefined;
+  payments: Payment[];
+  paidUp: boolean;
+  open: number;
+  onOpen: (i: number) => void;
+  adding: { field?: "phone" | "email" | "website"; n: number };
+  save: (edit: SupplierEdit) => Promise<{ error?: string }>;
+  onError: (message?: string) => void;
+}) {
+  const d = supplier.supplier_details;
+  const name = supplierName(supplier);
+  const [current, setCurrent] = useOptimistic<SupplierStatus>(d?.status === "researching" ? "enquired" : (d?.status ?? "enquired"));
+  const [, startTransition] = useTransition();
+  const { done, here } = stageState(current, paidUp);
+  const move = (next: SupplierStatus) =>
+    startTransition(async () => {
+      setCurrent(next);
+      onError((await safely(() => updateSupplierAction(supplier.id, { field: "status", value: next }))).error);
+    });
+
+  const quote = d?.quoted_cost ?? null;
+  const deposit = d?.deposit_paid ?? null;
+  const paid = (deposit ?? 0) + payments.filter((p) => p.paid_on).reduce((sum, p) => sum + p.amount, 0);
+  const saveMoney = async (field: "quoted_cost" | "deposit_paid", value: string) => {
+    const result = await save({ field, value });
+    onError(undefined);
+    return result;
+  };
+  const today = todayISO();
+  const schedule = [...payments].sort((a, b) => Number(!!a.paid_on) - Number(!!b.paid_on) || (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"));
+  const card = "glass-card rounded-[22px] px-4 [--row-bleed:16px]";
+  const files = (kinds: FileKind[], addLabel: string) => (
+    <SupplierFiles supplierId={supplier.id} weddingId={supplier.wedding_id} areaKey={d?.category ?? null} supplierName={name} kinds={kinds} addLabel={addLabel} />
+  );
+  const ghost = (label: string, line: string) => (
+    <div className="flex min-h-[60px] items-center gap-3 border-b border-linen last:border-b-0">
+      <span aria-hidden className="h-[34px] w-[34px] shrink-0 rounded-full border border-dashed border-stone/40" />
+      <span className="min-w-0">
+        <span className="block text-[15px] text-stone">{label}</span>
+        <span className="block text-[13px] text-stone/80">{line}</span>
+      </span>
+    </div>
+  );
 
   return (
-    <section className="mt-7">
-      <h2 className="section-label font-body">Progress</h2>
-      <div className="mt-3 flex items-start">
-        {steps.map((step, i) => {
-          const isHere = i === here;
-          const mark = (
-            <>
-              <span
-                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
-                  done[i] ? "bg-champagne-600 text-white" : isHere ? "border-2 border-champagne-600 bg-white" : "border-[1.5px] border-[#D8D0C4] bg-white"
-                }`}
-              >
-                {done[i] && <Check className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />}
-              </span>
-              <span className={`text-[12px] ${isHere ? "font-semibold text-ink" : "text-stone"}`}>{step.label}</span>
-            </>
-          );
-          return (
-            <div key={step.key} className="flex flex-1 items-start last:flex-none">
-              {i < SUPPLIER_STAGES.length ? (
-                <button
-                  type="button"
-                  onClick={() => set(SUPPLIER_STAGES[i].status)}
-                  aria-pressed={done[i]}
-                  className="flex w-16 flex-col items-center gap-1.5"
-                >
-                  {mark}
-                </button>
-              ) : (
-                <Link href={moneyHref} className="flex w-16 flex-col items-center gap-1.5">
-                  {mark}
-                </Link>
-              )}
-              {i < steps.length - 1 && <span aria-hidden className={`mt-3 h-0.5 flex-1 ${done[i + 1] ? "bg-champagne-600" : "bg-linen"}`} />}
+    <section className="mt-6" aria-label="Stages">
+      <StageCircles stages={STAGE_NAMES} done={done} current={here} open={open} onOpen={onOpen} panelId="supplier-stage-panel" />
+
+      <div role="tabpanel" id="supplier-stage-panel" aria-labelledby={`stage-tab-${STAGE_NAMES[open].id}`} className="mt-5">
+        <h3 className="sr-only">{STAGE_NAMES[open].name}</h3>
+
+        {open === 0 && (
+          <div className={card}>
+            <dl className="[&>*:last-child]:border-b-0">
+              <TextRow label="Contact" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
+              <div id="supplier-phone">
+                <TextRow key={`phone-${adding.n}`} label="Phone" type="tel" value={supplier.phone} startEditing={adding.field === "phone"} onSave={(v) => save({ field: "phone", value: v })} />
+              </div>
+              <div id="supplier-email">
+                <TextRow key={`email-${adding.n}`} label="Email" type="email" value={supplier.email} startEditing={adding.field === "email"} onSave={(v) => save({ field: "email", value: v })} />
+              </div>
+              <div id="supplier-website">
+                <TextRow key={`website-${adding.n}`} label="Website" value={d?.website ?? null} startEditing={adding.field === "website"} onSave={(v) => save({ field: "website", value: v })} />
+              </div>
+              {d?.contract_url && <TextRow label="Contract link" value={d.contract_url} onSave={(v) => save({ field: "contract_url", value: v })} />}
+              <TextRow label="Notes" multiline value={supplier.notes} onSave={(v) => save({ field: "notes", value: v })} />
+            </dl>
+          </div>
+        )}
+
+        {open === 1 && (
+          <div className={card}>
+            <div className="flex items-end justify-between gap-4 border-b border-linen py-3.5">
+              <Figure label="Quote" value={quote} onSave={(v) => saveMoney("quoted_cost", v)} />
+              {area?.budget != null && <span className="pb-1 text-right text-[13px] text-stone">{area.label} budget {formatMoney(area.budget)}</span>}
             </div>
-          );
-        })}
+            {files(["quote", "other"], "Add a quote")}
+          </div>
+        )}
+
+        {open === 2 && current !== "booked" && (
+          <>
+            <button
+              type="button"
+              onClick={() => move("booked")}
+              className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-ink text-[15.5px] font-medium text-ivory transition hover:bg-ink/90"
+            >
+              <Check className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+              Mark as booked
+              {quote != null && quote > 0 && <span className="font-normal opacity-65">· {formatMoney(quote)} agreed</span>}
+            </button>
+            <div aria-hidden className="mt-3.5 rounded-[22px] border border-dashed border-linen px-4 opacity-75">
+              {ghost("Contract", "Add it once it’s signed")}
+              {ghost("Deposit", "Add what you’ve paid")}
+            </div>
+            <div className={`${card} mt-3 empty:hidden`}>
+              <SupplierDecor supplierId={supplier.id} />
+            </div>
+          </>
+        )}
+
+        {open === 2 && current === "booked" && (
+          <>
+            <div className={card}>
+              <div className="flex items-end justify-between gap-4 border-b border-linen py-3.5">
+                <Figure label="Deposit paid" value={deposit} onSave={(v) => saveMoney("deposit_paid", v)} />
+                {quote != null && quote > 0 && <span className="pb-1 text-right text-[13px] text-stone">{formatMoney(quote)} agreed</span>}
+              </div>
+              <SupplierDecor supplierId={supplier.id} />
+              {files(["contract"], "Add a contract")}
+            </div>
+            <button type="button" onClick={() => move(quote != null && quote > 0 ? "quoted" : "enquired")} className="mt-2 min-h-11 px-1 text-[13px] text-stone underline underline-offset-4 hover:text-ink">
+              Not booked after all
+            </button>
+          </>
+        )}
+
+        {open === 3 && (
+          <div className={card}>
+            {quote != null && quote > 0 && (
+              <div className="border-b border-linen py-3.5">
+                <p className="flex justify-between text-[13px] text-stone">
+                  <span>Paid {formatMoney(Math.min(paid, quote))}</span>
+                  <span>of {formatMoney(quote)}</span>
+                </p>
+                <span aria-hidden className="mt-1.5 block h-2 overflow-hidden rounded-full bg-champagne-100">
+                  <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, Math.round((paid / quote) * 100))}%` }} />
+                </span>
+              </div>
+            )}
+            {schedule.length > 0 && (
+              <ul>
+                {schedule.map((p) => (
+                  <PaymentRow key={p.id} payment={p} today={today} />
+                ))}
+              </ul>
+            )}
+            <Link
+              href={`/money/payments/new?supplier=${supplier.id}`}
+              className={`flex min-h-12 items-center text-[15px] text-champagne-600 hover:text-ink ${schedule.length > 0 ? "border-t border-linen" : ""}`}
+            >
+              + Add a payment
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -502,78 +614,5 @@ function Figure({ label, value, align = "left", onSave }: { label: string; value
         {value == null ? "Add" : formatMoney(value)}
       </span>
     </button>
-  );
-}
-
-/**
- * Money in one card (owner, 13 Oct 2026: it "gets a bit messy"): the quote
- * and the deposit (tap to change), one bar of what's paid, what's left, the
- * area's budget as a small line, then the next payment — which opens the
- * payments themselves, not the area page.
- */
-function MoneyPart({
-  supplier,
-  area,
-  payments,
-  onError,
-}: {
-  supplier: Supplier;
-  area: (AreaOption & { budget?: number | null }) | undefined;
-  payments: Payment[];
-  onError: (message?: string) => void;
-}) {
-  const d = supplier.supplier_details;
-  const quote = d?.quoted_cost ?? null;
-  const deposit = d?.deposit_paid ?? null;
-  const paid = (deposit ?? 0) + payments.filter((p) => p.paid_on).reduce((sum, p) => sum + p.amount, 0);
-  const next = payments.filter((p) => !p.paid_on).sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"))[0];
-  const href = area ? `/money?view=month&area=${encodeURIComponent(area.key)}` : "/money?view=month";
-  const save = async (field: "quoted_cost" | "deposit_paid", value: string) => {
-    const result = await safely(() => updateSupplierAction(supplier.id, { field, value }));
-    onError(undefined);
-    return result;
-  };
-
-  return (
-    <section className="mt-7">
-      <h2 className="section-label font-body">Money</h2>
-      <div className="mt-3 rounded-[18px] border border-linen bg-white/75 p-4">
-        <div className="flex items-start justify-between gap-4">
-          <Figure label="Quote" value={quote} onSave={(v) => save("quoted_cost", v)} />
-          <Figure label="Deposit paid" value={deposit} align="right" onSave={(v) => save("deposit_paid", v)} />
-        </div>
-        {quote != null && quote > 0 && (
-          <>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-champagne-100">
-              <span className="block h-full rounded-full bg-champagne-600" style={{ width: `${Math.min(100, (paid / quote) * 100)}%` }} />
-            </div>
-            <p className="mt-2 flex justify-between gap-3 text-[13px] text-stone">
-              <span>{paid >= quote ? "✓ All paid" : `${formatMoney(quote - paid)} to go`}</span>
-              {area?.budget != null && <span>{area.label} budget {formatMoney(area.budget)}</span>}
-            </p>
-          </>
-        )}
-        {payments.length > 0 ? (
-          <Link href={href} className="mt-3.5 flex min-h-11 items-center gap-2.5 border-t border-linen pt-3 text-ink hover:text-champagne-600">
-            <span className="min-w-0 flex-1">
-              <span className="type-meta block">{next ? "Next payment" : "Payments"}</span>
-              <span className="type-item block">
-                {next ? `${formatMoney(next.amount)}${next.due_date ? ` · ${formatWeekdayDayMonth(next.due_date)}` : ""}` : "All paid"}
-              </span>
-            </span>
-            <span className="shrink-0 text-[13px] text-champagne-600">
-              {payments.length} {payments.length === 1 ? "payment" : "payments"} ›
-            </span>
-          </Link>
-        ) : (
-          <Link
-            href={`/money/payments/new?supplier=${supplier.id}`}
-            className="mt-3.5 flex min-h-11 items-center border-t border-linen pt-3 text-sm text-champagne-600 hover:text-ink"
-          >
-            + Add a payment
-          </Link>
-        )}
-      </div>
-    </section>
   );
 }

@@ -100,8 +100,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   already existed, no migration). RSVP steps: To invite → Invited ("Yet to respond")
   → Coming / Can't come. **Suppliers** (`supplier-list.tsx`): a phone book
   grouped by area, the stage as a badge (on a laptop, 23 Oct 2026, laid out like the guest list: four tiles — All, Booked, Quote in, In touch — one toolbar row with View · Filter, picked filters, search and +, and the columns in one glass card: Stage with its icon, Area with its icon, Price (a quote, or the agreed total once booked), Paid | To go as a joined pair (£0 when settled), Phone, Email); the **supplier card** is a business
-  card with Progress (In touch → Quote in → Booked → Paid; steps tick once reached, Paid from Money), Money, Documents (private
-  `files` bucket), then folds: timeline, Decor from them (only when they lend something), Details (Contact, phone, email, website). Call · Email · Website are always there, dashed when missing (23 Oct 2026).
+  card with **stages you can look at** (In touch → Quote in → Booked → Paid; tapping a circle only shows that stage, canvas 5 "Supplier card · Round 20" A, 23 Oct 2026): In touch holds Contact, phone, email, website, notes; Quote in the quote and its files (+ Add a quote; a quote typed in ticks Quote in itself); Booked a black "Mark as booked" pill, then deposit, decor from them and the contract; Paid the payments (ticks itself). Then History as a fold. Call · Email · Website are always there, dashed when missing (23 Oct 2026).
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only
   (payments live in Money). Calendar month on a glass card, a day card on
   tap, the month's list, Undated and Done folds. The List works like the guest

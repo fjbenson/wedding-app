@@ -140,7 +140,15 @@ export async function updateSupplierAction(supplierId: string, edit: SupplierEdi
     } else if (edit.field === "quoted_cost" || edit.field === "deposit_paid") {
       const amount = parseMoney(value);
       if (value && amount === null) return { error: "That doesn't look like an amount — try 1800 or £1,800." };
+      const before = edit.field === "quoted_cost" ? await getSupplier(supplierId) : null;
       await updateSupplierParts(supplierId, {}, { [edit.field]: amount });
+      // A quote typed in is a Quote in (owner, 23 Oct 2026, canvas 5 "Supplier card · Round 20"):
+      // that stage ticks itself; only booking is a button. It never moves a booked or not-taken supplier.
+      const was = before?.supplier_details?.status;
+      if (before && amount !== null && amount > 0 && (!was || was === "enquired" || was === "researching")) {
+        await updateSupplierParts(supplierId, {}, { status: "quoted" as SupplierStatus });
+        await logStage(before.wedding_id, supplierId, before.supplier_details?.category ?? null, `Quote in · £${Number(amount).toLocaleString("en-GB")}`);
+      }
     } else if (edit.field === "status") {
       if (!SUPPLIER_STATUSES.some((s) => s.status === value)) return { error: "That isn't a stage we know." };
       const before = await getSupplier(supplierId);

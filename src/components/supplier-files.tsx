@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, Plus, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { addFileAction, removeFileAction, supplierFilesAction } from "@/app/(app)/files/actions";
 import { MAX_FILE_BYTES, uploadWeddingFile } from "@/lib/db/files-upload";
 import type { FileWithLink } from "@/lib/db/files";
@@ -54,17 +54,28 @@ function FileIcon({ label }: { label: string }) {
  * file" brings up the phone's own menu (Photo Library · Take Photo · Choose
  * File — round 2, option C: the screen people already know), then a small
  * pop-up in the middle asks what it is, and saves.
+ *
+ * Since 23 Oct 2026 (canvas 5 "Supplier card · Round 20") it sits inside a
+ * supplier's stages, not under its own heading: each stage shows only its
+ * own kinds (Quote in: quotes; Booked: the contract) and its own "+ Add a …".
+ * The rows and the add line come bare, for the stage's card to wrap.
  */
 export default function SupplierFiles({
   supplierId,
   weddingId,
   areaKey,
   supplierName,
+  kinds,
+  addLabel,
 }: {
   supplierId: string;
   weddingId: string;
   areaKey: string | null;
   supplierName: string;
+  /** Which kinds of file this stage shows, and offers when adding; the first is the default. */
+  kinds: FileKind[];
+  /** "Add a quote", "Add a contract"… */
+  addLabel: string;
 }) {
   const [files, setFiles] = useState<FileWithLink[] | null>(null);
   const [ready, setReady] = useState(true);
@@ -91,13 +102,13 @@ export default function SupplierFiles({
   if (!ready) return null; // 0018_files.sql not run yet
 
   const choose = () => input.current?.click();
+  const shown = (files ?? []).filter((f) => kinds.includes(f.kind));
 
   return (
-    <section className="mt-7">
-      <h2 className="section-label font-body">Documents</h2>
-      <div className="mt-3 overflow-hidden rounded-[18px] border border-linen bg-white/75">
-        {(files ?? []).map((f) => (
-          <div key={f.id} className="flex items-center gap-3 border-b border-linen px-3.5 py-3">
+    <>
+      <div>
+        {shown.map((f) => (
+          <div key={f.id} className="flex items-center gap-3 border-b border-linen py-3">
             <a href={f.link ?? undefined} target="_blank" rel="noreferrer" className="flex min-w-0 flex-1 items-center gap-3">
               <FileIcon label={extension(f.name, f.mime_type)} />
               <span className="min-w-0 flex-1">
@@ -144,11 +155,9 @@ export default function SupplierFiles({
         <button
           type="button"
           onClick={choose}
-          className="flex w-full items-center gap-2.5 px-3.5 py-3.5 text-[15px] text-champagne-600 hover:bg-cream/60"
+          className="flex min-h-12 w-full items-center text-left text-[15px] text-champagne-600 hover:text-ink"
         >
-          <Plus className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          Add a file
-          <span className="ml-auto text-[13px] text-stone">PDF, photo or Word</span>
+          + {addLabel}
         </button>
       </div>
       {/* The phone shows its own menu for this: Photo Library · Take Photo · Choose File. */}
@@ -177,6 +186,7 @@ export default function SupplierFiles({
       {picked && (
         <WhatIsIt
           file={picked}
+          kinds={kinds}
           supplierName={supplierName}
           onChange={choose}
           onClose={() => setPicked(null)}
@@ -198,34 +208,39 @@ export default function SupplierFiles({
           }}
         />
       )}
-    </section>
+    </>
   );
 }
 
 /** The pop-up in the middle, once a file's picked: what is it, and save. */
 function WhatIsIt({
   file,
+  kinds,
   supplierName,
   onChange,
   onClose,
   onSave,
 }: {
   file: File;
+  kinds: FileKind[];
   supplierName: string;
   onChange: () => void;
   onClose: () => void;
   onSave: (kind: FileKind, signed: boolean) => Promise<void>;
 }) {
-  const [kind, setKind] = useState<FileKind>(() => guessKind(file.name));
+  // A guess from the name, kept to what this stage offers (else the stage's own kind).
+  const pick = (name: string): FileKind => (kinds.includes(guessKind(name)) ? guessKind(name) : kinds[0]);
+  const [kind, setKind] = useState<FileKind>(() => pick(file.name));
   const [signed, setSigned] = useState(false);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string>();
 
   useEffect(() => {
-    setKind(guessKind(file.name));
+    setKind(pick(file.name));
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && !saving && onClose();
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, onClose, saving]);
 
   return (
@@ -258,9 +273,11 @@ function WhatIsIt({
           </button>
         </div>
 
+        {kinds.length > 1 && (
+        <>
         <p className="section-label mt-5">What is it?</p>
         <div role="radiogroup" aria-label="What is it?" className="mt-2.5 grid grid-cols-3 gap-2">
-          {KINDS.map((k) => (
+          {KINDS.filter((k) => kinds.includes(k.value)).map((k) => (
             <button
               key={k.value}
               type="button"
@@ -275,6 +292,8 @@ function WhatIsIt({
             </button>
           ))}
         </div>
+        </>
+        )}
 
         {kind === "contract" && (
           <button

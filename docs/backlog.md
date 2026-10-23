@@ -35,13 +35,18 @@ From the last few chats, not yet confirmed:
   Notes and Inspo tiles opening Ideas, the note rows (icon, first line,
   "Note · date", tap to edit). Tick lists are now ticked inside the note,
   not on the area page.
-- 23 Oct 2026, phone walk-through (owner looked at the area page, the menu bar
-  and Juno button, and the supplier card — all good, with the fixes built:
-  Next up chevron, no title/count rows on stages, search x, Details icons,
-  supplier stages, Mark as booked pop-up). **Still to walk, in order:** Notes
-  and Inspo (the Ideas rows and the foot tiles the owner wants to come back
-  to), stationery and the guest list's Sent, run sheets and The Day, seating
-  close-up, Food and drink with guest meals.
+- 23 Oct 2026, phone walk-through (area page, menu bar, Juno button and supplier
+  card looked at and good). **Walked since, built, waiting for the owner's phone
+  check:** Jot a note and the area note now match (taped slip, link box, Area tiles
+  open, Bullet and Tick-box on top); "Area" / "No area" wording everywhere;
+  Stationery (What you send heading, three-circle strip, Notes and Inspo tiles side
+  by side with the notes list opening from the Notes tile); The Day on a phone (menu
+  bar no longer hidden, sheet carousel, slimmer top). **Still to walk, in order:**
+  guest list's Sent, seating close-up, Food and drink with guest meals.
+- 23 Oct 2026, The Day (phone), loose ends: Filter and Print could share the
+  search's row to save height (left alone, needs Filter reworked);
+  `sheet-picker.tsx` is no longer used on a phone (its "not for a group" line and
+  New run sheet moved to the carousel's + ) — delete it if nothing wants it back.
 - 23 Oct 2026, **guest stages** (Invited → Answered → Seated) are only an idea so far, from the supplier-stages rules table (canvas 5 "Supplier card · Round 20"). Areas and suppliers are done; decor and stationery keep their own ticks.
 - 21 Oct 2026, laptop (built blind — the private copy couldn't start, Docker's
   downloads were refused): the Hub ring (five dots under each name, fainter

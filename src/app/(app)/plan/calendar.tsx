@@ -4,14 +4,25 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Plus, TriangleAlert, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, Search, TriangleAlert, X } from "lucide-react";
+import { useBeside } from "@/components/card-sheet";
 import { usePullToClose } from "@/components/use-pull-to-close";
+import FilterMenu from "@/components/filter-menu";
 import { Fold } from "./fold";
 
 export type Dot = "todo" | "appointment";
 
 /** One thing written in its day on the laptop's big month: "2pm Meeting with Sarah". */
-export type Chip = { kind: Dot; title: string; time: string | null; overdue: boolean };
+export type Chip = {
+  kind: Dot;
+  title: string;
+  time: string | null;
+  overdue: boolean;
+  /** An area's key, for the Filter. */
+  area: string | null;
+  /** What the search looks in: the title, the supplier, the area's name. */
+  text: string;
+};
 
 type Pick = "overdue" | "todos" | "appointments";
 const fits = (chip: Chip, pick: Pick) =>
@@ -87,6 +98,7 @@ export default function PlanCalendar({
   lastMonth,
   dots,
   chips,
+  areaRows,
   totals,
   doneLists,
   dayPanels,
@@ -103,6 +115,8 @@ export default function PlanCalendar({
   lastMonth: string;
   dots: Record<string, Dot[]>;
   chips: Record<string, Chip[]>;
+  /** The Filter's area choices. */
+  areaRows: { key: string; label: string }[];
   /** The whole plan's figures for the laptop's tiles. */
   totals: { overdue: number; todos: number; appointments: number };
   /** Each month's done things, for the big month's Done pill. */
@@ -135,9 +149,19 @@ export default function PlanCalendar({
   const [pick, setPick] = useState<Pick | null>(
     askedShow === "overdue" || askedShow === "todos" || askedShow === "appointments" ? askedShow : null,
   );
+  // Search and Filter on the big month (owner, 23 Oct 2026): what doesn't match fades, like a picked tile. The Filter lives in the address (`?only=`, `?area=`), the search too (`?q=`).
+  const [query, setQuery] = useState(params.get("q") ?? "");
+  const only = params.get("only") === "todos" || params.get("only") === "appointments" ? params.get("only") : null;
+  const area = params.get("area");
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const filtered = words.length > 0 || !!only || !!area;
+  const matches = (c: Chip) =>
+    (!only || c.kind === (only === "todos" ? "todo" : "appointment")) &&
+    (!area || (area === "none" ? !c.area || c.area === "other" : c.area === area)) &&
+    words.every((w) => c.text.toLowerCase().includes(w));
   useEffect(() => {
-    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected, show: pick });
-  }, [month, selected, today, pick]);
+    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected, show: pick, q: query.trim() || null });
+  }, [month, selected, today, pick, query]);
   const close = useCallback(() => setSelected(null), []);
 
 
@@ -171,6 +195,17 @@ export default function PlanCalendar({
     }
   };
 
+  // The Filter reloads the address with its picks, so it carries the view along.
+  const filterBase = `/plan?${[
+    month !== today.slice(0, 7) && `month=${month}`,
+    selected && `day=${selected}`,
+    pick && `show=${pick}`,
+    query.trim() && `q=${encodeURIComponent(query.trim())}`,
+  ]
+    .filter(Boolean)
+    .join("&")}`.replace(/\?$/, "");
+  const matchesInMonth = inMonth.filter(matches).length;
+
   const longDate = (date: string) => {
     const [y, m, d] = date.split("-").map(Number);
     return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", {
@@ -184,7 +219,7 @@ export default function PlanCalendar({
   return (
     <section className="mt-6">
       {/* Phones (and a laptop with a card open beside, until there's room). */}
-      <div className="room-lg:hidden">
+      <div className="room-md:hidden">
       <div>
       {/* The month on a glass card (owner, 16 Oct 2026: the page was "quite
           flat" — everything printed straight on the background). ‹ the
@@ -341,7 +376,7 @@ export default function PlanCalendar({
           small after a line. Tapping one lights up its things on the month,
           like the Suppliers tiles; again to clear. No date has no month, so
           one figure, and it opens its card. */}
-      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-4 gap-3 room-lg:grid">
+      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-4 gap-3 room-md:grid">
         {(
           [
             { pick: "overdue", value: totals.overdue, month: inMonth.filter((c) => fits(c, "overdue")).length, label: "Overdue", icon: <TriangleAlert className="h-3 w-3" strokeWidth={2.2} aria-hidden /> },
@@ -399,7 +434,43 @@ export default function PlanCalendar({
         })}
       </section>
 
-      <div className="glass-card hidden rounded-[26px] px-4 pt-4 room-lg:block">
+      {/* Find or add, then Filter on the right: the same bones as the other tabs. */}
+      <div className="mb-4 hidden room-md:block">
+        <div className="flex items-center gap-3">
+          <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
+            <Search className="h-4 w-4 shrink-0 text-stone" strokeWidth={1.8} aria-hidden />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Find a to-do or appointment"
+              aria-label="Find a to-do or appointment"
+              className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-stone/70 focus:outline-none"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery("")} aria-label="Clear the search" className="-mr-1 flex h-8 w-8 items-center justify-center text-stone hover:text-ink">
+                <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+              </button>
+            )}
+          </label>
+          {toggle}
+        </div>
+        <FilterMenu
+          base={filterBase}
+          groups={[
+            { param: "only", title: "Show", current: only, rows: [{ key: "todos", label: "To-dos" }, { key: "appointments", label: "Appointments" }] },
+            { param: "area", title: "Area", current: area, rows: areaRows },
+          ]}
+          expandable={{ results: matchesInMonth, noun: "item" }}
+        />
+        {filtered && (
+          <p className="type-meta mt-3 px-1" aria-live="polite">
+            {matchesInMonth === 0 ? `Nothing in ${name} matches` : `${matchesInMonth} in ${name}`}
+          </p>
+        )}
+      </div>
+
+      <div className="glass-card hidden rounded-[26px] px-4 pt-4 room-md:block">
         <div className="flex items-center gap-2 px-1.5 pb-3">
           <h2 className="font-display text-[26px] font-light text-ink" aria-live="polite">
             {name} <span className="italic text-champagne-600">{year}</span>
@@ -453,7 +524,6 @@ export default function PlanCalendar({
               Done <span className="font-medium text-champagne-600">{doneLists[month].count}</span>
             </button>
           )}
-          <span className="ml-2">{toggle}</span>
         </div>
 
         <div className="grid grid-cols-7" aria-hidden>
@@ -515,7 +585,7 @@ export default function PlanCalendar({
                   </span>
                 )}
                 {shown.map((c, j) => (
-                  <ChipLine key={j} chip={c} faded={!!pick && !fits(c, pick)} wrap={things.length <= 2} />
+                  <ChipLine key={j} chip={c} faded={(!!pick && !fits(c, pick)) || (filtered && !matches(c))} wrap={things.length <= 2} />
                 ))}
                 {things.length > 3 && <span className="px-1.5 text-xs text-stone">+{things.length - 2} more</span>}
               </button>
@@ -580,17 +650,19 @@ function DayCard({
   /** False for a month's Done card: nothing to add there. */
   canAdd?: boolean;
 }) {
-  // Escape closes it, and the page behind doesn't scroll while it's open.
+  // Escape closes it, and the page behind doesn't scroll while it's open. On a laptop it sits beside the month, no dimming (owner, 23 Oct 2026, like the guest card).
+  const wide = useBeside(true);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
+    if (wide) return () => document.removeEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, [onClose, wide]);
   const drag = usePullToClose(onClose);
 
   // "Saturday 17 October" → "Saturday" over "17 October".
@@ -598,17 +670,21 @@ function DayCard({
   const [day, ...month] = rest;
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onClose}
-        style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
-        className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
-      />
+    <div className={`fixed inset-0 z-50 ${wide ? "left-auto w-[440px]" : ""}`} role="dialog" aria-modal={!wide} aria-label={title}>
+      {!wide && (
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          style={{ opacity: Math.max(0, 1 - drag.offset / 400) }}
+          className="absolute inset-0 h-full w-full cursor-default bg-ink/30"
+        />
+      )}
       <div
         style={{ transform: drag.offset ? `translateY(${drag.offset}px)` : undefined }}
-        className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none lg:rounded-l-[28px] ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[28px] bg-ivory shadow-[0_-20px_50px_-20px_rgb(30_27_24/0.4)] lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[440px] lg:rounded-none ${
+          wide ? "border-l border-champagne-400/45 lg:shadow-[-24px_0_50px_-36px_rgb(60_50_40/0.4)]" : "lg:rounded-l-[28px]"
+        } ${
           drag.dragging ? "" : "transition-transform duration-200 ease-out"
         }`}
       >

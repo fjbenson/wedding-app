@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import AddMenu from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
-import { areaName, type AreaOption } from "@/lib/areas";
+import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import { formatMonthYear, formatTime } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
 import type { Appointment, Milestone } from "@/types/db";
@@ -90,6 +90,7 @@ export default function Agenda({
     .pop();
 
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name;
+  const apptArea = (a: Appointment) => a.area_key ?? suppliers.find((s) => s.id === a.contact_id)?.area ?? null;
 
   const row = (entry: Entry, inDay: "times" | "plain" | false = false) => {
     const faded = isDone(entry);
@@ -106,8 +107,7 @@ export default function Agenda({
       );
     }
     const a = entry.appointment;
-    const areaKey = a.area_key ?? suppliers.find((s) => s.id === a.contact_id)?.area ?? null;
-    return <AppointmentRow key={`a-${a.id}`} appointment={a} been={faded} supplier={supplierName(a.contact_id)} area={areaName(areaKey, areas)} inDay={inDay} />;
+    return <AppointmentRow key={`a-${a.id}`} appointment={a} been={faded} supplier={supplierName(a.contact_id)} area={areaName(apptArea(a), areas)} inDay={inDay} />;
   };
 
   const earlierMonth = fromEarlier[0]?.date?.slice(0, 7);
@@ -149,8 +149,8 @@ export default function Agenda({
     (dots[e.date] ??= []).push(e.kind);
     (chips[e.date] ??= []).push(
       e.kind === "todo"
-        ? { kind: "todo", title: e.milestone.title, time: e.milestone.due_time ? formatTime(e.milestone.due_time) : null, overdue: !!e.milestone.due_date && e.milestone.due_date < today }
-        : { kind: "appointment", title: e.appointment.title, time: e.appointment.at_time ? formatTime(e.appointment.at_time) : null, overdue: false },
+        ? { kind: "todo", title: e.milestone.title, time: e.milestone.due_time ? formatTime(e.milestone.due_time) : null, overdue: !!e.milestone.due_date && e.milestone.due_date < today, area: e.milestone.category ?? null, text: [e.milestone.title, areaName(e.milestone.category, areas)].filter(Boolean).join(" ") }
+        : { kind: "appointment", title: e.appointment.title, time: e.appointment.at_time ? formatTime(e.appointment.at_time) : null, overdue: false, area: apptArea(e.appointment), text: [e.appointment.title, supplierName(e.appointment.contact_id), areaName(apptArea(e.appointment), areas)].filter(Boolean).join(" ") },
     );
   }
   // A day's card shows times where the date was, only when something that day has one.
@@ -226,6 +226,7 @@ export default function Agenda({
         lastMonth={lastMonth}
         dots={dots}
         chips={chips}
+        areaRows={areaFilterRows(areas)}
         totals={totals}
         doneLists={doneLists}
         dayPanels={dayPanels}

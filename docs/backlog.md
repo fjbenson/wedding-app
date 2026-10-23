@@ -226,9 +226,9 @@ almost everything else is still the phone layout in a narrow column.
   (Details always last; no fold for one small fact); an area pill "Open the
   [area] page ›" then a quiet Remove at the foot. Cycling: `‹ 2 of 9 ›` in the
   top row, plus swipe with a one-time nudge, through the list you came from.
-  Still to settle: drop the supplier's "What they do" (the area tag does it)?
-  Fold Travel and Groups on the guest card? Then write the rules into
-  `docs/DESIGN.md` and build To-do and Payment first.
+  Settled: rules are in `docs/DESIGN.md` (23 Oct 2026); the supplier's "What they do" is
+  dropped; the guest card stays long for now. Next: build To-do and Payment
+  first, owner checks on phone, then the rest one at a time.
 - **Supplier card (canvas 4 "Supplier card · Round 1", 23 Oct 2026), waiting
   on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
   everything folded; D/E (tap a stage, its part opens, as on area pages; a

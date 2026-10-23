@@ -225,3 +225,42 @@ refine later — it is all tokens, so changing it is cheap:
 - **Groups**: a group card takes the numbers card's place on the guest list;
   "Email them" is the black main action; groups show as champagne pills on
   the guest card.
+
+## 23 Oct 2026 — one set of rules for cards
+
+Owner's pick after canvas 4 "Cards · Rounds 1–6". Every card that opens over a
+page follows these; each keeps its own look where it says so. Not built yet:
+to-do and payment first, then the rest one at a time.
+
+**Two families** (owner's names): **Profile cards** — Supplier, Guest,
+Household, Group, Money area. **Item cards** — To-do, Appointment, Payment,
+Moment, Inspo idea, Decor item, Note. What each has today:
+`docs/card-inventory.md`. Nothing may be dropped without the owner's say.
+
+**Every card, top to bottom**
+1. **The frame.** One shell (`CardSheet`), a small champagne label on the left
+   and the ✕ on the right. A card with a list behind it also shows
+   `‹ 2 of 9 ›` just left of the ✕ and cycles through the list you came
+   from, in its order; swiping sideways does the same (the card follows the
+   finger), with a one-time nudge the first time. On a laptop, up and down
+   arrow keys. No list, no arrows.
+2. **The signature.** Each card keeps its own look: the supplier's business
+   card, the guest's profile, the household's envelope, a group's icon, the
+   date stamp (to-do, appointment, payment), the cue card (moment), the
+   picture (Inspo), the paper (note). A tappable area tag on a business card
+   carries a ⌄ so it reads as a drop-down.
+3. **The main action** is a black pill straight under it (Mark as done, Mark
+   as paid, Add to my calendar, Email [name], Make it a to-do). Round
+   Text · Call · Email on profile cards. Black is for this alone.
+4. **What you tap, as pictures.** Tiles and pills for choices (meal, area,
+   status), avatars, date tiles — out in the open, never a fold for one small
+   fact. Long profile cards are fine for now; trim later.
+5. **Only two folds, always last, in this order: History, then Details**
+   (the plain typed facts: phone, email, notes, address). Moment's rarely
+   changed Run sheet and Area also fold.
+6. **If the card belongs to an area:** an outlined pill, "Open the [area]
+   page ›", then a quiet underlined **Remove** (and any "undo the choice"
+   link beside it, like "We didn't go with them") at the very foot.
+
+Taps save at once, typing gets a small Save (unchanged). Supplier's separate
+"What they do" is gone: the area tag does that job.

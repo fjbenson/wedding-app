@@ -7,6 +7,7 @@ import type { Supplier } from "@/lib/db/suppliers";
 import { replaceQuery } from "@/lib/url-state";
 import type { Payment } from "@/types/db";
 import SupplierCard from "./supplier-card";
+import { useCycle, useRegisterCycle } from "@/lib/card-cycle";
 
 const OpenSupplier = createContext<(id: string) => void>(() => {});
 
@@ -35,6 +36,8 @@ export function SupplierCards({
   }, [openId]);
   const close = useCallback(() => setOpenId(null), []);
   const open = suppliers.find((s) => s.id === openId);
+  useRegisterCycle("supplier", suppliers.map((s) => s.id), setOpenId);
+  const cycle = useCycle("supplier", openId);
 
   return (
     <OpenSupplier.Provider value={setOpenId}>
@@ -42,6 +45,7 @@ export function SupplierCards({
       {open && (
         <SupplierCard
           key={open.id}
+          cycle={cycle}
           supplier={open}
           areas={areas}
           payments={payments.filter((p) => p.contact_id === open.id)}

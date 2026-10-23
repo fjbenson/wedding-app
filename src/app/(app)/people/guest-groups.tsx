@@ -1,5 +1,6 @@
 "use client";
 
+import type { Cycle } from "@/lib/card-cycle";
 import { useEffect, useState, useTransition } from "react";
 import { Check, Copy, Mail, MessageSquare, PenLine, Plus, Search, Users, X } from "lucide-react";
 import { draftGroupMessageAction } from "../assistant/actions";
@@ -182,6 +183,7 @@ export function GuestGroupsSection({
  * their guest card on top.
  */
 export function GroupSheet({
+  cycle,
   group,
   people,
   answerOf,
@@ -190,6 +192,8 @@ export function GroupSheet({
   onClose,
   onOpenGuest,
 }: {
+  /** Stepping through the groups (owner, 23 Oct 2026). */
+  cycle?: Cycle | null;
   group: GroupSummary;
   /** Everyone in the group. */
   people: Contact[];
@@ -214,7 +218,7 @@ export function GroupSheet({
   ];
 
   return (
-    <CardSheet beside label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
+    <CardSheet beside cycle={cycle} label={group.name} onClose={onClose} top={<span className="label">Group</span>}>
       <div className="flex items-center gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
           <Users className="h-5 w-5" strokeWidth={1.7} aria-hidden />

@@ -28,9 +28,12 @@ export default function CardLink({
   const payment = href.match(/^\/money\/payments\/([0-9a-f-]{36})$/i)?.[1];
   const moment = href.match(/^\/day\/run-sheet\/([0-9a-f-]{36})$/i)?.[1];
   const idea = href.match(/^\/inspo\/([0-9a-f-]{36})$/i)?.[1];
+  const cardId = todo ?? appointment ?? payment ?? moment ?? idea;
+  const cardKind = todo ? "todo" : appointment ? "appointment" : payment ? "payment" : moment ? "moment" : idea ? "idea" : undefined;
   return (
     <Link
       {...rest}
+      {...(cardId ? { "data-card-id": cardId, "data-card-kind": cardKind } : {})}
       href={href}
       className={className}
       onClick={(event) => {

@@ -18,6 +18,7 @@ import { CHEVRON, safely, TextRow } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
 import { TitleEditor } from "../plan/plan-card-body";
 import { ItemAction } from "../plan/item-parts";
+import { useCycle, useRegisterCycle } from "@/lib/card-cycle";
 import { removeDecorAction, setDecorHelpersAction, updateDecorFieldsAction } from "./actions";
 import { FromSelect, PlacePicker, SOURCE_ICONS } from "./decor-bits";
 import type { DecorPerson } from "./decor-people";
@@ -280,10 +281,13 @@ const pill = (on: boolean) => `${PILL} ${on ? "border-champagne-600 bg-champagne
 function ThingCard({ items, people, weddingDate }: { items: Items; people: DecorPerson[]; weddingDate: string | null }) {
   const id = useSearchParams().get("thing");
   const item = items.find((i) => i.id === id);
+  // Steps through the things in the order they're listed (owner, 23 Oct 2026).
+  useRegisterCycle("decor", items.map((i) => i.id), (next) => replaceQuery({ thing: next }, { sync: true }));
+  const cycle = useCycle("decor", id);
   if (!id) return null;
   const close = () => replaceQuery({ thing: null }, { sync: true });
   return (
-    <CardSheet label={item?.name ?? "An item"} onClose={close} top={<span className="label">Decor{item?.place ? ` · ${item.place}` : ""}</span>}>
+    <CardSheet label={item?.name ?? "An item"} cycle={cycle} onClose={close} top={<span className="label">Decor{item?.place ? ` · ${item.place}` : ""}</span>}>
       {item ? <ThingBody key={item.id} item={item} people={people} weddingDate={weddingDate} onGone={close} /> : <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t here any more.</p>}
     </CardSheet>
   );

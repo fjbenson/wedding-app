@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import BudgetBar, { PAID_BAR } from "@/components/budget-bar";
 import CardSheet from "@/components/card-sheet";
+import { useCycle, useRegisterCycle, type Cycle } from "@/lib/card-cycle";
 import { Fold } from "../people/guest-card";
 import { areaIcon, type AreaOption } from "@/lib/areas";
 import type { Money } from "@/lib/budget";
@@ -72,6 +73,9 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
     replaceQuery({ open: key });
   };
   const current = open === null ? undefined : areas.find((a) => (a.key || "other") === open);
+  // The area cards step through the areas in the order drawn (owner, 23 Oct 2026).
+  useRegisterCycle("money-area", areas.map((a) => a.key || "other"), show);
+  const cycle = useCycle("money-area", open);
 
   return (
     <>
@@ -114,7 +118,7 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
           );
         })}
       </ul>
-      {current && <AreaMoneySheet area={current} onClose={() => show(null)} />}
+      {current && <AreaMoneySheet area={current} cycle={cycle} onClose={() => show(null)} />}
     </>
   );
 }
@@ -190,7 +194,7 @@ function NextStep({ area }: { area: AreaCard }) {
   );
 }
 
-function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void }) {
+function AreaMoneySheet({ area, onClose, cycle }: { area: AreaCard; onClose: () => void; cycle?: Cycle | null }) {
   const Icon = areaIcon(area.key || "other", area.icon);
   const { suppliers, toPay, paid, balances } = area.detail;
   const live = suppliers.filter((s) => s.status !== "cancelled");
@@ -209,7 +213,7 @@ function AreaMoneySheet({ area, onClose }: { area: AreaCard; onClose: () => void
 
   return (
     // The same frame as every card (canvas 4 "Cards · Rounds 1–10"): a small label left, the ✕ right.
-    <CardSheet beside label={`${area.label} money`} onClose={onClose} top={<span className="label">Money</span>}>
+    <CardSheet beside cycle={cycle} label={`${area.label} money`} onClose={onClose} top={<span className="label">Money</span>}>
       <div className="flex items-center gap-3">
         <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
       <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden />

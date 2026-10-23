@@ -18,6 +18,7 @@ import { updateGuestAction } from "./actions";
 import type { TravelInfo } from "./guest-travel";
 import type { GuestSeating } from "@/lib/db/day";
 import { jumpTo } from "@/lib/jump-to";
+import type { Cycle } from "@/lib/card-cycle";
 
 /**
  * One household (screen 9), as a card over the guest list — since 16 Oct 2026
@@ -28,6 +29,7 @@ import { jumpTo } from "@/lib/jump-to";
  * address) like the guest card's. Each guest's card opens on top of it.
  */
 export default function HouseholdSheet({
+  cycle,
   household,
   households,
   guests,
@@ -39,6 +41,8 @@ export default function HouseholdSheet({
   groups,
   onClose,
 }: {
+  /** Stepping through the households on the list (owner, 23 Oct 2026). */
+  cycle?: Cycle | null;
   household: Household;
   /** Every household, for moving someone on their card. */
   households: { id: string; name: string }[];
@@ -67,7 +71,7 @@ export default function HouseholdSheet({
   const open = openId ? people.find((p) => p.id === openId) : undefined;
 
   return (
-    <CardSheet beside label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
+    <CardSheet beside cycle={cycle} label={household.name} onClose={onClose} top={<span className="label">Household</span>}>
       {/* The envelope goes to the name and address to change them; the line under it to who's in it (owner, 19 Oct 2026). */}
       <button type="button" onClick={() => jumpTo("household-details")} className="block w-full text-left">
         <HouseholdEnvelope household={household} answers={people.map(statusOf)} />

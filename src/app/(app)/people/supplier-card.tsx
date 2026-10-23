@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronRight, Globe, Mail, MoreHorizontal, Phone } 
 import { InlineSubmit } from "@/components/form-bits";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
+import type { Cycle } from "@/lib/card-cycle";
 import { areaName, supplierCategories, type AreaOption } from "@/lib/areas";
 import type { Supplier } from "@/lib/db/suppliers";
 import { formatWeekdayDayMonth } from "@/lib/dates";
@@ -44,7 +45,10 @@ export default function SupplierCard({
   payments,
   editField,
   onClose,
+  cycle,
 }: {
+  /** Stepping through the suppliers on the list this card came from (owner, 23 Oct 2026). */
+  cycle?: Cycle | null;
   supplier: Supplier;
   /** Open with this detail ready to fill in (the list's greyed-out buttons). */
   editField?: "phone" | "email";
@@ -87,7 +91,7 @@ export default function SupplierCard({
 
   return (
     // Every card has the same frame (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"): a small label left, the ✕ right.
-    <CardSheet beside label={name} onClose={onClose} top={<span className="label">Supplier</span>}>
+    <CardSheet beside cycle={cycle} label={name} onClose={onClose} top={<span className="label">Supplier</span>}>
       {error && (
         <p role="alert" className="mb-3 rounded-xl border border-champagne-400 bg-cream px-4 py-3 text-sm text-ink">
           {error}

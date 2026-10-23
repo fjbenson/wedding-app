@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CardSheet from "@/components/card-sheet";
 import { replaceQuery } from "@/lib/url-state";
+import { readCardLinks, type Cycle } from "@/lib/card-cycle";
 import { toggleMilestoneAction } from "./actions";
 import { loadPlanCardAction, removePlanCardAction, type CardKind, type PlanCardData } from "./card-actions";
 import { AppointmentBody, IdeaBody, MomentBody, PaymentBody, TodoBody } from "./plan-card-body";
@@ -41,11 +42,25 @@ export default function PlanCards() {
   const id = todo ?? appointment ?? payment ?? moment ?? idea;
 
   const close = useCallback(() => replaceQuery({ todo: null, appointment: null, payment: null, moment: null, idea: null }, { sync: true }), []);
+
+  // The rows on the page behind, in the order drawn: the list this card came from, to step through (owner, 23 Oct 2026).
+  const [rows, setRows] = useState<{ kind: string; id: string }[]>([]);
+  useEffect(() => {
+    setRows(id ? readCardLinks() : []);
+  }, [id]);
+  const at = rows.findIndex((r) => r.id === id);
+  const open = (r: { kind: string; id: string }) =>
+    replaceQuery({ todo: null, appointment: null, payment: null, moment: null, idea: null, [r.kind]: r.id }, { sync: true });
+  const cycle: Cycle | null =
+    at >= 0 && rows.length > 1
+      ? { index: at, total: rows.length, prev: () => open(rows[(at - 1 + rows.length) % rows.length]), next: () => open(rows[(at + 1) % rows.length]) }
+      : null;
+
   if (!kind || !id) return null;
-  return <PlanCard key={`${kind}:${id}`} kind={kind} id={id} onClose={close} />;
+  return <PlanCard key={`${kind}:${id}`} kind={kind} id={id} onClose={close} cycle={cycle} />;
 }
 
-function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: () => void }) {
+function PlanCard({ kind, id, onClose, cycle }: { kind: CardKind; id: string; onClose: () => void; cycle: Cycle | null }) {
   const router = useRouter();
   const [data, setData] = useState<PlanCardData | null | undefined>(undefined);
   const [error, setError] = useState<string>();
@@ -101,7 +116,7 @@ function PlanCard({ kind, id, onClose }: { kind: CardKind; id: string; onClose: 
             : data.payment.description;
 
   return (
-    <CardSheet beside label={title} onClose={onClose} top={<span className="label">{label}</span>}>
+    <CardSheet beside label={title} onClose={onClose} cycle={cycle} top={<span className="label">{label}</span>}>
       {data === undefined && <p className="py-10 text-center text-sm text-stone">One moment…</p>}
       {data === null && <p className="py-10 text-center text-[15px] text-stone">This isn&apos;t here any more.</p>}
 

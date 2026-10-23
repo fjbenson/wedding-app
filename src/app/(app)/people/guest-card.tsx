@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
 import { ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
+import type { Cycle } from "@/lib/card-cycle";
 import { GUEST_ROLES, rolesOf } from "@/lib/guest-roles";
 import { joinNeeds, needsOf } from "@/lib/dietary";
 import DietaryPicker from "@/components/dietary-picker";
@@ -59,6 +60,7 @@ export const FIELD =
  * separate edit page once someone is on the list (owner's call, 9 Oct 2026).
  */
 export default function GuestCard({
+  cycle,
   guest,
   household,
   households,
@@ -73,6 +75,8 @@ export default function GuestCard({
   ownNeeds = [],
   onClose,
 }: {
+  /** Stepping through the list this card came from (owner, 23 Oct 2026). */
+  cycle?: Cycle | null;
   guest: Contact;
   household: { id: string; name: string } | null;
   /** Every household, to move them between. */
@@ -134,6 +138,7 @@ export default function GuestCard({
   return (
     <CardSheet
       beside
+      cycle={cycle}
       label={name}
       onClose={onClose}
       top={

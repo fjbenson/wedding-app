@@ -1,5 +1,6 @@
 "use client";
 
+import { useCycle, useRegisterCycle } from "@/lib/card-cycle";
 import Link from "next/link";
 import AddButton from "@/components/add-button";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -206,6 +207,9 @@ export default function SupplierList({
   const byName: Group[] = [{ key: "a-to-z", label: "", href: null, rows: [...shown].sort(byNameOrder) }].filter((g) => g.rows.length > 0);
   const groups = sort === "name" ? byName : sort === "stage" ? byStage : byArea;
   const open = suppliers.find((s) => s.id === openId);
+  // The card steps through the suppliers as listed (owner, 23 Oct 2026).
+  useRegisterCycle("supplier", [...new Set(groups.flatMap((g) => g.rows.map((r) => r.id)))], setOpenId);
+  const cycle = useCycle("supplier", openId);
 
   return (
     <>
@@ -348,6 +352,7 @@ export default function SupplierList({
       {open && (
         <SupplierCard
           key={open.id}
+          cycle={cycle}
           supplier={open}
           areas={areas}
           payments={payments.filter((p) => p.contact_id === open.id)}

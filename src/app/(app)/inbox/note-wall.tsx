@@ -15,6 +15,7 @@ import { areaName, type AreaOption } from "@/lib/areas";
 import { formatAgo } from "@/lib/dates";
 import type { Note } from "@/types/db";
 import { AreaPageLink, AreaTagRow } from "../plan/item-parts";
+import { useCycle, useRegisterCycle, type Cycle } from "@/lib/card-cycle";
 import { fileInboxNoteAction, inboxNoteToTodoAction, removeInboxNoteAction, saveInboxNoteAction } from "../capture/actions";
 
 /** Soft papers: ivory, champagne, blush, sage. */
@@ -89,6 +90,9 @@ export default function NoteWall({
 }) {
   const [openId, setOpenId] = useState<string | null>(notes.some((n) => n.id === initialOpen) ? initialOpen! : null);
   const open = notes.find((n) => n.id === openId);
+  // The note card steps through the wall in the order shown (owner, 23 Oct 2026).
+  useRegisterCycle("note", notes.map((n) => n.id), setOpenId);
+  const cycle = useCycle("note", openId);
   // After "Make it a to-do": say where it went, with a way there.
   const [added, setAdded] = useState<string | null>(null);
   useEffect(() => {
@@ -169,7 +173,7 @@ export default function NoteWall({
       </ul>
 
       {open && (
-        <NotePanel key={open.id} note={open} areas={areas} today={today} onClose={() => setOpenId(null)} onAdded={setAdded} />
+        <NotePanel key={open.id} note={open} areas={areas} today={today} cycle={cycle} onClose={() => setOpenId(null)} onAdded={setAdded} />
       )}
 
       {added && (
@@ -197,7 +201,9 @@ function NotePanel({
   today,
   onClose,
   onAdded,
+  cycle,
 }: {
+  cycle?: Cycle | null;
   note: Note;
   areas: AreaOption[];
   today: string;
@@ -223,7 +229,7 @@ function NotePanel({
 
   return (
     // The same frame and order as every item card (owner, 23 Oct 2026, canvas 4 "Cards · Rounds 1–10"): the area a tag at the top right, the note as the signature, a black main action, then the quiet Remove.
-    <CardSheet label="Note" onClose={onClose} top={<span className="label">Note</span>}>
+    <CardSheet label="Note" cycle={cycle} onClose={onClose} top={<span className="label">Note</span>}>
       <AreaTagRow
         area={area}
         areaOptions={areas}

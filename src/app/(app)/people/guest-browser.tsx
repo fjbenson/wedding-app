@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, CalendarHeart, Check, ChevronDown, ChevronRight, House, LayoutList, Mail, Search, SlidersHorizontal, Star, TriangleAlert, UserRound, Users, X } from "lucide-react";
 import { roleRank, rolesOf } from "@/lib/guest-roles";
 import { replaceQuery } from "@/lib/url-state";
+import { useCycle, useRegisterCycle } from "@/lib/card-cycle";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard from "./guest-card";
@@ -526,6 +527,15 @@ export default function GuestBrowser({
   }
 
   const open = openId ? guests.find((g) => g.id === openId) : undefined;
+  // The cards step through what's on screen, in the order drawn (owner, 23 Oct 2026): the guests under open headings, then their households, then the groups.
+  const shownGuests = [...new Set(groups.filter((gp) => !folded.has(gp.key)).flatMap((gp) => gp.guests.map((x) => x.id)))];
+  const shownHouseholds = [...new Set(shownGuests.map((id) => guests.find((x) => x.id === id)?.household_id).filter((h): h is string => !!h))];
+  useRegisterCycle("guest", shownGuests, showGuest);
+  useRegisterCycle("household", shownHouseholds, showHousehold);
+  useRegisterCycle("group", guestGroups.map((g) => g.id), showGroup);
+  const guestCycle = useCycle("guest", openId);
+  const householdCycle = useCycle("household", householdId);
+  const groupCycle = useCycle("group", groupCardId);
   const az = groups[0]?.key === "az";
   const lettered = az ? groups[0].guests : [];
   const letterOf = (g: Contact) => ((sort === "last" && g.last_name) || g.first_name).charAt(0).toUpperCase();
@@ -766,11 +776,13 @@ export default function GuestBrowser({
           others={guests.filter((g) => !openGroupCard.members.includes(g.id))}
           onClose={closeGroupCard}
           onOpenGuest={setOpenId}
+          cycle={groupCycle}
         />
       )}
 
       {open && (
         <GuestCard
+          cycle={guestCycle}
           guest={open}
           household={open.household_id ? (data.household.get(open.household_id) ?? null) : null}
           households={households}
@@ -789,6 +801,7 @@ export default function GuestBrowser({
 
       {openHousehold && (
         <HouseholdSheet
+          cycle={householdCycle}
           household={openHousehold}
           households={households}
           guests={guests}

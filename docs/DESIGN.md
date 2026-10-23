@@ -242,8 +242,10 @@ Moment, Inspo idea, Decor item, Note. What each has today:
    and the ✕ on the right. A card with a list behind it also shows
    `‹ 2 of 9 ›` just left of the ✕ and cycles through the list you came
    from, in its order; swiping sideways does the same (the card follows the
-   finger), with a one-time nudge the first time. On a laptop, up and down
-   arrow keys. No list, no arrows.
+   finger), with a one-time nudge the first time. On a laptop, ← and →
+   (not while typing). Built 23 Oct 2026: `src/lib/card-cycle.ts`; lists the
+   app draws register their ids, `CardLink` rows are read off the page. No
+   list, no arrows.
 2. **The signature.** Each card keeps its own look: the supplier's business
    card, the guest's profile, the household's envelope, a group's icon, the
    date stamp (to-do, appointment, payment), the cue card (moment), the

@@ -309,8 +309,6 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
       if (!result.error) router.refresh();
     });
   const showFrom = item.source !== "own" && item.source !== "made";
-  // One row open at a time, in place: what's set is the line, a tap opens the way to change it (owner, 23 Oct 2026).
-  const [openRow, setOpenRow] = useState<string | null>(null);
   const steps = STATUSES.filter((s) => s.value !== "returned" || goesBack(item));
   const at = steps.findIndex((s) => s.value === item.status);
   const next = nextStatus(item);
@@ -319,19 +317,24 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
   const fromLine = [sourceLabel(item.source), showFrom ? fromName : null].filter(Boolean).join(" · ");
   const datesLine = [item.collect_on && `Collect ${formatWeekdayDayMonth(item.collect_on)}`, goesBack(item) && item.return_on && `Give back ${formatWeekdayDayMonth(item.return_on)}`].filter(Boolean).join(" · ");
 
-  const row = (key: string, Icon: typeof Hash, label: string, value: string | null, add: string, body: React.ReactNode) => (
-    <div key={key} className="border-b border-linen last:border-b-0">
-      <button type="button" onClick={() => setOpenRow(openRow === key ? null : key)} aria-expanded={openRow === key} className="flex min-h-[60px] w-full items-center gap-3 px-3.5 text-left">
-        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
-          <Icon className="h-[18px] w-[18px]" strokeWidth={1.6} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[12px] text-stone">{label}</span>
-          <span className={`block truncate text-[16px] ${value ? "text-ink" : "text-champagne-600"}`}>{value || add}</span>
-        </span>
-        <ChevronDown className={`h-[18px] w-[18px] shrink-0 text-stone transition ${openRow === key ? "rotate-180" : ""}`} strokeWidth={1.6} aria-hidden />
-      </button>
-      {openRow === key && <div className="px-3.5 pb-4">{body}</div>}
+  const [askPlace, setAskPlace] = useState(false);
+  const customPlace = !!item.place && !PLACES.includes(item.place);
+  const qty = item.quantity ?? 0;
+  const label = "flex min-w-0 flex-1 items-center gap-3";
+  const dot = "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600";
+  const dateRow = (title: string, value: string | null, field: "collect_on" | "return_on") => (
+    <div className="flex min-h-[60px] items-center gap-3 border-b border-linen px-3.5 last:border-b-0">
+      <span aria-hidden className={dot}>
+        <CalendarDays className="h-[18px] w-[18px]" strokeWidth={1.6} />
+      </span>
+      <span className="text-[15px] text-ink">{title}</span>
+      <input
+        type="date"
+        aria-label={title}
+        defaultValue={value ?? ""}
+        onBlur={(e) => e.target.value !== (value ?? "") && tap({ [field]: e.target.value || null })}
+        className="ml-auto h-10 min-w-0 rounded-xl border border-linen bg-white px-3 text-[15px] text-ink focus:border-champagne-400 focus:outline-none"
+      />
     </div>
   );
 
@@ -380,56 +383,104 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
         })}
       </div>
 
+      {/* The facts sit on the card, each changed where it is: no fold-outs for single things (owner, 23 Oct 2026). */}
       <div className="mt-5 rounded-2xl border border-linen bg-white/75">
-        {row("many", Hash, "How many", item.quantity ? String(item.quantity) : null, "Add how many", (
-          <dl>
-            <TextRow label="How many" value={item.quantity ? String(item.quantity) : null} type="number" onSave={(v) => save({ quantity: v })} />
-          </dl>
-        ))}
-        {row("goes", MapPin, "Where it goes", item.place, "Add where it goes", <PlacePickerSaving value={item.place ?? ""} onSave={(v) => tap({ place: v || null })} />)}
-        {row("from", UserRound, "From", fromLine || null, "Where it's from", (
-          <>
-            <div className="flex flex-wrap gap-2">
-              {SOURCES.map((s) => {
-                const Icon = SOURCE_ICONS[s.value];
-                const on = item.source === s.value;
-                return (
-                  <button key={s.value} type="button" aria-pressed={on} onClick={() => tap({ source: on ? null : s.value })} className={`${pill(on)} flex items-center gap-1.5`}>
-                    <Icon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                    {s.label}
-                  </button>
-                );
-              })}
-            </div>
-            {showFrom && (
-              <dl className="mt-3">
-                <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-                  <dt className="type-meta py-3.5"><DetailLabel label="From" /></dt>
-                  <dd className="min-w-0 py-2">
-                    <FromSelect
-                      people={people}
-                      value={from}
-                      onChange={(v) => {
-                        setFrom(v);
-                        if (v !== "typed") tap({ from_contact_id: v || null, from_name: null });
-                      }}
-                      className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat pr-6 text-[15px] text-ink focus:outline-none"
-                    />
-                  </dd>
-                </div>
-                {from === "typed" && (
+        <div className="flex min-h-[60px] items-center gap-3 border-b border-linen px-3.5">
+          <span className={label}>
+            <span aria-hidden className={dot}>
+              <Hash className="h-[18px] w-[18px]" strokeWidth={1.6} />
+            </span>
+            <span className="text-[15px] text-ink">How many</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <button type="button" aria-label="One fewer" disabled={qty <= 1} onClick={() => save({ quantity: String(qty - 1) })} className="flex h-9 w-9 items-center justify-center rounded-full border border-linen bg-white text-lg text-ink disabled:opacity-40">
+              −
+            </button>
+            <span className="min-w-8 text-center font-display text-[20px] tabular-nums">{item.quantity ?? "–"}</span>
+            <button type="button" aria-label="One more" onClick={() => save({ quantity: String(qty + 1) })} className="flex h-9 w-9 items-center justify-center rounded-full border border-linen bg-white text-lg text-ink">
+              +
+            </button>
+          </span>
+        </div>
+
+        <div className="border-b border-linen px-3.5 py-2.5">
+          <div className="flex min-h-[44px] items-center gap-3">
+            <span aria-hidden className={dot}>
+              <MapPin className="h-[18px] w-[18px]" strokeWidth={1.6} />
+            </span>
+            <span className="text-[15px] text-ink">Where it goes</span>
+            <select
+              aria-label="Where it goes"
+              value={askPlace || customPlace ? "__other" : (item.place ?? "")}
+              onChange={(e) => {
+                if (e.target.value === "__other") return setAskPlace(true);
+                setAskPlace(false);
+                tap({ place: e.target.value || null });
+              }}
+              className="ml-auto h-10 min-w-0 max-w-[55%] cursor-pointer appearance-none truncate rounded-xl border border-linen bg-white bg-[length:14px] bg-[right_10px_center] bg-no-repeat pl-3 pr-8 text-[15px] text-ink focus:border-champagne-400 focus:outline-none"
+              style={{ backgroundImage: CHEVRON }}
+            >
+              <option value="">Not set</option>
+              {PLACES.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+              <option value="__other">{customPlace ? item.place : "Somewhere else…"}</option>
+            </select>
+          </div>
+          {(askPlace || customPlace) && (
+            <PlaceTyped key={item.place ?? ""} value={customPlace ? (item.place ?? "") : ""} onSave={(v) => { setAskPlace(false); tap({ place: v || null }); }} />
+          )}
+        </div>
+
+        <div className="border-b border-linen px-3.5 py-3">
+          <div className="flex items-center gap-3">
+            <span aria-hidden className={dot}>
+              <UserRound className="h-[18px] w-[18px]" strokeWidth={1.6} />
+            </span>
+            <span className="text-[15px] text-ink">From</span>
+          </div>
+          <div className="mt-3 flex gap-1.5">
+            {SOURCES.map((s) => {
+              const Icon = SOURCE_ICONS[s.value];
+              const on = item.source === s.value;
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => tap({ source: on ? null : s.value })}
+                  className={`flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl border text-[12px] transition ${
+                    on ? "border-champagne-600 bg-champagne-100 font-medium text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden />
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+          {showFrom && (
+            <div className="mt-3">
+              <FromSelect
+                people={people}
+                value={from}
+                onChange={(v) => {
+                  setFrom(v);
+                  if (v !== "typed") tap({ from_contact_id: v || null, from_name: null });
+                }}
+                className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-linen bg-white bg-[length:14px] bg-[right_12px_center] bg-no-repeat px-3.5 pr-8 text-[15px] text-ink focus:outline-none"
+              />
+              {from === "typed" && (
+                <dl className="mt-1">
                   <TextRow label="Their name" value={item.from_name} startEditing={!item.from_name} onSave={(v) => save({ from_name: v, from_contact_id: null })} />
-                )}
-              </dl>
-            )}
-          </>
-        ))}
-        {row("dates", CalendarDays, "Collect and give back", datesLine || null, "Add dates", (
-          <dl>
-            <DateRow label="Collect" value={item.collect_on} weddingDate={weddingDate} onSave={(v) => tap({ collect_on: v })} />
-            {goesBack(item) && <DateRow label="Give back" value={item.return_on} weddingDate={weddingDate} onSave={(v) => tap({ return_on: v })} />}
-          </dl>
-        ))}
+                </dl>
+              )}
+            </div>
+          )}
+        </div>
+
+        {dateRow("Collect", item.collect_on, "collect_on")}
+        {goesBack(item) && dateRow("Give back", item.return_on, "return_on")}
       </div>
 
       <section className="mt-7">
@@ -493,6 +544,29 @@ function ThingBody({ item, people, weddingDate, onGone }: { item: DecorWithHelpe
           Remove this item
         </button>
       </div>
+    </div>
+  );
+}
+
+/** A place that isn't on the usual list: typed, with a small Save. */
+function PlaceTyped({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+  const [draft, setDraft] = useState(value);
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <input
+        type="text"
+        autoFocus={!value}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="e.g. The photo booth"
+        aria-label="Somewhere else"
+        className="h-10 min-w-0 flex-1 rounded-xl border border-linen bg-white px-3.5 text-[15px] text-ink placeholder:text-stone/60 focus:border-champagne-400 focus:outline-none"
+      />
+      {draft !== value && (
+        <button type="button" onClick={() => onSave(draft.trim())} className="h-10 rounded-full bg-ink px-4 text-sm text-ivory hover:bg-ink/90">
+          Save
+        </button>
+      )}
     </div>
   );
 }

@@ -22,7 +22,7 @@ const RING_RADIUS = 0.39;
 /**
  * What's been reached, in the past tense (owner, 21 Oct 2026: nouns suit the
  * area page, where you're inside a stage; here it's what's done). Said on
- * hover and to screen readers; the five dots show it. By stages done.
+ * hover and to screen readers; the five lines show it. By stages done.
  */
 const DONE_WORDS = ["Not started", "Ideas", "Quoted", "Booked", "Paid", "Ready"] as const;
 
@@ -86,7 +86,9 @@ export default function Hub({
     // On a laptop the ring grows with the screen (owner, 21 Oct 2026: it
     // looked small on a big monitor), and its buttons, names and countdown
     // grow with it: sizes there are shares of the ring's width (cqw).
-    <div className="relative aspect-square w-full [--disc:46px] lg:[--disc:clamp(46px,8.5cqw,66px)] lg:[container-type:inline-size]">
+    // Pulled up a little on a laptop: the square has room above the top button
+    // but labels fill the bottom, so the ring read as sitting low (23 Oct 2026).
+    <div className="relative aspect-square w-full [--disc:46px] lg:-mt-[5%] lg:[--disc:clamp(46px,8.5cqw,66px)] lg:[container-type:inline-size]">
       <div
         aria-hidden
         className="absolute left-1/2 top-1/2 aspect-square w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E6D5BA]/75 shadow-[inset_0_0_28px_rgb(255_255_255/0.3),0_20px_50px_-28px_rgb(90_65_35/0.45)] backdrop-blur-md lg:w-[78%] lg:bg-[#E6D5BA]/35 lg:shadow-none"
@@ -159,19 +161,15 @@ function Node({
 }
 
 /**
- * On a laptop, five small dots under an area's name, filled gold for each
- * stage done (canvas 4 "Laptop · Round 10", D3, owner's pick 21 Oct 2026: the
- * gold arcs round each button pointed every which way and looked heavy).
- * They match the five stage circles on the area page.
+ * On a laptop, five short lines under an area's name, gold for each stage
+ * done (owner, 23 Oct 2026, in place of five dots — canvas 4 "Round 14", C's
+ * dashes; before that gold arcs, which looked heavy).
  */
 function StageDots({ done }: { done: number }) {
   return (
-    <span aria-hidden className="mt-1.5 hidden gap-1 lg:flex">
+    <span aria-hidden className="mt-2 hidden gap-[3px] lg:flex">
       {STAGES.map((name, i) => (
-        <span
-          key={name}
-          className={`h-[5px] w-[5px] rounded-full ${i < done ? "bg-champagne-400" : "shadow-[inset_0_0_0_1px_#CDB78E]"}`}
-        />
+        <span key={name} className={`h-[2px] w-[9px] rounded-full ${i < done ? "bg-champagne-400" : "bg-champagne-400/30"}`} />
       ))}
     </span>
   );

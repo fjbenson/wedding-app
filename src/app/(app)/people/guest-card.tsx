@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useOptimistic, useRef, useState, useTransition, type ReactNode } from "react";
 import { Armchair, Check, ChevronDown, ListChecks, Mail, MapPin, MessageSquare, Pencil, Phone, Star, UtensilsCrossed, X, type LucideIcon } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
@@ -292,6 +292,35 @@ export function Fold({ title, summary, icon: Icon, children }: { title: string; 
 }
 
 /**
+ * The tick or cross on the picture once they've answered (canvas 5 "Guest card
+ * · Round 6", D). It pops in when the answer arrives while the card is open,
+ * as the question lands in the RSVP box; opening a card shows it still.
+ */
+function AnswerBadge({ coming, pop }: { coming: boolean; pop: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !pop || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate([{ transform: "scale(0)" }, { transform: "scale(1.2)", offset: 0.7 }, { transform: "scale(1)" }], {
+      duration: 380,
+      easing: "ease-out",
+    });
+  }, [coming]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <span
+      ref={ref}
+      role="img"
+      aria-label={coming ? "Coming" : "Can't come"}
+      className={`absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-[0_0_0_3px_#FBF9F5] ${
+        coming ? "bg-champagne-600" : "bg-stone"
+      }`}
+    >
+      {coming ? <Check className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden /> : <X className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden />}
+    </span>
+  );
+}
+
+/**
  * The top of the card, as a social profile (canvas 3 "Guest card · Round 2 ·
  * A profile", A, 14 Oct 2026 — households have the envelope; a person gets a
  * profile, replacing the place card of 13 Oct): their initials large on the
@@ -321,6 +350,8 @@ function Profile({
   const figure = "block h-full w-full rounded-2xl border border-linen bg-white/75 px-2 py-2.5 hover:border-champagne-400";
   const roles = rolesOf(guest);
   const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
+  // The answer the card opened with: a badge only pops for one given since.
+  const openedWith = useRef(own?.status);
   const answer: Record<Rsvp["status"], string> = {
     attending: "Coming",
     pending: "Yet to respond",
@@ -338,17 +369,7 @@ function Profile({
           >
             {initials(guest)}
           </span>
-          {(own?.status === "attending" || own?.status === "declined") && (
-            <span
-              role="img"
-              aria-label={own.status === "attending" ? "Coming" : "Can't come"}
-              className={`absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-[0_0_0_3px_#FBF9F5] ${
-                own.status === "attending" ? "bg-champagne-600" : "bg-stone"
-              }`}
-            >
-              {own.status === "attending" ? <Check className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden /> : <X className="h-[15px] w-[15px]" strokeWidth={2.6} aria-hidden />}
-            </span>
-          )}
+          {(own?.status === "attending" || own?.status === "declined") && <AnswerBadge coming={own.status === "attending"} pop={own.status !== openedWith.current} />}
         </span>
         <div className="min-w-0 flex-1">
           <NameEditor guest={guest} onSave={onSave} left />
@@ -377,6 +398,7 @@ function Profile({
               if (own) window.dispatchEvent(new Event(CHANGE_RSVP));
               requestAnimationFrame(() => jumpTo(own ? "guest-rsvp" : "guest-of"));
             }}
+            id="guest-rsvp-figure"
             className={figure}
           >
             <span className={`block font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
@@ -807,10 +829,18 @@ const CHANGE_RSVP = "guest-card:change-rsvp";
  */
 function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status: Rsvp["status"]) => void }) {
   const [changing, setChanging] = useState(false);
+  // An answer just picked: the box stays a moment so it shows, then goes up into the RSVP box.
+  const [landing, setLanding] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
   const answered = answer === "attending" || answer === "declined";
   const pick = (status: Rsvp["status"]) => {
-    setChanging(false);
     onPick(status);
+    if (status !== "attending" && status !== "declined") return setChanging(false);
+    setLanding(true);
+    flyUp(box.current, () => {
+      setLanding(false);
+      setChanging(false);
+    });
   };
   const button = "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white px-4 text-[15px] text-ink shadow-[0_1px_4px_rgb(60_50_40/0.08)]";
 
@@ -821,14 +851,14 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
   }, []);
 
   // Answered: the RSVP box and the badge on the picture say it; nothing more here.
-  if (answered && !changing) return null;
+  if (answered && !changing && !landing) return null;
 
   const invited = answer !== "to_invite";
   // Their answer shows picked (champagne, like any picked tile) when it's asked again (owner, 23 Oct 2026).
   const choice = (on: boolean) =>
     `${button} ${on ? "border border-champagne-600 bg-champagne-100 font-semibold" : "border border-linen"}`;
   return (
-    <div id="guest-rsvp" className="relative mt-6 rounded-[20px] border border-linen bg-white/75 p-4">
+    <div ref={box} id="guest-rsvp" className={`relative mt-6 rounded-[20px] border border-linen bg-white/75 p-4 ${landing ? "pointer-events-none" : ""}`}>
       {changing && (
         <button
           type="button"
@@ -869,6 +899,38 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
       )}
     </div>
   );
+}
+
+/**
+ * Holds the picked answer for a beat, then shrinks the question up into the
+ * RSVP box at the top of the card and gives that a soft glow, so you see
+ * where the answer went (owner, 23 Oct 2026). Reduced motion: a quick fade.
+ */
+function flyUp(el: HTMLElement | null, done: () => void) {
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(() => {
+    const target = document.getElementById("guest-rsvp-figure");
+    const finish = () => {
+      done();
+      target?.animate([{ boxShadow: "0 0 0 6px rgb(184 145 79 / 0.35)" }, { boxShadow: "0 0 0 0 rgb(184 145 79 / 0)" }], { duration: 900, easing: "ease-out" });
+    };
+    if (!el?.animate) return finish();
+    if (still || !target) {
+      el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, fill: "forwards" }).finished.then(finish, finish);
+      return;
+    }
+    const from = el.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    el.animate(
+      [
+        { transform: "none", opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${to.width / from.width}, ${to.height / from.height})`, opacity: 0 },
+      ],
+      { duration: 420, easing: "cubic-bezier(0.5, 0, 0.75, 0)", fill: "forwards" },
+    ).finished.then(finish, finish);
+  }, still ? 250 : 550);
 }
 
 /** Taking someone off the list altogether — asks first, on the card itself. */

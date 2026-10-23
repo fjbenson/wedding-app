@@ -73,7 +73,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   the **RSVP always on view** (it changes most) as **one question at a time**
   (owner, 23 Oct 2026, canvas 5 "Guest card · Round 3", C; no step circles): not
   invited → "Has their invitation been sent?" (Yes, it's gone); invited → "What did
-  they say?" (Coming / Can't come, "Not invited yet" to undo); answered → the question goes;
+  they say?" (Coming / Can't come, "Not invited yet" to undo); answered → the picked answer holds a
+  beat, then the question shrinks up into the RSVP box (a soft glow; the badge pops; a
+  fade with reduced motion) and goes;
   a badge on the picture says it (gold tick or grey cross) and tapping the RSVP box asks
   again, their answer picked in champagne, a ✕ to close (canvas 5 "Guest card · Round 6", D). Then **folded rows, each with a gold icon and
   a line of what's set** (all drawn like History; canvas 5 "Guest card · Round 5", B) (owner, 21 Oct 2026, canvas 4 "Guest card · Round 1", A):

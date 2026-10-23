@@ -10,11 +10,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   `/standing`; the + adds an area in three steps), **"Ask Juno"**, **This
   week** (due by Sunday plus overdue, ticked off in place), and tiles for
   Your notes and Inspo. On a laptop (canvas 4 "Laptop · Round 8", C, 21 Oct
-  2026): a bigger ring (it grows with the screen) whose buttons sit on a gold
-  hairline circle, each with its name in small grey capitals; **the button
-  shows where the area stands** in three soft steps — faint and dashed (not
-  started), ivory (under way), pale champagne with a gold tick (ready) (Round
-  15, E1, 23 Oct 2026, in place of five dots; `src/lib/hub-stages.ts`),
+  2026): a bigger ring (it grows with the screen) whose buttons sit on the edge of
+  a faint circle, each with its name in small grey capitals and **five dots**
+  filling gold as stages are done (Round 10, D3; `src/lib/hub-stages.ts`),
   and a column on the right (Round 13, C, 23 Oct 2026: "a bit more fun"), each
   card only as tall as what's in it: **Inspo & notes** (the three latest pictures
   as a mood board, the latest note taped over its corner; `hub-board.tsx`), This

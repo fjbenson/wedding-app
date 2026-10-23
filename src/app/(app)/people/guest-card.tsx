@@ -186,8 +186,8 @@ export default function GuestCard({
       */}
       {/* The answer is what changes most, so it stays on view; day or evening hardly ever changes, so it's in Details (owner, 21 Oct 2026). Until they have one, it's the thing to set. */}
       {events.length > 0 && (
-        // Once answered there's nothing here, so no gap either.
-        <div className="mt-6 has-[>section:empty]:hidden">
+        // The RSVP question keeps its own space, so once it's answered and put away there's no gap.
+        <div className={own ? "" : "mt-6"}>
           <GuestOfAndAnswer guest={guest} events={events} own={own} only={own ? "answer" : "of"} />
         </div>
       )}
@@ -825,7 +825,7 @@ function RsvpAsk({ answer, onPick }: { answer?: Rsvp["status"]; onPick: (status:
 
   const invited = answer !== "to_invite";
   return (
-    <div id="guest-rsvp" className="rounded-[20px] border border-linen bg-white/75 p-4">
+    <div id="guest-rsvp" className="mt-6 rounded-[20px] border border-linen bg-white/75 p-4">
       <p className="font-display text-[20px] leading-tight text-ink">{invited ? "What did they say?" : "Have they had their invitation?"}</p>
       <div className="mt-3 flex gap-2">
         {invited ? (

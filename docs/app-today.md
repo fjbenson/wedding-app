@@ -61,7 +61,9 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   The View menu is Order · Group by (incl. Bridal party, Dietary needs) · Sent
   (21 Oct 2026; Age group went). Opening a guest, household or group closes the
   card already open. Can't-come folded at the foot. The **guest card** (`guest-card.tsx`)
-  has a profile top (tap a figure and its row below opens), Text · Call · Email,
+  has a profile top (name beside the picture, dietary needs under the roles; RSVP · Table ·
+  Meal as three boxes, owner 23 Oct 2026, canvas 5 "Guest card · Round 4", D1; tap a
+  figure and its row below opens), Text · Call · Email,
   the **RSVP always on view** (it changes most) as **one question at a time**
   (owner, 23 Oct 2026, canvas 5 "Guest card · Round 3", C; no step circles): not
   invited → "Have they had their invitation?" (Yes, it's gone); invited → "What did

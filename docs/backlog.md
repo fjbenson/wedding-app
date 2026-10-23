@@ -237,9 +237,9 @@ almost everything else is still the phone layout in a narrow column.
   household's invitation is logged as sent. The card's RSVP was rebuilt as one
   question at a time on 23 Oct 2026 (steps with circles were tried and taken out:
   a third row of three, and no clear next action).
-- **Guest card as a profile page (owner, 23 Oct 2026):** like a social profile —
-  the key details and Text · Call · Email together at the top, the RSVP question
-  below. Mock up first (canvas 5).
+- **Invitations prompt (owner, 23 Oct 2026):** once invitations are sent from
+  the app, ask "Move Maya and Sam to Yet to respond?" (canvas 5 "Guest card ·
+  Round 4", D3). With it, the owner may want the four-way RSVP slider back.
 - **A time on a to-do (owner, 23 Oct 2026):** an optional `+ Time` on the
   stamp ("6 Nov", "2pm"), so reminders can say when. `milestones.remind_at`
   (timestamptz) may hold it with no database change; check first. Any database

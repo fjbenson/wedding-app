@@ -297,8 +297,9 @@ function Profile({
   ownEvent?: WeddingEvent;
   onSave: (edit: GuestEdit) => Promise<{ error?: string }>;
 }) {
-  // Each figure goes to where it's changed, further down the card (owner, 19 Oct 2026).
-  const figure = "block w-full rounded-lg py-1 hover:bg-cream/70";
+  // Each figure goes to where it's changed, further down the card (owner, 19 Oct 2026),
+  // in a box of its own like a profile's (owner, 23 Oct 2026, canvas 5 "Guest card · Round 4", D1).
+  const figure = "block h-full w-full rounded-2xl border border-linen bg-white/75 px-2 py-2.5 hover:border-champagne-400";
   const roles = rolesOf(guest);
   const kind = ownEvent ? `${ownEvent.name.replace(/^the\s+/i, "").toLowerCase()} guest` : null;
   const answer: Record<Rsvp["status"], string> = {
@@ -326,11 +327,16 @@ function Profile({
               {kind && <em className="font-display">{kind}</em>}
             </p>
           )}
+          {needsOf(own?.dietary_notes).length > 0 && (
+            <button type="button" onClick={() => jumpTo("guest-dietary")} className="mt-0.5 block text-left text-sm text-[#9A3F2B] hover:underline">
+              {needsOf(own?.dietary_notes).join(" · ")}
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 border-y border-linen py-2 text-center">
-        <div>
+      <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+        <div className="min-w-0">
           <button type="button" onClick={() => jumpTo(own ? "guest-rsvp" : "guest-of")} className={figure}>
             <span className={`block font-display text-lg ${own?.status === "attending" ? "text-champagne-600" : "text-ink"}`}>
               {own ? answer[own.status] : "Day or evening?"}
@@ -338,7 +344,7 @@ function Profile({
             <span className="mt-0.5 block text-xs text-stone">RSVP</span>
           </button>
         </div>
-        <div className="border-x border-linen px-1">
+        <div className="min-w-0">
           {canSeat ? (
             <button type="button" onClick={() => jumpTo("guest-table")} className={figure}>
               <span className={`block truncate font-display text-lg ${table ? "text-ink" : "text-stone"}`}>{table ?? "None yet"}</span>
@@ -351,7 +357,7 @@ function Profile({
             </Link>
           )}
         </div>
-        <div className="px-1">
+        <div className="min-w-0">
           {/* The meal tile's choice (owner, 20 Oct 2026: the typed dish went — one menu for everyone). */}
           <button type="button" onClick={() => jumpTo("guest-mealkind")} className={figure}>
             <span className="block truncate font-display text-lg text-ink">{MEAL_KINDS.find((k) => k.value === mealKindOf(guest))?.label}</span>
@@ -359,11 +365,6 @@ function Profile({
           </button>
         </div>
       </div>
-      {needsOf(own?.dietary_notes).length > 0 && (
-        <button type="button" onClick={() => jumpTo("guest-dietary")} className="mx-auto mt-1.5 block rounded-lg px-2 py-1 text-center text-[13px] text-[#9A3F2B] hover:bg-cream/70">
-          {needsOf(own?.dietary_notes).join(" · ")}
-        </button>
-      )}
     </div>
   );
 }

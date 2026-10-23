@@ -38,7 +38,9 @@ ring on a champagne cover described further down:
   title drawings.
 - **Rows (16 Oct 2026):** to-dos, appointments and payments share one row —
   the date large on the left (`DateStamp`), title and a grey line, the mark
-  on the right (tick / calendar / £).
+  on the right (tick / calendar / £). No date: a faint "Set date" (23 Oct
+  2026). In a day's card the time takes the date's place ("2:00" over PM;
+  "Any time" for the rest, no column when nothing has a time).
 - **Background: paper under a lamp** (canvas 2, "Background · Round 2 ·
   Not boring, not amateur", option A, owner's pick 12 Oct 2026) — one light
   source: near-white at the top of the screen warming to a deeper ivory

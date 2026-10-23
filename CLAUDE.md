@@ -252,9 +252,11 @@ Five tabs — **Hub · People · Plan · Money · The Day** — plus area pages,
 
 **Laptop (23 Oct 2026):** every screen is laid out for laptops
 (`docs/laptop-pass.md`). The owner has looked over the Hub, side menu, People
-(guests and suppliers) — done 23 Oct 2026; **Plan is next** (new chat: send
-a screenshot of Calendar and List, say what you'd sort, then the owner's list),
-then Money and The Day. Tab pages are 1640px wide with 48px sides. For columns where a
+(guests and suppliers) — done 23 Oct 2026. **Plan's calendar** is now the big
+month (canvas 5 "Laptop · Round 21", A, 23 Oct 2026); still to do on Plan:
+search and Filter on the calendar, the day card beside (not dimming), a look
+over the List. Then Money and The Day; forms (and our own date/time pickers)
+after the tabs. Tab pages are 1640px wide with 48px sides. For columns where a
 card can open beside them, use `room-md:` / `room-lg:` / `room-xl:`
 (tailwind.config.ts) instead of `lg:` / `xl:`: they count the room left once
 the 440px card is open.

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, MapPin, Plus } from "lucide-react";
 import BudgetBar, { PAID_BAR } from "@/components/budget-bar";
 import CardSheet from "@/components/card-sheet";
 import { useCycle, useRegisterCycle, type Cycle } from "@/lib/card-cycle";
@@ -302,7 +302,7 @@ function AreaMoneySheet({ area, onClose, cycle }: { area: AreaCard; onClose: () 
           </Link>
 
       <div className="-mx-[22px] mt-7 border-y border-linen">
-        <Fold title="Details" summary={detailsLine}>
+        <Fold title="Details" icon={MapPin} summary={detailsLine}>
           <Link href="/money/budget" className="flex items-center justify-between py-2.5 text-[15px] text-ink">
             {area.budget === null ? "Set a budget" : "Change the budget"}
             <span aria-hidden className="text-stone">›</span>

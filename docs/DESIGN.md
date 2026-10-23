@@ -259,7 +259,9 @@ Moment, Inspo idea, Decor item, Note. What each has today:
    fact. Long profile cards are fine for now; trim later.
 5. **Only two folds, always last, in this order: History, then Details**
    (the plain typed facts: phone, email, notes, address). Moment's rarely
-   changed Run sheet and Area also fold.
+   changed Run sheet and Area also fold. Both look the same: a gold icon circle
+   (History's clock, Details' pin), the name plain, a grey line under it
+   (built on the guest, household, supplier and Money area cards, 23 Oct 2026).
 6. **If the card belongs to an area:** an outlined pill, "Open the [area]
    page ›", then a quiet underlined **Remove** (and any "undo the choice"
    link beside it, like "We didn't go with them") at the very foot.

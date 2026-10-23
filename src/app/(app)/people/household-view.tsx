@@ -5,7 +5,7 @@ import SentToThem from "@/components/sent-to-them";
 import { ownNeeds } from "@/lib/dietary";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { Mail, MessageSquare, Phone, Plus, Search } from "lucide-react";
+import { Mail, MapPin, MessageSquare, Phone, Plus, Search } from "lucide-react";
 import type { Contact, Household, Rsvp, WeddingEvent } from "@/types/db";
 import GuestCard, { Fold } from "./guest-card";
 import CardSheet from "@/components/card-sheet";
@@ -138,7 +138,7 @@ export default function HouseholdSheet({
         <section className="px-[22px]">
           <Timeline scope={`household:${household.id}`} label="History" folded skipSent />
         </section>
-        <Fold title="Details" summary={[household.name, household.address_line1, household.city].filter(Boolean).join(" · ")}>
+        <Fold title="Details" icon={MapPin} summary={[household.name, household.address_line1, household.city].filter(Boolean).join(" · ")}>
           <HouseholdDetails household={household} />
         </Fold>
       </div>

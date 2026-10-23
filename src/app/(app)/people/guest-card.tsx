@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition, type ReactNode } from "react";
-import { Check, ChevronDown, Mail, MessageSquare, Pencil, Phone, Star, X } from "lucide-react";
+import { Check, ChevronDown, Mail, MapPin, MessageSquare, Pencil, Phone, Star, X, type LucideIcon } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import type { Cycle } from "@/lib/card-cycle";
 import { rolesOf } from "@/lib/guest-roles";
@@ -229,13 +229,12 @@ export default function GuestCard({
           <Timeline
             scope={`guest:${guest.id}`}
             folded
-            caps
             skipSent={!guest.household_id}
             lead={!guest.household_id ? <SentToThem unit={`c:${guest.id}`} bare /> : undefined}
           />
         </section>
 
-        <Fold title="Details" summary={detailsLine}>
+        <Fold title="Details" icon={MapPin} summary={detailsLine}>
           {own && <GuestOfAndAnswer guest={guest} events={events} own={own} only="of" />}
           <dl className={own ? "mt-4" : ""}>
             <HouseholdRow guest={guest} households={households} onSave={save} />
@@ -255,15 +254,33 @@ export default function GuestCard({
  * One folded row of the guest card: its name in small capitals, a line of
  * what's set under it, opening in place (tapping a figure at the top opens
  * the right one — `jumpTo`). The body stays in the page when shut, so what
- * was half typed isn't lost.
+ * was half typed isn't lost. With an `icon` it's the shared card fold, like
+ * History's: a gold circle, the name plain, the line in grey (Details on
+ * every card; owner, 23 Oct 2026, canvas 4 "Cards · Every card").
  */
-export function Fold({ title, summary, children }: { title: string; summary: ReactNode; children: ReactNode }) {
+export function Fold({ title, summary, icon: Icon, children }: { title: string; summary: ReactNode; icon?: LucideIcon; children: ReactNode }) {
   return (
     <details className="group border-t border-linen px-[22px]">
-      <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
+      <summary
+        className={`flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden ${Icon ? "min-h-[60px] py-2.5" : "min-h-[64px] py-3"}`}
+      >
+        {Icon && (
+          <span aria-hidden className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+            <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
+          </span>
+        )}
         <span className="min-w-0 flex-1">
-          <span className="section-label block">{title}</span>
-          <span className="mt-1 block truncate text-[14px] text-ink">{summary}</span>
+          {Icon ? (
+            <>
+              <span className="block text-[15.5px] text-ink">{title}</span>
+              <span className="block truncate text-[13px] text-stone">{summary}</span>
+            </>
+          ) : (
+            <>
+              <span className="section-label block">{title}</span>
+              <span className="mt-1 block truncate text-[14px] text-ink">{summary}</span>
+            </>
+          )}
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-stone transition group-open:rotate-180" strokeWidth={1.8} aria-hidden />
       </summary>

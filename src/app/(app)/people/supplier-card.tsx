@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Check, ChevronDown, ChevronRight, Globe, Mail, MoreHorizontal, Phone } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Globe, Mail, MapPin, MoreHorizontal, Phone } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
@@ -118,7 +118,7 @@ export default function SupplierCard({
         <section className="px-[22px]">
           <Timeline scope={`supplier:${supplier.id}`} folded />
         </section>
-        <Fold title="Details" summary={detailsLine}>
+        <Fold title="Details" icon={MapPin} summary={detailsLine}>
           <dl>
             <TextRow label="Contact person" value={supplierContact(supplier)} onSave={(v) => save({ field: "contact_name", value: v })} />
             <div id="supplier-phone">

@@ -12,15 +12,19 @@ import SideBar from "@/components/side-bar";
 export default function AppShell({
   wedding,
   inboxCount,
+  email,
+  manyWeddings,
   children,
 }: {
   wedding: { name: string; wedding_date: string | null };
   inboxCount: number;
+  email: string | null;
+  manyWeddings: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <SideBar name={wedding.name} inboxCount={inboxCount} />
+      <SideBar name={wedding.name} inboxCount={inboxCount} email={email} manyWeddings={manyWeddings} />
       <div className="page-frame min-w-0 lg:pl-[250px] print:!pl-0">{children}</div>
       <MenuBar />
       <Suspense fallback={null}>

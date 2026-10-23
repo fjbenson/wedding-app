@@ -16,7 +16,17 @@ import { NAV } from "@/lib/nav";
  * couple's monogram since 23 Oct 2026, `AccountButton`). It replaced the
  * bar along the top (18 Oct 2026). Phones keep the floating menu bar.
  */
-export default function SideBar({ name, inboxCount }: { name: string; inboxCount: number }) {
+export default function SideBar({
+  name,
+  inboxCount,
+  email,
+  manyWeddings,
+}: {
+  name: string;
+  inboxCount: number;
+  email: string | null;
+  manyWeddings: boolean;
+}) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const quiet = (active: boolean) => `flex items-center justify-between text-sm ${active ? "text-ink" : "text-stone hover:text-ink"}`;
@@ -64,7 +74,7 @@ export default function SideBar({ name, inboxCount }: { name: string; inboxCount
         <AssistantSheet variant="hub" />
       </div>
 
-      <AccountButton name={name} />
+      <AccountButton name={name} email={email} manyWeddings={manyWeddings} />
     </aside>
   );
 }

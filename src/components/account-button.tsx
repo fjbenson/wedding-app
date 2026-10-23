@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { ChevronUp } from "lucide-react";
 import { coupleName } from "@/lib/couple-name";
 
 /** "Olivia & Theo" → "O&T"; a single name → its first letter. */
@@ -13,11 +14,20 @@ function monogram(name: string): string {
 
 /**
  * The foot of the laptop menu (canvas 5 "Laptop · Round 16", A, owner's pick
- * 23 Oct 2026, with the couple's monogram in the circle and "Settings" beside
- * it, so the names don't show a third time). A tap opens a small menu
- * upwards: Settings and Sign out.
+ * 23 Oct 2026): the couple's monogram in a circle, their names and the
+ * signed-in email beside it (no one's own name is kept, so the wedding's
+ * stands in — owner's idea). A tap opens a small menu upwards: Settings,
+ * Your weddings when there's more than one, and Sign out.
  */
-export default function AccountButton({ name }: { name: string }) {
+export default function AccountButton({
+  name,
+  email,
+  manyWeddings,
+}: {
+  name: string;
+  email: string | null;
+  manyWeddings: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -36,7 +46,7 @@ export default function AccountButton({ name }: { name: string }) {
     };
   }, [open]);
 
-  const row = "flex w-full items-center rounded-[10px] px-3 py-2.5 text-left text-sm transition hover:bg-champagne-100";
+  const row = "flex w-full items-center rounded-[10px] px-3 py-2.5 text-left text-[15px] transition hover:bg-champagne-100";
 
   return (
     <div ref={box} className="relative mt-auto">
@@ -45,6 +55,11 @@ export default function AccountButton({ name }: { name: string }) {
           <Link href="/settings" role="menuitem" className={`${row} text-ink`}>
             Settings
           </Link>
+          {manyWeddings && (
+            <Link href="/settings#your-weddings" role="menuitem" className={`${row} text-ink`}>
+              Your weddings ›
+            </Link>
+          )}
           <div aria-hidden className="mx-3 my-1 h-px bg-linen" />
           <form action="/auth/sign-out" method="post">
             <button type="submit" role="menuitem" className={`${row} text-stone hover:text-ink`}>
@@ -58,14 +73,18 @@ export default function AccountButton({ name }: { name: string }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className={`-mx-2 flex w-[calc(100%+16px)] items-center gap-3 rounded-[14px] p-2 text-left text-sm transition hover:bg-champagne-100/60 hover:text-ink ${
-          open || pathname === "/settings" ? "bg-champagne-100/60 text-ink" : "text-stone"
+        className={`-mx-2 flex w-[calc(100%+16px)] items-center gap-3 rounded-[14px] p-2 text-left transition hover:bg-champagne-100/60 ${
+          open || pathname === "/settings" ? "bg-champagne-100/60" : ""
         }`}
       >
-        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 font-display text-[15px] font-light italic tracking-[0.02em] text-champagne-600 shadow-[inset_0_0_0_1px_rgb(184_145_79/0.35)]">
+        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 font-display text-[14px] font-light italic tracking-[0.02em] text-champagne-600 shadow-[inset_0_0_0_1px_rgb(184_145_79/0.35)]">
           {monogram(name)}
         </span>
-        <span className="flex-1">Settings</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm text-ink">{coupleName(name)}</span>
+          {email && <span className="block truncate text-xs text-stone">{email}</span>}
+        </span>
+        <ChevronUp className={`h-4 w-4 shrink-0 text-stone transition ${open ? "" : "rotate-180"}`} strokeWidth={1.75} aria-hidden />
       </button>
     </div>
   );

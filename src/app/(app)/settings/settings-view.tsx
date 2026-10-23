@@ -189,7 +189,7 @@ export default function SettingsView({
 function YourWeddings({ weddings, openId }: { weddings: Wedding[]; openId: string }) {
   if (weddings.length < 2) return null;
   return (
-    <section className="glass-card mt-6 rounded-[22px] p-5">
+    <section id="your-weddings" className="glass-card mt-6 scroll-mt-6 rounded-[22px] p-5">
       <h2 className="border-b border-champagne-400 pb-2 text-xl text-ink">Your weddings</h2>
       <ul className="mt-2">
         {weddings.map((w) => (

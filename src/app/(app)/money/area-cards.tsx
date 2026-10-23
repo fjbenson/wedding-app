@@ -209,7 +209,7 @@ function AreaMoneySheet({ area, onClose, cycle }: { area: AreaCard; onClose: () 
   const addPayment = area.key ? `/money/payments/new?area=${encodeURIComponent(area.key)}` : "/money/payments/new";
 
   // Detail settings, tucked into one fold at the foot (owner, 23 Oct 2026): the budget, and for Food & drink the prices it's worked out from.
-  const detailsLine = [area.budget === null ? "No budget yet" : `Budget ${formatMoney(area.budget)}`, area.detail.foodCost ? `${formatMoney(area.detail.foodCost.total)} worked out` : null].filter(Boolean).join(" · ");
+  const detailsLine = [area.budget === null ? "No budget yet" : `Budget ${formatMoney(area.budget)}`, area.detail.foodCost ? `${formatMoney(area.detail.foodCost.total)} worked out` : null].filter(Boolean).slice(0, 2).join(" · ");
 
   return (
     // The same frame as every card (canvas 4 "Cards · Rounds 1–10"): a small label left, the ✕ right.

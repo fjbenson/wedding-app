@@ -135,7 +135,7 @@ export default function GuestCard({
   const theirGroups = (groups ?? []).filter((g) => g.members.includes(guest.id)).map((g) => g.name);
   const roleLine = [rolesOf(guest).join(" · ") || "No role", groups ? (theirGroups.length > 0 ? theirGroups.join(", ") : "No groups") : null].filter(Boolean).join(" · ");
   const ownEventName = eventName(events.find((e) => e.id === own?.event_id));
-  const detailsLine = [ownEventName && `${ownEventName} guest`, household?.name, guest.phone].filter(Boolean).join(" · ") || "Add a number or email";
+  const detailsLine = [ownEventName && `${ownEventName} guest`, household?.name, guest.phone].filter(Boolean).slice(0, 2).join(" · ") || "Add a number or email";
 
   return (
     <CardSheet

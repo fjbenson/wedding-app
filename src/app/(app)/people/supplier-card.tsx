@@ -94,7 +94,7 @@ export default function SupplierCard({
     // Once, on opening: the list's greyed-out button sent us here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const detailsLine = [supplierContact(supplier), supplier.phone, supplier.email].filter(Boolean).join(" · ") || "Add a number or email";
+  const detailsLine = [supplierContact(supplier), supplier.phone, supplier.email].filter(Boolean).slice(0, 2).join(" · ") || "Add a number or email";
   // In touch has no panel of its own: its circle opens the Details fold at the foot (owner, 23 Oct 2026),
   // which is there whatever stage they're at, like History.
   const openStage = (i: number) => {

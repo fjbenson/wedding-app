@@ -138,7 +138,7 @@ export default function HouseholdSheet({
         <section className="px-[22px]">
           <Timeline scope={`household:${household.id}`} label="History" folded skipSent />
         </section>
-        <Fold title="Details" icon={MapPin} summary={[household.name, household.address_line1, household.city].filter(Boolean).join(" · ")}>
+        <Fold title="Details" icon={MapPin} summary={[household.name, household.address_line1, household.city].filter(Boolean).slice(0, 2).join(" · ")}>
           <HouseholdDetails household={household} />
         </Fold>
       </div>

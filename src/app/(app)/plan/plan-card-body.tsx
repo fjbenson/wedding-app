@@ -21,7 +21,7 @@ import { DetailLabel } from "../people/guest-table";
 import { moveMomentAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
 import { addCourseForMomentAction, setMomentFoodAction } from "../menu/actions";
 import { InvolvedPart } from "./involved";
-import { AreaPageLink, ItemAction, ItemSignature } from "./item-parts";
+import { AreaPageLink, ItemAction, ItemSignature, WhereRow } from "./item-parts";
 
 type Save = (fields: Record<string, string | null>) => Promise<{ error?: string }>;
 
@@ -134,63 +134,38 @@ export function AppointmentBody({
 
   return (
     <>
-      <TitleEditor value={a.title} onSave={(v) => save({ title: v })} />
+      <ItemSignature
+        titleEditor={<TitleEditor value={a.title} onSave={(v) => save({ title: v })} />}
+        date={date}
+        dateName="on_date"
+        onDate={(v) => {
+          // An appointment always has a day.
+          if (!v) return;
+          setDate(v);
+          change({ on_date: v });
+        }}
+        weddingDate={weddingDate}
+        quick={false}
+        clearable={false}
+        time={time}
+        onTime={setTimeTo}
+        area={area}
+        areaOptions={options}
+        areaRound={round}
+        onArea={(v) => {
+          setArea(v);
+          change({ area_key: v || null });
+        }}
+      />
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
-      <Part label="When">
-        <DateCard
-          name="on_date"
-          value={date}
-          quick={false}
-          clearable={false}
-          onChange={(v) => {
-            // An appointment always has a day.
-            if (!v) return;
-            setDate(v);
-            change({ on_date: v });
-          }}
-          weddingDate={weddingDate}
-        />
-        <div className={CARD}>
-          <Line icon={Clock} label="Time">
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              onBlur={(e) => e.target.value !== (a.at_time?.slice(0, 5) ?? "") && setTimeTo(e.target.value)}
-              aria-label="Time"
-              className={`${BARE} ${time ? "" : "text-stone/60"}`}
-            />
-            {time && (
-              <button type="button" onClick={() => setTimeTo("")} className="text-xs text-stone hover:text-ink">
-                No time
-              </button>
-            )}
-          </Line>
-        </div>
-      </Part>
+      {/* Into their own calendar (feedback item 3; owner, 19 Oct 2026: "an option for which calendar"). The main action, so black. */}
+      <AddToCalendar appointment={a} withWhom={suppliers.find((s) => s.id === a.contact_id)?.name ?? null} />
 
-      <Part label="Area">
-        <AreaTiles
-          key={round}
-          name="area"
-          areas={options}
-          otherValue="other"
-          value={area}
-          onChange={(v) => {
-            setArea(v);
-            change({ area_key: v || null });
-          }}
-          folded={!!a.area_key}
-        />
-      </Part>
-
-      <InvolvedPart kind="appointment" id={a.id} involved={involved} />
+      <InvolvedPart kind="appointment" id={a.id} involved={involved} label="Who's coming" />
 
       <section className="mt-7">
-        <h3 className="section-label">Details</h3>
-        <dl className="mt-1">
-          <TextRow label="Where" value={a.location} onSave={(v) => save({ location: v })} />
+        <dl>
           <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
             <dt className="type-meta py-3.5">
               <DetailLabel label="With" />
@@ -226,12 +201,20 @@ export function AppointmentBody({
               </select>
             </dd>
           </div>
+        </dl>
+      </section>
+
+      <Part label="Where">
+        <WhereRow value={a.location} onSave={(v) => save({ location: v })} />
+      </Part>
+
+      <section className="mt-7">
+        <dl>
           <TextRow label="Notes" value={a.notes} multiline onSave={(v) => save({ notes: v })} />
         </dl>
       </section>
 
-      {/* Into their own calendar (feedback item 3; owner, 19 Oct 2026: "an option for which calendar"). */}
-      <AddToCalendar appointment={a} withWhom={suppliers.find((s) => s.id === a.contact_id)?.name ?? null} />
+      <AreaPageLink areaKey={area} areas={areas} />
     </>
   );
 }
@@ -941,7 +924,7 @@ function AddToCalendar({ appointment: a, withWhom }: { appointment: Appointment;
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-linen bg-white text-[15px] text-ink hover:border-champagne-400"
+        className="mt-4 flex h-12 items-center gap-2.5 rounded-full bg-ink px-5 text-[15px] text-ivory hover:bg-ink/90"
       >
         <CalendarPlus className="h-4 w-4" strokeWidth={1.6} aria-hidden />
         Add to my calendar

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Clock, MapPin } from "lucide-react";
 import { AreaTiles, DateCard } from "@/components/visual-form";
-import { formatDayMonth, formatLongDate } from "@/lib/dates";
+import { formatDayMonth, formatLongDate, formatTime } from "@/lib/dates";
+import { editorKeys, FIELD, SaveCancel, useSaver } from "../people/guest-card";
 import type { AreaOption } from "@/lib/areas";
 
 /**
@@ -33,6 +34,8 @@ export function ItemSignature({
   areaRound = 0,
   otherValue = "other",
   dateNote = "",
+  time,
+  onTime,
 }: {
   /** The name, large, tap to rename (`TitleEditor`; passed in so this file doesn't import the bodies). */
   titleEditor: ReactNode;
@@ -53,6 +56,9 @@ export function ItemSignature({
   otherValue?: string;
   /** Before the weekday under the name: "Due ", "Paid ". */
   dateNote?: string;
+  /** "14:00" or "": an appointment's time sits in a gold band at the foot of the stamp (owner, 23 Oct 2026, Round 9, A). Left out, the card has no time. */
+  time?: string;
+  onTime?: (v: string) => void;
 }) {
   const [picking, setPicking] = useState<"date" | "area" | null>(null);
   const toggle = (which: "date" | "area") => setPicking((p) => (p === which ? null : which));
@@ -66,13 +72,16 @@ export function ItemSignature({
           type="button"
           onClick={() => toggle("date")}
           aria-expanded={picking === "date"}
-          aria-label={date ? `Change the date, ${formatLongDate(date)}` : "Add a date"}
-          className={`flex w-16 shrink-0 flex-col items-center rounded-[14px] py-2 ${
+          aria-label={date ? `Change the date, ${formatLongDate(date)}${time ? ` at ${formatTime(time)}` : ""}` : "Add a date"}
+          className={`flex w-16 shrink-0 flex-col items-center overflow-hidden rounded-[14px] ${
             date ? "bg-champagne-100" : "border border-dashed border-champagne-600/50"
           }`}
         >
-          <span className={`font-display text-[32px] font-light leading-none tabular-nums ${date ? "text-ink" : "text-champagne-600"}`}>{date ? day : "+"}</span>
-          <span className="mt-0.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">{date ? month : "Date"}</span>
+          <span className="flex flex-col items-center py-2">
+            <span className={`font-display text-[32px] font-light leading-none tabular-nums ${date ? "text-ink" : "text-champagne-600"}`}>{date ? day : "+"}</span>
+            <span className="mt-0.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-champagne-600">{date ? month : "Date"}</span>
+          </span>
+          {date && time && <span className="w-full bg-champagne-600 py-1 text-center text-[13px] font-semibold text-white">{formatTime(time)}</span>}
         </button>
 
         <div className="min-w-0 flex-1">
@@ -99,6 +108,24 @@ export function ItemSignature({
       {picking === "date" && (
         <div className="mt-3">
           <DateCard name={dateName} value={date} onChange={onDate} weddingDate={weddingDate} quick={quick} clearable={clearable} />
+          {onTime && (
+            <label className="mt-2 flex h-12 items-center gap-3 rounded-2xl border border-linen bg-white px-4">
+              <Clock aria-hidden className="h-[18px] w-[18px] shrink-0 text-champagne-600" strokeWidth={1.6} />
+              <span className="sr-only">Time</span>
+              <input
+                type="time"
+                defaultValue={time ?? ""}
+                onBlur={(e) => e.target.value !== (time ?? "") && onTime(e.target.value)}
+                aria-label="Time"
+                className={`min-w-0 flex-1 bg-transparent text-[15px] focus:outline-none ${time ? "text-ink" : "text-stone/60"}`}
+              />
+              {time && (
+                <button type="button" onClick={() => onTime("")} className="text-xs text-stone hover:text-ink">
+                  No time
+                </button>
+              )}
+            </label>
+          )}
         </div>
       )}
       {picking === "area" && (
@@ -173,5 +200,60 @@ export function AreaPageLink({ areaKey, areas }: { areaKey: string; areas: AreaO
     >
       Open the {area.label} page ›
     </Link>
+  );
+}
+
+/**
+ * Where it happens: a rounded row with a gold pin and the place, the one
+ * style on every card that has a place (owner, 23 Oct 2026, canvas 4 "Cards ·
+ * Round 4"). Tap to change; typing gets a small Save.
+ */
+export function WhereRow({ value, onSave, add = "Add where" }: { value: string | null; onSave: (v: string) => Promise<{ error?: string }>; add?: string }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const { pending, error, setError, run } = useSaver();
+  const submit = () => run(() => onSave(draft), () => setEditing(false));
+  const pin = (
+    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+      <MapPin className="h-[18px] w-[18px]" strokeWidth={1.6} />
+    </span>
+  );
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setDraft(value ?? "");
+          setError(undefined);
+          setEditing(true);
+        }}
+        className="flex min-h-14 w-full items-center gap-3 rounded-2xl border border-linen bg-white px-3.5 text-left text-[15px] hover:border-champagne-400"
+      >
+        {pin}
+        <span className={value ? "text-ink" : "text-champagne-600"}>{value || add}</span>
+      </button>
+    );
+  }
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+    >
+      <div className="flex items-center gap-3 rounded-2xl border border-champagne-400 bg-white px-3.5 py-2">
+        {pin}
+        <input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={editorKeys(submit, () => setEditing(false))}
+          aria-label="Where"
+          className={`${FIELD} !border-0 !px-0 !py-1.5 !ring-0`}
+        />
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm text-ink">{error}</p>}
+      <SaveCancel pending={pending} onCancel={() => setEditing(false)} />
+    </form>
   );
 }

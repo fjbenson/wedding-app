@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { replaceQuery } from "@/lib/url-state";
 import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, TriangleAlert, X } from "lucide-react";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import { Fold } from "./fold";
 
@@ -155,10 +155,10 @@ export default function PlanCalendar({
     setSelected(null);
   };
 
-  // "In October": what's still to do in the month in view (overdue is its own tile).
-  const monthCount = Object.entries(chips)
+  // Each tile's second figure: the same thing in the month in view (owner, 23 Oct 2026, canvas 5 tiles, B).
+  const inMonth = Object.entries(chips)
     .filter(([date]) => date.startsWith(month))
-    .reduce((n, [, cs]) => n + cs.filter((c) => !c.overdue).length, 0);
+    .flatMap(([, cs]) => cs);
   // Picking Overdue when this month has none jumps to the first month that does.
   const choose = (p: Pick) => {
     if (pick === p) return setPick(null);
@@ -335,54 +335,64 @@ export default function PlanCalendar({
           23 Oct 2026). The month fills the page and each day says what's on
           it; tap a day for its card. No list under it: No date and Done are
           pills by the month's name. */}
-      {/* Where the plan stands: the whole plan's figures, but "In October"
-          follows the month in view (owner, 23 Oct 2026). Tapping one lights
-          up its things on the month, like the Suppliers tiles; again to clear.
-          No date opens its card, as those have no day. */}
-      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-5 gap-3 room-lg:grid">
+      {/* Where the plan stands (owner, 23 Oct 2026, canvas 5 "The tiles", B):
+          the whole plan's figure large with "total", then the month in view
+          small after a line. Tapping one lights up its things on the month,
+          like the Suppliers tiles; again to clear. No date has no month, so
+          one figure, and it opens its card. */}
+      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-4 gap-3 room-lg:grid">
         {(
           [
-            { pick: "overdue", value: totals.overdue, label: "Overdue" },
-            { pick: "todos", value: totals.todos, label: "To-dos open" },
-            { pick: "appointments", value: totals.appointments, label: "Appointments" },
-            { pick: null, value: monthCount, label: `In ${name}` },
-            { pick: "undated", value: undatedCount, label: "No date" },
+            { pick: "overdue", value: totals.overdue, month: inMonth.filter((c) => fits(c, "overdue")).length, label: "Overdue", icon: <TriangleAlert className="h-3 w-3" strokeWidth={2.2} aria-hidden /> },
+            { pick: "todos", value: totals.todos, month: inMonth.filter((c) => fits(c, "todos")).length, label: "To-dos open", icon: <span aria-hidden className="h-[9px] w-[9px] rounded-full border-[1.6px] border-current" /> },
+            { pick: "appointments", value: totals.appointments, month: inMonth.filter((c) => fits(c, "appointments")).length, label: "Appointments", icon: <Calendar className="h-3 w-3" strokeWidth={2.2} aria-hidden /> },
+            { pick: "undated", value: undatedCount, month: null, label: "No date", icon: null },
           ] as const
         ).map((t) => {
-          const on = t.pick !== null && t.pick === pick;
+          const on = t.pick === pick;
           const late = t.pick === "overdue" && t.value > 0;
+          const faint = t.pick === "undated";
           const tone = on
             ? "border-[0.5px] border-[#E3D3B3] bg-[#F1E7D4]"
             : late
               ? "border-[0.5px] border-[#E8C2B9] bg-[#FBEDEA] hover:bg-[#F8E3DE]"
-              : t.pick === "undated"
+              : faint
                 ? "border border-dashed border-[#D8C7A4] bg-white/30 hover:bg-white/60"
                 : "border-[0.5px] border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white";
-          const inner = (
-            <>
-              <span className={`type-figure text-[34px] leading-none ${late ? "text-[#9A3F2B]" : t.pick === "undated" ? "text-stone" : on ? "text-[#6E5120]" : "text-ink"}`}>
-                {t.value}
-              </span>
-              {/* Overdue carries a ▲ as well as the rose, never colour alone. */}
-              <span className={`type-meta min-w-0 truncate ${late ? "!text-[#9A3F2B]" : ""}`}>
-                {late && "▲ "}
-                {t.label}
-              </span>
-            </>
-          );
-          const box = `flex items-baseline gap-3 rounded-[18px] px-[18px] py-3 text-left transition disabled:cursor-default disabled:hover:bg-white/70 ${tone}`;
-          // The month's figure is just a figure: everything in view is already "in October".
-          if (t.pick === null) return <div key={t.label} className={box}>{inner}</div>;
           return (
             <button
               key={t.label}
               type="button"
               disabled={t.value === 0}
-              aria-pressed={t.pick === "undated" ? undefined : on}
+              aria-pressed={faint ? undefined : on}
               onClick={() => (t.pick === "undated" ? setSelected("undated") : choose(t.pick))}
-              className={box}
+              className={`rounded-[18px] px-[18px] py-3.5 text-left transition disabled:cursor-default ${tone}`}
             >
-              {inner}
+              {/* Overdue carries the warning sign as well as the rose, never colour alone. */}
+              <span className={`type-meta flex items-center gap-2 ${late ? "!text-[#9A3F2B]" : ""}`}>
+                <span
+                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
+                    late ? "bg-[#F6D9D2] text-[#9A3F2B]" : faint ? "border border-dashed border-[#B8A27A]" : "bg-champagne-100 text-champagne-600"
+                  }`}
+                >
+                  {t.icon}
+                </span>
+                {t.label}
+              </span>
+              <span className="mt-3 flex items-baseline gap-3">
+                <span className={`type-figure text-[40px] leading-none ${late ? "text-[#9A3F2B]" : faint ? "text-stone" : on ? "text-[#6E5120]" : "text-ink"}`}>
+                  {t.value}
+                </span>
+                {t.month !== null && (
+                  <>
+                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>total</span>
+                    <span aria-hidden className={`h-[22px] w-px self-center ${late ? "bg-[#E8C2B9]" : "bg-[#D8C7A4]"}`} />
+                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>
+                      <span className={`font-medium ${late ? "" : "text-champagne-600"}`}>{t.month}</span> in {name}
+                    </span>
+                  </>
+                )}
+              </span>
             </button>
           );
         })}

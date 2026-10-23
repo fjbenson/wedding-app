@@ -104,7 +104,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
 - **Plan** (`/plan`), **Calendar | List**: to-dos and appointments only
   (payments live in Money). Calendar month on a glass card, a day card on
   tap, the month's list, Undated and Done folds. On a laptop (23 Oct 2026, canvas 5 "Laptop ·
-  Round 21", A): the big month — number tiles, then the month across the page
+  Round 21", A): the big month — four tiles ("19 total | 2 in October"), then the month across the page
   with each thing written in its day; No date and Done as pills; no list under it. The List works like the guest
   list. Guests can be tagged "involved"; appointments can go to the phone's
   own calendar (.ics, Google, Outlook).

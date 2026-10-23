@@ -2,7 +2,9 @@
 --
 -- Run against a scratch database that already has 0001_init.sql applied.
 -- Supabase provides auth.users and auth.uid(); locally, stub them first
--- (see docs/ERD.md — "How security works").
+-- (see docs/ERD.md — "How security works"). Postgres 16 is in the cloud
+-- container: initdb as the postgres user in a folder it owns; stub auth.users
+-- with raw_user_meta_data jsonb, auth.uid(), and pgcrypto.
 --
 --   psql -f supabase/migrations/0001_init.sql
 --   psql -f supabase/migrations/0003_areas.sql   (and later ones; each table is

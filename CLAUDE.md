@@ -23,6 +23,8 @@ deeper. Phone first; laptop designed separately, sharing colours and type.
 | `docs/DESIGN.md` | The look: palette, type system, glass, the Hub |
 | `docs/information-architecture.md` | The agreed map: five tabs, 38 screens (20 Sep 2026) |
 | `docs/ERD.md` | The data model explained |
+| `docs/launch-checklist.md` | What must happen before real couples use it |
+| `docs/design-links.md` | Every design canvas and lab |
 
 **The app's map** (artifact, rebuilt 19 Oct 2026):
 https://claude.ai/artifact/GfcFVHZX4vuf1Ykzdk1i5B. **Anything new goes on the
@@ -126,10 +128,8 @@ and Supabase sit in the same region; if one moves, move the other.
 - Several values are stored as text joined with " · " (a guest's roles,
   dietary needs) — no migration needed to add one.
 - **`supabase/tests/rls_isolation.sql`** proves one couple can't read or write
-  another's data; it passes with all 35 migrations. **Re-run it whenever RLS
-  policies change and add every new table to it.** Postgres 16 is in the cloud
-  container (`initdb` as the `postgres` user in a folder it owns; stub
-  `auth.users` with `raw_user_meta_data jsonb`, `auth.uid()`, and `pgcrypto`).
+  another's data. **Re-run it whenever RLS policies change and add every new
+  table to it** (how to run it: the top of that file).
 - Types in `src/types/db.ts` are hand-written; replacing them with
   `npm run db:types` is still to do.
 
@@ -153,25 +153,11 @@ and Supabase sit in the same region; if one moves, move the other.
   `supabase/seed/demo-wedding.sql` — ask the owner first; keep it in step when
   adding features.
 
-## Before real couples use it (owner's checklist)
+## Before real couples use it
 
-Not legal advice. **Only item 7's Vercel half is done.**
-
-1. Own web address + Resend domain (so anyone can get a code) — blocks the rest.
-2. Privacy policy and terms (couples enter their guests' details), including
-   that Juno sends the details a question needs to Anthropic.
-3. Register with the ICO (~£50 a year).
-4. Sign Supabase's, Vercel's and Anthropic's data processing agreements.
-5. Allergies are health data: keep them for catering only.
-6. Let a couple export or delete their wedding.
-7. Supabase paid plan (~$25/month; free has no proper backups and pauses).
-   Vercel Pro: done 12 Oct 2026.
-8. Two-step login on Supabase, Vercel, GitHub and the Claude Console.
-9. Then test with 3–5 real couples.
-10. **On the App Store** (owner, 20 Oct 2026: non-negotiable — it has to feel
-    legit to strangers): wrap the app with Capacitor, Apple developer
-    account (~£79 a year), Apple's review and payment rules checked first.
-    After the test, before charging people who don't know the owner.
+The owner's ten-step launch checklist (web address first, then privacy,
+ICO, data agreements, backups, two-step login, test couples, the App Store)
+is in **`docs/launch-checklist.md`**. Only the Vercel half of item 7 is done.
 
 ## Conventions
 
@@ -245,12 +231,8 @@ paper, Fraunces, light glass cards, the frosted hub ring).
   "▲ Over by £…").
 - Phones: 16px side margin (`--gutter`), no text under 12px, inputs 16px+
   (no iPhone zoom), check at 320px, 393px and desktop. Laptops (from `lg`):
-  the menu down the left like a magazine's contents (`side-bar.tsx`, 280px since 23 Oct 2026 so an email fits at its foot;
-  canvas 4 "Laptop · Round 7", G, owner's pick 20 Oct 2026 — it replaced the
-  top bar; a placeholder ring-and-Rondé logo at its top (Round 17, B); at its
-  foot the couple's monogram, names and the login's email open
-  Settings, Your weddings and Sign out, canvas 5 "Round 16", A, 23 Oct 2026),
-  pages beside it. **Cards sit beside the list** on a laptop
+  the menu down the left like a magazine's contents (`side-bar.tsx`, 280px;
+  what's in it: `docs/app-today.md`), pages beside it. **Cards sit beside the list** on a laptop
   (CardSheet's `beside`, `useBeside`; guest, household, group, supplier and
   plan cards): no dimming, the page steps aside 440px, another row swaps the
   card (canvas 4 "Laptop · Round 9", 1, 21 Oct 2026).
@@ -261,14 +243,12 @@ Five tabs — **Hub · People · Plan · Money · The Day** — plus area pages,
 
 ## Next up
 
-**Laptop (23 Oct 2026):** every screen has been laid out for laptops and
-photographed on the private copy at 1440px and 1024px, with and without a card
-open beside the list — what changed is in `docs/laptop-pass.md`. The owner
-went over the Hub and the side menu on 23 Oct 2026 (`docs/app-today.md`);
-the other screens are still to look over — fix what they say is off first. Use `room-md:` / `room-lg:` /
-`room-xl:` (tailwind.config.ts) instead of `lg:` / `xl:` for anything set out in
-columns where a card can open beside it: a card takes 440px, and these count from
-the room the page really has.
+**Laptop (23 Oct 2026):** every screen is laid out for laptops
+(`docs/laptop-pass.md`). The owner has looked over the Hub and side menu; the
+other screens are next — fix what they say is off first. For columns where a
+card can open beside them, use `room-md:` / `room-lg:` / `room-xl:`
+(tailwind.config.ts) instead of `lg:` / `xl:`: they count the room left once
+the 440px card is open.
 
 From the audit of 20 Oct 2026 (agreed with the owner: notes tidied first):
 
@@ -283,18 +263,9 @@ When building resumes, the 20 Oct chat suggested: the Food & drink full-screen a
 guide; **invitations** — the address export, then guest links for RSVPs (the
 owner sees invitations as a big pain point); weddings abroad.
 
-## Design work (links)
+## Design work
 
-All private to the owner; open with the Artifact tool's `read` action. New
-rounds go on canvas 5. A canvas holds 40 pages at most: when one is full,
-start the next.
-
-- **Design canvas 5** (from 23 Oct 2026; new rounds go here): https://claude.ai/artifact/W994vwmvDYocB3XsxBcqDS
-- **Design canvas 4** (full, 40 pages): https://claude.ai/artifact/FbfEj4TubVHBT2YcVmPVNu
-- **Design canvas 3** (full, 40 pages): https://claude.ai/artifact/TiZtToD5m6cEKxfu8PYbLL
-- **Design canvas 2** (full): https://claude.ai/artifact/K49dGyMgVvGpiSGNHx1aRB
-- **Design canvas 1** (full): https://claude.ai/artifact/2dHwsq5ix7zUYZcRCMKZAw
-- **Glass Lab**: https://claude.ai/artifact/54QebGu6KFctdKXkD3rxbq
-- **Taste Lab**: https://claude.ai/artifact/XtPaK5WanEmYt9wDhEspyz
-- **Name Lab** (not played yet): https://claude.ai/artifact/DAfW9wxPmNQLQEtGhgqZPP
-- **Icon audit**: https://claude.ai/artifact/SCHsvUpFJ6YdGBMb1EKqSY
+New rounds go on **design canvas 5**:
+https://claude.ai/artifact/W994vwmvDYocB3XsxBcqDS (open with the Artifact
+tool's `read`; a canvas holds 40 pages, then start the next). Older canvases
+and the Glass, Taste and Name Labs: **`docs/design-links.md`**.

@@ -13,6 +13,10 @@ export type Dot = "todo" | "appointment";
 /** One thing written in its day on the laptop's big month: "2pm Meeting with Sarah". */
 export type Chip = { kind: Dot; title: string; time: string | null; overdue: boolean };
 
+type Pick = "overdue" | "todos" | "appointments";
+const fits = (chip: Chip, pick: Pick) =>
+  pick === "overdue" ? chip.overdue : pick === "todos" ? chip.kind === "todo" : chip.kind === "appointment";
+
 /** "2026-10" → "2026-11" (or back, with -1). */
 function shiftMonth(key: string, by: 1 | -1): string {
   const [year, month] = key.split("-").map(Number);
@@ -82,6 +86,7 @@ export default function PlanCalendar({
   lastMonth,
   dots,
   chips,
+  totals,
   doneLists,
   dayPanels,
   monthLists,
@@ -97,6 +102,8 @@ export default function PlanCalendar({
   lastMonth: string;
   dots: Record<string, Dot[]>;
   chips: Record<string, Chip[]>;
+  /** The whole plan's figures for the laptop's tiles. */
+  totals: { overdue: number; todos: number; appointments: number };
   /** Each month's done things, for the big month's Done pill. */
   doneLists: Record<string, { count: number; panel: ReactNode }>;
   dayPanels: Record<string, ReactNode>;
@@ -122,9 +129,14 @@ export default function PlanCalendar({
   const [selected, setSelected] = useState<string | null>(
     askedDay === "undated" || askedDay === "done" || (askedDay && /^\d{4}-\d{2}-\d{2}$/.test(askedDay) && askedDay.startsWith(month)) ? askedDay : null,
   );
+  // A picked tile (`?show=`) lights up its things on the big month and fades the rest (owner, 23 Oct 2026).
+  const askedShow = params.get("show");
+  const [pick, setPick] = useState<Pick | null>(
+    askedShow === "overdue" || askedShow === "todos" || askedShow === "appointments" ? askedShow : null,
+  );
   useEffect(() => {
-    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected });
-  }, [month, selected, today]);
+    replaceQuery({ month: month === today.slice(0, 7) ? null : month, day: selected, show: pick });
+  }, [month, selected, today, pick]);
   const close = useCallback(() => setSelected(null), []);
 
 

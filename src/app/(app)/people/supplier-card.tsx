@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useOptimistic, useState, useTransition } from "react";
-import { Check, ChevronDown, Globe, Mail, MapPin, MoreHorizontal, Phone } from "lucide-react";
+import { Check, ChevronDown, Globe, Mail, MapPin, MoreHorizontal, Phone, X } from "lucide-react";
 import { InlineSubmit } from "@/components/form-bits";
 import CardSheet from "@/components/card-sheet";
 import { jumpTo } from "@/lib/jump-to";
@@ -20,7 +21,7 @@ import { AreaTiles } from "@/components/visual-form";
 import { areaIcon } from "@/lib/areas";
 import { SUPPLIER_STAGES } from "@/lib/supplier-status";
 import { withCommas } from "@/lib/money";
-import { deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
+import { bookSupplierAction, deleteSupplierAction, updateSupplierAction, type SupplierEdit } from "./supplier-actions";
 import SupplierFiles from "@/components/supplier-files";
 import SupplierDecor from "@/components/supplier-decor";
 import Timeline from "@/components/timeline";
@@ -452,6 +453,7 @@ function SupplierStages({
   const name = supplierName(supplier);
   const [current, setCurrent] = useOptimistic<SupplierStatus>(d?.status === "researching" ? "enquired" : (d?.status ?? "enquired"));
   const [, startTransition] = useTransition();
+  const [booking, setBooking] = useState(false);
   const { done, here } = stageState(current, paidUp);
   const move = (next: SupplierStatus) =>
     startTransition(async () => {
@@ -487,6 +489,18 @@ function SupplierStages({
 
   return (
     <section className="mt-6" aria-label="Stages">
+      {booking && (
+        <BookSheet
+          name={name}
+          quote={quote}
+          onClose={() => setBooking(false)}
+          onBook={async (input) => {
+            const result = await safely(() => bookSupplierAction(supplier.id, input));
+            if (!result.error) setBooking(false);
+            return result.error;
+          }}
+        />
+      )}
       <StageCircles stages={STAGE_NAMES} done={done} current={here} open={open} onOpen={onOpen} panelId="supplier-stage-panel" />
 
       {/* In touch (0) has nothing here: it opens the Details fold below. */}
@@ -515,7 +529,7 @@ function SupplierStages({
           <>
             <button
               type="button"
-              onClick={() => move("booked")}
+              onClick={() => setBooking(true)}
               className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-ink text-[15.5px] font-medium text-ivory transition hover:bg-ink/90"
             >
               <Check className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
@@ -622,6 +636,118 @@ function QuoteVsBudget({ quote, budget }: { quote: number; budget: number }) {
         {over ? `▲ Over by ${formatMoney(quote - budget)}` : quote === budget ? "Right on budget" : `${formatMoney(budget - quote)} under budget`}
       </p>
     </div>
+  );
+}
+
+/**
+ * What "Mark as booked" opens (owner, 23 Oct 2026): the agreed price, ready
+ * filled from the quote, and an optional deposit — paid, or due on a date —
+ * then Book. A pop-up in the middle like "Add a file".
+ */
+function BookSheet({
+  name,
+  quote,
+  onClose,
+  onBook,
+}: {
+  name: string;
+  quote: number | null;
+  onClose: () => void;
+  onBook: (input: { agreed: string; deposit: string; paid: boolean; dueDate: string }) => Promise<string | undefined>;
+}) {
+  const [agreed, setAgreed] = useState(quote != null ? withCommas(String(quote)) : "");
+  const [deposit, setDeposit] = useState("");
+  const [paid, setPaid] = useState(true);
+  const [dueDate, setDueDate] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [problem, setProblem] = useState<string>();
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && !saving && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose, saving]);
+
+  const amount = (label: string, value: string, set: (v: string) => void, focus = false) => (
+    <label className="mt-2 flex items-baseline gap-1 rounded-xl border border-linen bg-white px-3 focus-within:border-champagne-400">
+      <span aria-hidden className="font-display text-[20px] text-stone">£</span>
+      <input
+        autoFocus={focus}
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => set(withCommas(e.target.value))}
+        aria-label={label}
+        className="w-full min-w-0 bg-transparent py-2 font-display !text-[22px] font-light text-ink focus:outline-none"
+      />
+    </label>
+  );
+  const chip = (on: boolean) =>
+    `h-12 rounded-2xl border text-[14px] transition ${on ? "border-champagne-600 bg-champagne-100 text-champagne-600" : "border-linen bg-white/80 text-ink hover:border-champagne-400"}`;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-label="Mark as booked">
+      <button type="button" aria-label="Close" onClick={() => !saving && onClose()} className="absolute inset-0 h-full w-full cursor-default bg-ink/40" />
+      <div className="relative max-h-full w-full max-w-sm overflow-y-auto rounded-[26px] bg-ivory p-5 shadow-[0_30px_70px_-20px_rgb(30_27_24/0.55)]">
+        <div className="flex items-center justify-between">
+          <p className="section-label">Mark as booked</p>
+          <button type="button" onClick={() => !saving && onClose()} aria-label="Close" className="flex h-9 w-9 items-center justify-center rounded-full bg-cream text-stone hover:text-ink">
+            <X className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          </button>
+        </div>
+        <p className="mt-1.5 font-display text-[19px] font-light leading-snug">
+          <em className="text-champagne-600">{name}</em>
+        </p>
+
+        <p className="section-label mt-5">Agreed price</p>
+        {amount("Agreed price", agreed, setAgreed, true)}
+
+        <p className="section-label mt-5">Deposit <span className="normal-case tracking-normal text-stone">(if there is one)</span></p>
+        {amount("Deposit", deposit, setDeposit)}
+        {deposit.trim() && (
+          <>
+            <div role="radiogroup" aria-label="Deposit" className="mt-2.5 grid grid-cols-2 gap-2">
+              <button type="button" role="radio" aria-checked={paid} onClick={() => setPaid(true)} className={chip(paid)}>Paid</button>
+              <button type="button" role="radio" aria-checked={!paid} onClick={() => setPaid(false)} className={chip(!paid)}>Still to pay</button>
+            </div>
+            {!paid && (
+              <label className="mt-2.5 block">
+                <span className="type-meta block">Due on</span>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="mt-1.5 h-12 w-full rounded-xl border border-linen bg-white px-3 text-[16px] text-ink focus:border-champagne-400 focus:outline-none"
+                />
+              </label>
+            )}
+          </>
+        )}
+
+        {problem && (
+          <p role="alert" className="mt-3 text-sm text-ink">
+            {problem}
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            setProblem(undefined);
+            const error = await onBook({ agreed, deposit, paid, dueDate });
+            if (error) {
+              setProblem(error);
+              setSaving(false);
+            }
+          }}
+          className="mt-5 flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-ink text-[15px] text-ivory transition hover:bg-ink/90 disabled:opacity-60"
+        >
+          <Check className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+          {saving ? "Booking…" : "Book them"}
+        </button>
+      </div>
+    </div>,
+    document.body,
   );
 }
 

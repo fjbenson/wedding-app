@@ -200,43 +200,17 @@ export default function Agenda({
   const firstMonth = [thisMonth, ...dated].sort()[0];
   const lastMonth = [thisMonth, ...(lastKey ? [lastKey] : []), ...dated].sort().pop()!;
 
-  // Laptops: where the plan stands, as tiles over the month, counted like the List's numbers card; each opens the List narrowed.
+  // Laptops: where the plan stands, as tiles over the big month (calendar.tsx), counted like the List's numbers card.
   const openTodos = milestones.filter(isOpen);
   const late = (m: Milestone) => !isNudge(m) && !!m.due_date && m.due_date < today;
-  const tiles = [
-    { value: openTodos.filter(late).length, label: "Overdue", href: "/plan?view=list&when=overdue", late: true },
-    { value: openTodos.length, label: "To-dos open", href: "/plan?view=list&show=todos" },
-    { value: (appointments ?? []).filter((a) => a.on_date >= today).length, label: "Appointments", href: "/plan?view=list&show=appointments" },
-    { value: openTodos.filter((m) => !late(m) && planDate(m)?.slice(0, 7) === thisMonth).length, label: "This month", href: "/plan?view=list&when=month" },
-    { value: undated.length, label: "No date", href: "/plan?view=list&when=none", faint: true },
-  ];
+  const totals = {
+    overdue: openTodos.filter(late).length,
+    todos: openTodos.length,
+    appointments: (appointments ?? []).filter((a) => a.on_date >= today).length,
+  };
 
   return (
     <FoldGroup initiallyOpen={[]}>
-      <section aria-label="Where the plan stands" className="mt-6 hidden grid-cols-5 gap-3 room-lg:grid">
-        {tiles.map((t) => (
-          <Link
-            key={t.label}
-            href={t.href}
-            className={`flex items-baseline gap-3 rounded-[18px] px-[18px] py-3 transition ${
-              t.late && t.value > 0
-                ? "border-[0.5px] border-[#E8C2B9] bg-[#FBEDEA] hover:bg-[#F8E3DE]"
-                : t.faint
-                  ? "border border-dashed border-[#D8C7A4] bg-white/30 hover:bg-white/60"
-                  : "border-[0.5px] border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white"
-            }`}
-          >
-            <span className={`type-figure text-[34px] leading-none ${t.late && t.value > 0 ? "text-[#9A3F2B]" : t.faint ? "text-stone" : "text-ink"}`}>
-              {t.value}
-            </span>
-            {/* Overdue carries a ▲ as well as the rose, never colour alone. */}
-            <span className={`type-meta min-w-0 truncate ${t.late && t.value > 0 ? "!text-[#9A3F2B]" : ""}`}>
-              {t.late && t.value > 0 && "▲ "}
-              {t.label}
-            </span>
-          </Link>
-        ))}
-      </section>
       <PlanCalendar
         today={today}
         weddingDate={weddingDate}
@@ -244,6 +218,7 @@ export default function Agenda({
         lastMonth={lastMonth}
         dots={dots}
         chips={chips}
+        totals={totals}
         doneLists={doneLists}
         dayPanels={dayPanels}
         monthLists={monthLists}

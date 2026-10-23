@@ -7,6 +7,7 @@ import { createSupplier, getSupplier, updateSupplier, updateSupplierParts } from
 import { logStage } from "@/lib/db/timeline";
 import { getCurrentWedding } from "@/lib/db/weddings";
 import { describe } from "@/lib/errors";
+import { addPayment } from "@/lib/jobs";
 import { parseMoney } from "@/lib/money";
 import { SUPPLIER_STATUSES } from "@/lib/supplier-status";
 import { splitName } from "@/lib/names";
@@ -176,6 +177,67 @@ export async function updateSupplierAction(supplierId: string, edit: SupplierEdi
     if (edit.field === "status" && edit.value === "quoted" && /supplier_status/.test(detail)) {
       return { error: "\"Quote in\" needs one database step: run supabase/migrations/0012_area_stages.sql in Supabase." };
     }
+    return { error: "That didn't save." };
+  }
+  revalidatePath("/people");
+  revalidatePath("/money");
+  revalidatePath("/area/[key]", "page");
+  return {};
+}
+
+/**
+ * "Mark as booked" (owner, 23 Oct 2026): the agreed price (the quote unless it
+ * moved; the quote's figure is replaced and the history says what it was) and,
+ * if there is one, the deposit as a payment — paid, or due on a date. Books
+ * them in one go, so the card never has to guess at either.
+ */
+export async function bookSupplierAction(
+  supplierId: string,
+  input: { agreed: string; deposit: string; paid: boolean; dueDate: string },
+): Promise<{ error?: string }> {
+  const agreed = parseMoney(input.agreed);
+  const deposit = parseMoney(input.deposit);
+  if ((input.agreed.trim() && agreed === null) || (input.deposit.trim() && deposit === null)) {
+    return { error: "That doesn't look like an amount — try 1800 or £1,800." };
+  }
+  if (deposit && deposit > 0 && !input.paid && !input.dueDate) return { error: "When is the deposit due?" };
+  try {
+    const before = await getSupplier(supplierId);
+    if (!before) return { error: "That supplier isn't there any more." };
+    const quote = before.supplier_details?.quoted_cost ?? null;
+    const category = before.supplier_details?.category ?? null;
+    const details: Record<string, unknown> = { status: "booked" };
+    if (agreed !== null && agreed !== quote) details.quoted_cost = agreed;
+    await updateSupplierParts(supplierId, {}, details);
+
+    const pounds = (n: number) => `£${Number(n).toLocaleString("en-GB")}`;
+    const price = agreed ?? quote;
+    if (before.supplier_details?.status !== "booked") {
+      await logStage(
+        before.wedding_id,
+        supplierId,
+        category,
+        `Booked${price != null ? ` · ${pounds(price)}` : ""}${quote != null && agreed !== null && agreed !== quote ? ` (quote was ${pounds(quote)})` : ""}`,
+      );
+    }
+    if (deposit && deposit > 0) {
+      const name = before.supplier_details?.company_name ?? [before.first_name, before.last_name].filter(Boolean).join(" ");
+      const result = await addPayment({
+        description: `${name} deposit`,
+        amount: deposit,
+        supplierId,
+        area: category,
+        dueDate: input.paid ? null : input.dueDate,
+        paid: input.paid,
+        paidOn: null,
+      });
+      if (!result.ok) {
+        revalidatePath("/people");
+        return { error: "They're booked, but the deposit didn't save. Add it from Booked." };
+      }
+    }
+  } catch (error) {
+    console.error("booking supplier failed", error);
     return { error: "That didn't save." };
   }
   revalidatePath("/people");

@@ -87,7 +87,7 @@ export default function BudgetForm({ total, areas }: { total: number | null; are
     <form action={saveBudgetsAction} className="space-y-8">
       <section>
         <p className="type-meta">The whole wedding</p>
-        <div className="mt-2">
+        <div className="mt-2 lg:max-w-[460px]">
           <Pounds name="total" label="The whole wedding" value={whole} onChange={setWhole} big />
         </div>
       </section>
@@ -114,7 +114,7 @@ export default function BudgetForm({ total, areas }: { total: number | null; are
             </button>
           )}
 
-          <div className="mt-2">
+          <div className="mt-2 lg:grid lg:grid-cols-2 lg:gap-x-14">
             {areas.map((a) => {
               const share = amount(shares[a.id] ?? "");
               return (

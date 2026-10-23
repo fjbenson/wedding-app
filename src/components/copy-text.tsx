@@ -7,7 +7,7 @@ import { useState } from "react";
  * the envelopes. If the phone won't let it copy, the text opens in a box to
  * select by hand instead.
  */
-export default function CopyText({ text, label, className = "" }: { text: string; label: string; className?: string }) {
+export default function CopyText({ text, label, className = "", buttonClassName = "" }: { text: string; label: string; className?: string; buttonClassName?: string }) {
   const [state, setState] = useState<"idle" | "copied" | "manual">("idle");
 
   async function copy() {
@@ -22,7 +22,7 @@ export default function CopyText({ text, label, className = "" }: { text: string
 
   return (
     <div className={className}>
-      <button type="button" onClick={copy} className="label flex min-h-12 items-center hover:text-ink">
+      <button type="button" onClick={copy} className={`label flex min-h-12 items-center hover:text-ink ${buttonClassName}`}>
         {state === "copied" ? "Copied ✓" : label}
       </button>
       {state === "manual" && (

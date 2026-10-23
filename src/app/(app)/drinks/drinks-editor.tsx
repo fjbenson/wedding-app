@@ -102,7 +102,7 @@ export default function DrinksEditor({ drinks, areaHref, areaLabel }: { drinks: 
   const count = (s: DrinkStatus) => drinks.filter((d) => d.status === s).length;
 
   return (
-    <main className="page pb-40">
+    <main className="page pb-40 lg:max-w-[1040px]">
       <Link
         href={areaHref}
         className="inline-flex items-center gap-1.5 rounded-full bg-champagne-100 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-champagne-600"
@@ -151,6 +151,8 @@ export default function DrinksEditor({ drinks, areaHref, areaLabel }: { drinks: 
         </button>
       )}
 
+      {/* Laptop: the groups side by side (owner, 23 Oct 2026). */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
       {GROUPS.map((group) => {
         const rows = drinks.filter((d) => group.kinds.includes(d.kind));
         if (rows.length === 0) return null;
@@ -206,6 +208,7 @@ export default function DrinksEditor({ drinks, areaHref, areaLabel }: { drinks: 
           </section>
         );
       })}
+      </div>
 
       {drinks.length > 0 && (
         <p className="mt-6 px-1 text-[12.5px] text-stone">Tap the circle to move a drink on: to order, ordered, delivered.</p>

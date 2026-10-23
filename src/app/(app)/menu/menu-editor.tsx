@@ -64,7 +64,7 @@ export default function MenuEditor({
   }
 
   return (
-    <main className="page pb-40">
+    <main className="page pb-40 lg:max-w-[1040px]">
       <Link
         href={areaHref}
         className="inline-flex items-center gap-1.5 rounded-full bg-champagne-100 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-champagne-600 print:hidden"
@@ -94,6 +94,8 @@ export default function MenuEditor({
         />
       )}
 
+      {/* On a laptop the menu is the paper, with the caterer, print and who you're feeding beside it (owner, 23 Oct 2026). */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-8">
       <div className="mt-4 rounded-[22px] bg-white px-5 pb-6 pt-7 shadow-[0_0_0_1px_#E3D3AE,0_18px_40px_-24px_rgb(60_50_40/0.32)]">
         <div className="text-center">
           <p className="font-display text-[26px] font-light italic leading-tight text-ink">{couple}</p>
@@ -187,10 +189,11 @@ export default function MenuEditor({
         ))}
       </div>
 
+      <div className="lg:sticky lg:top-6">
       {courses.length > 0 && (
-        <div className="mt-4 flex items-center gap-2 print:hidden">
-          <div className="flex-1 rounded-full bg-ink text-center text-ivory [&_button]:justify-center [&_button]:text-ivory">
-            <CopyText text={menuText(courses, couple, date)} label="Copy for the caterer" />
+        <div className="mt-4 flex items-center gap-2 lg:flex-col lg:items-stretch print:hidden">
+          <div className="flex-1 rounded-full bg-ink text-center text-ivory">
+            <CopyText text={menuText(courses, couple, date)} label="Copy for the caterer" buttonClassName="w-full justify-center px-4 !text-ivory" />
           </div>
           <PrintMenu />
         </div>
@@ -206,6 +209,8 @@ export default function MenuEditor({
         </span>
         <ChevronRight className="h-4 w-4 text-stone" strokeWidth={1.8} aria-hidden />
       </Link>
+      </div>
+      </div>
     </main>
   );
 }

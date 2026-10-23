@@ -37,7 +37,7 @@ export default async function StandingPage() {
   ].filter(Boolean);
 
   return (
-    <main className="page pb-40 lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1120px] lg:pb-16">
       <Link href="/" className="inline-flex h-11 items-center text-sm text-stone">
         ‹ Hub
       </Link>
@@ -59,7 +59,7 @@ export default async function StandingPage() {
         </p>
       </div>
 
-      <div className="mt-5 space-y-3.5 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+      <div className="mt-5 space-y-3.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0 xl:grid-cols-3">
         {sections.map((section) => (
           <SectionCard key={section.key} section={section} />
         ))}

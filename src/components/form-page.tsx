@@ -12,6 +12,7 @@ export default function FormPage({
   title,
   error,
   detail,
+  wide = false,
   children,
 }: {
   backHref: string;
@@ -19,10 +20,12 @@ export default function FormPage({
   title: string;
   error?: string;
   detail?: string;
+  /** A form with a long list in it (the budget) takes more of a laptop screen, its list in two columns. */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <main className="page pb-16">
+    <main className={`page pb-16 ${wide ? "lg:max-w-[1040px]" : ""}`}>
       <BackLink
         href={backHref}
         className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-stone hover:text-ink"

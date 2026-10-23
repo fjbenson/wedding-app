@@ -191,6 +191,9 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
         <p className="mt-6 px-1 text-[15px] text-stone">Nothing on the list yet. Add the first item with the +.</p>
       )}
 
+      {/* On a laptop two columns (owner, 23 Oct 2026): what to get and pack on the left, the venue and the way back on the right. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
+      <div>
       {before.length > 0 && (
         <>
           <h2 className={GROUP_HEAD}>
@@ -214,6 +217,8 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
         </>
       )}
 
+      </div>
+      <div>
       {setUp.length > 0 && (
         <>
           <h2 className={GROUP_HEAD}>
@@ -267,6 +272,8 @@ export function PackList({ items, people, weddingDate }: { items: Items; people:
           </ul>
         </>
       )}
+      </div>
+      </div>
       <ThingCard items={items} people={people} weddingDate={weddingDate} />
     </>
   );

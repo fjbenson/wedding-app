@@ -23,7 +23,7 @@ export default async function DayDecorPage() {
   const decorArea = areas?.find((a) => isDecorArea(a.key) && a.enabled);
 
   return (
-    <main className="page pb-40 lg:max-w-3xl lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1180px] lg:pb-16">
       {/* A piece of The Day: the pill back, no back arrow (canvas 3 "The Day · Round 2"). */}
       <DayPill />
       {/* The title row carries the +, so it isn't left on a row of its own (audit, 20 Oct 2026). */}

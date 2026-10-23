@@ -38,7 +38,7 @@ export default function InboxView({
   const unfiled = (notes ?? []).filter(toSort);
 
   return (
-    <main className="page pb-40 lg:pb-16">
+    <main className="page pb-40 lg:max-w-[1180px] lg:pb-16">
       <Link href="/" className="-ml-1 inline-flex items-center gap-1 py-2 text-sm text-stone hover:text-ink">
         <ChevronLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         Hub

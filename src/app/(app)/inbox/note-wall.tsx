@@ -107,7 +107,7 @@ export default function NoteWall({
 
   return (
     <>
-      <ul className="columns-2 gap-3.5 pt-2 lg:columns-3">
+      <ul className="columns-2 gap-3.5 pt-2 lg:columns-3 xl:columns-4">
         {notes.map((note, index) => (
           <li key={note.id} className="mb-6 break-inside-avoid pt-2">
             <button

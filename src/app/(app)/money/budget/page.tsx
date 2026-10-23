@@ -33,7 +33,7 @@ export default async function BudgetPage({
   const areas = (areaRows ?? []).filter((a) => a.enabled);
 
   return (
-    <FormPage backHref="/money" backLabel="Money" title="The budget" error={error} detail={detail}>
+    <FormPage backHref="/money" backLabel="Money" title="The budget" error={error} detail={detail} wide>
       <BudgetForm
         total={wedding.budget ?? null}
         areas={areas.map((a) => ({ id: a.id, key: a.key, label: a.label, budget: a.budget ?? null }))}

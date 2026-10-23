@@ -18,9 +18,13 @@ development: keep the report short and in plain words.
      `git push origin HEAD:main` (and to this chat's own branch). If either
      check fails, don't push — tell the owner what's broken.
 2. **Bring the notes up to date** with what this chat decided or built:
-   - `CLAUDE.md` — "The app today", "Next up" and any decision worth
-     keeping (with the date). **Keep it short**: replace a line when a thing
-     changes rather than adding a new paragraph, and don't log design rounds.
+   - `docs/app-today.md` — how each screen works now. Anything built or
+     changed this chat goes here, not in `CLAUDE.md`: replace the screen's
+     line (with the date and the owner's reason in a few words).
+   - `CLAUDE.md` — only "Next up", the rules, and any decision worth keeping
+     (with the date). **Keep it short**: replace a line when a thing changes
+     rather than adding a new paragraph, and don't log design rounds. If it
+     has grown past about 300 lines, say so in the report and offer a tidy.
    - `docs/backlog.md` — add what was parked, take off what was built.
    - `docs/history.md` is an archive: leave it alone.
    - `docs/DESIGN.md` — if the look changed.

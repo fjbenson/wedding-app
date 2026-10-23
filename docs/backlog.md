@@ -1,9 +1,9 @@
 # Backlog
 
 Ideas the owner has parked, decisions still open, and loose ends. Built work
-is in `CLAUDE.md` ("The app today"); the full story of each idea (dates,
+is in `docs/app-today.md`; the full story of each idea (dates,
 canvas rounds, quotes) is in `docs/history.md`. When something here is built,
-move it to `CLAUDE.md` in a line or two and take it off this list.
+move it to `docs/app-today.md` in a line or two and take it off this list.
 
 **Rule one applies to everything here:** an idea that sends guests' details
 anywhere, changes the database or costs money is the owner's call.

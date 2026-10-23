@@ -1036,9 +1036,9 @@ export default function AreaView({
           <StepBack label="Not ready after all" />
         </form>
       ) : (
-        <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", true)} className="glass-card flex items-center gap-3 rounded-[22px] px-4 py-3.5">
-          <p className="flex-1 text-sm text-ink">{stage.current === 4 ? "Booked and paid. Anything left to sort?" : "Tap this once everything's in hand."}</p>
-          <InlineSubmit label="We're ready" pendingLabel="Saving…" primary={stage.current === 4} />
+        <form action={setAreaStageFlagAction.bind(null, area.id, area.key, "ready", true)} className="px-1">
+          {/* Just the main action, like the cards' (owner, 23 Oct 2026): black once it's the stage you're on. */}
+          <InlineSubmit label="Mark as ready" pendingLabel="Saving…" tick={stage.current === 4 ? "ink" : "outline"} />
         </form>
       ),
     },
@@ -1073,7 +1073,7 @@ export default function AreaView({
   const transportRuns = guestFacts?.kind === "transport" ? guestFacts.runs.length : 0;
   const dayLine =
     moments.length > 0
-      ? `${moments[0].title} · ${formatClock(moments[0].at_time)}${moments.length > 1 ? ` · +${moments.length - 1}` : ""}`
+      ? plural(moments.length, "moment")
       : transportRuns > 0 ? plural(transportRuns, "journey") : "Nothing yet";
   const notesLine =
     notes.length > 0 ? plural(notes.length, "note") : "Nothing yet";

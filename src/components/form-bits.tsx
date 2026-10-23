@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Check } from "lucide-react";
 import { ReturnTo } from "./back-link";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -166,12 +166,32 @@ export function InlineSubmit({
   label,
   pendingLabel,
   primary = false,
+  tick,
 }: {
   label: string;
   pendingLabel: string;
   primary?: boolean;
+  /** A main-action pill with a tick circle in front, like "Mark as done" on a card: "ink" is black, "outline" the quieter one. */
+  tick?: "ink" | "outline";
 }) {
   const { pending } = useFormStatus();
+  if (tick) {
+    const ink = tick === "ink";
+    return (
+      <button
+        type="submit"
+        disabled={pending}
+        className={`flex h-12 items-center gap-2.5 rounded-full pl-2 pr-5 text-[15px] transition disabled:opacity-60 ${
+          ink ? "bg-ink text-ivory hover:bg-ink/90" : "border border-linen bg-white text-ink hover:border-champagne-400"
+        }`}
+      >
+        <span aria-hidden className={`flex h-[32px] w-[32px] items-center justify-center rounded-full border-[1.5px] ${ink ? "border-ivory/60" : "border-champagne-400 text-champagne-600"}`}>
+          <Check className="h-4 w-4" strokeWidth={2.2} />
+        </span>
+        {pending ? pendingLabel : label}
+      </button>
+    );
+  }
   return (
     <button
       type="submit"

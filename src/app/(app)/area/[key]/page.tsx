@@ -127,7 +127,10 @@ export default async function AreaPage({
       stationery={stationery}
       music={area.key === "music"}
       // The Music area's The Day also has every moment with a song — the walk in, the first dance (owner, 19 Oct 2026).
-      moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id)).filter((i) => i.area_key === area.key || foodMomentIds.has(i.id) || (area.key === "music" && (i.music || i.music_url)))}
+      moments={withInCharge(day?.runSheet ?? [], await decorPeople(wedding.id))
+        .filter((i) => i.area_key === area.key || foodMomentIds.has(i.id) || (area.key === "music" && (i.music || i.music_url)))
+        // A moment copied onto two run sheets (Bridesmaids and Groomsmen) shows once here, not twice (owner, 23 Oct 2026).
+        .filter((m, at, all) => all.findIndex((o) => [o.title, o.at_time, o.location, o.who].join("|") === [m.title, m.at_time, m.location, m.who].join("|")) === at)}
       foodMoments={foodMoments}
       couple={coupleName(wedding.name)}
       error={error}

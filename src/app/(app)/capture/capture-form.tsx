@@ -29,12 +29,12 @@ export default function CaptureForm({
     <form action={action}>
       <input type="hidden" name="return_to" value={returnTo} />
       {/* Words, bullets and tick-boxes in one note (canvas 3 "Notes · Round 1", A, owner 19 Oct 2026). */}
-      <div className="relative mt-2 block min-h-[180px] rounded-[4px] bg-[#FFFDF8] px-5 pb-4 pt-7 shadow-[0_1px_2px_rgb(60_45_20/0.08),0_14px_30px_-16px_rgb(60_45_20/0.35)]">
+      <div className="relative mt-2 flex min-h-[48dvh] flex-col rounded-[4px] bg-[#FFFDF8] px-5 pb-4 pt-7 shadow-[0_1px_2px_rgb(60_45_20/0.08),0_14px_30px_-16px_rgb(60_45_20/0.35)]">
         <span
           aria-hidden
           className="absolute -top-2 left-1/2 h-4 w-[64px] -translate-x-1/2 border-x border-dashed border-white/60 bg-[rgb(225_205_165/0.55)]"
         />
-        <NoteEditor autoFocus placeholder="What's on your mind? An idea, a name, something someone said…" />
+        <NoteEditor fill autoFocus placeholder="What's on your mind? An idea, a name, something someone said…" />
       </div>
 
       <Part label="A link">

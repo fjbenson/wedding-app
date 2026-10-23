@@ -133,6 +133,9 @@ export default function Travel({
         }
       />
 
+      {/* On a laptop two columns (owner, 23 Oct 2026): where people sleep, and how they get there. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
+      <div>
       {/* Where is everyone sleeping? */}
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">Staying</h2>
@@ -160,6 +163,8 @@ export default function Travel({
         <Dashed onClick={() => show("unsure")} text={`${unsure.length} staying, not sure where`} />
       )}
 
+      </div>
+      <div>
       {/* How is everyone getting there and back? */}
       <div className="mt-8 flex items-center justify-between gap-3">
         <h2 className="section-label">Getting there and back</h2>
@@ -191,6 +196,8 @@ export default function Travel({
       {guests.length > 0 && noLift.length > 0 && (
         <Dashed onClick={() => show("nolift")} text={`${noLift.length} ${noLift.length === 1 ? "guest has" : "guests have"} no lift yet`} />
       )}
+      </div>
+      </div>
 
       {kind === "stay" && id === "new" && <NewStaySheet onClose={() => show(null)} onAdded={(newId) => show(`stay:${newId}`)} />}
       {stay && <StaySheet key={stay.id} stay={stay} guests={guests} onClose={() => show(null)} />}

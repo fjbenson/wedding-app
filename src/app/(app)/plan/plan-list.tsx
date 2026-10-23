@@ -11,6 +11,7 @@ import { replaceQuery } from "@/lib/url-state";
 import type { Appointment, Milestone } from "@/types/db";
 import { AppointmentRow } from "./appointment-row";
 import { Fold, FoldGroup } from "./fold";
+import NumbersCard from "@/components/numbers-card";
 import { MilestoneRow, isOpen } from "./milestone-row";
 import { WHEN_CHOICES, type When } from "./when";
 
@@ -173,9 +174,16 @@ export default function PlanList({
     .filter(Boolean)
     .join(" · ");
   const base = `/plan?view=list${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""}`;
+  // The laptop's numbers card (owner, 23 Oct 2026): what's open, what's late, what's this month, what's coming up — over the whole plan, not the filtered list.
+  const allOpen = milestones.filter(isOpen);
+  const overdueN = allOpen.filter(late).length;
+  const monthN = allOpen.filter((m) => !late(m) && planDate(m)?.slice(0, 7) === thisMonth).length;
+  const visitsN = appointments.filter((a) => a.on_date >= today).length;
 
   return (
     <FoldGroup initiallyOpen={[]}>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-x-10">
+      <div className="min-w-0">
       {/* Find or add, like the guest list: the + at the end of the search. */}
       <div className="mt-5 flex items-center gap-3">
         <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -248,6 +256,18 @@ export default function PlanList({
           <ul className="mt-1">{done.map((e) => e.row)}</ul>
         </Fold>
       )}
+      </div>
+      <aside aria-label="Where the plan stands" className="hidden lg:sticky lg:top-6 lg:block">
+        <NumbersCard
+          big={{ label: "To do", value: allOpen.length, sub: `${visitsN} ${visitsN === 1 ? "appointment" : "appointments"} to come` }}
+          rows={[
+            { value: overdueN, label: "Overdue", href: "/plan?view=list&when=overdue" },
+            { value: monthN, label: "This month", href: "/plan?view=list&when=month" },
+            { value: allOpen.filter((m) => !planDate(m)).length, label: "No date yet", href: "/plan?view=list&when=none" },
+          ]}
+        />
+      </aside>
+      </div>
     </FoldGroup>
   );
 }

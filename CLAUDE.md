@@ -38,15 +38,17 @@ holds the owner's hand-kept notes and the BLAST framework (Blueprint · Link ·
 Architect · Style · Trigger; B, L and A are done, S and T in progress). It
 lags behind: trust this repo over it, and offer to update it — never unasked.
 
-## What Claude decides alone (owner, 15 Oct 2026)
+## What Claude decides alone (owner, 15 Oct 2026; changed 23 Oct 2026)
 
-Rule one still comes first.
+Rule one still comes first. The line is whether the owner would *see* it.
 
-- **Just do it, tell the owner after:** bringing older screens into line with
-  settled patterns and `docs/DESIGN.md`; small odd-ones-out; fixes, tidying,
-  speed.
-- **Build it, then the owner checks on their phone:** new pieces that follow
-  a pattern that already exists.
+- **Just do it, tell the owner after in a line:** what they'd never see —
+  tidying code, speed, fixing a crash or a typo.
+- **Explain first, wait for the owner's OK:** anything that changes how a
+  screen looks or behaves, even a small spacing fix — bringing older screens
+  into line with settled patterns and `docs/DESIGN.md`, small odd-ones-out,
+  new pieces that follow a pattern that already exists. After the OK, build it
+  and the owner checks on their phone.
 - **Always the owner's call:** anything about people's data (who sees it,
   where it goes, how long it's kept); **any database change**; anything that
   costs money; new tabs or big changes to how the app is organised; the Hub's

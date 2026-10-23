@@ -46,7 +46,8 @@ export default function AssistantSheet({ variant, subtitle }: { variant: "hub" |
   return (
     <>
       {variant === "hub" ? (
-        <div className="flex flex-col items-center">
+        // Centred under the phone's ring; on a laptop it's in the side menu, lined up with Your notes and Inspo.
+        <div className="flex flex-col items-center lg:items-start">
           <button
             type="button"
             onClick={() => setOpen(true)}

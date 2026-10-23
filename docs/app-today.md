@@ -13,8 +13,11 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   2026): a bigger ring (it grows with the screen) whose buttons sit on the edge of
   a faint circle, each with its name in small grey capitals and **five dots**
   filling gold as stages are done (Round 10, D3; `src/lib/hub-stages.ts`),
-  and a column on the right filling the screen — **Needs a push** (the areas furthest behind, each
-  with its next step) over This week; Your notes and Inspo are in the sidebar. The Hub's look is the owner's call.
+  and a column on the right (Round 13, C, 23 Oct 2026: "a bit more fun"), each
+  card only as tall as what's in it: **Inspo & notes** (the three latest pictures
+  as a mood board, the latest note taped over its corner; `hub-board.tsx`), This
+  week, then **Needs a push** as pills (area + next step; where it stands on
+  hover). Notes and Inspo are in the sidebar too. The Hub's look is the owner's call.
 - **Area pages** (`/area/[key]`, `area-view.tsx`; on a laptop a wide cover then
   two columns — a slim Next up row and the stages together in one big card left, Everything for / Only for / the
   foot right; canvas 4 "Laptop · Round 9", 2): a photo cover with the

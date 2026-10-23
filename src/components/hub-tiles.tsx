@@ -3,7 +3,12 @@ import { host } from "@/components/note-text";
 import type { Note } from "@/types/db";
 
 /** Soft colours for the collage's empty squares, before there are pictures. */
-const BLANKS = ["#EADCC3", "#EBD7D1", "#DFE4D6", "#EFE6D6"];
+export const BLANKS = ["#EADCC3", "#EBD7D1", "#DFE4D6", "#EFE6D6"];
+
+/** A note as plain words for a tile: tick-box and bullet marks dropped, else its link's site. */
+export function noteWords(note: Note | null | undefined): string {
+  return note ? note.body?.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/gm, "").trim() || (note.url ? host(note.url) : "") : "";
+}
 
 /**
  * Your notes and Inspo as two tiles side by side under This week (canvas 2,
@@ -24,8 +29,7 @@ export default function HubTiles({
   pictures: (string | null)[];
   ideas: number;
 }) {
-  // Tick-box and bullet marks read as plain words on the tile.
-  const words = note ? note.body?.replace(/^\s*(\[( |x|X)\]|[-*•])\s?/gm, "").trim() || (note.url ? host(note.url) : "") : "";
+  const words = noteWords(note);
 
   return (
     <div className="relative mx-5 mt-4 grid grid-cols-2 gap-3 lg:mx-0 lg:mt-0">

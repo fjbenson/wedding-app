@@ -12,6 +12,7 @@ import { toSort } from "@/lib/notes";
 import { areaOptions, STARTER_AREAS } from "@/lib/areas";
 import Cover from "@/components/cover";
 import HubTiles from "@/components/hub-tiles";
+import HubBoard from "@/components/hub-board";
 import AssistantSheet from "@/components/assistant/assistant-sheet";
 import { formatDayMonth } from "@/lib/dates";
 import ThisWeek from "@/components/this-week";
@@ -73,15 +74,21 @@ export default async function HomePage() {
   // Phone: the names and ring, then those under them.
   // Laptop (canvas 4 "Laptop · Round 8", C, owner's pick 21 Oct 2026): a
   // bigger ring whose buttons show how far along each area is, and a column
-  // on the right that fills the screen — Needs a push, then This week.
-  // Your notes and Inspo are in the sidebar there. Ask Juno too. The page
+  // on the right ("Round 13", C, 23 Oct 2026): the mood board with the latest
+  // note, This week, then Needs a push as pills — each card only as tall as
+  // what's in it. Ask Juno is in the sidebar there. The page
   // and the ring grow with the screen, the ring as tall as the window allows.
   // Under 1280px there's no room for the column beside the ring, so it goes under it, in two.
   return (
     <main className="relative min-h-dvh overflow-hidden pb-28 lg:mx-auto lg:max-w-[1640px] lg:pb-10 lg:pl-8 lg:pr-11 lg:pt-10 xl:grid xl:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,480px)] xl:gap-7">
       <Cover name={wedding.name} weddingDate={wedding.wedding_date} areas={onHub} />
       <div className="relative mx-auto mt-2 max-w-lg md:max-w-2xl lg:mx-0 lg:mt-6 lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-[18px] xl:mt-0 xl:flex xl:flex-col xl:items-stretch">
-        <NeedsAPush items={pushes} />
+        <HubBoard
+          note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}
+          toSort={toSortCount}
+          pictures={(latestInspo ?? []).slice(0, 3).map((i) => i.picture)}
+          ideas={ideas}
+        />
         {/* null: 0008_notes.sql hasn't been run, so there's nowhere to save a note yet. */}
         {unfiled && (
           <div className="mb-6 flex justify-center lg:hidden">
@@ -94,7 +101,6 @@ export default async function HomePage() {
           appointments={appointments ?? []}
           payments={payments ?? []}
           hasDate={wedding.wedding_date !== null}
-          fill
           areas={areaOptions(areas)}
           suppliers={suppliers.map((s) => ({
             id: s.id,
@@ -103,6 +109,7 @@ export default async function HomePage() {
           }))}
         />
         </RowPeopleProvider>
+        <NeedsAPush items={pushes} className="lg:col-span-2" />
         <div className="lg:hidden">
         <HubTiles
           note={unfiled === null ? undefined : (sortable[0] ?? unfiled[0] ?? null)}

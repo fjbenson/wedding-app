@@ -209,6 +209,17 @@ almost everything else is still the phone layout in a narrow column.
 - **Two places for one thing:** areas are added from the ring's + but renamed
   and reordered in Settings; day and evening events are set up at the foot of
   the guest list.
+- **Card audit (owner, 23 Oct 2026):** the cards need a shared system, not one
+  look. Family 1 (profiles): Area, Guest, Household, Group, Supplier, Money
+  area. Family 2 (things with a date): Money payment, Plan to-do, Plan
+  appointment, The Day moment. For each: the top, what's folded, where the
+  main action sits, how it closes, phone vs laptop. Output: a one-page set of
+  rules in `docs/DESIGN.md`, then the odd ones out brought into line. Run it
+  in a fresh chat.
+- **Supplier card (canvas 4 "Supplier card · Round 1", 23 Oct 2026), waiting
+  on the owner's pick:** A tidied, B with Contact folded (Claude's pick), C
+  everything folded; D/E (tap a stage, its part opens, as on area pages; a
+  button inside moves the supplier on). Do after the audit so it follows the rules.
 - A supplier's card could show their next appointment.
 - Inspo's folder chips could use the shared Filter.
 - Canvases still say "Your planner" / "Your assistant" (now Juno).

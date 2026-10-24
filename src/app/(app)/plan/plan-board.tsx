@@ -49,11 +49,16 @@ export default function PlanBoard({
   entries,
   today,
   everyMonth,
+  focus,
+  onFocus,
 }: {
   entries: BoardEntry[];
   today: string;
   /** No search or filter on: show empty months too, so there's somewhere to drop. */
   everyMonth: boolean;
+  /** The month whose figures the tiles show; tap its header again to go back to this month. */
+  focus: string | null;
+  onFocus: (month: string | null) => void;
 }) {
   const [moves, setMoves] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState<string | null>(null);
@@ -160,10 +165,21 @@ export default function PlanBoard({
                       : "border-white/80 bg-white/40"
               }`}
             >
-              <p className="flex items-baseline gap-2 px-1 pb-3">
-                <span className={`font-display text-[22px] font-light ${lane.kind === "overdue" ? "text-[#9A3F2B]" : "text-ink"}`}>{lane.title}</span>
-                {lane.year && <span className="font-display text-[22px] font-light text-stone">{lane.year}</span>}
-              </p>
+              {lane.kind === "month" ? (
+                <button
+                  type="button"
+                  aria-pressed={focus === lane.key}
+                  onClick={() => onFocus(focus === lane.key ? null : lane.key)}
+                  className={`mb-3 flex w-full items-baseline gap-2 rounded-xl px-2 py-1 text-left transition ${focus === lane.key ? "bg-champagne-100 ring-[0.5px] ring-[#E3D3B3]" : "hover:bg-white/60"}`}
+                >
+                  <span className="font-display text-[22px] font-light text-ink">{lane.title}</span>
+                  <span className="font-display text-[22px] font-light text-stone">{lane.year}</span>
+                </button>
+              ) : (
+                <p className="flex items-baseline gap-2 px-3 pb-3 pt-1">
+                  <span className={`font-display text-[22px] font-light ${lane.kind === "overdue" ? "text-[#9A3F2B]" : "text-ink"}`}>{lane.title}</span>
+                </p>
+              )}
               <div className="flex flex-col gap-2.5">
                 {stack}
                 {lane.entries.length === 0 && !placeholder && lane.kind === "month" && (

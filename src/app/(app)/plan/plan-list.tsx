@@ -199,7 +199,10 @@ export default function PlanList({
   const base = `/plan?view=list${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""}`;
   // The laptop's tiles, the same four as the calendar's (owner, 24 Oct 2026), over the whole plan, not the filtered list.
   const allOpen = milestones.filter(isOpen);
-  const inThisMonth = (m: Milestone) => planDate(m)?.slice(0, 7) === thisMonth;
+  // A month header on the board, tapped, puts that month in the tiles' second figure (owner, 24 Oct 2026).
+  const [focus, setFocus] = useState<string | null>(null);
+  const tileMonth = focus ?? thisMonth;
+  const inThisMonth = (m: Milestone) => planDate(m)?.slice(0, 7) === tileMonth;
   const upcoming = appointments.filter((a) => a.on_date >= today);
   const lateOnes = allOpen.filter(late);
   const router = useRouter();
@@ -219,10 +222,10 @@ export default function PlanList({
       tiles={[
         { pick: "overdue", value: lateOnes.length, month: lateOnes.filter(inThisMonth).length },
         { pick: "todos", value: allOpen.length, month: allOpen.filter((m) => !late(m) && inThisMonth(m)).length },
-        { pick: "appointments", value: upcoming.length, month: upcoming.filter((a) => a.on_date.slice(0, 7) === thisMonth).length },
+        { pick: "appointments", value: upcoming.length, month: upcoming.filter((a) => a.on_date.slice(0, 7) === tileMonth).length },
         { pick: "undated", value: allOpen.filter((m) => !planDate(m)).length, month: null },
       ]}
-      monthName={formatMonthYear(today).split(" ")[0]}
+      monthName={formatMonthYear(`${tileMonth}-01`).split(" ").filter((_, i) => i === 0 || tileMonth.slice(0, 4) !== today.slice(0, 4)).join(" ")}
       active={tilePicked}
       onPick={pickTile}
     />
@@ -281,7 +284,7 @@ export default function PlanList({
         <>
         {board && (
           <div className="hidden lg:block">
-            <PlanBoard entries={sorted.map((e) => e.board)} today={today} everyMonth={!area && !when && !show && words.length === 0} />
+            <PlanBoard entries={sorted.map((e) => e.board)} today={today} everyMonth={!area && !when && !show && words.length === 0} focus={focus} onFocus={setFocus} />
           </div>
         )}
         <div className={board ? "lg:hidden" : ""}>

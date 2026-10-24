@@ -159,8 +159,10 @@ export default function Timeline({
             {coming.length > 0 && (
               <li className="pb-1 pt-2 text-[11.5px] uppercase tracking-[0.14em] text-stone">Coming up</li>
             )}
-            {coming.map((item) => (
-              <Row key={item.key} item={item} upcoming onRemove={remove} />
+            {/* Latest at the top like the rest of History, so the next one due sits just above Today;
+                the later ones fade back (owner, 24 Oct 2026). */}
+            {coming.map((item, i) => (
+              <Row key={item.key} item={item} upcoming later={i < coming.length - 1 && !item.line?.startsWith("Overdue")} onRemove={remove} />
             ))}
             {/* Today sits on the line as a dot, with its words beside it: no rules across the page to cross the line. */}
             {only && (
@@ -255,7 +257,7 @@ function Mark({ item, upcoming }: { item: TimelineItem; upcoming?: boolean }) {
   );
 }
 
-function Row({ item, upcoming, onRemove }: { item: TimelineItem; upcoming?: boolean; onRemove: (id: string) => void }) {
+function Row({ item, upcoming, later, onRemove }: { item: TimelineItem; upcoming?: boolean; later?: boolean; onRemove: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const overdue = item.line?.startsWith("Overdue");
   const body = (
@@ -272,7 +274,7 @@ function Row({ item, upcoming, onRemove }: { item: TimelineItem; upcoming?: bool
     </>
   );
   return (
-    <li className="relative py-2.5">
+    <li className={`relative py-2.5 ${later ? "opacity-50" : ""}`}>
       <Mark item={item} upcoming={upcoming} />
       {item.href ? (
         <CardLink href={item.href} className="relative block">

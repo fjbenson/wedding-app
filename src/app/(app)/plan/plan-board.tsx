@@ -15,7 +15,7 @@ export type BoardEntry = {
   row: React.ReactNode;
 };
 
-type Lane = { key: string; title: string; kind: "overdue" | "month" | "none"; entries: BoardEntry[] };
+type Lane = { key: string; title: string; year?: string; kind: "overdue" | "month" | "none"; entries: BoardEntry[] };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -80,6 +80,7 @@ export default function PlanBoard({
     ...months.map((m): Lane => ({
       key: m,
       title: formatMonthYear(`${m}-01`).split(" ")[0],
+      year: m.slice(0, 4),
       kind: "month",
       entries: entries.filter((e) => !lateNow(e) && dateOf(e)?.slice(0, 7) === m),
     })),
@@ -159,9 +160,9 @@ export default function PlanBoard({
                       : "border-white/80 bg-white/40"
               }`}
             >
-              <p className="flex items-baseline justify-between px-1 pb-3">
+              <p className="flex items-baseline gap-2 px-1 pb-3">
                 <span className={`font-display text-[22px] font-light ${lane.kind === "overdue" ? "text-[#9A3F2B]" : "text-ink"}`}>{lane.title}</span>
-                <span className="type-meta">{lane.entries.length}</span>
+                {lane.year && <span className="font-display text-[22px] font-light text-stone">{lane.year}</span>}
               </p>
               <div className="flex flex-col gap-2.5">
                 {stack}

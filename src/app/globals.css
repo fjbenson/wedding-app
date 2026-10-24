@@ -252,12 +252,15 @@ body::before {
  * iPhones zoom in on any text box whose writing is under 16px, and don't
  * zoom back out afterwards (owner's report, 9 Oct 2026). On phones and
  * tablets, every box writes at 16px or more so that never happens; pinch to
- * zoom still works. Unlayered, so it wins over the 15px set on many boxes.
+ * zoom still works. Tailwind 3 doesn't use real layers, so each selector
+ * needs more weight than one class to beat the 15px set on many boxes:
+ * plain "select" and "textarea" lost, and a card's Notes box zoomed (owner,
+ * 24 Oct 2026). A size marked ! (the big amount) still wins.
  */
 @media (max-width: 1023px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-  select,
-  textarea {
+  select:not([multiple]),
+  textarea:not([hidden]) {
     font-size: max(16px, 1em);
   }
 }

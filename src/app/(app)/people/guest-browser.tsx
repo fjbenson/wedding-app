@@ -719,7 +719,7 @@ export default function GuestBrowser({
                   {group.title && <GroupTitle group={group} folded={folded.has(group.key)} onFold={() => toggleFold(group.key)} />}
                   <ul>
                     {(folded.has(group.key) ? [] : group.guests).map((g) => (
-                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b-[0.5px] border-champagne-400">
+                      <li key={g.id} id={firstOfLetter.has(g.id) ? `az-${letterOf(g)}` : undefined} className="scroll-mt-4 border-b border-white">
                         <GuestRow guest={g} event={ownEvent(g)} status={statusFor(g, ownEvent(g))} showEvent={sort !== "type"} onOpen={() => showGuest(g.id)} />
                       </li>
                     ))}

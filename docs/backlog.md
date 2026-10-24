@@ -207,7 +207,9 @@ almost everything else is still the phone layout in a narrow column.
 - **Invitations** — the designer or printer is a Stationery supplier like any
   other (decided). Not built: an address export (spreadsheet or label sheet).
   Owner's call later: a print-and-post partner, or design and post in the
-  app (sends addresses out and costs money).
+  app (sends addresses out and costs money). **Owner, 24 Oct 2026:** View ›
+  Save the date counts households but lists people one by one — rows should
+  probably be households too. Think it through as part of how invitations work.
 - **Travel as a map you can play** — journeys moving through the day with a
   scrubber. Needs a map service (account, key, cost). Show only journeys and
   named places, never a guest's home address. Builds on **Journeys** (the

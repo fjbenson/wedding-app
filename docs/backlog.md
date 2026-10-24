@@ -42,7 +42,9 @@ From the last few chats, not yet confirmed:
   Stationery (What you send heading, three-circle strip, Notes and Inspo tiles side
   by side with the notes list opening from the Notes tile); The Day on a phone (menu
   bar no longer hidden, sheet carousel, slimmer top). Guest list's Sent walked 24 Oct 2026 (good; View menu now
-  scrolls). **Still to walk:** Food and drink with guest meals. Seating close-up
+  scrolls). Phone walk done. Food and drink (with guest meals) is parked:
+  the owner wants to think it through as its own piece, like invitations (24 Oct
+  2026). Seating close-up
   waits: the laptop design gets settled first, then the phone follows it (owner,
   24 Oct 2026).
 - 23 Oct 2026, The Day (phone), loose ends: Filter and Print could share the

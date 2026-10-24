@@ -12,6 +12,11 @@ anywhere, changes the database or costs money is the owner's call.
 
 From the last few chats, not yet confirmed:
 
+- 24 Oct 2026 (built, not seen yet): the payment card as a bill (Round 25, B —
+  who it's to on top, name and amount, due date along the foot, Mark as paid
+  right across); the name level with the date on to-do and appointment cards;
+  "All payments to…" fading the later ones; the People View menu scrolling
+  inside itself; no zoom when typing a note or using a drop-down.
 - Stationery: the area page, View › Sent on the guest list, a household's
   Sent to them.
 - A guest card's meal and drinks; Food & drink's "What it comes to" and

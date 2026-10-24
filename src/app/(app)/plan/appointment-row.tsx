@@ -22,6 +22,7 @@ export function AppointmentRow({
   supplier,
   area,
   inDay = false,
+  dateUnder = "month",
 }: {
   appointment: Appointment;
   been: boolean;
@@ -29,6 +30,8 @@ export function AppointmentRow({
   area?: string | null;
   /** In a day's card: "times" puts the time where the date was; "plain" (no times that day) leaves the column out. */
   inDay?: "times" | "plain" | false;
+  /** The laptop board's columns are months, so there the weekday goes under the day. */
+  dateUnder?: "month" | "weekday";
 }) {
   const weekday = formatWeekdayDayMonth(a.on_date).split(" ")[0];
   // Day and time, then who it's with — else where, else the area (RowLine).
@@ -38,7 +41,7 @@ export function AppointmentRow({
   return (
     <li className={`row-press flex items-center gap-3.5 border-b border-ink/[0.12] last:border-b-0 ${been ? "opacity-60" : ""}`}>
       <CardLink href={`/plan/appointments/${a.id}`} className="flex min-w-0 flex-1 items-center gap-3.5 py-3">
-        {inDay === "times" ? <TimeStamp time={a.at_time} done={been} /> : !inDay && <DateStamp date={a.on_date} today={todayISO()} done={been} />}
+        {inDay === "times" ? <TimeStamp time={a.at_time} done={been} /> : !inDay && <DateStamp date={a.on_date} today={todayISO()} done={been} under={dateUnder} />}
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${been ? "!text-stone" : ""}`}>{a.title}</span>
           <RowLine status={been ? "Been" : null} details={details} />

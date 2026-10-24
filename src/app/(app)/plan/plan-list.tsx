@@ -13,6 +13,7 @@ import { AppointmentRow } from "./appointment-row";
 import { Fold, FoldGroup } from "./fold";
 import NumbersCard from "@/components/numbers-card";
 import { MilestoneRow, isOpen } from "./milestone-row";
+import PlanBoard, { type BoardEntry } from "./plan-board";
 import { WHEN_CHOICES, type When } from "./when";
 
 type Show = "todos" | "appointments";
@@ -40,6 +41,8 @@ type Entry = {
   /** Words search looks through. */
   words: string;
   row: React.ReactNode;
+  /** The same row for the laptop's board: the weekday under the day, not the month. */
+  board: BoardEntry;
 };
 
 /**
@@ -123,6 +126,14 @@ export default function PlanList({
     overdue: !done && late(m),
     words: [m.title, m.description, named(m.category)].filter(Boolean).join(" ").toLowerCase(),
     row: <MilestoneRow key={`t-${m.id}`} milestone={m} overdue={!done && late(m)} area={showArea || done ? areaName(m.category, areas) : null} />,
+    board: {
+      key: `t-${m.id}`,
+      id: m.id,
+      date: planDate(m),
+      overdue: !done && late(m),
+      movable: !!m.due_date && !isNudge(m),
+      row: <MilestoneRow key={`t-${m.id}`} milestone={m} overdue={!done && late(m)} area={areaName(m.category, areas)} dateUnder="weekday" />,
+    },
   });
   const appointmentArea = (a: Appointment) => a.area_key ?? supplier(a.contact_id)?.area ?? null;
   const visit = (a: Appointment, been: boolean): Entry => ({
@@ -141,6 +152,14 @@ export default function PlanList({
         area={showArea || been ? areaName(appointmentArea(a), areas) : null}
       />
     ),
+    board: {
+      key: `a-${a.id}`,
+      id: a.id,
+      date: a.on_date,
+      overdue: false,
+      movable: false,
+      row: <AppointmentRow key={`a-${a.id}`} appointment={a} been={false} supplier={supplier(a.contact_id)?.name} area={areaName(appointmentArea(a), areas)} dateUnder="weekday" />,
+    },
   });
 
   const todos = show === "appointments" ? [] : milestones.filter((m) => inArea(m.category));
@@ -173,6 +192,8 @@ export default function PlanList({
   ]
     .filter(Boolean)
     .join(" · ");
+  // Laptops list by date as a board of months; View › Area or Name keeps the list.
+  const board = sort === "date" && open.length > 0;
   const base = `/plan?view=list${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""}`;
   // The laptop's numbers card (owner, 23 Oct 2026): what's open, what's late, what's this month, what's coming up — over the whole plan, not the filtered list.
   const allOpen = milestones.filter(isOpen);
@@ -195,9 +216,9 @@ export default function PlanList({
 
   return (
     <FoldGroup initiallyOpen={[]}>
-      <div className="room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10">
+      <div className={board ? "" : "room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10"}>
       <div className="min-w-0">
-      <div className="mt-5 hidden max-w-md room-lg:block room-xl:hidden">{numbers}</div>
+      {!board && <div className="mt-5 hidden max-w-md room-lg:block room-xl:hidden">{numbers}</div>}
       {/* Find or add, like the guest list: the + at the end of the search. */}
       <div className="mt-5 flex items-center gap-3">
         <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -243,7 +264,14 @@ export default function PlanList({
                 : "Everything's done. Lovely."}
         </p>
       ) : (
-        groups.map((g) => (
+        <>
+        {board && (
+          <div className="hidden lg:block">
+            <PlanBoard entries={sorted.map((e) => e.board)} today={today} everyMonth={!area && !when && !show && words.length === 0} />
+          </div>
+        )}
+        <div className={board ? "lg:hidden" : ""}>
+        {groups.map((g) => (
           <section key={g.key}>
             {g.title && (
               <p className="mt-5 flex items-baseline justify-between gap-3 px-1">
@@ -253,7 +281,9 @@ export default function PlanList({
             )}
             <ul className="glass-card mt-2 overflow-hidden rounded-[22px] px-4 py-1 [--row-bleed:16px]">{g.entries.map((e) => e.row)}</ul>
           </section>
-        ))
+        ))}
+        </div>
+        </>
       )}
 
       {done.length > 0 && (
@@ -271,7 +301,7 @@ export default function PlanList({
         </Fold>
       )}
       </div>
-      <aside aria-label="Where the plan stands" className="hidden room-xl:sticky room-xl:top-6 room-xl:block">
+      <aside aria-label="Where the plan stands" className={`hidden ${board ? "" : "room-xl:sticky room-xl:top-6 room-xl:block"}`}>
         {numbers}
       </aside>
       </div>

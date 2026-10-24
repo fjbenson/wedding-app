@@ -41,8 +41,10 @@ From the last few chats, not yet confirmed:
   open, Bullet and Tick-box on top); "Area" / "No area" wording everywhere;
   Stationery (What you send heading, three-circle strip, Notes and Inspo tiles side
   by side with the notes list opening from the Notes tile); The Day on a phone (menu
-  bar no longer hidden, sheet carousel, slimmer top). **Still to walk, in order:**
-  guest list's Sent, seating close-up, Food and drink with guest meals.
+  bar no longer hidden, sheet carousel, slimmer top). Guest list's Sent walked 24 Oct 2026 (good; View menu now
+  scrolls). **Still to walk:** Food and drink with guest meals. Seating close-up
+  waits: the laptop design gets settled first, then the phone follows it (owner,
+  24 Oct 2026).
 - 23 Oct 2026, The Day (phone), loose ends: Filter and Print could share the
   search's row to save height (left alone, needs Filter reworked);
   `sheet-picker.tsx` is no longer used on a phone (its "not for a group" line and

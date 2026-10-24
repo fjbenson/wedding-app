@@ -14,6 +14,26 @@ export function daysUntil(date: string): number {
   return Math.round((target - today) / 86_400_000);
 }
 
+/**
+ * How far off a due date is: "today", "tomorrow", "in 5 days", "in 3 weeks",
+ * "in 3 months", or "2 days late". Beside the weekday on a payment, so
+ * "Due Mon" isn't read as this coming Monday (owner, 24 Oct 2026).
+ */
+export function formatHowFar(date: string): string {
+  const days = daysUntil(date);
+  if (days === 0) return "today";
+  if (days === 1) return "tomorrow";
+  if (days < 0) {
+    const late = -days;
+    if (late < 14) return `${late} ${late === 1 ? "day" : "days"} late`;
+    if (late < 60) return `${Math.floor(late / 7)} weeks late`;
+    return `${Math.floor(late / 30)} months late`;
+  }
+  if (days < 14) return `in ${days} days`;
+  if (days < 60) return `in ${Math.floor(days / 7)} weeks`;
+  return `in ${Math.floor(days / 30)} months`;
+}
+
 /** "Saturday, 12 June 2027" */
 export function formatLongDate(date: string): string {
   const [year, month, day] = date.split("-").map(Number);

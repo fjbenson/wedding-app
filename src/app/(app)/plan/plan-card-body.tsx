@@ -274,6 +274,7 @@ export function PaymentBody({
         date={paid ? paidOn : due}
         dateName={paid ? "paid_on" : "due_date"}
         dateNote={paid ? "Paid " : "Due "}
+        howFar={!paid}
         onDate={(v) => {
           if (paid) {
             // A paid payment always has the day it was paid.

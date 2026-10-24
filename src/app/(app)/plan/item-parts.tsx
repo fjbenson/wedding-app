@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Check, ChevronDown, Clock, MapPin } from "lucide-react";
 import { AreaTiles, DateCard } from "@/components/visual-form";
-import { formatDayMonth, formatLongDate, formatTime } from "@/lib/dates";
+import { formatDayMonth, formatHowFar, formatLongDate, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import { editorKeys, FIELD, SaveCancel, useSaver } from "../people/guest-card";
 import type { AreaOption } from "@/lib/areas";
 
@@ -34,6 +34,7 @@ export function ItemSignature({
   areaRound = 0,
   otherValue = "other",
   dateNote = "",
+  howFar,
   time,
   onTime,
   stamp,
@@ -57,6 +58,8 @@ export function ItemSignature({
   otherValue?: string;
   /** Before the weekday under the name: "Due ", "Paid ". */
   dateNote?: string;
+  /** Short weekday and how far off: "Due Mon · in 3 months" (an unpaid payment). */
+  howFar?: boolean;
   /** "14:00" or "": an appointment's time sits in a gold band at the foot of the stamp (owner, 23 Oct 2026, Round 9, A). Left out, the card has no time. */
   time?: string;
   onTime?: (v: string) => void;
@@ -108,7 +111,12 @@ export function ItemSignature({
           {stamp ? (
             stamp.sub && <p className="mt-1 text-[14px] text-stone">{stamp.sub}</p>
           ) : (
-            date && <p className="mt-1 text-[14px] text-stone">{dateNote}{formatLongDate(date).split(",")[0]}</p>
+            date && (
+              <p className="mt-1 text-[14px] text-stone">
+                {dateNote}
+                {howFar ? `${formatWeekdayDayMonth(date).split(" ")[0]} · ${formatHowFar(date)}` : formatLongDate(date).split(",")[0]}
+              </p>
+            )
           )}
         </div>
       </div>

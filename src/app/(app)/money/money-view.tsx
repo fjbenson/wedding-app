@@ -10,6 +10,7 @@ import PageTitle from "@/components/page-title";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
 import AreaCards, { type AreaCard } from "./area-cards";
 import MoneyFigures from "./money-figures";
+import MoneyTiles from "./money-tiles";
 import type { Money } from "@/lib/budget";
 import { formatDayMonth, formatMonthYear, formatWeekdayDayMonth, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -198,11 +199,20 @@ function ByArea({
   searching: boolean;
 }) {
   const chart = monthColumns(payments, total, weddingDate);
+  const nextDue = chart.columns.find((c) => !c.paid && c.amount > 0);
+  const shared = byArea.reduce((s, a) => s + (a.budget ?? 0), 0);
+  const unshared = !scope && !searching && total.budget !== null && total.budget - shared > 0 ? total.budget - shared : null;
   return (
     <>
-      {/* Laptops (canvas 3 "Laptop · Round 3 · A tab that uses the width", C,
-          owner's pick 18 Oct 2026): the budget and when it's due side by side. */}
-      <div className="mt-6 room-md:grid room-md:grid-cols-2 room-md:items-stretch room-md:gap-4">
+      {/* Laptops: four tiles like Plan's (canvas 5 "Laptop · Round 27", E,
+          owner's pick 24 Oct 2026); phones keep the budget card. */}
+      <MoneyTiles
+        total={total}
+        unshared={unshared}
+        towards={towards.total}
+        next={nextDue ? { amount: nextDue.amount, month: formatMonthYear(`${nextDue.key}-01`).split(" ")[0] } : null}
+      />
+      <div className="mt-6 room-md:hidden">
       <Link
         href="/money/budget"
         aria-label={`${scope ?? "All areas"} — change the budget`}
@@ -237,18 +247,6 @@ function ByArea({
           </div>
         )}
       </Link>
-      <section aria-label="When it's due" className="glass-card hidden rounded-[26px] px-5 pb-4 pt-5 room-md:flex room-md:flex-col">
-        <p className="flex items-baseline justify-between gap-3">
-          <span className="type-meta">When it&apos;s due</span>
-          <Link href="/money?view=month" className="type-meta flex items-center !text-champagne-600">
-            By month
-            <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-          </Link>
-        </p>
-        <div className="mt-auto pt-4">
-          <MonthChart chart={chart} chosen={null} hrefFor={(key) => `/money?view=month&month=${key}`} />
-        </div>
-      </section>
       </div>
 
       {/* Straight from the totals into the areas (owner, 12 Oct 2026: the

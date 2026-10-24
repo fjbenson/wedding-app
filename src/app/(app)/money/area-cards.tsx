@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, MapPin, Plus } from "lucide-react";
-import BudgetBar, { PAID_BAR } from "@/components/budget-bar";
+import BudgetBar, { AGREED_BAR, PAID_BAR } from "@/components/budget-bar";
+import { CircleDashed, ReceiptText } from "lucide-react";
 import CardSheet from "@/components/card-sheet";
 import { useCycle, useRegisterCycle, type Cycle } from "@/lib/card-cycle";
 import { Fold } from "../people/guest-card";
@@ -79,7 +80,8 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
 
   return (
     <>
-      <ul className="mt-3 grid grid-cols-2 gap-3 room-md:mt-5 room-md:grid-cols-4 room-md:gap-3.5">
+      <AreaTable areas={areas} open={open} onOpen={show} />
+      <ul className="mt-3 grid grid-cols-2 gap-3 room-md:hidden">
         {areas.map((a) => {
           const { stage, figure } = standing(a);
           const Icon = areaIcon(a.key || "other", a.icon);
@@ -120,6 +122,122 @@ export default function AreaCards({ areas, open: initial }: { areas: AreaCard[];
       </ul>
       {current && <AreaMoneySheet area={current} cycle={cycle} onClose={() => show(null)} />}
     </>
+  );
+}
+
+/**
+ * The areas as a table, on a laptop (canvas 5 "Laptop · Round 27", E, owner's
+ * pick 24 Oct 2026): fewer number columns — "£8,500 of £9,000" in one,
+ * Paid | To go in another, like Suppliers — and a bar per row, every bar on
+ * the same scale so the big spends look big. All-paid rows fade; an
+ * over-budget row is tinted and says so in words. A row opens the area's money.
+ */
+function AreaTable({ areas, open, onOpen }: { areas: AreaCard[]; open: string | null; onOpen: (key: string) => void }) {
+  const scale = Math.max(1, ...areas.map((a) => Math.max(a.budget ?? 0, a.committed, a.paid)));
+  const pct = (x: number) => `${Math.min((x / scale) * 100, 100)}%`;
+  const head = "text-xs font-semibold uppercase tracking-[0.12em] text-stone";
+  const cols = "grid grid-cols-[minmax(180px,1.2fr)_minmax(104px,0.6fr)_minmax(150px,1fr)_minmax(140px,0.9fr)_minmax(140px,1.5fr)] items-center gap-x-5";
+  return (
+    <div className="glass-card mt-5 hidden overflow-hidden rounded-[22px] room-md:block">
+      <div className={`${cols} border-b border-linen px-5 pb-2.5 pt-3.5`}>
+        <span className={head}>Area</span>
+        <span className={head}>Stage</span>
+        <span className={head}>Booked</span>
+        <span className={head}>Paid | To go</span>
+        <span aria-hidden className="flex items-center gap-3.5 text-xs text-stone">
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm border border-dashed border-[#A89A80]" />Budget</span>
+          <span className="flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-sm ${AGREED_BAR}`} />Booked</span>
+          <span className="flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-sm ${PAID_BAR}`} />Paid</span>
+        </span>
+      </div>
+      <ul>
+        {areas.map((a) => {
+          const key = a.key || "other";
+          const { stage, figure } = standing(a);
+          const Icon = areaIcon(key, a.icon);
+          const booked = stage === "Booked";
+          const over = booked && a.budget !== null && a.committed > a.budget;
+          const done = booked && a.paid >= a.committed;
+          const StageIcon = booked ? Check : stage === "Quoted" ? ReceiptText : CircleDashed;
+          const dash = <span className="text-stone/70">—</span>;
+          return (
+            <li key={key} className={`border-b border-linen/80 last:border-b-0 ${over ? "bg-[#FBEDEA]/60" : ""}`}>
+              <button
+                type="button"
+                onClick={() => onOpen(key)}
+                aria-current={open === key ? "true" : undefined}
+                className={`${cols} row-press w-full px-5 py-2.5 text-left hover:bg-white/50 aria-[current=true]:bg-white/70 ${done ? "[&>*]:opacity-[0.55]" : ""}`}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-champagne-100 text-champagne-600">
+                    <Icon className="h-[15px] w-[15px]" strokeWidth={1.6} aria-hidden />
+                  </span>
+                  <span className="type-item min-w-0 truncate text-[17px]">{a.label}</span>
+                </span>
+                <span className={`flex items-center gap-1.5 text-[13px] ${booked ? "text-[#6F5120]" : stage === "Quoted" ? "text-champagne-600" : "text-stone"}`}>
+                  {stage ? (
+                    <>
+                      <StageIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={booked ? 2.2 : 1.8} aria-hidden />
+                      {stage}
+                    </>
+                  ) : (
+                    "No budget yet"
+                  )}
+                </span>
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 tabular-nums">
+                  {booked ? (
+                    <span className="type-figure text-[19px] !font-light">{formatMoney(a.committed)}</span>
+                  ) : stage === "Quoted" ? (
+                    <span className="text-[15px] text-stone">{formatMoney(figure ?? 0)} quote</span>
+                  ) : (
+                    dash
+                  )}
+                  {over ? (
+                    <span className="text-[13px] text-[#9A3F2B]">▲ {formatMoney(a.committed - a.budget!)} over {formatMoney(a.budget!)}</span>
+                  ) : (
+                    a.budget !== null && <span className="text-[13px] text-stone">of {formatMoney(a.budget)}</span>
+                  )}
+                </span>
+                <span className="flex items-baseline gap-2 text-[15px] tabular-nums">
+                  {!booked ? (
+                    dash
+                  ) : done ? (
+                    <span className="text-champagne-600">✓ All paid</span>
+                  ) : (
+                    <>
+                      <span className={a.paid > 0 ? "text-champagne-600" : "text-stone"}>{formatMoney(a.paid)}</span>
+                      <span aria-hidden className="text-stone/40">|</span>
+                      <span className="sr-only">paid,</span>
+                      <span>{formatMoney(a.committed - a.paid)}</span>
+                      <span className="sr-only">to go</span>
+                    </>
+                  )}
+                </span>
+                {/* One scale for every row: the budget dashed, booked inside it, paid inside that, stripes past the budget. */}
+                <span aria-hidden className="relative block h-3">
+                  {a.budget !== null && (
+                    <span className="absolute inset-y-0 left-0 rounded-[3px] border border-dashed border-[#A89A80]" style={{ width: pct(a.budget) }} />
+                  )}
+                  {booked && (
+                    <span className={`absolute inset-y-0 left-0 rounded-[3px] ${AGREED_BAR}`} style={{ width: pct(over ? a.budget! : a.committed) }} />
+                  )}
+                  {over && (
+                    <span
+                      className="absolute inset-y-0 rounded-r-[3px]"
+                      style={{ left: pct(a.budget!), width: pct(a.committed - a.budget!), background: "repeating-linear-gradient(135deg,#B5523B 0 3px,#E8B4A6 3px 6px)" }}
+                    />
+                  )}
+                  {booked && a.paid > 0 && <span className={`absolute inset-y-0 left-0 rounded-[3px] ${PAID_BAR}`} style={{ width: pct(a.paid) }} />}
+                  {stage === "Quoted" && figure !== null && (
+                    <span className="absolute -inset-y-1 w-0.5 rounded-sm bg-champagne-600" style={{ left: pct(figure) }} />
+                  )}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

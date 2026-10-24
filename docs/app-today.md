@@ -133,6 +133,15 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   (deposit last; quotes as dashed "not counted" rows, or compared); the month
   columns and payments by month; the budget page with
   "Share it out for us"; money towards it and bills family are paying.
+  **On a laptop** (24 Oct 2026, canvas 5 "Laptop · Round 27", E): By area
+  starts with four tiles like Plan's (Budget, which opens the budget page ·
+  Booked · Paid · Still to pay; `money-tiles.tsx`) instead of the budget card
+  and month chart, then the areas as a table in a glass card: Area (round
+  icon) · Stage (icon + word) · Booked "£8,500 of £9,000" · Paid | To go ·
+  a bar per row, every bar on one scale (budget dashed, booked, paid, stripes
+  and "▲ … over" past the budget, a tick for a quote). All-paid rows fade, an
+  over-budget row is tinted; a row opens the area's money beside it. Phones
+  keep the card and the area cards. By month unchanged.
 - **The Day** (`/day`): the **run sheet** as an order of service, with three
   piece tiles — **Seating** (floor plan on a dot grid, round / long / top
   tables, a table close-up with saved chairs, dietary marks, seat a group or

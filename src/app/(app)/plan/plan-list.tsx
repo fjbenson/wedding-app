@@ -216,7 +216,7 @@ export default function PlanList({
 
   return (
     <FoldGroup initiallyOpen={[]}>
-      <div className={board ? "" : "room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10"}>
+      <div className={board ? "" : "lg:max-w-[1180px] room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10"}>
       <div className="min-w-0">
       {!board && <div className="mt-5 hidden max-w-md room-lg:block room-xl:hidden">{numbers}</div>}
       {/* Find or add, like the guest list: the + at the end of the search. */}

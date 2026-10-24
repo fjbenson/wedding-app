@@ -1428,6 +1428,14 @@ function SortMenu({ sort, onSort, column }: { sort: SortBy; onSort: (s: SortBy) 
   const { open, setOpen, box } = useDropdown();
   // A table heading's sort takes the button's place: "Dietary ↑".
   const columnLabel = column ? `${COLUMN_LABEL[column.col]} ${column.desc ? "↓" : "↑"}` : null;
+  // The list scrolls inside itself, stopping above the phone's menu bar, so the
+  // page doesn't have to move to reach Sent (owner, 24 Oct 2026).
+  const [maxHeight, setMaxHeight] = useState<number>();
+  useEffect(() => {
+    if (!open || !box.current) return;
+    const below = window.innerHeight - box.current.getBoundingClientRect().bottom;
+    setMaxHeight(Math.max(240, below - (window.innerWidth < 1024 ? 110 : 24)));
+  }, [open, box]);
 
   return (
     <div ref={box} className="relative min-w-0">
@@ -1445,7 +1453,7 @@ function SortMenu({ sort, onSort, column }: { sort: SortBy; onSort: (s: SortBy) 
       </button>
 
       {open && (
-        <div className={`${MENU} !left-0 !right-auto w-[16rem] pb-1.5 pt-2.5`}>
+        <div className={`${MENU} !left-0 !right-auto w-[16rem] overflow-y-auto overscroll-contain pb-1.5 pt-2.5`} style={{ maxHeight }}>
           <ul>
             {SORTS.map((o, i) => (
               <li key={o.key} className={i > 0 && SORTS[i - 1].section === o.section ? "border-t border-linen" : ""}>

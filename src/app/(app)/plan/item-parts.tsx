@@ -74,7 +74,7 @@ export function ItemSignature({
 
   return (
     <>
-      <div className="mt-1 flex items-start gap-3.5">
+      <div className="mt-1 flex items-center gap-3.5">
         <button
           type="button"
           onClick={() => toggle("date")}
@@ -91,13 +91,19 @@ export function ItemSignature({
           {date && time && <span className="w-full bg-champagne-600 py-1 text-center text-[13px] font-semibold text-white">{formatTime(time)}</span>}
         </button>
 
+        {/* The name level with the date; its grey line below with the area pill at the
+            end (owner, 24 Oct 2026, canvas 5 "Payment card · Round 24", B). */}
         <div className="min-w-0 flex-1">
-          <div className="flex justify-end">
+          {titleEditor}
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <p className="min-w-0 text-[14px] text-stone">
+              {stamp ? stamp.sub : date ? (howFar ? dueLine(date) : `${dateNote}${formatLongDate(date).split(",")[0]}`) : null}
+            </p>
             <button
               type="button"
               onClick={() => toggle("area")}
               aria-expanded={picking === "area"}
-              className={`inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+              className={`inline-flex max-w-[60%] shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
                 areaLabel ? "bg-champagne-100 text-champagne-600" : "border border-dashed border-champagne-600/50 text-champagne-600"
               }`}
             >
@@ -105,18 +111,6 @@ export function ItemSignature({
               <ChevronDown aria-hidden className={`h-3.5 w-3.5 shrink-0 transition ${picking === "area" ? "rotate-180" : ""}`} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="mt-1">
-            {titleEditor}
-          </div>
-          {stamp ? (
-            stamp.sub && <p className="mt-1 text-[14px] text-stone">{stamp.sub}</p>
-          ) : (
-            date && (
-              <p className="mt-1 text-[14px] text-stone">
-                {howFar ? dueLine(date) : `${dateNote}${formatLongDate(date).split(",")[0]}`}
-              </p>
-            )
-          )}
         </div>
       </div>
 

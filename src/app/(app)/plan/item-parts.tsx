@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Check, ChevronDown, Clock, MapPin } from "lucide-react";
 import { AreaTiles, DateCard } from "@/components/visual-form";
-import { formatDayMonth, formatHowFar, formatLongDate, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
+import { daysUntil, formatDayMonth, formatHowFar, formatLongDate, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
 import { editorKeys, FIELD, SaveCancel, useSaver } from "../people/guest-card";
 import type { AreaOption } from "@/lib/areas";
 
@@ -58,7 +58,7 @@ export function ItemSignature({
   otherValue?: string;
   /** Before the weekday under the name: "Due ", "Paid ". */
   dateNote?: string;
-  /** Short weekday and how far off: "Due Mon · in 3 months" (an unpaid payment). */
+  /** How far off instead of the weekday (an unpaid payment): "Due in 3 months", "Due Mon · in 2 days", "5 days late". */
   howFar?: boolean;
   /** "14:00" or "": an appointment's time sits in a gold band at the foot of the stamp (owner, 23 Oct 2026, Round 9, A). Left out, the card has no time. */
   time?: string;
@@ -113,8 +113,7 @@ export function ItemSignature({
           ) : (
             date && (
               <p className="mt-1 text-[14px] text-stone">
-                {dateNote}
-                {howFar ? `${formatWeekdayDayMonth(date).split(" ")[0]} · ${formatHowFar(date)}` : formatLongDate(date).split(",")[0]}
+                {howFar ? dueLine(date) : `${dateNote}${formatLongDate(date).split(",")[0]}`}
               </p>
             )
           )}
@@ -333,4 +332,17 @@ export function AreaTagRow({
       )}
     </div>
   );
+}
+
+/**
+ * An unpaid payment's line under its name. The weekday only while it's this
+ * week; further off it's just how far (owner, 24 Oct 2026: "if it's 3 months
+ * away, we don't need to say Monday").
+ */
+function dueLine(date: string): string {
+  const far = formatHowFar(date);
+  if (far.endsWith("late")) return far.charAt(0).toUpperCase() + far.slice(1);
+  if (far === "today" || far === "tomorrow") return `Due ${far}`;
+  const days = daysUntil(date);
+  return days < 7 ? `Due ${formatWeekdayDayMonth(date).split(" ")[0]} · ${far}` : `Due ${far}`;
 }

@@ -119,7 +119,7 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   the middle, "Due 1 February 2027 · In 3 months" along a dashed foot (tap for
   the date), Mark as paid right across. "All payments to…": the next one due
   at full strength, later ones faded.
-  On a laptop (24 Oct 2026, canvas 5 "Laptop · Round 26", B) the List by Date is a **board**: Overdue, then a column per month from this one, No date last (`plan-board.tsx`); drag a to-do to another month and it keeps its day (a shorter month takes the last day, never a day already gone). Appointments and "start around" nudges don't drag; Overdue and No date aren't drop places. No numbers card on the board (the column counts say it). View › Area / Name keeps the old list. Phones keep the list.
+  On a laptop (24 Oct 2026, canvas 5 "Laptop · Round 26", B) the List by Date is a **board**: Overdue, then a column per month from this one, No date last (`plan-board.tsx`); drag a to-do to another month and it keeps its day (a shorter month takes the last day, never a day already gone). Appointments and "start around" nudges don't drag; Overdue and No date aren't drop places. The same four tiles as the calendar (Overdue · To-dos open · Appointments · No date, `plan-tiles.tsx`, shared) sit above the search in both views so it never jumps (24 Oct 2026); tapping one narrows the list to it. Month headers show the year, no count. View › Area / Name keeps the old list. Phones keep the list.
 - **Money** (`/money`), **By area | By month**: Budget → Agreed → Paid. The
   top card leads with the budget until something's agreed. Area cards two to a
   row (owner, 21 Oct 2026; canvas 4 "Money · Rounds 2–3"): one figure (agreed,

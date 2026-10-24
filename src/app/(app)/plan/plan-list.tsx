@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, ChevronDown, LayoutList, Search, X } from "lucide-react";
 import AddMenu from "@/components/add-menu";
 import { planChoices } from "@/components/add-choices";
 import FilterMenu from "@/components/filter-menu";
 import { areaFilterRows, areaName, type AreaOption } from "@/lib/areas";
+import { formatMonthYear } from "@/lib/dates";
 import { isNudge, planDate } from "@/lib/plan";
 import { replaceQuery } from "@/lib/url-state";
 import type { Appointment, Milestone } from "@/types/db";
 import { AppointmentRow } from "./appointment-row";
 import { Fold, FoldGroup } from "./fold";
-import NumbersCard from "@/components/numbers-card";
 import { MilestoneRow, isOpen } from "./milestone-row";
 import PlanBoard, { type BoardEntry } from "./plan-board";
+import PlanTiles from "./plan-tiles";
 import { WHEN_CHOICES, type When } from "./when";
 
 type Show = "todos" | "appointments";
@@ -195,30 +197,42 @@ export default function PlanList({
   // Laptops list by date as a board of months; View › Area or Name keeps the list.
   const board = sort === "date" && open.length > 0;
   const base = `/plan?view=list${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""}`;
-  // The laptop's numbers card (owner, 23 Oct 2026): what's open, what's late, what's this month, what's coming up — over the whole plan, not the filtered list.
+  // The laptop's tiles, the same four as the calendar's (owner, 24 Oct 2026), over the whole plan, not the filtered list.
   const allOpen = milestones.filter(isOpen);
-  const overdueN = allOpen.filter(late).length;
-  const monthN = allOpen.filter((m) => !late(m) && planDate(m)?.slice(0, 7) === thisMonth).length;
-  const visitsN = appointments.filter((a) => a.on_date >= today).length;
-
-  // Laptops: where the plan stands. Beside the list on a wide screen, above it on a narrower
-  // one (`room-*:` waits for 440px more screen while a card is open beside the list).
-  const numbers = (
-    <NumbersCard
-      big={{ label: "To do", value: allOpen.length, sub: `${visitsN} ${visitsN === 1 ? "appointment" : "appointments"} to come` }}
-      rows={[
-        { value: overdueN, label: "Overdue", href: "/plan?view=list&when=overdue" },
-        { value: monthN, label: "This month", href: "/plan?view=list&when=month" },
-        { value: allOpen.filter((m) => !planDate(m)).length, label: "No date yet", href: "/plan?view=list&when=none" },
+  const inThisMonth = (m: Milestone) => planDate(m)?.slice(0, 7) === thisMonth;
+  const upcoming = appointments.filter((a) => a.on_date >= today);
+  const lateOnes = allOpen.filter(late);
+  const router = useRouter();
+  const tilePicked = show === "todos" ? "todos" : show === "appointments" ? "appointments" : when === "overdue" ? "overdue" : when === "none" ? "undated" : null;
+  const pickTile = (pick: "overdue" | "todos" | "appointments" | "undated") => {
+    const same = tilePicked === pick;
+    const params = [
+      !same && (pick === "todos" || pick === "appointments") && `show=${pick}`,
+      !same && (pick === "overdue" || pick === "undated") && `when=${pick === "undated" ? "none" : "overdue"}`,
+      area && `area=${encodeURIComponent(area)}`,
+      query.trim() && `q=${encodeURIComponent(query.trim())}`,
+    ].filter(Boolean);
+    router.replace(`/plan?view=list${params.length ? `&${params.join("&")}` : ""}`, { scroll: false });
+  };
+  const tiles = (
+    <PlanTiles
+      tiles={[
+        { pick: "overdue", value: lateOnes.length, month: lateOnes.filter(inThisMonth).length },
+        { pick: "todos", value: allOpen.length, month: allOpen.filter((m) => !late(m) && inThisMonth(m)).length },
+        { pick: "appointments", value: upcoming.length, month: upcoming.filter((a) => a.on_date.slice(0, 7) === thisMonth).length },
+        { pick: "undated", value: allOpen.filter((m) => !planDate(m)).length, month: null },
       ]}
+      monthName={formatMonthYear(today).split(" ")[0]}
+      active={tilePicked}
+      onPick={pickTile}
     />
   );
 
   return (
     <FoldGroup initiallyOpen={[]}>
-      <div className={board ? "" : "lg:max-w-[1180px] room-xl:clear-both room-xl:grid room-xl:grid-cols-[minmax(0,1fr)_340px] room-xl:items-start room-xl:gap-x-10"}>
+      <div className={board ? "" : "lg:max-w-[1180px]"}>
       <div className="min-w-0">
-      {!board && <div className="mt-5 hidden max-w-md room-lg:block room-xl:hidden">{numbers}</div>}
+      <div className="mt-5 hidden room-md:block">{tiles}</div>
       {/* Find or add, like the guest list: the + at the end of the search. */}
       <div className="mt-5 flex items-center gap-3">
         <label className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-linen bg-white px-4 focus-within:border-champagne-400">
@@ -301,9 +315,6 @@ export default function PlanList({
         </Fold>
       )}
       </div>
-      <aside aria-label="Where the plan stands" className={`hidden ${board ? "" : "room-xl:sticky room-xl:top-6 room-xl:block"}`}>
-        {numbers}
-      </aside>
       </div>
     </FoldGroup>
   );

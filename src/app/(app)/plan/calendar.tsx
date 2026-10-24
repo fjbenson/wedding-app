@@ -9,6 +9,7 @@ import { useBeside } from "@/components/card-sheet";
 import { usePullToClose } from "@/components/use-pull-to-close";
 import FilterMenu from "@/components/filter-menu";
 import { Fold } from "./fold";
+import PlanTiles from "./plan-tiles";
 
 export type Dot = "todo" | "appointment";
 
@@ -395,62 +396,17 @@ export default function PlanCalendar({
           small after a line. Tapping one lights up its things on the month,
           like the Suppliers tiles; again to clear. No date has no month, so
           one figure, and it opens its card. */}
-      <section aria-label="Where the plan stands" className="mb-4 hidden grid-cols-4 gap-3 room-md:grid">
-        {(
-          [
-            { pick: "overdue", value: totals.overdue, month: inMonth.filter((c) => fits(c, "overdue")).length, label: "Overdue", icon: <TriangleAlert className="h-3 w-3" strokeWidth={2.2} aria-hidden /> },
-            { pick: "todos", value: totals.todos, month: inMonth.filter((c) => fits(c, "todos")).length, label: "To-dos open", icon: <span aria-hidden className="h-[9px] w-[9px] rounded-full border-[1.6px] border-current" /> },
-            { pick: "appointments", value: totals.appointments, month: inMonth.filter((c) => fits(c, "appointments")).length, label: "Appointments", icon: <Calendar className="h-3 w-3" strokeWidth={2.2} aria-hidden /> },
-            { pick: "undated", value: undatedCount, month: null, label: "No date", icon: null },
-          ] as const
-        ).map((t) => {
-          const on = t.pick === pick;
-          const late = t.pick === "overdue" && t.value > 0;
-          const faint = t.pick === "undated";
-          const tone = on
-            ? "border-[0.5px] border-[#E3D3B3] bg-[#F1E7D4]"
-            : late
-              ? "border-[0.5px] border-[#E8C2B9] bg-[#FBEDEA] hover:bg-[#F8E3DE]"
-              : faint
-                ? "border border-dashed border-[#D8C7A4] bg-white/30 hover:bg-white/60"
-                : "border-[0.5px] border-linen bg-white/70 shadow-[0_10px_24px_-18px_rgb(60_50_40/0.4)] hover:bg-white";
-          return (
-            <button
-              key={t.label}
-              type="button"
-              disabled={t.value === 0}
-              aria-pressed={faint ? undefined : on}
-              onClick={() => (t.pick === "undated" ? setSelected("undated") : choose(t.pick))}
-              className={`rounded-[18px] px-[18px] py-3.5 text-left transition disabled:cursor-default ${tone}`}
-            >
-              {/* Overdue carries the warning sign as well as the rose, never colour alone. */}
-              <span className={`type-meta flex items-center gap-2 ${late ? "!text-[#9A3F2B]" : ""}`}>
-                <span
-                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full ${
-                    late ? "bg-[#F6D9D2] text-[#9A3F2B]" : faint ? "border border-dashed border-[#B8A27A]" : "bg-champagne-100 text-champagne-600"
-                  }`}
-                >
-                  {t.icon}
-                </span>
-                {t.label}
-              </span>
-              <span className="mt-3 flex items-baseline gap-3">
-                <span className={`type-figure text-[40px] leading-none ${late ? "text-[#9A3F2B]" : faint ? "text-stone" : on ? "text-[#6E5120]" : "text-ink"}`}>
-                  {t.value}
-                </span>
-                {t.month !== null && (
-                  <>
-                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>total</span>
-                    <span aria-hidden className={`my-[5px] w-px self-stretch ${late ? "bg-[#E8C2B9]" : "bg-[#D8C7A4]"}`} />
-                    <span className={`type-figure text-[32px] leading-none ${late ? "text-[#9A3F2B]" : "text-champagne-600"}`}>{t.month}</span>
-                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>in {name}</span>
-                  </>
-                )}
-              </span>
-            </button>
-          );
-        })}
-      </section>
+      <PlanTiles
+        tiles={[
+          { pick: "overdue", value: totals.overdue, month: inMonth.filter((c) => fits(c, "overdue")).length },
+          { pick: "todos", value: totals.todos, month: inMonth.filter((c) => fits(c, "todos")).length },
+          { pick: "appointments", value: totals.appointments, month: inMonth.filter((c) => fits(c, "appointments")).length },
+          { pick: "undated", value: undatedCount, month: null },
+        ]}
+        monthName={name}
+        active={pick}
+        onPick={(p) => (p === "undated" ? setSelected("undated") : choose(p as Pick))}
+      />
 
       {/* One row, like the other tabs: search, Filter, then the round black + (owner, 23 Oct 2026). */}
       <div className="mb-4 hidden room-md:block [&>div]:mt-0">

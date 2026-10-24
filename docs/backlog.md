@@ -12,6 +12,11 @@ anywhere, changes the database or costs money is the owner's call.
 
 From the last few chats, not yet confirmed:
 
+- 24 Oct 2026, laptop, built but not seen rendered: Plan's List board (months as
+  columns; drag a to-do to another month and check its date changed; tap a month
+  header and the tiles follow it; tiles narrow the board), the calendar tiles
+  (bigger October figure, divider lined up), columns filling the page width.
+
 - 24 Oct 2026 (built, not seen yet): the payment card as a bill (Round 25, B —
   who it's to on top, name and amount, due date along the foot, Mark as paid
   right across); the name level with the date on to-do and appointment cards;
@@ -133,7 +138,7 @@ almost everything else is still the phone layout in a narrow column.
   is small — the screen that most needs the width), Travel, the Decor pack
   list, the menu, Drinks, Your notes, Where things stand, the budget page.
 - **Odd widths:** Inspo sits left of centre; Settings is a narrow column on the
-  left; Plan's List is a medium column. One rule needed: tabs 1328px, a page
+  left; Plan's List board now fills the width (24 Oct 2026). One rule needed: tabs 1328px, a page
   that reads like paper (the run sheet, the menu) narrow and centred, the rest
   two columns.
 - **Forms** (Add a guest, New to-do, New payment, Add a moment) are a narrow

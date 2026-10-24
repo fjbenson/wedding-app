@@ -24,12 +24,15 @@ export function MilestoneRow({
   overdue,
   area,
   inDay = false,
+  dateUnder = "month",
 }: {
   milestone: Milestone;
   overdue: boolean;
   area?: string | null;
   /** In a day's card: "times" puts the time where the date was; "plain" (no times that day) leaves the column out. */
   inDay?: "times" | "plain" | false;
+  /** The laptop board's columns are months, so there the weekday goes under the day. */
+  dateUnder?: "month" | "weekday";
   /** Kept for callers; the date column now says "No date" itself. */
   showNoDate?: boolean;
 }) {
@@ -50,7 +53,7 @@ export function MilestoneRow({
         {inDay === "times" ? (
           <TimeStamp time={m.due_time} done={done} />
         ) : (
-          !inDay && <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} />
+          !inDay && <DateStamp date={m.due_date ?? (nudge ? start ?? null : null)} today={todayISO()} overdue={late} done={done} under={dateUnder} />
         )}
         <span className="min-w-0 flex-1">
           <span className={`type-item block ${done ? "!text-stone line-through" : nudge ? "italic !text-ink/80" : ""}`}>{m.title}</span>

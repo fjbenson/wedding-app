@@ -149,7 +149,7 @@ export default function PlanBoard({
               onDragOver={canDrop ? (ev) => { ev.preventDefault(); setOver(lane.key); } : undefined}
               onDragLeave={canDrop ? (ev) => { if (!ev.currentTarget.contains(ev.relatedTarget as Node)) setOver(null); } : undefined}
               onDrop={canDrop ? (ev) => { ev.preventDefault(); void drop(lane.key); } : undefined}
-              className={`w-[272px] shrink-0 rounded-[20px] border px-2.5 pb-3 pt-3.5 transition-colors ${
+              className={`min-w-[272px] flex-1 basis-0 rounded-[20px] border px-2.5 pb-3 pt-3.5 transition-colors ${
                 hot
                   ? "border-[#E3D3B3] bg-champagne-100/70"
                   : lane.kind === "overdue"

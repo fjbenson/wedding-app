@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Check, ChevronDown, Clock, MapPin } from "lucide-react";
 import { AreaTiles, DateCard } from "@/components/visual-form";
-import { daysUntil, formatDayMonth, formatHowFar, formatLongDate, formatTime, formatWeekdayDayMonth } from "@/lib/dates";
+import { formatDayMonth, formatHowFar, formatLongDate, formatTime } from "@/lib/dates";
 import { editorKeys, FIELD, SaveCancel, useSaver } from "../people/guest-card";
 import type { AreaOption } from "@/lib/areas";
 
@@ -34,7 +34,7 @@ export function ItemSignature({
   areaRound = 0,
   otherValue = "other",
   dateNote = "",
-  howFar,
+  slip,
   time,
   onTime,
   stamp,
@@ -58,8 +58,12 @@ export function ItemSignature({
   otherValue?: string;
   /** Before the weekday under the name: "Due ", "Paid ". */
   dateNote?: string;
-  /** How far off instead of the weekday (an unpaid payment): "Due in 3 months", "Due Mon · in 2 days", "5 days late". */
-  howFar?: boolean;
+  /**
+   * A payment's top as a bill (owner, 24 Oct 2026, canvas 5 "Payment card ·
+   * Round 25", B): who it's to and the area along the top, the name and the
+   * amount across the middle, when it's due along its foot (tap for the date).
+   */
+  slip?: { head: ReactNode; amount: ReactNode; howFar: boolean };
   /** "14:00" or "": an appointment's time sits in a gold band at the foot of the stamp (owner, 23 Oct 2026, Round 9, A). Left out, the card has no time. */
   time?: string;
   onTime?: (v: string) => void;
@@ -72,8 +76,53 @@ export function ItemSignature({
   const [day, month] = stamp ? [stamp.big, stamp.small] : date ? formatDayMonth(date).split(" ") : ["", ""];
   const hasStamp = stamp ? true : !!date;
 
+  const areaPill = (
+    <button
+      type="button"
+      onClick={() => toggle("area")}
+      aria-expanded={picking === "area"}
+      className={`inline-flex max-w-[60%] shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+        areaLabel ? "bg-champagne-100 text-champagne-600" : "border border-dashed border-champagne-600/50 text-champagne-600"
+      }`}
+    >
+      <span className="truncate">{areaLabel ?? "+ Area"}</span>
+      <ChevronDown aria-hidden className={`h-3.5 w-3.5 shrink-0 transition ${picking === "area" ? "rotate-180" : ""}`} strokeWidth={1.8} />
+    </button>
+  );
+  const far = slip?.howFar && date ? formatHowFar(date) : "";
+
   return (
     <>
+      {slip ? (
+        <div className="mt-1 rounded-[10px] bg-[#FFFDF8] px-[18px] pt-[18px] shadow-[0_18px_34px_-20px_rgb(60_45_20/0.5),0_0_0_1px_#EDE4D3]">
+          <div className="flex items-center justify-between gap-2">
+            {slip.head}
+            {areaPill}
+          </div>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+            <div className="min-w-0 flex-1 basis-40">{titleEditor}</div>
+            {slip.amount}
+          </div>
+          <button
+            type="button"
+            onClick={() => toggle("date")}
+            aria-expanded={picking === "date"}
+            className="-mx-[18px] mt-4 flex w-[calc(100%+36px)] items-center justify-between gap-3 border-t border-dashed border-[#E0D3BA] px-[18px] py-3 text-left text-[14px] text-stone hover:text-ink"
+          >
+            {date ? (
+              <>
+                <span>
+                  {dateNote}
+                  {formatLongDate(date).replace(/^\w+, /, "")}
+                </span>
+                {far && <span className={far.endsWith("late") ? "text-[#9A3F2B]" : ""}>{far.charAt(0).toUpperCase() + far.slice(1)}</span>}
+              </>
+            ) : (
+              <span className="text-champagne-600">+ Due date</span>
+            )}
+          </button>
+        </div>
+      ) : (
       <div className="mt-1 flex items-center gap-3.5">
         <button
           type="button"
@@ -97,22 +146,13 @@ export function ItemSignature({
           {titleEditor}
           <div className="mt-1 flex items-center justify-between gap-2">
             <p className="min-w-0 text-[14px] text-stone">
-              {stamp ? stamp.sub : date ? (howFar ? dueLine(date) : `${dateNote}${formatLongDate(date).split(",")[0]}`) : null}
+              {stamp ? stamp.sub : date ? `${dateNote}${formatLongDate(date).split(",")[0]}` : null}
             </p>
-            <button
-              type="button"
-              onClick={() => toggle("area")}
-              aria-expanded={picking === "area"}
-              className={`inline-flex max-w-[60%] shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
-                areaLabel ? "bg-champagne-100 text-champagne-600" : "border border-dashed border-champagne-600/50 text-champagne-600"
-              }`}
-            >
-              <span className="truncate">{areaLabel ?? "+ Area"}</span>
-              <ChevronDown aria-hidden className={`h-3.5 w-3.5 shrink-0 transition ${picking === "area" ? "rotate-180" : ""}`} strokeWidth={1.8} />
-            </button>
+            {areaPill}
           </div>
         </div>
       </div>
+      )}
 
       {picking === "date" && stamp && <div className="mt-3">{stamp.panel}</div>}
       {picking === "date" && !stamp && (
@@ -167,6 +207,7 @@ export function ItemAction({
   done,
   pending,
   mark,
+  wide,
   onClick,
 }: {
   label: string;
@@ -175,6 +216,8 @@ export function ItemAction({
   pending?: boolean;
   /** What sits in the small circle before it's done: "£" for a payment. */
   mark?: string;
+  /** Right across the card, under a payment's bill (Round 25, B). */
+  wide?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -183,7 +226,7 @@ export function ItemAction({
       disabled={pending}
       onClick={onClick}
       aria-pressed={done}
-      className={`mt-4 flex h-12 items-center gap-2.5 rounded-full pl-2 pr-5 text-[15px] transition disabled:opacity-60 ${
+      className={`mt-4 flex h-12 items-center gap-2.5 rounded-full pl-2 pr-5 text-[15px] transition disabled:opacity-60 ${wide ? "w-full justify-center" : ""} ${
         done ? "bg-champagne-100 text-champagne-600" : "bg-ink text-ivory hover:bg-ink/90"
       }`}
     >
@@ -326,17 +369,4 @@ export function AreaTagRow({
       )}
     </div>
   );
-}
-
-/**
- * An unpaid payment's line under its name. The weekday only while it's this
- * week; further off it's just how far (owner, 24 Oct 2026: "if it's 3 months
- * away, we don't need to say Monday").
- */
-function dueLine(date: string): string {
-  const far = formatHowFar(date);
-  if (far.endsWith("late")) return far.charAt(0).toUpperCase() + far.slice(1);
-  if (far === "today" || far === "tomorrow") return `Due ${far}`;
-  const days = daysUntil(date);
-  return days < 7 ? `Due ${formatWeekdayDayMonth(date).split(" ")[0]} · ${far}` : `Due ${far}`;
 }

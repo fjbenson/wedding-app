@@ -16,6 +16,7 @@ import type { DecorPerson } from "../decor/decor-people";
 import { replaceQuery } from "@/lib/url-state";
 import type { InspoWithPicture } from "@/lib/db/inspo";
 import { formatMoney, withCommas } from "@/lib/money";
+import { initialsOf } from "@/lib/names";
 import { CHEVRON, editorKeys, FIELD, safely, SaveCancel, TextRow, useSaver } from "../people/guest-card";
 import { DetailLabel } from "../people/guest-table";
 import { moveMomentAction, updatePlanFieldsAction, type Involved, type MomentFood } from "./card-actions";
@@ -266,6 +267,25 @@ export function PaymentBody({
   const original = p.area_key;
   const options = original && original !== "other" && !known.has(original) ? [...areas, { key: original, label: original }] : areas;
   const paid = !!paidOn;
+  const [contactId, setContactId] = useState(p.contact_id ?? "");
+  const supplierName = suppliers.find((x) => x.id === contactId)?.name ?? null;
+  const pickSupplier = (id: string) => {
+    setContactId(id);
+    const s = suppliers.find((x) => x.id === id);
+    const fields: Record<string, string | null> = { contact_id: id || null };
+    // Picking a supplier picks their area too, unless one's already chosen (as on the form).
+    if (followsSupplier) {
+      // Still following its supplier: show the new one's area (nothing to save).
+      setArea(supplierArea(id || null));
+      setRound((r) => r + 1);
+    } else if (s?.area && !area) {
+      const next = known.has(s.area) ? s.area : "other";
+      fields.area_key = next;
+      setArea(next);
+      setRound((r) => r + 1);
+    }
+    change(fields);
+  };
 
   return (
     <>
@@ -274,7 +294,38 @@ export function PaymentBody({
         date={paid ? paidOn : due}
         dateName={paid ? "paid_on" : "due_date"}
         dateNote={paid ? "Paid " : "Due "}
-        howFar={!paid}
+        slip={{
+          howFar: !paid,
+          head: (
+            <label className="flex min-w-0 items-center gap-2.5">
+              <span
+                aria-hidden
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-[14px] text-champagne-600 ${
+                  supplierName ? "bg-white shadow-[0_0_0_1px_#E6E0D6]" : "border border-dashed border-champagne-600/50"
+                }`}
+              >
+                {supplierName ? initialsOf(supplierName) : "+"}
+              </span>
+              <select
+                aria-label="Who it's to"
+                value={contactId}
+                onChange={(e) => pickSupplier(e.target.value)}
+                className={`h-9 min-w-0 cursor-pointer appearance-none truncate bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-0 pr-6 leading-9 text-[15px] hover:text-champagne-600 focus:outline-none ${
+                  supplierName ? "text-ink" : "text-champagne-600"
+                }`}
+                style={{ backgroundImage: CHEVRON }}
+              >
+                <option value="">Who it's to</option>
+                {suppliers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ),
+          amount: <AmountEditor value={p.amount} onSave={(v) => save({ amount: v })} inSlip />,
+        }}
         onDate={(v) => {
           if (paid) {
             // A paid payment always has the day it was paid.
@@ -298,13 +349,13 @@ export function PaymentBody({
           change({ area_key: v || null });
         }}
       />
-      <AmountEditor value={p.amount} onSave={(v) => save({ amount: v })} />
       {error && <p role="alert" className="mt-3 text-sm text-ink">{error}</p>}
 
       <ItemAction
         label="Mark as paid"
         doneLabel={paid ? `Paid ${formatLongDate(paidOn).replace(/^\w+, /, "")}` : ""}
         mark="£"
+        wide
         done={paid}
         onClick={() => {
           const next = paid ? "" : todayISO();
@@ -316,53 +367,12 @@ export function PaymentBody({
       {/* Family paying a bill themselves (owner, 17 Oct 2026). Nobody tagged = the couple. */}
       <InvolvedPart kind="payment" id={p.id} involved={involved} label="Who's paying" nobody="Us" />
 
-      <section className="mt-7">
-        <dl>
-          <div className="grid grid-cols-[7.5rem_1fr] gap-x-3 border-b border-linen">
-            <dt className="type-meta py-3.5">
-              <DetailLabel label="With" />
-            </dt>
-            <dd className="min-w-0 py-2">
-              <select
-                aria-label="Who it's to"
-                defaultValue={p.contact_id ?? ""}
-                onChange={(e) => {
-                  const s = suppliers.find((x) => x.id === e.target.value);
-                  const fields: Record<string, string | null> = { contact_id: e.target.value || null };
-                  // Picking a supplier picks their area too, unless one's already chosen (as on the form).
-                  if (followsSupplier) {
-                    // Still following its supplier: show the new one's area (nothing to save).
-                    setArea(supplierArea(e.target.value || null));
-                    setRound((r) => r + 1);
-                  } else if (s?.area && !area) {
-                    const next = known.has(s.area) ? s.area : "other";
-                    fields.area_key = next;
-                    setArea(next);
-                    setRound((r) => r + 1);
-                  }
-                  change(fields);
-                }}
-                className="h-9 w-full cursor-pointer appearance-none bg-transparent bg-[length:14px] bg-[right_2px_center] bg-no-repeat py-0 pr-6 leading-9 text-[15px] text-ink hover:text-champagne-600 focus:outline-none"
-                style={{ backgroundImage: CHEVRON }}
-              >
-                <option value="">Not a supplier</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </dd>
-          </div>
-        </dl>
-      </section>
-
       {/* Every payment to the same supplier, paid and to come (canvas 3 "Timeline · Round 3", 2). */}
-      {p.contact_id && (
+      {contactId && (
         <Timeline
-          scope={`supplier:${p.contact_id}`}
+          scope={`supplier:${contactId}`}
           only="money"
-          label={`All payments to ${suppliers.find((x) => x.id === p.contact_id)?.name ?? "them"}`}
+          label={`All payments to ${supplierName ?? "them"}`}
         />
       )}
 
@@ -378,7 +388,7 @@ export function PaymentBody({
 }
 
 /** The amount, as one big figure; tap it to change it (commas as you type). */
-function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) => Promise<{ error?: string }> }) {
+function AmountEditor({ value, onSave, inSlip }: { value: number; onSave: (v: string) => Promise<{ error?: string }>; inSlip?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const { pending, error, setError, run } = useSaver();
@@ -393,7 +403,7 @@ function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) =>
           setError(undefined);
           setEditing(true);
         }}
-        className="type-figure mt-2 block text-left text-[34px] leading-none text-ink hover:text-champagne-600"
+        className={`type-figure block whitespace-nowrap text-left leading-none text-ink hover:text-champagne-600 ${inSlip ? "text-[38px]" : "mt-2 text-[34px]"}`}
       >
         {formatMoney(value)}
       </button>
@@ -401,7 +411,7 @@ function AmountEditor({ value, onSave }: { value: number; onSave: (v: string) =>
   }
   return (
     <form
-      className="mt-2"
+      className={inSlip ? "w-full" : "mt-2"}
       onSubmit={(event) => {
         event.preventDefault();
         submit();

@@ -112,7 +112,13 @@ Juno, Your notes, Inspo, Settings and Where things stand.
   A day's card puts times where the date was ("Any time" for the rest), or no
   column at all when nothing that day has a time. No date shows a faint "Set date". The List works like the guest
   list. Guests can be tagged "involved"; appointments can go to the phone's
-  own calendar (.ics, Google, Outlook).
+  own calendar (.ics, Google, Outlook). Cards: the date tile level with the
+  name, the area pill at the end of the grey line under it (24 Oct 2026, canvas
+  5 Round 24, B). A **payment's card** is a bill instead (Round 25, B, 24 Oct
+  2026): who it's to and the area along the top, the name and amount across
+  the middle, "Due 1 February 2027 · In 3 months" along a dashed foot (tap for
+  the date), Mark as paid right across. "All payments to…": the next one due
+  at full strength, later ones faded.
 - **Money** (`/money`), **By area | By month**: Budget → Agreed → Paid. The
   top card leads with the budget until something's agreed. Area cards two to a
   row (owner, 21 Oct 2026; canvas 4 "Money · Rounds 2–3"): one figure (agreed,

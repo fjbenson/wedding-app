@@ -60,6 +60,8 @@ Rule one still comes first. The line is whether the owner would *see* it.
 ## How we work (owner, 20 Oct 2026, from reading three chats)
 
 - **Short replies:** about 100 words, plain words; more only when asked.
+- **One thing at a time** (owner, 24 Oct 2026): give one next step or one
+  question, never a list of things to check or pick from.
 - **Mock up first, without being asked,** for anything new or any layout
   change (canvas 5, options to pick from). Fixes and small tweaks go straight in.
 - **Sleep on database changes.** Write the migration and explain it, but run

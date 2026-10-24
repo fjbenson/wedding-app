@@ -441,10 +441,9 @@ export default function PlanCalendar({
                 {t.month !== null && (
                   <>
                     <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>total</span>
-                    <span aria-hidden className={`h-[22px] w-px self-center ${late ? "bg-[#E8C2B9]" : "bg-[#D8C7A4]"}`} />
-                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>
-                      <span className={`font-medium ${late ? "" : "text-champagne-600"}`}>{t.month}</span> in {name}
-                    </span>
+                    <span aria-hidden className={`my-[5px] w-px self-stretch ${late ? "bg-[#E8C2B9]" : "bg-[#D8C7A4]"}`} />
+                    <span className={`type-figure text-[40px] leading-none ${late ? "text-[#9A3F2B]" : "text-champagne-600"}`}>{t.month}</span>
+                    <span className={`text-sm ${late ? "text-[#9A3F2B]" : "text-stone"}`}>in {name}</span>
                   </>
                 )}
               </span>
